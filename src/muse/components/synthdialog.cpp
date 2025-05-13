@@ -278,13 +278,10 @@ MusECore::Synth* SynthDialog::value()
         else
             base = item->text(COL_URI);
 
-// REMOVE Tim. tmp. Changed.
-//         return MusEGlobal::synthis.find(uri, base, item->data(COL_NAME, UDATA_NAME).toString());
         return MusEGlobal::synthis.find(
           MusEPlugin::PluginType(item->data(COL_TYPE, UDATA_TYPE).toInt()),
           base,
           uri,
-//           item->data(COL_NAME, UDATA_NAME).toString());
           item->data(COL_LABEL, UDATA_LABEL).toString());
     }
     fprintf(stderr, "Synth not found\n");
@@ -376,102 +373,6 @@ void SynthDialog::onCurrentItemChanged()
     }
 }
 
-// REMOVE Tim. tmp. Changed.
-// void SynthDialog::fillSynths()
-// {
-//     ui.pList->clear();
-//     ui.okB->setEnabled(false);
-//     ui.pbAddFav->setEnabled(false);
-//     ui.pbRemoveFav->setEnabled(false);
-//
-//     QString type_name, cat_name;
-//
-//     if (curTab == TAB_FAV && favs.isEmpty())
-//         return;
-//
-//     int index = -1;
-//     QFont fb(font());
-//     fb.setItalic(true);
-//     for (const auto& it : MusEGlobal::synthis)
-//     {
-//         index++;
-//         if (curTab == TAB_FAV && !isFav(it)) {
-//             continue;
-//         }
-//
-//         QString sb_txt = ui.filterBox->currentText().toLower();
-//         if (!(sb_txt.isEmpty() || it->name().toLower().contains(sb_txt)))
-//             continue;
-//
-//         if (it->synthType() == MusECore::Synth::MESS_SYNTH) {
-//             if ((selCategory != SEL_CAT_SYNTH && selCategory != SEL_CAT_ALL)
-//                     || (selType != SEL_TYPE_MESS && selType != SEL_TYPE_ALL))
-//                 continue;
-//
-//             type_name = "MESS";
-//             cat_name = "Synth";
-//
-//         } else if (it->synthType() == MusECore::Synth::DSSI_SYNTH) {
-//             if ((selCategory != SEL_CAT_SYNTH && selCategory != SEL_CAT_ALL)
-//                     || (selType != SEL_TYPE_DSSI && selType != SEL_TYPE_ALL))
-//                 continue;
-//
-//             type_name = "DSSI";
-//             cat_name = "Synth";
-//
-//         } else if (it->synthType() == MusECore::Synth::LV2_SYNTH) {
-//             if ((selCategory != SEL_CAT_SYNTH && selCategory != SEL_CAT_ALL)
-//                     || (selType != SEL_TYPE_LV2 && selType != SEL_TYPE_ALL))
-//                 continue;
-//
-//             type_name = "LV2";
-//             cat_name = "Synth";
-//
-//         } else if (it->synthType() == MusECore::Synth::VST_NATIVE_SYNTH) {
-//             if ((selCategory != SEL_CAT_SYNTH && selCategory != SEL_CAT_ALL)
-//                     || (selType != SEL_TYPE_VST && selType != SEL_TYPE_ALL))
-//                 continue;
-//
-//             type_name = "VST";
-//             cat_name = "Synth";
-//
-//         } else if (it->synthType() == MusECore::Synth::LV2_EFFECT) {
-//             if ((selCategory != SEL_CAT_EFFECT && selCategory != SEL_CAT_ALL)
-//                     || (selType != SEL_TYPE_LV2 && selType != SEL_TYPE_ALL))
-//                 continue;
-//
-//             type_name = "LV2";
-//             cat_name = "Effect";
-//
-//         } else if (it->synthType() == MusECore::Synth::VST_NATIVE_EFFECT) {
-//             if ((selCategory != SEL_CAT_EFFECT && selCategory != SEL_CAT_ALL)
-//                     || (selType != SEL_TYPE_VST && selType != SEL_TYPE_ALL))
-//                 continue;
-//
-//             type_name = "VST";
-//             cat_name = "Effect";
-//         }
-//
-//         QTreeWidgetItem* item = new QTreeWidgetItem(ui.pList);
-//         item->setText(COL_NAME, it->description());
-//         item->setText(COL_TYPE, type_name);
-//         item->setText(COL_CAT, cat_name);
-//         item->setText(COL_AUTHOR, it->maker());
-//         item->setText(COL_VERSION, it->version());
-//         item->setText(COL_URI, it->uri().isEmpty() ? it->completeBaseName() : it->uri());
-//
-//         item->setData(COL_NAME, UDATA_INDEX, index);
-//         item->setData(COL_NAME, UDATA_HAS_URI, !it->uri().isEmpty());
-//         item->setData(COL_NAME, UDATA_NAME, it->name());
-//
-//         if (curTab == TAB_ALL && isFav(it)) {
-//             item->setForeground(COL_NAME, Qt::red);
-//             item->setFont(COL_NAME, fb);
-//         }
-//     }
-//
-//     ui.pList->setCurrentItem(ui.pList->topLevelItem(0));
-// }
 void SynthDialog::fillSynths()
 {
     ui.pList->clear();
@@ -505,30 +406,22 @@ void SynthDialog::fillSynths()
         switch(it->pluginType())
         {
           case MusEPlugin::PluginTypeMESS:
-            //if ((selCategory != SEL_CAT_SYNTH && selCategory != SEL_CAT_ALL)
-            //        || (selType != SEL_TYPE_MESS && selType != SEL_TYPE_ALL))
             if(selType != SEL_TYPE_MESS && selType != SEL_TYPE_ALL)
                 continue;
           break;
 
           case MusEPlugin::PluginTypeDSSI:
           case MusEPlugin::PluginTypeDSSIVST:
-            //if ((selCategory != SEL_CAT_SYNTH && selCategory != SEL_CAT_ALL)
-            //        || (selType != SEL_TYPE_DSSI && selType != SEL_TYPE_ALL))
             if(selType != SEL_TYPE_DSSI && selType != SEL_TYPE_ALL)
                 continue;
           break;
 
           case MusEPlugin::PluginTypeLV2:
-            //if ((selCategory != SEL_CAT_SYNTH && selCategory != SEL_CAT_ALL)
-            //        || (selType != SEL_TYPE_LV2 && selType != SEL_TYPE_ALL))
             if(selType != SEL_TYPE_LV2 && selType != SEL_TYPE_ALL)
                 continue;
           break;
 
           case MusEPlugin::PluginTypeLinuxVST:
-            //if ((selCategory != SEL_CAT_SYNTH && selCategory != SEL_CAT_ALL)
-            //        || (selType != SEL_TYPE_VST && selType != SEL_TYPE_ALL))
             if(selType != SEL_TYPE_VST && selType != SEL_TYPE_ALL)
                 continue;
           break;
@@ -546,8 +439,6 @@ void SynthDialog::fillSynths()
         cat_name  = QApplication::translate("MusEPlugin", MusEPlugin::pluginClassToString(it->pluginClass()));
 
         QTreeWidgetItem* item = new QTreeWidgetItem(ui.pList);
-// REMOVE Tim. tmp. Changed.
-//         item->setText(COL_NAME, it->description());
         item->setText(COL_NAME, it->name());
         item->setText(COL_LABEL, it->label());
         item->setText(COL_TYPE, type_name);
@@ -560,7 +451,6 @@ void SynthDialog::fillSynths()
         item->setData(COL_NAME, UDATA_INDEX, index);
         item->setData(COL_NAME, UDATA_HAS_URI, !it->uri().isEmpty());
         item->setData(COL_NAME, UDATA_NAME, it->name());
-// REMOVE Tim. tmp. Added.
         item->setData(COL_LABEL, UDATA_LABEL, it->label());
         item->setData(COL_TYPE, UDATA_TYPE, it->pluginType());
 

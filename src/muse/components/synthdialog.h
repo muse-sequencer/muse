@@ -22,16 +22,12 @@ class SynthDialog : public QDialog {
     enum SynthCategory { SEL_CAT_ALL = 0, SEL_CAT_SYNTH = 1, SEL_CAT_EFFECT = 2 };
     enum SynthType { SEL_TYPE_MESS, SEL_TYPE_DSSI, SEL_TYPE_LV2, SEL_TYPE_VST, SEL_TYPE_ALL};
     enum Tab { TAB_ALL = 0, TAB_FAV = 1 };
-// REMOVE Tim. tmp. Changed.
-//     enum Col { COL_NAME = 0, COL_TYPE, COL_CAT, COL_AUTHOR, COL_VERSION, COL_URI };
-//     enum UserData { UDATA_INDEX = Qt::UserRole, UDATA_HAS_URI = Qt::UserRole + 1, UDATA_NAME = Qt::UserRole + 2 };
     enum Col { COL_NAME = 0, COL_LABEL, COL_TYPE, COL_CAT, COL_AUTHOR, COL_VERSION, COL_URI, COL_DESCRIPTION };
     enum UserData {
       UDATA_TYPE = Qt::UserRole,
       UDATA_INDEX = Qt::UserRole + 1,
       UDATA_HAS_URI = Qt::UserRole + 2,
       UDATA_NAME = Qt::UserRole + 3,
-// REMOVE Tim. tmp. Added.
       UDATA_LABEL = Qt::UserRole + 4
     };
 

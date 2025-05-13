@@ -1348,14 +1348,10 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
          i != MusEGlobal::synthis.end(); ++i) {
             SynthItem* item = new SynthItem(!(*i)->uri().isEmpty(), synthList);
             if((*i)->uri().isEmpty())
-// REMOVE Tim. tmp. Changed.
-//               item->setText(0, QString((*i)->baseName()));
               item->setText(SYNTHCOL_FILE, QString((*i)->completeBaseName()));
             else
               item->setText(SYNTHCOL_FILE, QString((*i)->uri()));
 
-// REMOVE Tim. tmp. Changed.
-//             item->setText(1, MusECore::synthType2String((*i)->synthType()));
             item->setText(SYNTHCOL_TYPE,
               QApplication::translate("MusEPlugin", MusEPlugin::pluginTypeToString((*i)->pluginType())));
             s.setNum((*i)->references());
@@ -1490,12 +1486,6 @@ void MPConfig::addInstanceClicked()
       if (item == nullptr)
             return;
       // Add at end of list.
-// REMOVE Tim. tmp. Changed.
-//       MusECore::SynthI *si = MusEGlobal::song->createSynthI(
-//         !item->hasUri() ? item->text(0) : QString(),
-//         item->hasUri() ? item->text(0) : QString(),
-//         item->text(3),
-//         MusECore::string2SynthType(item->text(1)));
       MusECore::SynthI *si = MusEGlobal::song->createSynthI(
         MusEPlugin::PluginType(item->data(SYNTHCOL_TYPE, SYNTH_ROLE_TYPE).toInt()),
         !item->hasUri() ? item->text(SYNTHCOL_FILE) : QString(),

@@ -229,7 +229,6 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       // Add the change track name action to the menu.
       menuView->addAction(changeTrackNameId);
 
-// REMOVE Tim. tmp. Added.
       menuView->addActions(MusEGlobal::undoRedo->actions());
 
       ///view = new QScrollArea();
@@ -1570,14 +1569,6 @@ void AudioMixerApp::changeTrackName(MusECore::Track* track)
   {
     if ((*i)->name() == newname)
     {
-// REMOVE Tim. tmp. Changed.
-//       QMessageBox::critical(this,
-//         tr("MusE: Bad Trackname"),
-//         tr("Please choose a unique track name"),
-//         QMessageBox::Ok,
-//         Qt::NoButton,
-//         Qt::NoButton);
-//       return;
       QMessageBox msg(this);
       msg.setWindowTitle(tr("MusE: bad trackname"));
       msg.setText(tr("The track name is already used."));

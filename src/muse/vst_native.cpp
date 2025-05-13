@@ -60,8 +60,7 @@
 #define NEW_PLUGIN_ENTRY_POINT "VSTPluginMain"
 
 // Enable debugging messages
-// REMOVE Tim. tmp. Enabled.
-#define VST_NATIVE_DEBUG
+//#define VST_NATIVE_DEBUG
 //#define VST_NATIVE_DEBUG_PROCESS
 
 #ifdef VST_VESTIGE_SUPPORT

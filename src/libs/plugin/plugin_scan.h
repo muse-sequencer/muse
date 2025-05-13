@@ -31,8 +31,6 @@
 
 #include <vector>
 #include <map>
-// #include <list>
-// #include <memory>
 #include <cstdint>
 
 #ifdef PLUGIN_INFO_USE_QT
@@ -42,11 +40,6 @@
   #include <string>
   typedef std::string PluginInfoString_t;
 #endif // PLUGIN_INFO_USE_QT
-
-// REMOVE Tim. tmp. Removed.
-// #include "config.h"
-// REMOVE Tim. tmp. Removed.
-//#include "globaldefs.h"
 
 //==============================================
 // NOTICE:
@@ -72,26 +65,6 @@ const char* const VST_NEW_PLUGIN_ENTRY_POINT = "VSTPluginMain";
 // Please ensure synchronization between them and
 //  these enumerations.
 //==============================================
-
-// // Can be Or'd together.
-// enum PluginType {
-//   PluginTypeNone     = 0x00,
-//   PluginTypeLADSPA   = 0x01,
-//   PluginTypeDSSI     = 0x02,
-//   PluginTypeVST      = 0x04,
-//   PluginTypeDSSIVST  = 0x08,
-//   PluginTypeLinuxVST = 0x10,
-//   PluginTypeLV2      = 0x20,
-//   PluginTypeMESS     = 0x40,
-//   // Built-in metronome is not actually a loadable plugin, but is a synth.
-//   PluginTypeMETRONOME = 0x80,
-//   PluginTypeUnknown = 0x8000,
-//   PluginTypeAll = PluginTypeLADSPA   | PluginTypeDSSI |
-//                   PluginTypeVST      | PluginTypeDSSIVST |
-//                   PluginTypeLinuxVST | PluginTypeLV2 |
-//                   PluginTypeMESS     | PluginTypeUnknown |
-//                   PluginTypeMETRONOME };
-// typedef int PluginType_t;
 
 // Can be Or'd together.
 enum PluginType {
@@ -318,185 +291,10 @@ typedef PluginPortList::const_iterator ciPluginPortList;
 // PluginScanInfoStruct
 //-----------------------------------------
 
-// REMOVE Tim. tmp. Changed.
-// class PluginScanInfoStruct
-// {
-//    public:
-//     enum PluginType { PluginTypeNone = 0x00,
-//       PluginTypeLADSPA   = 0x01,  PluginTypeDSSI    = 0x02,
-//       PluginTypeVST      = 0x04,  PluginTypeDSSIVST = 0x08,
-//       PluginTypeLinuxVST = 0x10,  PluginTypeLV2     = 0x20,
-//       PluginTypeMESS     = 0x40,  PluginTypeUnknown = 0x8000,
-//       PluginTypeAll = PluginTypeLADSPA   | PluginTypeDSSI |
-//                       PluginTypeVST      | PluginTypeDSSIVST |
-//                       PluginTypeLinuxVST | PluginTypeLV2 |
-//                       PluginTypeMESS     | PluginTypeUnknown};
-//     typedef int PluginType_t;
-//
-//     enum PluginClass { PluginClassNone = 0x00,
-//       PluginClassEffect = 0x01, PluginClassInstrument = 0x02,
-//       PluginClassAll = PluginClassEffect | PluginClassInstrument };
-//     typedef int PluginClass_t;
-//
-//     enum PluginFlags { NoPluginFlags = 0x00,
-//       PluginHasGui = 0x01, PluginHasChunks = 0x02, Realtime = 0x04, PluginIsHardRealtimeCapable = 0x08,
-//       // Obsolete flag. Kept for backward compatibility.
-//       PluginHasFreewheelPort = 0x10,
-//       // Obsolete flag. Kept for backward compatibility.
-//       PluginHasLatencyPort = 0x20,
-//       PluginSupportsTimePosition = 0x40 };
-//     typedef int PluginFlags_t;
-//
-//   //private:
-//   //protected:
-//   public:
-//
-//     //QFileInfo _fi;
-//     PluginInfoString_t _completeBaseName;
-//     PluginInfoString_t _baseName;
-//     PluginInfoString_t _suffix;
-//     PluginInfoString_t _completeSuffix;
-//     PluginInfoString_t _absolutePath;
-//     PluginInfoString_t _path;
-//
-//     // Like "http://zynaddsubfx.sourceforge.net/fx#Phaser".
-//     PluginInfoString_t _uri;
-//
-//     // The file's time stamp in milliseconds since epoch.
-//     int64_t _fileTime;
-//     // Whether the file failed scanning.
-//     bool _fileIsBad;
-//
-//     PluginType _type;
-//     PluginClass_t _class;
-//     unsigned long _uniqueID;
-//     long _subID; // vst shell ID etc.
-//
-//     PluginInfoString_t _label;
-//     PluginInfoString_t _name;
-//     PluginInfoString_t _description;
-//     PluginInfoString_t _version;
-//     PluginInfoString_t _maker;
-//     PluginInfoString_t _copyright;
-//
-//     int _apiVersionMajor;
-//     int _apiVersionMinor;
-//
-//     int _pluginVersionMajor;
-//     int _pluginVersionMinor;
-//
-//     MusEPlugin::PluginFlags_t _pluginFlags;
-//
-//     unsigned long _portCount;
-//     unsigned long _inports;
-//     unsigned long _outports;
-//     unsigned long _controlInPorts;
-//     unsigned long _controlOutPorts;
-//     unsigned long _eventInPorts;
-//     unsigned long _eventOutPorts;
-//
-//     // Freewheel port index if PluginHasFreewheelPort is true.
-//     unsigned long _freewheelPortIdx;
-//     // Latency port index if PluginHasLatencyPort is true.
-//     unsigned long _latencyPortIdx;
-//     // Enable or bypass port index if UseEmulatedEnableController or HasEnablePort or HasBypassPort are true.
-//     unsigned long _enableOrBypassPortIdx;
-//     MusEPlugin::PluginLatencyReportingType _pluginLatencyReportingType;
-//     MusEPlugin::PluginBypassType _pluginBypassType;
-//     MusEPlugin::PluginFreewheelType _pluginFreewheelType;
-//
-//     // Port number to control input index. Item is -1 if it's not a control input.
-//     // TODO: Not used yet.
-//     //std::vector<unsigned long> rpIdx;
-//     //std::vector<unsigned long> _pIdx; //control port numbers
-//     //std::vector<unsigned long> _poIdx; //control out port numbers
-//     //std::vector<unsigned long> _iIdx; //input port numbers
-//     //std::vector<unsigned long> _oIdx; //output port numbers
-//
-//     MusEPlugin::PluginFeatures_t _requiredFeatures;
-//     MusEPlugin::VstPluginFlags_t _vstPluginFlags;
-//
-//     PluginInfoString_t _uiFilename;
-//
-//     PluginPortList _portList;
-//
-//     PortEnumValueMap _portEnumValMap;
-//
-//   public:
-//     PluginScanInfoStruct() :
-//       _fileTime(0),
-//       _fileIsBad(false),
-//       _type(MusEPlugin::PluginTypeNone),
-//       _class(MusEPlugin::PluginClassNone),
-//       _uniqueID(0),
-//       _subID(0),
-//       _apiVersionMajor(0),
-//       _apiVersionMinor(0),
-//       _pluginVersionMajor(0),
-//       _pluginVersionMinor(0),
-//       _pluginFlags(MusEPlugin::NoPluginFlags),
-//       _portCount(0),
-//       _inports(0),
-//       _outports(0),
-//       _controlInPorts(0),
-//       _controlOutPorts(0),
-//       _eventInPorts(0),
-//       _eventOutPorts(0),
-//       _freewheelPortIdx(0),
-//       _latencyPortIdx(0),
-//       _enableOrBypassPortIdx(0),
-//       _pluginLatencyReportingType(MusEPlugin::PluginLatencyTypeNone),
-//       _pluginBypassType(MusEPlugin::PluginBypassTypeEmulatedEnableFunction),
-//       _pluginFreewheelType(MusEPlugin::PluginFreewheelTypeNone),
-//       _requiredFeatures(MusEPlugin::PluginNoFeatures),
-//       _vstPluginFlags(MusEPlugin::vstPluginNoFlags)
-//       { };
-//
-//     //~PluginScanInfoStruct();
-//
-// #ifdef PLUGIN_INFO_USE_QT
-//
-// #if defined(_WIN64) || defined(_WIN32)
-//     PluginInfoString_t filePath() const
-//       { const PluginInfoString_t fn = fileName(); return fn.isEmpty() ? _path : _path + '\\' + fn; }
-// #else
-//     PluginInfoString_t filePath() const
-//       { const PluginInfoString_t fn = fileName(); return fn.isEmpty() ? _path : _path + '/' + fn; }
-// #endif // defined(_WIN64) || defined(_WIN32)
-//     PluginInfoString_t fileName() const
-//       { return _completeSuffix.isEmpty() ? _baseName : _baseName + '.' + _completeSuffix; }
-//     PluginInfoString_t lib(bool complete = true) const      { return complete ? _completeBaseName : _baseName; }
-//     PluginInfoString_t dirPath(bool complete = true) const  { return complete ? _absolutePath : _path; }
-//
-// #else // PLUGIN_INFO_USE_QT
-//
-// #if defined(_WIN64) || defined(_WIN32)
-//     std::string filePath() const
-//       { const std::string fn = fileName(); return fn.empty() ? _path : _path + '\\' + fn; }
-// #else
-//     std::string filePath() const
-//       { const std::string fn = fileName(); return fn.empty() ? _path : _path + '/' + fn; }
-// #endif // defined(_WIN64) || defined(_WIN32)
-//     std::string fileName() const
-//       { return _completeSuffix.empty() ? _baseName : _baseName + '.' + _completeSuffix; }
-//     std::string lib(bool complete = true) const      { return complete ? _completeBaseName : _baseName; }
-//     std::string dirPath(bool complete = true) const  { return complete ? _absolutePath : _path; }
-// #endif // PLUGIN_INFO_USE_QT
-//
-//     bool inPlaceCapable() const { return !(_requiredFeatures & MusEPlugin::PluginNoInPlaceProcessing); }
-//
-//     const char* typeString() const;
-//     const char* classString() const;
-//
-//     void dump(const char* prefixMessage = 0) const;
-// };
 class PluginScanInfoStruct
 {
-  //private:
-  //protected:
   public:
 
-    //QFileInfo _fi;
     PluginInfoString_t _completeBaseName;
     PluginInfoString_t _baseName;
     PluginInfoString_t _suffix;
@@ -569,7 +367,6 @@ class PluginScanInfoStruct
 
   public:
     PluginScanInfoStruct();
-    //~PluginScanInfoStruct();
 
 #ifdef PLUGIN_INFO_USE_QT
 
@@ -598,8 +395,6 @@ class PluginScanInfoStruct
 #endif // PLUGIN_INFO_USE_QT
 
     bool inPlaceCapable() const;
-// REMOVE Tim. tmp. Removed.
-//     void dump(const char* prefixMessage = 0) const;
 };
 
 //-----------------------------------------
@@ -628,13 +423,9 @@ class PluginScanInfo
 
   #define PLUGIN_STRING_EMPTY(x) (x).isEmpty()
 
-// REMOVE Tim. tmp. Removed.
-//   #define PLUGIN_GET_CSTRING(x) (x).toUtf8().constData()
   #define PLUGIN_GET_STDSTRING(x) (x).toStdString()
   #define PLUGIN_GET_QSTRING(x) (x)
 
-// REMOVE Tim. tmp. Changed.
-//   #define PLUGIN_SET_CSTRING(x) QString(x)
   #define PLUGIN_SET_CSTRING(x) QString::fromUtf8(x)
   #define PLUGIN_SET_STDSTRING(x) QString::fromStdString(x)
   #define PLUGIN_SET_QSTRING(x) (x)
@@ -643,8 +434,6 @@ class PluginScanInfo
 
   #define PLUGIN_STRING_EMPTY(x) (x).empty()
 
-// REMOVE Tim. tmp. Removed.
-//   #define PLUGIN_GET_CSTRING(x) (x).c_str()
   #define PLUGIN_GET_STDSTRING(x) (x)
   #define PLUGIN_GET_QSTRING(x) QString::fromStdString(x)
 

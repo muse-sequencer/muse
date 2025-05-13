@@ -36,7 +36,6 @@
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 #include "midiremote.h"
-// REMOVE Tim. tmp. Added.
 #include "plugin.h"
 
 // Enable for debugging:
@@ -211,7 +210,6 @@ unsigned int PendingOperationItem::getIndex() const
     case UpdateAudioCtrlListGroups:
     case UpdateAudioCtrlGroups:
     case UpdateAudioCtrlPosGroups:
-// REMOVE Tim. tmp. Added.
     case SetRackEffectPlugin:
     case SwapRackEffectPlugins:
     case MoveRackEffectPlugin:
@@ -1650,7 +1648,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
 
-// REMOVE Tim. tmp. Added.
     case SetRackEffectPlugin:
     {
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetRackEffectPlugin: track:%p pluginI:%p rackPos:%d\n",
@@ -1682,7 +1679,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
 
-// REMOVE Tim. tmp. Added.
     case SwapRackEffectPlugins:
     {
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SwapRackEffectPlugins: track:%p rackPos:%d newRackPos:%d\n",
@@ -1708,7 +1704,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
 
-// REMOVE Tim. tmp. Added.
     case MoveRackEffectPlugin:
     {
       DEBUG_OPERATIONS(stderr,
@@ -1732,7 +1727,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
             sp->setID(_newRackEffectPos);
             sp->setTrack(dat);
 
-//             spl->at(_rackEffectPos) = nullptr;
             // Fill the source slot with the given pluginI, which is null by default.
             spl->at(_rackEffectPos) = _pluginI;
             // Fill the destination slot with the original source pluginI.
@@ -1749,7 +1743,6 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
 
-// REMOVE Tim. tmp. Added.
     case ModifyMidiAudioCtrlMap:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyMidiAudioCtrlMap: old map:%p new map:%p\n",
                        _midi_audio_ctrl_map, _src_midi_audio_ctrl_map);
@@ -1972,7 +1965,6 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
         delete _newMidiRemote;
     break;
 
-// REMOVE Tim. tmp. Added.
     case SetRackEffectPlugin:
       // At this point _pluginI might contain an original plugin that was replaced.
       // Delete it now.
@@ -1980,7 +1972,6 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
         delete _pluginI;
     break;
 
-// REMOVE Tim. tmp. Added.
     case MoveRackEffectPlugin:
       // At this point _pluginI might contain an original plugin that was replaced.
       // Delete it now.
@@ -1988,7 +1979,6 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
         delete _pluginI;
     break;
 
-// REMOVE Tim. tmp. Added.
     case ModifyMidiAudioCtrlMap:
       // At this point _src_midi_audio_ctrl_map contains all the items that were in the original list, via swap().
       // Delete it now.
@@ -2735,7 +2725,6 @@ bool PendingOperationList::add(PendingOperationItem op)
           else if (poi._aud_ctrl_list_list == op._aud_ctrl_list_list || poi._src_aud_ctrl_list_list == op._aud_ctrl_list_list)
           {
             // Simply replace the list.
-// REMOVE Tim. tmp. Added.
             // To avoid memory leaks, delete the original list.
             if(poi._src_aud_ctrl_list_list)
               delete poi._src_aud_ctrl_list_list;
@@ -2788,7 +2777,6 @@ bool PendingOperationList::add(PendingOperationItem op)
           (poi._iCtrlList->second == op._iCtrlList->second || poi._aud_ctrl_list == op._iCtrlList->second))
         {
           // Simply replace the list.
-// REMOVE Tim. tmp. Added.
           // To avoid memory leaks, delete the original list.
           if(poi._aud_ctrl_list)
             delete poi._aud_ctrl_list;
@@ -3337,7 +3325,6 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
       
-// REMOVE Tim. tmp. Added.
       case PendingOperationItem::SetRackEffectPlugin:
         if(poi._type == PendingOperationItem::SetRackEffectPlugin)
         {
@@ -3367,17 +3354,14 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
 
-// REMOVE Tim. tmp. Added.
       case PendingOperationItem::SwapRackEffectPlugins:
         // TODO: Not much required here... It's OK if multiple swaps appear.
       break;
 
-// REMOVE Tim. tmp. Added.
       case PendingOperationItem::MoveRackEffectPlugin:
         // TODO:
       break;
 
-// REMOVE Tim. tmp. Added.
       case PendingOperationItem::ModifyMidiAudioCtrlMap:
         if(poi._type == PendingOperationItem::ModifyMidiAudioCtrlMap)
         {

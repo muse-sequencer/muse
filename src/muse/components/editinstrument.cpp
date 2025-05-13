@@ -27,7 +27,6 @@
 
 #include <QDir>
 #include <QFileDialog>
-// REMOVE Tim. tmp. Added.
 #include <QFile>
 #include <QFileInfo>
 #include <QInputDialog>
@@ -854,123 +853,6 @@ void EditInstrument::fileOpen() //DELETETHIS?
 //---------------------------------------------------------
 //   fileSave
 //---------------------------------------------------------
-
-// REMOVE Tim. tmp. Changed.
-// void EditInstrument::fileSave()
-// {
-//       if (workingInstrument->filePath().isEmpty())
-//       {
-//         saveAs();
-//         return;
-//       }
-//
-//       // Do not allow a direct overwrite of a 'built-in' muse instrument.
-//       QFileInfo qfi(workingInstrument->filePath());
-//       if(qfi.absolutePath() == MusEGlobal::museInstruments)
-//       {
-//         saveAs();
-//         return;
-//       }
-//
-//       FILE* f = fopen(workingInstrument->filePath().toLatin1().constData(), "w");
-//       if(f == 0)
-//       {
-//         saveAs();
-//         return;
-//       }
-//
-//       // Allow these to update...
-//       instrumentNameReturn();
-//       patchNameReturn();
-//       ctrlNameReturn();
-//
-//       if(fclose(f) != 0)
-//       {
-//         QString s = QString("Creating file:\n") + workingInstrument->filePath() + QString("\nfailed: ")
-//           + QString(strerror(errno) );
-//         QMessageBox::critical(this, tr("MusE: Create file failed"), s);
-//         return;
-//       }
-//
-//       if(fileSave(workingInstrument, workingInstrument->filePath()))
-//         workingInstrument->setDirty(false);
-// }
-//
-// //---------------------------------------------------------
-// //   fileSave
-// //---------------------------------------------------------
-//
-// bool EditInstrument::fileSave(MusECore::MidiInstrument* instrument, const QString& name)
-//     {
-//       FILE* f = fopen(name.toLatin1().constData(), "w");
-//       if(f == 0)
-//       {
-//         QString s("Creating file failed: ");
-//         s += QString(strerror(errno));
-//         QMessageBox::critical(this,
-//             tr("MusE: Create file failed"), s);
-//         return false;
-//       }
-//
-//       MusECore::Xml xml(f);
-//
-//       updateInstrument(instrument);
-//
-//       instrument->write(0, xml);
-//
-//       // Assign the working instrument values to the actual current selected instrument...
-//       if(oldMidiInstrument)
-//       {
-//         MusECore::MidiInstrument* oi = (MusECore::MidiInstrument*)oldMidiInstrument->data(Qt::UserRole).value<void*>();
-//         if(oi)
-//         {
-//           //oi->assign(*workingInstrument);
-//           // Now signal the rest of the app so stuff can change...
-//           //MusEGlobal::song->update(SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD);
-//
-//           MusECore::iMidiInstrument imi = MusECore::midiInstruments.find(oi);
-//           if(imi != MusECore::midiInstruments.end())
-//           {
-//             // Create a new instrument to be switched to.
-//             MusECore::MidiInstrument* ni = new MusECore::MidiInstrument();
-//             // Assign existing values to the new instrument.
-//             ni->assign(*workingInstrument);
-//
-//             MusECore::PendingOperationList operations;
-//             // Operation to erase and delete the existing instrument, and add the new instrument.
-//             operations.add(MusECore::PendingOperationItem(&MusECore::midiInstruments, imi, ni, MusECore::PendingOperationItem::ReplaceMidiInstrument));
-//             // Execute the operations.
-//             MusEGlobal::audio->msgExecutePendingOperations(operations, true);
-//
-//             workingInstrument->assign( *ni ); // ?? Remove, not required?
-//
-//             // Set the tree item's data pointer to the new instrument.
-//             oldMidiInstrument->setData(Qt::UserRole, QVariant::fromValue((void*)(ni)));
-//
-//             changeInstrument(); // ?? Remove, not required?
-//
-//             // We have our new instrument! So set dirty to true.
-//             //workingInstrument->setDirty(true);
-//           }
-//           else
-//           {
-//             // Error: The instrument was not found. Might as well assign to whatever the thing is.
-//             oi->assign(*workingInstrument);
-//             // Now signal the rest of the app so stuff can change...
-//             MusEGlobal::song->update(SC_CONFIG | SC_MIDI_INSTRUMENT | SC_DRUMMAP | SC_MIDI_CONTROLLER_ADD);
-//           }
-//         }
-//       }
-//
-//       if(fclose(f) != 0)
-//       {
-//             QString s = QString("Write File\n") + name + QString("\nfailed: ")
-//                + QString(strerror(errno));
-//             QMessageBox::critical(this, tr("MusE: Write File failed"), s);
-//             return false;
-//       }
-//       return true;
-//     }
 
 void EditInstrument::fileSave()
 {
@@ -3608,46 +3490,6 @@ void EditInstrument::updateInstrument(MusECore::MidiInstrument* instrument)
 //   checkDirty
 //    return true on Abort
 //---------------------------------------------------------
-
-// REMOVE Tim. tmp. Changed.
-// int EditInstrument::checkDirty(MusECore::MidiInstrument* i, bool isClose)
-//       {
-//       updateInstrument(i);
-//       if (!i->dirty())
-//             return 0;
-//
-//       int n;
-//       if(isClose)
-//         n = QMessageBox::warning(this, tr("MusE"),
-//          tr("The current Instrument contains unsaved data\n"
-//          "Save Current Instrument?"),
-//          tr("&Save"), tr("&Don't save"), tr("&Abort"), 0, 2);
-//       else
-//         n = QMessageBox::warning(this, tr("MusE"),
-//          tr("The current Instrument contains unsaved data\n"
-//          "Save Current Instrument?"),
-//          tr("&Save"), tr("&Don't save"), 0, 1);
-//       if (n == 0) {
-//             if (i->filePath().isEmpty())
-//             {
-//                   saveAs();
-//             }
-//             else {
-//                   FILE* f = fopen(i->filePath().toLatin1().constData(), "w");
-//                   if(f == 0)
-//                         saveAs();
-//                   else {
-//                         if(fclose(f) != 0)
-//                           printf("EditInstrument::checkDirty: Error closing file\n");
-//
-//                         if(fileSave(i, i->filePath()))
-//                               i->setDirty(false);
-//                         }
-//                   }
-//             return 0;
-//             }
-//       return n;
-//       }
 
 int EditInstrument::checkDirty(MusECore::MidiInstrument* i, bool isClose)
       {

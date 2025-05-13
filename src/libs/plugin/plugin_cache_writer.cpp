@@ -381,8 +381,7 @@ bool scanLadspaDescriptor(
   info->_maker = PLUGIN_SET_CSTRING(ladspa_descr->Maker);
   info->_copyright = PLUGIN_SET_CSTRING(ladspa_descr->Copyright);
 
-// REMOVE Tim. tmp. Added. Diagnostic.
-  std::fprintf(stderr, "LADSPA DIAGNOSTIC: Name:%s Label:%s\n", ladspa_descr->Name, ladspa_descr->Label);
+  //std::fprintf(stderr, "LADSPA DIAGNOSTIC: Name:%s Label:%s\n", ladspa_descr->Name, ladspa_descr->Label);
 
   if(LADSPA_IS_REALTIME(ladspa_descr->Properties))
     info->_pluginFlags |= MusEPlugin::PluginIsRealtime;
@@ -1087,8 +1086,6 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
   buffer[0] = 0;
   plugin->dispatcher(plugin, effGetEffectName, 0, 0, buffer, 0);
   if(buffer[0])
-// REMOVE Tim. tmp. Changed.
-//     info->_label = PLUGIN_SET_CSTRING(buffer);
     info->_name = PLUGIN_SET_CSTRING(buffer);
 
   buffer[0] = 0;
@@ -1111,17 +1108,8 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
   setPluginScanFileInfo(filename, info);
 
   // Some (older) plugins don't have any of these strings. We only have the filename to use.
-// REMOVE Tim. tmp. Changed.
-//   if(PLUGIN_STRING_EMPTY(info->_label))
-//     info->_label = info->_completeBaseName;
   if(PLUGIN_STRING_EMPTY(info->_name))
     info->_name = info->_completeBaseName;
-// REMOVE Tim. tmp. Removed.
-//   if(PLUGIN_STRING_EMPTY(info->_description))
-//     //info->_description = info._completeBaseName;
-//     info->_description = info->_label;
-//
-//   info->_name = info->_label;
 
 // VST has no label. Just use the name.
   info->_label = info->_name;
@@ -1241,14 +1229,13 @@ bool writeLinuxVstInfo(
 
   if(plugin->dispatcher(plugin, 24 + 11 /* effGetCategory */, 0, 0, 0, 0) == 10 /* kPlugCategShell */)
   {
-// REMOVE Tim. tmp. Added. Diagnostic.
-    char shellnamebuffer[256];
-    shellnamebuffer[0] = 0;
-    plugin->dispatcher(plugin, effGetEffectName, 0, 0, shellnamebuffer, 0);
-    if(shellnamebuffer[0])
-      fprintf(stderr, "LinuxVST DIAGNOSTIC: shellnamebuffer:%s\n", shellnamebuffer);
+    // Diagnostic.
+    // char shellnamebuffer[256];
+    // shellnamebuffer[0] = 0;
+    // plugin->dispatcher(plugin, effGetEffectName, 0, 0, shellnamebuffer, 0);
+    // if(shellnamebuffer[0])
+    //   fprintf(stderr, "LinuxVST DIAGNOSTIC: shellnamebuffer:%s\n", shellnamebuffer);
 
-//     bDontDlCLose = true;
     std::map<VstIntPtr, std::string> shellPlugs;
     char cPlugName [256];
     do
@@ -1339,10 +1326,6 @@ bool writeUnknownPluginInfo (
 
 void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStruct& info, bool writePorts)
       {
-// REMOVE Tim. tmp. Changed.
-      // xml.tag(level++, "plugin file=\"%s\" label=\"%s\"",
-      //    MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info.filePath())).toLatin1().constData(),
-      //    MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info._label)).toLatin1().constData());
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\"",
          MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info.filePath())).toUtf8().constData(),
          MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info._label)).toUtf8().constData());
@@ -1506,8 +1489,6 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
 
             s += QString(" /");
 
-// REMOVE Tim. tmp. Changed.
-//             xml.tag(level, s.toLatin1().constData());
             xml.tag(level, s.toUtf8().constData());
 
 
@@ -1515,11 +1496,6 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
             // As a tag with attributes...
 
             xml.tag(level++, "port name=\"%s\" symbol=\"%s\" idx=\"%s\" type=\"%s\"",
-// REMOVE Tim. tmp. Changed.
-//               MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(port_info._name)).toLatin1().constData(),
-//               MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(port_info._symbol)).toLatin1().constData(),
-//               QString::number(i).toLatin1().constData(),
-//               QString::number(port_info._type).toLatin1().constData()
               MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(port_info._name)).toUtf8().constData(),
               MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(port_info._symbol)).toUtf8().constData(),
               QString::number(i).toUtf8().constData(),
@@ -1563,8 +1539,6 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
 
               const unsigned long idx = ipev->first;
 
-// REMOVE Tim. tmp. Changed.
-//               xml.tag(level++, "portEnumValMap idx=\"%s\"", QString::number(idx).toLatin1().constData());
               xml.tag(level++, "portEnumValMap idx=\"%s\"", QString::number(idx).toUtf8().constData());
 
               const EnumValueList& evl = ipev->second;
@@ -1578,8 +1552,6 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
                   s += QString(" label=\"%1\"").arg(MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(pev._label)));
                 s += QString(" /");
 
-// REMOVE Tim. tmp. Changed.
-//                 xml.tag(level, s.toLatin1().constData());
                 xml.tag(level, s.toUtf8().constData());
               }
 

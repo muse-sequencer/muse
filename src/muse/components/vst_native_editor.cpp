@@ -27,9 +27,6 @@
 
 #include "vst_native_editor.h"
 #include "vst_native.h"
-//#include "gconfig.h"
-// REMOVE Tim. tmp. Added.
-//#include "song.h"
 
 #include <QtGlobal>
 #if defined(Q_WS_X11)
@@ -98,10 +95,6 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
   setAttribute(Qt::WA_DeleteOnClose);
   m_fixScaling = false;
 
-// REMOVE Tim. tmp. Added.
-  // _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged,
-  //                                [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
-
   // TODO TEST Test if these might be helpful, especially opaque event.
             //setBackgroundRole(QPalette::NoRole);
             //setAttribute(Qt::WA_NoSystemBackground);
@@ -114,14 +107,6 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
 
 VstNativeEditor::~VstNativeEditor()
 {
-// REMOVE Tim. tmp. Added.
-   // // In case closeEvent() wasn't already called, where we disconnect there as well.
-   // disconnect(_songChangedMetaConn);
-
-// REMOVE Tim. tmp. Removed.
-// We delete on close already. Calling close() calls QWidget::close() causing recursive crash.
-// Also changed "delete _editor" to "_editor->close()" in VstNativeSynthIF::deactivate3().
-   //close();
    if(_sif)
    {
      _sif->editorDeleted();
@@ -133,33 +118,6 @@ VstNativeEditor::~VstNativeEditor()
       _pstate = nullptr;
    }
 }
-
-// REMOVE Tim. tmp. Added.
-// void VstNativeEditor::songChanged(MusECore::SongChangedStruct_t type)
-// {
-//   // Catch when the track name changes or track is moved or the rack position changes.
-//   if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
-//     updateWindowTitle();
-// }
-
-// REMOVE Tim. tmp. Added.
-// void VstNativeEditor::updateWindowTitle(const QString& title)
-// {
-//   QString windowTitle = "VST plugin editor";
-//   if(_sif && _sif->track())
-//   {
-// // REMOVE Tim. tmp. Changed.
-//      windowTitle = _sif->track()->name() + ":" + _sif->pluginLabel();
-// //     windowTitle = _sif->track()->name() + ":" + _sif->name();
-//   }
-//   else if(_pstate && _pstate->pluginI && _pstate->pluginI->track())
-//   {
-// //     windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginWrapper->_synth->name();
-//      windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginI->pluginLabel();
-//   }
-//
-//   setWindowTitle(windowTitle);
-// }
 
 void VstNativeEditor::updateWindowTitle(const QString& title)
 {
@@ -219,23 +177,6 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativeP
     _vstEventProc = getXEventProc(_display, _vstEditor);
 #endif
     
-// REMOVE Tim. tmp. Changed.
-//   QString windowTitle = "VST plugin editor";
-//   if(_sif && _sif->track())
-//   {
-// // REMOVE Tim. tmp. Changed.
-// //     windowTitle = _sif->track()->name() + ":" + _sif->pluginLabel();
-//      windowTitle = _sif->track()->name() + ":" + _sif->name();
-//   }
-//   else if(_pstate && _pstate->pluginI->track())
-//   {
-//      windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginWrapper->_synth->name();
-//   }
-//
-//   setWindowTitle(windowTitle);
-//   updateWindowTitle();
-
-  //_sif->editorOpened();
   if(!isVisible())
     show();
   raise();
@@ -305,13 +246,6 @@ void VstNativeEditor::closeEvent(QCloseEvent *pCloseEvent)
       killTimer(resizeTimerId);
       resizeTimerId = 0;
    }*/
-
-// REMOVE Tim. tmp. Added.
-   // // Disconnect before songChanged() has a chance to be called.
-   // // The caller might destroy some things before calling close(),
-   // //  and songChanged() might be called later which causes crashes.
-   // // We also do this in the destructor just in case.
-   // disconnect(_songChangedMetaConn);
 
    pCloseEvent->accept();
    QWidget::closeEvent(pCloseEvent);

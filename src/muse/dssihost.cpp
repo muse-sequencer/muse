@@ -25,8 +25,7 @@
 #ifdef DSSI_SUPPORT
 
 // Turn on debugging messages
-// REMOVE Tim. tmp. Enabled.
-#define DSSI_DEBUG
+//#define DSSI_DEBUG
 // Turn on constant flow of process debugging messages
 //#define DSSI_DEBUG_PROCESS 
 

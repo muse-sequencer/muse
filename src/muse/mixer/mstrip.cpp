@@ -2337,8 +2337,6 @@ void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
       {
             setRecordFlag(track->recordFlag());
       }
-// REMOVE Tim. tmp. Changed.
-//       if (val & SC_TRACK_MODIFIED)
       if (val & (SC_TRACK_MODIFIED | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MOVED))
       {
             setLabelText();

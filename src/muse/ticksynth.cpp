@@ -67,8 +67,6 @@ class MetronomeSynth : public Synth {
         Synth(infoStruct) {}
 
       virtual ~MetronomeSynth() {}
-// REMOVE Tim. tmp. Removed.
-//       inline Type synthType() const { return METRO_SYNTH; }
       inline bool reference() { return false; }
       inline int release() { return 0; }
       void* instantiate();
@@ -136,8 +134,6 @@ class MetronomeSynthIF : public SynthIF
       inline virtual bool guiVisible() const { return false; }
       inline virtual bool hasGui() const { return false; }
       inline virtual bool nativeGuiVisible() const { return false; }
-// REMOVE Tim. tmp. Removed.
-//       inline virtual void showNativeGui(bool) { }
       inline virtual bool hasNativeGui() const { return false; }
 
       inline virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
@@ -152,8 +148,6 @@ class MetronomeSynthIF : public SynthIF
       inline virtual void deactivate3() {}
       inline virtual QString getPatchName(int, int, bool) const { return ""; }
       inline virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) {}
-// REMOVE Tim. tmp. Removed.
-//       inline virtual void write(int, Xml&) const {}
       inline virtual double getParameter(unsigned long) const  { return 0.0; }
       inline virtual void setParameter(unsigned long, double) {}
       inline virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) { return 0; }

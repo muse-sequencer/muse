@@ -77,7 +77,6 @@
 #include "midiport.h"
 #include "audiodev.h"
 #include "synthdialog.h"
-// REMOVE Tim. tmp. Added.
 #include "plugin.h"
 
 // For debugging output: Uncomment the fprintf section.
@@ -291,17 +290,6 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
                         MusEGlobal::synthis[n]->label().toLocal8Bit().constData());
         }
 
-// REMOVE Tim. tmp. Changed.
-//         SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
-//                                   MusEGlobal::synthis[n]->name(), MusEGlobal::synthis[n]->synthType(), insertAt);
-//         //      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
-//         //                                MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
-//         SynthI* si = createSynthI(
-//           MusEGlobal::synthis[n]->pluginType(),
-//           MusEGlobal::synthis[n]->completeBaseName(),
-//           MusEGlobal::synthis[n]->uri(),
-//           MusEGlobal::synthis[n]->name(),
-//           insertAt);
         SynthI* si = createSynthI(
           MusEGlobal::synthis[n]->pluginType(),
           MusEGlobal::synthis[n]->completeBaseName(),
@@ -841,7 +829,6 @@ Event Song::deleteEventOperation(const Event& event, Part* part, bool do_port_ct
   return res;
 }
 
-// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   swapPluginsOperation
 //---------------------------------------------------------
@@ -1138,7 +1125,6 @@ bool Song::swapPluginsOperation(UndoOp *i)
   return true;
 }
 
-// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   changePluginOperation
 //---------------------------------------------------------
@@ -1185,12 +1171,6 @@ bool Song::changePluginOperation(UndoOp *i)
     // If a plugin configuration exists.
     if(i_conf)
     {
-// REMOVE Tim. tmp. Changed.
-//       // Create a PluginI. Configure everything EXCEPT opening the native gui - defer that until the non-rt stage.
-//       // Note that for DSSI (at least), the track must already have been added to the song's track lists,
-//       //  so that OSC can find the track.
-//       //new_plugin = PluginI::createPluginI(*i_conf, i->track->channels(), PluginI::ConfigAll & ~PluginI::ConfigNativeGui);
-//       new_plugin = PluginI::createPluginI(*i_conf, i->track->channels(), PluginI::ConfigAll | PluginI::ConfigDeferNativeGui);
       new_plugin = PluginI::createPluginI(*i_conf, i->track->channels(), PluginI::ConfigAll);
       if(!new_plugin)
       {
@@ -1543,19 +1523,7 @@ bool Song::changePluginOperation(UndoOp *i)
     for (unsigned long j = 0; j < params; ++j)
     {
       const unsigned long id = genACnum(epos, j);
-// REMOVE Tim. tmp. Removed.
-//       const char* name = new_plugin->paramName(j);
-//       float min, max;
-//       new_plugin->range(j, &min, &max);
       CtrlList* cl = new CtrlList((int)id);
-//       cl->setRange(min, max);
-//       cl->setName(QString(name));
-//       cl->setValueType(new_plugin->ctrlValueType(j));
-//       cl->setMode(new_plugin->ctrlMode(j));
-//       cl->setCurVal(new_plugin->param(j));
-//       // Set the value units index.
-//       cl->setValueUnit(new_plugin->valueUnit(j));
-
       bool res = false;
       // If the audio is idling, take advantage of relaxed timing and just directly
       //  add the controller to the controller list.
@@ -1656,7 +1624,6 @@ bool Song::changePluginOperation(UndoOp *i)
   return true;
 }
 
-// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   movePluginOperation
 //---------------------------------------------------------
@@ -2185,7 +2152,6 @@ bool Song::movePluginOperation(UndoOp *i)
   return true;
 }
 
-// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   revertMovePluginOperation
 //---------------------------------------------------------
@@ -2255,11 +2221,6 @@ bool Song::revertMovePluginOperation(UndoOp *i)
   // If a plugin configuration exists.
   if(i_conf)
   {
-// REMOVE Tim. tmp. Changed.
-//     // Create a PluginI. Configure everything EXCEPT opening the native gui - defer that until the non-rt stage.
-//     // Note that for DSSI (at least), the track must already have been added to the song's track lists,
-//     //  so that OSC can find the track.
-//     new_plugin = PluginI::createPluginI(*i_conf, track->channels(), PluginI::ConfigAll | PluginI::ConfigDeferNativeGui);
     new_plugin = PluginI::createPluginI(*i_conf, track->channels(), PluginI::ConfigAll);
     if(!new_plugin)
     {
@@ -2735,19 +2696,7 @@ bool Song::revertMovePluginOperation(UndoOp *i)
     for (unsigned long j = 0; j < params; ++j)
     {
       const unsigned long id = genACnum(epos, j);
-// REMOVE Tim. tmp. Removed.
-//       const char* name = new_plugin->paramName(j);
-//       float min, max;
-//       new_plugin->range(j, &min, &max);
       CtrlList* cl = new CtrlList((int)id);
-//       cl->setRange(min, max);
-//       cl->setName(QString(name));
-//       cl->setValueType(new_plugin->ctrlValueType(j));
-//       cl->setMode(new_plugin->ctrlMode(j));
-//       cl->setCurVal(new_plugin->param(j));
-//       // Set the value units index.
-//       cl->setValueUnit(new_plugin->valueUnit(j));
-
       bool res = false;
       // If the audio is idling, take advantage of relaxed timing and just directly
       //  add the controller to the destination controller list.
@@ -5099,15 +5048,6 @@ void Song::seqSignal(int fd)
                         }
 
                         break;
-// REMOVE Tim. latency. Removed. We now do this in MusE::bounceToFile() and MusE::bounceToTrack(), BEFORE the transport is started.
-//                   case 'f':   // start freewheel
-//                         if(MusEGlobal::debugMsg)
-//                           fprintf(stderr, "Song: seqSignal: case f: setFreewheel start\n");
-//                         
-//                         if(MusEGlobal::config.freewheelMode)
-//                           MusEGlobal::audioDevice->setFreewheel(true);
-//                         
-//                         break;
 
                   case 'F':   // stop freewheel
                         if(MusEGlobal::debugMsg)
@@ -6960,13 +6900,6 @@ void Song::insertTrackOperation(Track* track, int idx, PendingOperationList& ops
       // Routes are added in the PendingOperationItem::AddTrack section of PendingOperationItem::executeRTStage().
 }
 
-//void writeStringToFile(FILE *filePointer, const char *writeString)
-//{
-//  if (MusEGlobal::debugMsg)
-//    std::cout << writeString;
-//  fputs(writeString, filePointer);
-//}
-
 //---------------------------------------------------------
 //   removeTrackOperation
 //---------------------------------------------------------
@@ -7881,120 +7814,6 @@ void Song::processTrackAutomationEvents(AudioTrack *atrack, Undo* operations)
     MusEGlobal::song->applyOperationGroup(ops);
 }
 
-// REMOVE Tim. tmp. Added.
-// void Song::closeDssiEditors(Track *track) const
-// {
-//   if(!track)
-//     return;
-//   // If it's an audio track, close all rack effect UIs.
-//   if(!track->isMidiTrack())
-//   {
-//     AudioTrack *at = static_cast<AudioTrack*>(track);
-//     const Pipeline *pl = at->efxPipe();
-//     if(pl)
-//     {
-//       const int sz = pl->size();
-//       for(int i = 0; i < sz; ++i)
-//       {
-//         PluginI *plugi = pl->at(i);
-// // REMOVE Tim. tmp. Changed.
-// //         if(plugi && plugi->isDssiPlugin())
-//         if(plugi && (plugi->pluginType() == MusEPlugin::PluginTypeDSSI ||
-//            plugi->pluginType() == MusEPlugin::PluginTypeDSSIVST))
-//           plugi->closeNativeGui();
-//       }
-//     }
-//   }
-//   // If it's a synth track, close the UI.
-//   if(track->type() == Track::AUDIO_SOFTSYNTH)
-//   {
-//     const SynthI *synthi = static_cast<const SynthI*>(track);
-//     if(synthi->synth() &&
-//        (synthi->synth()->pluginType() == MusEPlugin::PluginTypeDSSI ||
-//         synthi->synth()->pluginType() == MusEPlugin::PluginTypeDSSIVST))
-//     {
-//       if(synthi->sif())
-//         synthi->sif()->closeNativeGui();
-//     }
-//   }
-// }
-//
-// void Song::closeDssiEditors(int trackNumFrom, int trackNumTo) const
-// {
-//   // Range trackNumFrom - trackNumTo is inclusive. ([0, 0] = first.)
-//   const int sz = (int)_tracks.size();
-//   if(trackNumTo < 0 || trackNumTo >= sz)
-//     trackNumTo = sz - 1;
-//   if(trackNumFrom < 0 || trackNumFrom >= sz || trackNumFrom > trackNumTo)
-//     return;
-//   // Yes, that's <=.
-//   for(int i = trackNumFrom; i <= trackNumTo; ++i)
-//     closeDssiEditors(_tracks.at(i));
-// }
-//
-// void Song::closeDssiEditors(Track* track, int effRackPosFrom, int effRackPosTo) const
-// {
-//   if(!track || track->isMidiTrack())
-//     return;
-//   AudioTrack *at = static_cast<AudioTrack*>(track);
-//   const Pipeline *pl = at->efxPipe();
-//   if(!pl)
-//     return;
-//
-//   // Range effRackPosFrom - effRackPosTo is inclusive. ([0, 0] = first.)
-//   const int sz = (int)pl->size();
-//   if(effRackPosTo < 0 || effRackPosTo >= sz)
-//     effRackPosTo = sz - 1;
-//   if(effRackPosFrom < 0 || effRackPosFrom >= sz || effRackPosFrom > effRackPosTo)
-//     return;
-//
-//   // Yes, that's <=.
-//   for(int i = effRackPosFrom; i <= effRackPosTo; ++i)
-//   {
-//     PluginI *plugi = pl->at(i);
-// // REMOVE Tim. tmp. Changed.
-// //     if(plugi && plugi->isDssiPlugin())
-//     if(plugi && (plugi->pluginType() == MusEPlugin::PluginTypeDSSI ||
-//        plugi->pluginType() == MusEPlugin::PluginTypeDSSIVST))
-//       plugi->closeNativeGui();
-//   }
-// }
-//
-// void Song::updateUiWindowTitles(Track* track) const
-// {
-//   if(!track)
-//     return;
-//   // If it's an audio track, update all rack effect UIs.
-//   if(!track->isMidiTrack())
-//   {
-//     AudioTrack *at = static_cast<AudioTrack*>(track);
-//     const Pipeline *pl = at->efxPipe();
-//     if(pl)
-//     {
-//       const int sz = pl->size();
-//       for(int i = 0; i < sz; ++i)
-//       {
-//         PluginI *plugi = pl->at(i);
-//         if(plugi)
-//         {
-//           plugi->updateNativeGuiWindowTitle();
-//           plugi->updateGuiWindowTitle();
-//         }
-//       }
-//     }
-//   }
-//   // If it's a synth track, close the UI.
-//   if(track->type() == Track::AUDIO_SOFTSYNTH)
-//   {
-//     const SynthI *synthi = static_cast<const SynthI*>(track);
-//     if(synthi->sif())
-//     {
-//       synthi->sif()->updateNativeGuiWindowTitle();
-//       synthi->sif()->updateGuiWindowTitle();
-//     }
-//   }
-// }
-
 void Song::PluginGuiTitlesAboutToChange(Track *track) const
 {
   if(!track)
@@ -8199,7 +8018,6 @@ MidiAudioCtrlMap* Song::midiAssignments() { return &_midiAssignments; }
 
 MidiRemote* Song::midiRemote() { return &_midiRemote; }
 
-// REMOVE Tim. tmp. Added.
 // TODO: Embellish these with more arguments.
 // Otherwise they are not very useful except for the one place calling them,
 //  and they should probably be called findFirstRackPluginByName.

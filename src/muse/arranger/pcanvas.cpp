@@ -79,7 +79,6 @@
 #include "song.h"
 #include "helper.h"
 #include "hex_float.h"
-// REMOVE Tim. tmp. Added.
 #include "libs/file/file.h"
 
 // Forwards from header:
@@ -666,9 +665,7 @@ void PartCanvas::updateAudioAutomation()
     {
       const MusECore::CtrlList* cl = icll->second;
       // Do not include hidden controller lists.
-// REMOVE Tim. tmp. Changed.
-//       if(!cl->isVisible())
-      if (cl->dontShow() || !cl->isVisible() /*|| !MusECore::canShowAudioCtrlList(track, cl)*/ )
+      if (cl->dontShow() || !cl->isVisible())
         continue;
       for(MusECore::ciCtrl ic = cl->cbegin(); ic != cl->cend(); ++ic)
       {
@@ -1344,16 +1341,6 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       const MusECore::Part* part = item->part();
       QString fn = getSaveFileName(QString(""), MusEGlobal::part_file_save_pattern, this, tr("MusE: Save part"));
       if (!fn.isEmpty()) {
-// REMOVE Tim. tmp. Changed.
-//          bool popenFlag = false;
-//          FILE* fp = fileOpen(this, fn, ".mpt", "w", popenFlag, false, false);
-//          if (fp) {
-//             MusECore::Xml tmpXml = MusECore::Xml(fp);
-//             // Write the part. Indicate that it's a copy operation - to add special markers,
-//             //  and force full wave paths.
-//             part->write(0, tmpXml, true, true);
-//             fclose(fp);
-
          MusEFile::File f(fn, QString(".mpt"), this);
          MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, false);
          if (res == MusEFile::File::NoError)
@@ -1851,9 +1838,7 @@ bool PartCanvas::selectLasso(bool toggle, MusECore::Undo* undo)
         {
           MusECore::CtrlList* cl = icll->second;
           // Do not include hidden controller lists.
-// REMOVE Tim. tmp. Changed.
-//           if(!cl->isVisible())
-          if (cl->dontShow() || !cl->isVisible() /*|| !MusECore::canShowAudioCtrlList(track, cl)*/ )
+          if (cl->dontShow() || !cl->isVisible())
             continue;
 
           if(lasso_SFrame >= lasso_EFrame)
@@ -4169,9 +4154,7 @@ bool PartCanvas::copyAudioAutomation(
     {
       MusECore::CtrlList* cl = icll->second;
       // Do not include hidden controller lists.
-// REMOVE Tim. tmp. Changed.
-//       if(!cl->isVisible())
-      if (cl->dontShow() || !cl->isVisible() /*|| !MusECore::canShowAudioCtrlList(track, cl)*/ )
+      if (cl->dontShow() || !cl->isVisible())
         continue;
       int i = 0;
       bool itemFound = false;
@@ -5010,9 +4993,7 @@ void PartCanvas::drawAutomationFills(QPainter& p, const QRect& rr, MusECore::Aud
     }
 
     MusECore::CtrlList *cl = icll->second;
-// REMOVE Tim. tmp. Changed.
     if (cl->dontShow() || !cl->isVisible())
-//     if (cl->dontShow() || !cl->isVisible() || !MusECore::canShowAudioCtrlList(t, cl))
       continue;
 
     int newX = oldX;
@@ -5255,9 +5236,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
     }
 
     MusECore::CtrlList *cl = icll->second;
-// REMOVE Tim. tmp. Changed.
     if (cl->dontShow() || !cl->isVisible())
-//     if (cl->dontShow() || !cl->isVisible() || !MusECore::canShowAudioCtrlList(t, cl))
       continue;
 
     int newX = oldX;
@@ -5508,9 +5487,7 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
   for(MusECore::ciCtrlList icll = cll->begin(); icll != cll->end(); ++icll)
   {
     MusECore::CtrlList *cl = icll->second;
-// REMOVE Tim. tmp. Changed.
     if(cl->dontShow() || !cl->isVisible())
-//     if(cl->dontShow() || !cl->isVisible() || !MusECore::canShowAudioCtrlList(ct, cl))
       continue;
 
     const QColor line_col(cl->color());
@@ -5901,9 +5878,7 @@ void PartCanvas::drawAutomationText(QPainter& p, const QRect& rr, MusECore::Audi
     for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll)
     {
       MusECore::CtrlList *cl = icll->second;
-// REMOVE Tim. tmp. Changed.
       if (cl->dontShow() || !cl->isVisible())
-//       if (cl->dontShow() || !cl->isVisible() || !MusECore::canShowAudioCtrlList(t, cl))
         continue;
 
       int xpixel = 0;
@@ -6048,9 +6023,7 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
       for(MusECore::ciCtrlList icll = cll->begin(); icll != cll->end(); ++icll)
       {
         MusECore::CtrlList *cl = icll->second;
-// REMOVE Tim. tmp. Changed.
         if(cl->dontShow() || !cl->isVisible())
-//         if(cl->dontShow() || !cl->isVisible() || !MusECore::canShowAudioCtrlList((MusECore::AudioTrack*)t, cl))
           continue;
         MusECore::ciCtrl ic=cl->begin();
 
@@ -6290,9 +6263,7 @@ void PartCanvas::controllerChanged(
     MusECore::ciCtrlList icl = at->controller()->find(ctrlId);
     if(icl != at->controller()->cend())
     {
-// REMOVE Tim. tmp. Changed.
-//       if(icl->second->isVisible())
-      if (!icl->second->dontShow() && icl->second->isVisible() /*&& MusECore::canShowAudioCtrlList(at, icl->second)*/ )
+      if (!icl->second->dontShow() && icl->second->isVisible())
         track_cl = icl->second;
     }
   }
@@ -7184,9 +7155,7 @@ void PartCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
     {
       MusECore::CtrlList* cl = icll->second;
       // Do not include hidden controller lists.
-// REMOVE Tim. tmp. Changed.
-//       if(!cl->isVisible())
-      if (cl->dontShow() || !cl->isVisible() /*|| !MusECore::canShowAudioCtrlList(track, cl)*/ )
+      if (cl->dontShow() || !cl->isVisible())
         continue;
       for(MusECore::ciCtrl ic = cl->cbegin(); ic != cl->cend(); ++ ic)
       {

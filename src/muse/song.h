@@ -71,7 +71,6 @@ class MidiPart;
 class Undo;
 struct UndoOp;
 class UndoList;
-// REMOVE Tim. tmp. Added.
 class PluginI;
 
 //---------------------------------------------------------
@@ -200,7 +199,6 @@ class Song : public QObject {
       Event changeEventOperation(const Event& oldEvent, const Event& newEvent,
                                 Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       Event deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
-// REMOVE Tim. tmp. Added.
       // These return false on error.
       bool swapPluginsOperation(UndoOp *i);
       bool changePluginOperation(UndoOp *i);
@@ -506,7 +504,6 @@ class Song : public QObject {
       GroupList* groups()       { return &_groups;  }
       AuxList* auxs()           { return &_auxs;    }
       SynthIList* syntis()      { return &_synthIs; }
-// REMOVE Tim. tmp. Added const.
       const TrackList* tracks() const       { return &_tracks;  }
       const MidiTrackList* midis() const    { return &_midis;   }
       const WaveTrackList* waves() const    { return &_waves;   }
@@ -535,7 +532,6 @@ class Song : public QObject {
         if(!select) // Not essential, but if unselecting ALL tracks, clear the static counter.
           Track::clearSelectionOrderCounter();
       }
-// REMOVE Tim. tmp. Added.
       // Returns the first rack plugin instance with the given name found in any track.
       PluginI* findRackPlugin(const QString &);
       // Returns the first rack plugin instance with the given name found in any track. Const version.
@@ -624,9 +620,6 @@ class Song : public QObject {
       //   Configuration
       //-----------------------------------------
 
-// REMOVE Tim. tmp. Changed.
-      // SynthI* createSynthI(const QString& sclass, const QString& uri, const QString& label = QString(),
-      //                      Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
       SynthI* createSynthI(MusEPlugin::PluginType type, const QString& file,
                            const QString& uri, const QString& label = QString(),
                            Track* insertAt = 0);

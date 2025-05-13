@@ -52,7 +52,6 @@
 #include "minstrument.h"
 #include "app.h"
 #include "icons.h"
-// REMOVE Tim. tmp. Added.
 #include "helper.h"
 
 #include "control_mapper.h"
@@ -1331,9 +1330,7 @@ ControlMapperDialog::ControlMapperDialog(MusECore::Track* t, QWidget* parent)
   for(MusECore::ciCtrlList icl = _actrls->begin(); icl != _actrls->end(); ++icl)
   {
     MusECore::CtrlList* cl = icl->second;
-// REMOVE Tim. tmp. Changed.
     if(cl->dontShow())
-//     if(cl->dontShow() || !MusECore::canShowAudioCtrlList(atrack, cl))
       continue;
     QTreeWidgetItem* control_item = new QTreeWidgetItem;
     new_items.append(control_item);

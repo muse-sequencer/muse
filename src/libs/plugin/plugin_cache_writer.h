@@ -27,8 +27,6 @@
 #include <QString>
 
 #include "config.h"
-// REMOVE Tim. tmp. Removed.
-//#include "globaldefs.h"
 #include "plugin_scan.h"
 #include "plugin_list.h"
 

@@ -30,7 +30,6 @@
 #include <samplerate.h>
 
 #include <QProgressDialog>
-// REMOVE Tim. tmp. Added.
 #include <QFile>
 
 #include "wave.h"
@@ -590,8 +589,6 @@ void SndFile::update(bool showProgress)
       // force recreation of wca data
       QString cacheName = finfo->absolutePath() +
          QString("/") + finfo->completeBaseName() + QString(".wca");
-// REMOVE Tim. tmp. Changed.
-//       ::remove(cacheName.toLocal8Bit().constData());
       QFile::remove(cacheName);
       if (openRead(true, showProgress)) {
             ERROR_WAVE(stderr, "SndFile::update openRead(%s) failed: %s\n", path().toLocal8Bit().constData(), strerror().toLocal8Bit().constData());

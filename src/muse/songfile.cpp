@@ -685,9 +685,6 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                               MusECore::WaveTrack* track = new MusECore::WaveTrack();
                               track->read(xml, &stats);
                               insertTrack0(track,-1);
-// REMOVE Tim. tmp. Removed.
-//                               // Now that the track has been added to the lists in insertTrack2(),
-//                               //  OSC can find the track and its plugins, and start their native guis if required...
                               track->showPendingPluginGuis();
                               }
                         else if (tag == "AudioInput") {
@@ -1221,7 +1218,6 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                          */
                         else if (tag == "song")
                         {
-// REMOVE Tim. tmp. Added.
                               // Before reading the song, clear the list of missing plugins.
                               MusEGlobal::missingPlugins.clear();
 
@@ -1262,28 +1258,6 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               }
                         break;
                   case MusECore::Xml::TagEnd:
-// REMOVE Tim. tmp. Added.
-//                         // Were any plugin missing? Inform the user with a list of them.
-//                         if(!MusEGlobal::missingPlugins.empty())
-//                         {
-//                           QCursor *curs = QApplication::overrideCursor();
-//                           if(curs)
-//                             QApplication::restoreOverrideCursor();
-//                           MusEGui::MissingPluginsDialog *mpd =
-//                             new MusEGui::MissingPluginsDialog(MusEGlobal::missingPlugins, this);
-//                           mpd->exec();
-//                           delete mpd;
-//                           if(curs)
-//                             QApplication::setOverrideCursor(*curs);
-//                         }
-
-                        // if(!MusEGlobal::missingPlugins.empty())
-                        // {
-                        //   MusEGui::MissingPluginsDialog *mpd =
-                        //     new MusEGui::MissingPluginsDialog(MusEGlobal::missingPlugins, this);
-                        //   mpd->exec();
-                        //   delete mpd;
-                        // }
                         if(!MusEGlobal::missingPlugins.empty())
                         {
                           MusEGui::MissingPluginsDialog mpd =
@@ -1301,10 +1275,6 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                           // Check MusEGlobal::muse which is created shortly after the application...
                           if(MusEGlobal::muse && MusEGlobal::config.warnOnFileVersions)
                           {
-// REMOVE Tim. tmp. Added.
-//                             QCursor *curs = QApplication::overrideCursor();
-//                             if(curs)
-//                               QApplication::restoreOverrideCursor();
                             QString txt = tr("File version is %1.%2\nCurrent version is %3.%4\n"
                                              "Conversions may be applied if file is saved!")
                                             .arg(xml.majorVersion()).arg(xml.minorVersion())
@@ -1324,9 +1294,6 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
                             }
                             delete mb;
-// REMOVE Tim. tmp. Added.
-//                             if(curs)
-//                               QApplication::setOverrideCursor(*curs);
                           }
                         }
                         if (!skipmode && tag == "muse")

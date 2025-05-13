@@ -62,8 +62,7 @@
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
 // For debugging output: Uncomment the fprintf section.
-// REMOVE Tim. tmp. Enabled.
-#define DEBUG_SYNTH(dev, format, args...) fprintf(dev, format, ##args);
+#define DEBUG_SYNTH(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
   MusECore::SynthList synthis;  // array of available MusEGlobal::synthis

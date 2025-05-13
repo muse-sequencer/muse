@@ -66,15 +66,6 @@ class OscIF
       unsigned long maxDssiPort;
       const std::vector<unsigned long>* control_port_mapper;
       
-// REMOVE Tim. tmp. Changed.
-//      virtual bool oscInitGui(const QString& typ, const QString& baseName, const QString& name,
-//                       const QString& label, const QString& filePath, const QString& guiPath,
-//                       const std::vector<unsigned long>* control_port_mapper_);
-//      virtual bool oscInitGui(const QString& typ, QString baseName, QString pluginLabel,
-//                       const QString& name, const QString& filePath, const QString& guiPath,
-//                       const std::vector<unsigned long>* control_port_mapper_);
-
-// REMOVE Tim. tmp. Added.
       virtual bool oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginLabel,
                        int trackno, const QString& filePath, const QString& guiPath,
                        const std::vector<unsigned long>* control_port_mapper_, int rackpos = -1);
@@ -84,7 +75,6 @@ class OscIF
       OscIF();
       virtual ~OscIF();
       
-// REMOVE Tim. tmp. Added.
       bool isRunning() const;
 
       virtual int oscUpdate(lo_arg**);
@@ -101,12 +91,8 @@ class OscIF
       virtual bool oscInitGui() { return false; }
       virtual void oscShowGui(bool);
       virtual bool oscGuiVisible() const;
-// REMOVE Tim. tmp. Added.
       virtual bool oscQuitGui();
 
-// REMOVE Tim. tmp. Removed.
-//       virtual QString titlePrefix() const { return QString(); }
-// REMOVE Tim. tmp. Added.
       virtual QString displayName() const { return QString(); }
 };
  
@@ -126,8 +112,6 @@ class OscEffectIF : public OscIF
       
       virtual bool oscInitGui();
       
-// REMOVE Tim. tmp. Removed.
-//       virtual QString titlePrefix() const;
       virtual QString displayName() const;
 };
  
@@ -150,8 +134,6 @@ class OscDssiIF : public OscIF
       
       virtual bool oscInitGui();
       
-// REMOVE Tim. tmp. Removed.
-//       virtual QString titlePrefix() const;
       virtual QString displayName() const;
 };
 #endif // DSSI_SUPPORT

@@ -354,37 +354,6 @@ void MidiAlsaDevice::close()
 //   writeRouting
 //---------------------------------------------------------
 
-// REMOVE Tim. tmp. Changed.
-// void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
-// {
-//       // If this device is not actually in use by the song, do not write any routes.
-//       // This prevents bogus routes from being saved and propagated in the med file.  Tim.
-//       if(midiPort() == -1)
-//         return;
-//
-//       QString s;
-//       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r)
-//       {
-//         if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
-//         {
-//           s = "Route";
-//           if(r->channel != -1)
-//             s += QString(" channel=\"%1\"").arg(r->channel);
-//           xml.tag(level++, s.toLatin1().constData());
-//           xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, Xml::xmlString(name()).toLatin1().constData());
-//           s = "dest";
-//           if(r->type == Route::MIDI_DEVICE_ROUTE)
-//             s += QString(" devtype=\"%1\" name=\"%2\"/").arg(r->device->deviceType()).arg(Xml::xmlString(r->name()));
-//           else if(r->type == Route::TRACK_ROUTE)
-//             s += QString(" track=\"%1\"").arg(MusEGlobal::song->tracks()->index(r->track));
-//           else
-//             s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
-//           xml.tag(level, s.toLatin1().constData());
-//           xml.etag(--level, "Route");
-//         }
-//       }
-// }
-
 void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
 {
       // If this device is not actually in use by the song, do not write any routes.

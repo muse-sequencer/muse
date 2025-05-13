@@ -368,36 +368,6 @@ MidiAudioCtrlStruct::MidiAudioCtrlStruct(
 { 
 };
 
-// REMOVE Tim. tmp. Added.
-// void MidiAudioCtrlStruct::write(int level, Xml& xml, const Track* trk) const
-// {
-//   //for(ciMidiAudioCtrlMap imacm = begin(); imacm != end();  ++imacm)
-//   {
-//       // Write only the assignments for the given track pointer (which can be NULL).
-//       //if(imacm->second.track() != track)
-//       if(track() != trk)
-//         //continue;
-//         return;
-//       int port, chan, mctrl;
-//       hash_values(imacm->first, &port, &chan, &mctrl);
-//       const int id = imacm->second.id();
-//       const MidiAudioCtrlStruct::IdType type = imacm->second.idType();
-//       QString s= QString("midiAssign port=\"%1\" ch=\"%2\" mctrl=\"%3\" type=\"%4\" id=\"%5\"")
-//                           .arg(port)
-//                           .arg(chan)
-//                           .arg(mctrl)
-//                           .arg(type)
-//                           .arg(id);
-//       xml.tag(level++, s.toUtf8().constData());
-//
-//       // TODO
-//       //const MidiAudioCtrlStruct& macs = imacs->second;
-//       //xml.intTag(level, "macs ???", macs.);
-//
-//       xml.etag(--level, "midiAssign");
-//   }
-// }
-
 // Static.
 MidiAudioCtrlMap_idx_t MidiAudioCtrlMap::index_hash(int midi_port, int midi_chan, int midi_ctrl_num)
 { 
@@ -428,7 +398,6 @@ iMidiAudioCtrlMap MidiAudioCtrlMap::add_ctrl_struct(int midi_port, int midi_chan
   return insert(std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(h, macs));
 }
 
-// REMOVE Tim. tmp. Added.
 iMidiAudioCtrlMap MidiAudioCtrlMap::add_ctrl_struct(MidiAudioCtrlMap_idx_t indexHash,
                                                     const MidiAudioCtrlStruct& macs)
 {
@@ -465,33 +434,6 @@ void MidiAudioCtrlMap::find_audio_ctrl_structs(
   }
 }
 
-// REMOVE Tim. tmp. Changed.
-// void MidiAudioCtrlMap::write(int level, Xml& xml, const Track* track) const
-// {
-//   for(ciMidiAudioCtrlMap imacm = begin(); imacm != end();  ++imacm)
-//   {
-//       // Write only the assignments for the given track pointer (which can be NULL).
-//       if(imacm->second.track() != track)
-//         continue;
-//       int port, chan, mctrl;
-//       hash_values(imacm->first, &port, &chan, &mctrl);
-//       const int id = imacm->second.id();
-//       const MidiAudioCtrlStruct::IdType type = imacm->second.idType();
-//       QString s= QString("midiAssign port=\"%1\" ch=\"%2\" mctrl=\"%3\" type=\"%4\" id=\"%5\"")
-//                           .arg(port)
-//                           .arg(chan)
-//                           .arg(mctrl)
-//                           .arg(type)
-//                           .arg(id);
-//       xml.tag(level++, s.toLatin1().constData());
-//
-//       // TODO
-//       //const MidiAudioCtrlStruct& macs = imacs->second;
-//       //xml.intTag(level, "macs ???", macs.);
-//
-//       xml.etag(--level, "midiAssign");
-//   }
-// }
 void MidiAudioCtrlMap::write(
   int level, Xml& xml,
   const Track* track, int startId, int endId,
@@ -537,94 +479,6 @@ void MidiAudioCtrlMap::write(
 //   read
 //---------------------------------------------------------
 
-// REMOVE Tim. tmp. Changed.
-// void MidiAudioCtrlMap::read(Xml& xml, Track* track)
-//       {
-//       int port = -1, chan = -1, midi_ctrl = -1;
-//       MidiAudioCtrlStruct macs(MidiAudioCtrlStruct::AudioControl, -1, track);
-//
-//       QLocale loc = QLocale::c();
-//       bool ok;
-//       int errcount = 0;
-//       for (;;) {
-//             Xml::Token token = xml.parse();
-//             const QString& tag = xml.s1();
-//             switch (token) {
-//                   case Xml::Error:
-//                   case Xml::End:
-//                         return;
-//                   case Xml::Attribut:
-//                         if (tag == "port")
-//                         {
-//                               port = loc.toInt(xml.s2(), &ok);
-//                               if(!ok)
-//                               {
-//                                 ++errcount;
-//                                 printf("MidiAudioCtrlMap::read failed reading port string: %s\n", xml.s2().toUtf8().constData());
-//                               }
-//                         }
-//                         else if (tag == "ch")
-//                         {
-//                               chan = loc.toInt(xml.s2(), &ok);
-//                               if(!ok)
-//                               {
-//                                 ++errcount;
-//                                 printf("MidiAudioCtrlMap::read failed reading ch string: %s\n", xml.s2().toUtf8().constData());
-//                               }
-//                         }
-//                         else if (tag == "mctrl")
-//                         {
-//                               midi_ctrl = loc.toInt(xml.s2(), &ok);
-//                               if(!ok)
-//                               {
-//                                 ++errcount;
-//                                 printf("MidiAudioCtrlMap::read failed reading mctrl string: %s\n", xml.s2().toUtf8().constData());
-//                               }
-//                         }
-//                         else if (tag == "type")
-//                         {
-//                               const int type = loc.toInt(xml.s2(), &ok);
-//                               if(ok)
-//                                 macs.setIdType(MidiAudioCtrlStruct::IdType(type));
-//                               else
-//                               {
-//                                 ++errcount;
-//                                 printf("MidiAudioCtrlPortMap::read failed reading type string: %s\n", xml.s2().toUtf8().constData());
-//                               }
-//                         }
-//                         // Tag actrl is obsolete, changed to id now.
-//                         else if (tag == "actrl" || tag == "id")
-//                         {
-//                               macs.setId(loc.toInt(xml.s2(), &ok));
-//                               if(!ok)
-//                               {
-//                                 ++errcount;
-//                                 printf("MidiAudioCtrlPortMap::read failed reading actrl string: %s\n", xml.s2().toUtf8().constData());
-//                               }
-//                         }
-//                         else
-//                               printf("unknown tag %s\n", tag.toLocal8Bit().constData());
-//                         break;
-//                   case Xml::TagStart:
-//                         // TODO
-//                         //if (tag == "???") {
-//                         //      }
-//                         //else
-//                               xml.unknown("midiMapper");
-//                         break;
-//                   case Xml::TagEnd:
-//                         // Tag midiMapper is obsolete, changed to midiAssign now.
-//                         if (xml.s1() == "midiMapper" || xml.s1() == "midiAssign")
-//                         {
-//                               if(errcount == 0 && port != -1 && chan != -1 && midi_ctrl != -1 && macs.id() != -1)
-//                                   add_ctrl_struct(port, chan, midi_ctrl, macs);
-//                               return;
-//                         }
-//                   default:
-//                         break;
-//                   }
-//             }
-//       }
 void MidiAudioCtrlMap::read(
   Xml& xml,
   Track* track,
@@ -1912,7 +1766,6 @@ iCtrlList CtrlListList::find(int id) {
 ciCtrlList CtrlListList::find(int id) const {
       return std::map<int, CtrlList*, std::less<int> >::find(id);
       }
-// REMOVE Tim. tmp. Added.
 iCtrlList CtrlListList::findName(const QString &s)
 {
   for(iCtrlList icl = begin(); icl != end(); ++icl)
@@ -1973,33 +1826,6 @@ void CtrlListList::updateCurValues(unsigned int frame)
   for(ciCtrlList cl = begin(); cl != end(); ++cl)
     cl->second->updateCurValue(frame);
 }
-
-// REMOVE Tim. tmp. Changed.
-// //---------------------------------------------------------
-// //   value
-// //---------------------------------------------------------
-//
-// void CtrlListList::write(int level, Xml& xml) const
-// {
-//   for (ciCtrlList icl = begin(); icl != end(); ++icl) {
-//         const CtrlList* cl = icl->second;
-//         cl->write(level, xml);
-//         }
-// }
-
-// //---------------------------------------------------------
-// //   write
-// //---------------------------------------------------------
-//
-// void CtrlListList::write(int level, Xml& xml, int startId, int endId, int idMask) const
-// {
-//   for (ciCtrlList icl = begin(); icl != end(); ++icl) {
-//         const CtrlList* cl = icl->second;
-//         const int id = cl->id();
-//         if((startId < 0 || id >= startId) && (endId < 0 || id < endId))
-//           cl->write(level, xml, idMask);
-//         }
-// }
 
 //---------------------------------------------------------
 //   write

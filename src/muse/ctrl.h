@@ -199,8 +199,6 @@ class MidiAudioCtrlStruct {
         void setIdType(IdType idType);
         Track* track() const;
         void setTrack(Track* track);
-// REMOVE Tim. tmp. Added.
-        //void write(int level, Xml& xml, const Track* track /*= nullptr*/) const; // TODO Resinstate default after testing
       };
 
 typedef uint32_t MidiAudioCtrlMap_idx_t;
@@ -225,7 +223,6 @@ class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioC
       // Adds a mapping item given a control structure, port, channel, and control number.
       // Add will not replace if found. Returns existing item if found. TODO Decide, do we want to?
       iMidiAudioCtrlMap add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, const MidiAudioCtrlStruct& amcs); 
-// REMOVE Tim. tmp. Added.
       // Adds a mapping item given a control structure and an index hash made up of port, channel, and control number.
       // Add will not replace if found. Returns existing item if found. TODO Decide, do we want to?
       iMidiAudioCtrlMap add_ctrl_struct(MidiAudioCtrlMap_idx_t indexHash, const MidiAudioCtrlStruct& macs);
@@ -234,16 +231,6 @@ class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioC
         MidiAudioCtrlStruct::IdType type, int id,
         const Track* track, bool anyTracks, bool includeNullTracks, AudioMidiCtrlStructMap* amcs); // const;
       void erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, MidiAudioCtrlStruct::IdType type, int id);
-// REMOVE Tim. tmp. Changed.
-//       void write(int level, Xml& xml, const Track* track /*= nullptr*/) const; // TODO Resinstate default after testing
-      // Writes the assignment to XML. Track can be NULL. If track is valid and effectRackPos >= 0,
-      //  only AudioControl assignments for that specific track's rack position are saved.
-      // (Track must be valid in this case since 'global' assignments to a given rack position on
-      //  any selected tracks is not supported.)
-      // If a rack position is given, this strips away the position bits from the ID numbers,
-      //  storing just the controller numbers.
-      // TODO Reinstate default after testing
-
       // Saves ONLY entries whose tracks match the given track, including null.
       // If startId and/or endId are given, writes ONLY that range - except if
       //  excludeIds is true it writes entries EXCLUDING the given id range,
@@ -251,15 +238,12 @@ class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioC
       // Either startId or endId can be -1 meaning open-ended.
       // Note that endId means one past the last id.
       // If idMask is given, mask (bitwise AND) the entries' id bits when saving.
-//       void write(int level, Xml& xml, const Track* track /*= nullptr*/, int effectRackPos = -1) const;
       void write(
         int level, Xml& xml,
         const Track* track = nullptr,
         int startId = -1, int endId = -1,
         MidiAudioCtrlStruct::IdType idType = MidiAudioCtrlStruct::AudioControl,
         bool excludeIds = false, int idMask = -1) const;
-// REMOVE Tim. tmp. Changed.
-//       void read(Xml& xml, Track* track /*= nullptr*/); // TODO Resinstate default after testing
       // Reads entries and applies track, which can be null, to them.
       // If idUnmask is given, unmask (bitwise OR) the entries' id bits when reading,
       //  and idType is the type of id to affect.
@@ -455,7 +439,6 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
       void clearDelete();
       iCtrlList find(int id);
       ciCtrlList find(int id) const;
-// REMOVE Tim. tmp. Added.
       iCtrlList findName(const QString &);
       ciCtrlList findName(const QString &) const;
 
@@ -463,8 +446,6 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
                    unsigned int* nextFrame = nullptr, bool* nextFrameValid = nullptr) const;
       void updateCurValues(unsigned int frame);
       void clearAllAutomation();
-// REMOVE Tim. tmp. Changed.
-//       void write(int level, Xml& xml) const;
       // If startId and/or endId are given, writes only that range.
       // Either can be -1 meaning open-ended. Note that endId means one past the last id.
       // If idMask is given, mask the id bits when saving.

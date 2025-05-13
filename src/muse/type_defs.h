@@ -28,7 +28,6 @@
 
 namespace MusECore {
 
-// REMOVE Tim. Added. Moved here from event.h.
 // NOTICE: The values 3 and 4 (PAfter and CAfter) are reserved for the support of those two obsolete
 //          channel and key pressure events in old files. They are converted to controllers upon load.
 enum EventType { Note=0, Controller=1, Sysex=2, /*PAfter=3,*/ /*CAfter=4,*/ Meta=5, Wave=6 };
@@ -150,7 +149,6 @@ struct SongChangedStruct_t
 #define SC_AUDIO_CTRL_PASTE_ERASE_MODE MusECore::SongChangedStruct_t(0x8000000000000) // The audio controller paste erase mode was changed.
 #define SC_AUDIO_CTRL_MOVE_MODE       MusECore::SongChangedStruct_t(0x10000000000000) // The audio controller move mode was changed.
 #define SC_MIDI_REMOTE                MusECore::SongChangedStruct_t(0x20000000000000) // The midi remote settings changed.
-// REMOVE Tim. tmp. Added.
 #define SC_MIDI_AUDIO_CTRL_MAPPER     MusECore::SongChangedStruct_t(0x40000000000000) // The midi to audio control mapper values or list changed.
 #define SC_EVERYTHING                 MusECore::SongChangedStruct_t(-1, -1)       // global update
 

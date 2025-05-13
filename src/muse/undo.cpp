@@ -43,7 +43,6 @@
 // Forwards from header:
 #include "track.h"
 #include "part.h"
-// REMOVE Tim. tmp. Added.
 #include "plugin.h"
 
 // Enable for debugging:
@@ -355,7 +354,6 @@ const char* UndoOp::typeName()
             "SetTrackRecord", "SetTrackMute", "SetTrackSolo", "SetTrackRecMonitor", "SetTrackOff",
             "MoveTrack",
             "ModifyClip", "AddMarker", "DeleteMarker", "ModifyMarker", "SetMarkerPos",
-// REMOVE Tim. tmp. Added.
             "ChangeRackEffectPlugin", "SwapRackEffectPlugins", "MoveRackEffectPlugin",
 
             "ModifySongLen", "SetInstrument", "DoNothing",
@@ -493,7 +491,6 @@ void deleteUndoOp(UndoOp& op, bool doUndos = true, bool doRedos = true)
           }
           break;
 
-// REMOVE Tim. tmp. Added.
     case UndoOp::ChangeRackEffectPlugin:
           if(op._pluginConfiguration)
           {
@@ -517,7 +514,6 @@ void deleteUndoOp(UndoOp& op, bool doUndos = true, bool doRedos = true)
           }
           break;
 
-// REMOVE Tim. tmp. Added.
     case UndoOp::MoveRackEffectPlugin:
           if(op._plugMoveDstConfiguration)
           {
@@ -925,8 +921,6 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
       fprintf(stderr, "Undo::insert: SetMarkerPos\n");
     break;
 
-// REMOVE Tim. tmp. Added.
-    break;
     case UndoOp::ChangeRackEffectPlugin:
       fprintf(stderr, "Undo::insert: ChangeRackEffectPlugin\n");
     break;
@@ -2046,7 +2040,7 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             return;  
           }
         break;
-// REMOVE Tim. tmp. Added.
+
         case UndoOp::ChangeRackEffectPlugin:
           if(uo.type == UndoOp::ChangeRackEffectPlugin)
           {
@@ -2076,12 +2070,10 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
 
-// REMOVE Tim. tmp. Added.
         case UndoOp::SwapRackEffectPlugins:
           // TODO: Not much required here... It's OK if multiple swaps appear.
         break;
 
-// REMOVE Tim. tmp. Added.
         case UndoOp::MoveRackEffectPlugin:
           // TODO:
         break;
@@ -2744,7 +2736,6 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
   assert(type_ == ModifyTrackChannel || type_ == DeleteAudioCtrlVal ||
     type_ == SetTrackRecord || type_ == SetTrackMute || type_ == SetTrackSolo ||
     type_ == SetTrackRecMonitor || type_ == SetTrackOff || type_ == AddAudioCtrlVal || type_ == ModifyAudioCtrlVal ||
-// REMOVE Tim. tmp. Added.
     type_ == SwapRackEffectPlugins);
   assert(track_);
 
@@ -2778,7 +2769,6 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
     _audioCtrlVal = d_;
     _audioNewCtrlVal = e_;
   }
-// REMOVE Tim. tmp. Added.
   else if(type_ == SwapRackEffectPlugins)
   {
     _effectRackPos = a_;
@@ -2794,7 +2784,6 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
   _noUndo = noUndo_;
 }
 
-// REMOVE Tim. tmp. Added.
 UndoOp::UndoOp(UndoType type_, const Track *track_, PluginConfiguration *pluginConfiguration_,
              int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
 {
@@ -2812,7 +2801,6 @@ UndoOp::UndoOp(UndoType type_, const Track *track_, PluginConfiguration *pluginC
   _noUndo = noUndo_;
 }
 
-// REMOVE Tim. tmp. Added.
 UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &pluginConfiguration_,
              int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
 {
@@ -2829,7 +2817,6 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &p
   _noUndo = noUndo_;
 }
 
-// REMOVE Tim. tmp. Added.
 UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_,
                int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
 {
@@ -2846,7 +2833,6 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_,
   _noUndo = noUndo_;
 }
 
-// REMOVE Tim. tmp. Added.
 UndoOp::UndoOp(UndoType type_, const Track* srcTrack_, const Track* dstTrack_,
                int srcEffectRackPos_, int dstEffectRackPos_, bool noUndo_)
 {
@@ -2955,7 +2941,6 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::AddTrack:
-  // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Special: Some plugin UIs do not allow changing the title bar text after creation.
                         // Inform the track range, from desired track number to the end, of track
@@ -3029,7 +3014,6 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::DeleteTrack:
-  // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Special: Some plugin UIs do not allow changing the title bar text after creation.
                         // Inform the track range, from desired track number to the end,
@@ -3203,7 +3187,6 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyTrackName:
-  // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Special: Some plugin UIs do not allow changing the title bar text after creation.
                         // Inform the native UI and all effect rack plugin native UIs
@@ -3221,7 +3204,6 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::MoveTrack:
-  // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Special: Some plugin UIs do not allow changing the title bar text after creation.
                         // Inform the range of track native UIs and all the track effect
@@ -3964,8 +3946,6 @@ void Song::revertOperationGroup1(Undo& operations)
                           updateFlags |= SC_MARKER_MODIFIED;
                         break;
 
-
-// REMOVE Tim. tmp. Added.
                   case UndoOp::ChangeRackEffectPlugin:
 #ifdef _UNDO_DEBUG_
                             fprintf(stderr, "Song::revertOperationGroup1:ChangeRackEffectPlugin\n");
@@ -3975,12 +3955,10 @@ void Song::revertOperationGroup1(Undo& operations)
                             _UNDO_IDLE_AUDIO(false);
                         break;
 
-// REMOVE Tim. tmp. Added.
                   case UndoOp::SwapRackEffectPlugins:
 #ifdef _UNDO_DEBUG_
                             fprintf(stderr, "Song::revertOperationGroup1:SwapRackEffectPlugins\n");
 #endif
-  // REMOVE Tim. tmp. Added.
                             // --------------------------------------------------------------------------------
                             // Special: Some plugin UIs do not allow changing the title bar text after creation.
                             // Inform the two effect rack native UIs so that editor URLs and the
@@ -3995,7 +3973,6 @@ void Song::revertOperationGroup1(Undo& operations)
                             _UNDO_IDLE_AUDIO(false);
                         break;
 
-// REMOVE Tim. tmp. Added.
                   case UndoOp::MoveRackEffectPlugin:
 #ifdef _UNDO_DEBUG_
                             fprintf(stderr, "Song::revertOperationGroup1:MoveRackEffectPlugin\n");
@@ -4046,7 +4023,6 @@ void Song::revertOperationGroup3(Undo& operations)
             Part* editable_part = const_cast<Part*>(i->part); // uncomment if needed
             switch(i->type) {
                   case UndoOp::AddTrack:
-// REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Since we are deleting (un-adding) a track, update from there to the end
                         //  so that whatever track replaces that index position gets updated too.
@@ -4064,7 +4040,6 @@ void Song::revertOperationGroup3(Undo& operations)
                         editable_track->closeAllParts();
                         break;
                   case UndoOp::DeleteTrack:
-// REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Since the track being re-added will already have a UI name, skip it.
                         // Hm, actually include it just in case. Harmless anyway.
@@ -4139,14 +4114,12 @@ void Song::revertOperationGroup3(Undo& operations)
                         }
                         break;
 
-// REMOVE Tim. tmp. Added.
                   case UndoOp::ModifyTrackName:
                   {
                         showPendingPluginGuis(editable_track);
                         updateUiWindowTitles(editable_track);
                         break;
                   }
-// REMOVE Tim. tmp. Added.
                   case UndoOp::MoveTrack:
                   {
                         showPendingPluginGuis(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
@@ -4220,7 +4193,6 @@ void Song::revertOperationGroup3(Undo& operations)
                     }
                   break;
 
-// REMOVE Tim. tmp. Added.
                   case UndoOp::ChangeRackEffectPlugin:
                     if(editable_track && !editable_track->isMidiTrack())
                     {
@@ -4230,14 +4202,12 @@ void Song::revertOperationGroup3(Undo& operations)
                       at->showPendingPluginGuis();
                     }
                   break;
-// REMOVE Tim. tmp. Added.
                   case UndoOp::SwapRackEffectPlugins:
                     showPendingPluginGuis(editable_track, i->_effectRackPos, i->_effectRackPos);
                     showPendingPluginGuis(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
                     updateUiWindowTitles(editable_track, i->_effectRackPos, i->_effectRackPos);
                     updateUiWindowTitles(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
                   break;
-// REMOVE Tim. tmp. Added.
                   case UndoOp::MoveRackEffectPlugin:
                     // We have moved the plugin from the destination slot back to the source slot.
                     showPendingPluginGuis(
@@ -4326,7 +4296,6 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::AddTrack:
-  // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Special: Some plugin UIs do not allow changing the title bar text after creation.
                         // Inform the range, from desired track number to the end, of track native
@@ -4419,7 +4388,6 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::DeleteTrack:
-  // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Special: Some plugin UIs do not allow changing the title bar text after creation.
                         // Inform the range, from desired track number to the end, of track native
@@ -4573,7 +4541,6 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyTrackName:
-  // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Special: Some plugin UIs do not allow changing the title bar text after creation.
                         // Inform the native UI and all effect rack plugin native UIs
@@ -4591,7 +4558,6 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::MoveTrack:
-  // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Special: Some plugin UIs do not allow changing the title bar text after creation.
                         // Inform the range of track native UIs and all the track effect rack
@@ -5451,8 +5417,6 @@ void Song::executeOperationGroup1(Undo& operations)
                           updateFlags |= SC_MARKER_MODIFIED;
                         break;
 
-
-// REMOVE Tim. tmp. Added.
                   case UndoOp::ChangeRackEffectPlugin:
 #ifdef _UNDO_DEBUG_
                             fprintf(stderr, "Song::executeOperationGroup1:ChangeRackEffectPlugin\n");
@@ -5462,12 +5426,10 @@ void Song::executeOperationGroup1(Undo& operations)
                             _UNDO_IDLE_AUDIO(false);
                         break;
 
-// REMOVE Tim. tmp. Added.
                   case UndoOp::SwapRackEffectPlugins:
 #ifdef _UNDO_DEBUG_
                             fprintf(stderr, "Song::executeOperationGroup1:SwapRackEffectPlugins\n");
 #endif
-  // REMOVE Tim. tmp. Added.
                             // --------------------------------------------------------------------------------
                             // Special: Some plugin UIs do not allow changing the title bar text after creation.
                             // Inform the two effect rack native UIs so that editor URLs
@@ -5483,7 +5445,6 @@ void Song::executeOperationGroup1(Undo& operations)
                             _UNDO_IDLE_AUDIO(false);
                         break;
 
-// REMOVE Tim. tmp. Added.
                   case UndoOp::MoveRackEffectPlugin:
 #ifdef _UNDO_DEBUG_
                             fprintf(stderr, "Song::executeOperationGroup1:MoveRackEffectPlugin\n");
@@ -5535,7 +5496,6 @@ void Song::executeOperationGroup3(Undo& operations)
             Part* editable_part = const_cast<Part*>(i->part); // uncomment if needed
             switch(i->type) {
                   case UndoOp::AddTrack:
-// REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Note that i->trackno can be -1 meaning at the end.
                         // Since the track being added will already have a UI name, skip it.
@@ -5623,7 +5583,6 @@ void Song::executeOperationGroup3(Undo& operations)
                         break;
 
                   case UndoOp::DeleteTrack:
-// REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
                         // Since we are deleting a track, update from there to the end
                         //  so that whatever track replaces that index position gets updated too.
@@ -5636,12 +5595,10 @@ void Song::executeOperationGroup3(Undo& operations)
                         // TODO Coordinate close/open with part mute and/or track off.
                         editable_track->closeAllParts();
                         break;
-// REMOVE Tim. tmp. Added.
                   case UndoOp::ModifyTrackName:
                         showPendingPluginGuis(editable_track);
                         updateUiWindowTitles(editable_track);
                         break;
-// REMOVE Tim. tmp. Added.
                   case UndoOp::MoveTrack:
                         showPendingPluginGuis(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
                         updateUiWindowTitles(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
@@ -5713,7 +5670,6 @@ void Song::executeOperationGroup3(Undo& operations)
                         audio_track->enableController(i->_audioCtrlIdModify, true);
                     }
                   break;
-// REMOVE Tim. tmp. Added.
                   case UndoOp::ChangeRackEffectPlugin:
                     if(editable_track && !editable_track->isMidiTrack())
                     {
@@ -5723,14 +5679,12 @@ void Song::executeOperationGroup3(Undo& operations)
                       at->showPendingPluginGuis();
                     }
                   break;
-// REMOVE Tim. tmp. Added.
                   case UndoOp::SwapRackEffectPlugins:
                     showPendingPluginGuis(editable_track, i->_effectRackPos, i->_effectRackPos);
                     showPendingPluginGuis(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
                     updateUiWindowTitles(editable_track, i->_effectRackPos, i->_effectRackPos);
                     updateUiWindowTitles(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
                   break;
-// REMOVE Tim. tmp. Added.
                   case UndoOp::MoveRackEffectPlugin:
                     // The destination track is editable_track.
                     showPendingPluginGuis(editable_track, i->_plugMoveDstEffectRackPos, i->_plugMoveDstEffectRackPos);

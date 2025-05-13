@@ -55,7 +55,6 @@
 #include "trackinfo_layout.h"
 #include "midi_editor_layout.h"
 #include "shortcuts.h"
-// REMOVE Tim. tmp. Added.
 #include "libs/file/file.h"
 
 // Forwards from header:
@@ -1365,64 +1364,6 @@ void DrumEdit::writeConfiguration(int level, MusECore::Xml& xml)
 //   load
 //---------------------------------------------------------
 
-// REMOVE Tim. tmp. Changed.
-// void DrumEdit::load()
-//       {
-//       QString fn = MusEGui::getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
-//          this, tr("Muse: Load Drum Map"), 0);
-//       if (fn.isEmpty())
-//             return;
-//       bool popenFlag;
-//       FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
-//       if (f == 0)
-//             return;
-//
-//       MusECore::Xml xml(f);
-//       int mode = 0;
-//       for (;;) {
-//             MusECore::Xml::Token token = xml.parse();
-//             const QString& tag = xml.s1();
-//             switch (token) {
-//                   case MusECore::Xml::Error:
-//                   case MusECore::Xml::End:
-//                         return;
-//                   case MusECore::Xml::TagStart:
-//                         if (mode == 0 && tag == "muse")
-//                               mode = 1;
-//                         else if (mode == 1 && tag == "drummap") {
-//                               MusEGlobal::audio->msgIdle(true);
-//                               // Delete all port controller events.
-//                               MusEGlobal::song->changeMidiCtrlCacheEvents(false, true, false, true, true);
-//
-//                               readDrumMap(xml, true);
-//
-//                               // Add all port controller events.
-//                               MusEGlobal::song->changeMidiCtrlCacheEvents(true, true, false, true, true);
-//                               MusEGlobal::audio->msgIdle(false);
-//
-//                               mode = 0;
-//                               }
-//                         else
-//                               xml.unknown("DrumEdit");
-//                         break;
-//                   case MusECore::Xml::Attribut:
-//                         break;
-//                   case MusECore::Xml::TagEnd:
-//                         if (!mode && tag == "muse")
-//                               goto ende;
-//                   default:
-//                         break;
-//                   }
-//             }
-// ende:
-//       if (popenFlag)
-//             pclose(f);
-//       else
-//             fclose(f);
-//       dlist->redraw();
-//       canvas->redraw();
-//       }
-
 void DrumEdit::load()
       {
       QString fn = MusEGui::getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
@@ -1480,29 +1421,6 @@ ende:
 //---------------------------------------------------------
 //   save
 //---------------------------------------------------------
-
-// REMOVE Tim. tmp. Changed.
-// void DrumEdit::save()
-//       {
-//       QString fn = MusEGui::getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
-//         this, tr("MusE: Store Drum Map"));
-//       if (fn.isEmpty())
-//             return;
-//       bool popenFlag;
-//       FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "w", popenFlag, false, true);
-//       if (f == 0)
-//             return;
-//       MusECore::Xml xml(f);
-//       xml.header();
-//       xml.tag(0, "muse version=\"1.0\"");
-//       writeDrumMap(1, xml, true);
-//       xml.tag(1, "/muse");
-//
-//       if (popenFlag)
-//             pclose(f);
-//       else
-//             fclose(f);
-//       }
 
 void DrumEdit::save()
       {

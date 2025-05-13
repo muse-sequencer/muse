@@ -34,8 +34,7 @@
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
 #define INFO_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
-// REMOVE Tim. tmp. Enabled.
-#define DEBUG_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
+#define DEBUG_AUDIOCONVERT(dev, format, args...) // fprintf(dev, format, ##args)
 
 namespace MusECore {
 

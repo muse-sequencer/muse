@@ -22,11 +22,6 @@
 //=========================================================
 #include <stdio.h>
 #include <qdir.h>
-// REMOVE Tim. tmp. Added.
-// #include <qfileinfo.h>
-// #include <qstringlist.h>
-// #include <qtextstream.h>
-// #include <qmessagebox.h>
 #include <QFile>
 #include <QFileInfo>
 #include <QStringList>
@@ -52,64 +47,9 @@ UnusedWaveFiles::UnusedWaveFiles(QWidget *parent) :
 
 }
 
-// REMOVE Tim. tmp. Changed.
-// void UnusedWaveFiles::findWaveFiles()
-// {
-//     ui->filelistWidget->clear();
-//     //printf("MusEGlobal::museProject =%s\n", MusEGlobal::museProject.toLocal8Bit().data());
-// //    QFileInfo proj(MusEGlobal::museProject);
-// //    QString projPath = proj.absolutePath();
-//     QDir dir(MusEGlobal::museProject);
-//     QStringList filter;
-//     filter.append("*.wav");
-//     filter.append("*.ogg");
-//     filter.append("*.flac");
-//     allWaveFiles= dir.entryList(filter);
-//     if (allWaveFiles.count() == 0)
-//         return;
-//
-//     // get med files
-//     QStringList medFiles;
-//     if (ui->currentProjRadioButton->isChecked()) {
-//         medFiles.append(MusEGlobal::muse->projectFileInfo().fileName());
-//     } else {
-//         //printf("get ALLL *.med files!\n");
-//         QStringList medFilter("*.med");
-//         medFiles = dir.entryList(medFilter);
-//     }
-//
-//     foreach (QString medFile, medFiles) {
-//         QString fname = MusEGlobal::museProject+"/"+ medFile;
-//         //printf("fopen %s\n", fname.toLocal8Bit().data());
-//         FILE *fp =fopen(fname.toLocal8Bit().data(),"r");
-//         QTextStream fileContent(fp);
-//         while (!fileContent.atEnd()) {
-//             QString line = fileContent.readLine();
-//             if (line.contains(".wav") || line.contains(".ogg") || line.contains(".flac")) { // optimization
-//                 foreach (QString wav, allWaveFiles) {
-//                     //printf("checking wav [%s]\n", wav.toLatin1().data() );
-//                     if (line.contains(wav)) {
-//                         //int beforeSize=allWaveFiles.size();
-//                         allWaveFiles.removeOne(wav);
-//                         //printf("removed one from list, %d %d\n", beforeSize, allWaveFiles.size());
-//                         break;
-//                     }
-//                 }
-//             }
-//         }
-//         fclose(fp);
-//     }
-//
-//     ui->filelistWidget->addItems(allWaveFiles);
-//     update();
-// }
-
 void UnusedWaveFiles::findWaveFiles()
 {
     ui->filelistWidget->clear();
-    //printf("MusEGlobal::museProject =%s\n", MusEGlobal::museProject.toLocal8Bit().data());
-//    QFileInfo proj(MusEGlobal::museProject);
-//    QString projPath = proj.absolutePath();
     QDir dir(MusEGlobal::museProject);
     QStringList filter;
     filter.append("*.wav");

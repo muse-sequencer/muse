@@ -82,8 +82,7 @@
 #endif
 
 // Turn on debugging messages.
-// REMOVE Tim. tmp. Enabled.
-#define PLUGIN_DEBUGIN
+//#define PLUGIN_DEBUGIN
 
 // Turn on constant stream of debugging messages.
 //#define PLUGIN_DEBUGIN_PROCESS

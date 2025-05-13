@@ -1049,14 +1049,6 @@ void Strip::changeTrackName()
   {
     if ((*i)->name() == newname)
     {
-// REMOVE Tim. tmp. Changed.
-//       QMessageBox::critical(this,
-//         tr("MusE: Bad Trackname"),
-//         tr("Please choose a unique track name"),
-//         QMessageBox::Ok,
-//         Qt::NoButton,
-//         Qt::NoButton);
-//       return;
       // Strips can be embedded in the arranger, or part of the mixer. Choose the correct window parent.
       QMessageBox msg(window());
       msg.setWindowTitle(tr("MusE: bad trackname"));
@@ -1180,31 +1172,21 @@ void Strip::setLabelText()
 
     QFont fnt(MusEGlobal::config.fonts[6]);
 
-// REMOVE Tim. tmp. Changed.
-//     const bool fit = MusECore::autoAdjustFontSize(label, track->name(), fnt,
     const bool fit = MusECore::autoAdjustFontSize(label, title, fnt,
                                                   false, true, fnt.pointSize(), 7);
     if (fit) {
-// REMOVE Tim. tmp. Changed.
-//         label->setText(track->name());
         label->setText(title);
         label->setToolTip(QString());
     } else {
         QFontMetrics fm = QFontMetrics(fnt);
-// REMOVE Tim. tmp. Changed.
-//         QString elidedText = fm.elidedText(track->name(), Qt::ElideMiddle, label->width());
         QString elidedText = fm.elidedText(title, Qt::ElideMiddle, label->width());
         label->setText(elidedText);
-// REMOVE Tim. tmp. Changed.
-//         label->setToolTip(track->name());
         label->setToolTip(title);
     }
 
     if (track->isSynthTrack()) {
         MusECore::SynthI *s = static_cast<MusECore::SynthI*>(track);
         if(!s->uri().isEmpty())
-// REMOVE Tim. tmp. Changed.
-//             label->setToolTip(QString(track->name() + "\n") + s->uri());
             label->setToolTip(QString(title + "\n") + s->uri());
     }
 
@@ -1748,10 +1730,7 @@ QSize Strip::sizeHint() const
 //  printf("*** Strip size hint width: %d ***\n", sz.width());
 //  const QSize szm = QFrame::minimumSizeHint();
 //  printf("*** Strip size minimum hint width: %d ***\n", szm.width());
-// REMOVE Tim. tmp. Changed.
-//   return QSize(sz.width() + (_isExpanded ? _userWidth : 0), sz.height());
   return QSize(sz.width() + _extraWidth + (_isExpanded ? _userWidth : 0), sz.height());
-//   return QSize(_isExpanded ? _userWidth : 0, sz.height());
 }
 
 void Strip::setUserWidth(int w)

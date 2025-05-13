@@ -34,8 +34,6 @@ public:
 
 
     void populateScriptMenu(QMenu* menuScripts);
-// REMOVE Tim. tmp. Changed.
-//     void executeScript(QWidget *parent, const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected);
     void executeScript(QWidget *parent, const QString &scriptfile, PartList* parts, int quant, bool onlyIfSelected);
     QString getScriptPath(int id, bool delivered);
 };

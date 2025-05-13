@@ -43,7 +43,6 @@ class MidiPort;
 class MidiInstrument;
 class Track;
 class Part;
-// REMOVE Tim. tmp. Added.
 class PluginConfiguration;
 class PluginI;
 
@@ -75,7 +74,6 @@ struct UndoOp {
             SetMarkerPos,
             //// For wholesale changes to the list. Preferred if multiple additions or deletions are required.
             //ModifyMarkerList,
-// REMOVE Tim. tmp. Added.
             ChangeRackEffectPlugin, SwapRackEffectPlugins, MoveRackEffectPlugin,
 
             ModifySongLen, // a = new len, b = old len
@@ -140,7 +138,6 @@ struct UndoOp {
                   //  while in copy mode since they are the items that are actually being copied.
                   CtrlList* _doNotEraseCtrlList;
                 };
-// REMOVE Tim. tmp. Added.
             struct {
                   PluginI *_pluginI;
                   PluginConfiguration *_pluginConfiguration;
@@ -150,7 +147,6 @@ struct UndoOp {
                   int _newEffectRackPos;
                 };
 
-// REMOVE Tim. tmp. Added.
             struct {
                   // Source track. Destination track is member 'track'.
                   const Track* _plugMoveSrcTrack;
@@ -276,7 +272,6 @@ struct UndoOp {
       //  a constructor that takes a track pointer and a constructor that takes an integer !!!
       UndoOp(UndoType type, const Track* track, double a, double b, double c, double d = 0.0, double e = 0.0, bool noUndo = false);
 
-// REMOVE Tim. tmp. Added.
       // To avoid potentially a lot of copying and double memory use, the pluginConfiguration
       //  argument is allocated externally, and the undo system takes ownership of it.
       UndoOp(UndoType type, const Track *track, PluginConfiguration *pluginConfiguration, int effectRackPos,

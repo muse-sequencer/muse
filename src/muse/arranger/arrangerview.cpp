@@ -1145,8 +1145,6 @@ void ArrangerView::execDeliveredScript(int id)
         return;
     }
 
-// REMOVE Tim. tmp. Changed.
-//     scripts.executeScript(this, scripts.getScriptPath(id, true).toLatin1().constData(),
     scripts.executeScript(this, scripts.getScriptPath(id, true),
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
@@ -1161,8 +1159,6 @@ void ArrangerView::execUserScript(int id)
         return;
     }
 
-// REMOVE Tim. tmp. Changed.
-//     scripts.executeScript(this, scripts.getScriptPath(id, false).toLatin1().constData(),
     scripts.executeScript(this, scripts.getScriptPath(id, false),
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }

@@ -31,8 +31,6 @@
 #include "midictrl.h"
 #include "helper.h"
 #include "limits.h"
-// REMOVE Tim. tmp. Removed.
-//#include "dssihost.h"
 #include "gconfig.h"
 #include "operations.h"
 #include "icons.h"
@@ -428,7 +426,6 @@ void Track::internal_assign(const Track& t, int flags)
       }
 }
 
-// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   read
 //---------------------------------------------------------
@@ -2056,9 +2053,6 @@ void MidiTrack::write(int level, Xml& xml, XmlWriteStatistics* stats) const
 
       xml.intTag(level, "device", outPort());
       xml.intTag(level, "channel", outChannel());
-// REMOVE Tim. tmp. Removed. Superfluous! Already saved in Track::writeProperties().
-//       xml.intTag(level, "locked", _locked);
-
       xml.intTag(level, "transposition", transposition);
       xml.intTag(level, "velocity", velocity);
       xml.intTag(level, "delay", delay);
@@ -2226,9 +2220,6 @@ void MidiTrack::read(Xml& xml, XmlReadStatistics* stats)
                               chanmask = xml.parseInt();            // Obsolete but support old files.
                               chanmask_found = true;
                         }
-// REMOVE Tim. tmp. Removed. Superfluous! Already read in Track::readProperties().
-//                         else if (tag == "locked")
-//                               _locked = xml.parseInt();
                         else if (tag == "echo")                     // Obsolete but support old files.
                               setRecMonitor(xml.parseInt());
                         else if (tag == "automation")
@@ -2237,18 +2228,10 @@ void MidiTrack::read(Xml& xml, XmlReadStatistics* stats)
                               clefType = (clefTypes)xml.parseInt();
                         else if (tag == "our_drum_settings")
                               readOurDrumSettings(xml);
-// REMOVE Tim. tmp. Added.
                         else if (tag == "Track")
                               Track::read(xml);
 
                         // Obsolete. Keep for compatibility.
-// REMOVE Tim. tmp. Changed.
-//                         else if (Track::readProperties(xml, tag)) {
-//                               // version 1.0 compatibility:
-//                               if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
-//                                     break;
-//                               xml.unknown("MidiTrack");
-//                               }
                         else if (xml.isVersionLessThan(4, 0))
                         {
                           if(Track::readProperties(xml, tag))
@@ -2394,11 +2377,7 @@ void Track::writeProperties(int level, Xml& xml) const
           xml.strTag(level, "color", m_color.name());
 
       // Write only the assignments for this track.
-// REMOVE Tim. tmp. Changed.
-//       MusEGlobal::song->midiAssignments()->write(level, xml, this);
       // Exclude any rack plugin controller assignments, they are written by the plugins.
-//       unsigned long startId = genACnum(0, 0);
-//       unsigned long endId = genACnum(PipelineDepth, 0);
       const unsigned long startId = 0;
       const unsigned long endId = genACnum(0, 0);
       MusEGlobal::song->midiAssignments()->write(

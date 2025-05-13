@@ -239,7 +239,6 @@ class Track {
       // Returns true if anything changed.
       bool selectEvents(bool select, unsigned long t0 = 0, unsigned long t1 = 0);
       
-// REMOVE Tim. tmp. Added.
       void read(Xml& xml);
 
       virtual void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const = 0;
@@ -720,13 +719,10 @@ class AudioTrack : public Track {
 
       bool processed() { return _processed; }
 
-// REMOVE Tim. tmp. Changed.
-//      void addController(CtrlList*);
       // Adds a controller. Returns true if successful or false if error.
       // Note that it will fail if the controller already exists.
       bool addController(CtrlList*);
       void removeController(int id);
-// REMOVE Tim. tmp. Added.
       // Adds a controller. If an existing controller is found, this overwrites it.
       // This method is specialized in that it is designed to add controllers that
       //  were loaded from XML. Since we do not store certain controller members such as
@@ -744,7 +740,6 @@ class AudioTrack : public Track {
       bool readProperties(Xml&, const QString&);
       void writeProperties(int, Xml&) const;
 
-// REMOVE Tim. tmp. Added.
       void read(Xml& xml);
 
       void mapRackPluginsToControllers();
@@ -810,24 +805,14 @@ class AudioTrack : public Track {
 
       void setPrefader(bool val);
       Pipeline* efxPipe()                { return _efxPipe;  }
-// REMOVE Tim. tmp. Added.
       const Pipeline* efxPipe() const    { return _efxPipe;  }
       void deleteAllEfxGuis();
-// REMOVE Tim. tmp. Removed.
-//       void clearEfxList();
-//       // Removes any existing plugin and inserts plugin into effects rack, and calls setupPlugin.
-//       void addPlugin(PluginI* plugin, int idx);
       // Assigns valid ID and track to plugin, and creates controllers for plugin.
       void setupPlugin(PluginI* plugin, int idx);
-//       // Swaps plugins at slots idx1 and idx2, including empty slots.
-//       void swapPlugins(int idx1, int idx2);
 
       double pluginCtrlVal(int ctlID) const;
       void setPluginCtrlVal(int param, double val);
       
-// REMOVE Tim. tmp. Removed.
-//       void readVolume(Xml& xml);
-
       virtual void preProcessAlways();
 
       // Gathers this track's audio data and either copies or adds it to a supplied destination buffer.

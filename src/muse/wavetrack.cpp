@@ -291,7 +291,6 @@ void WaveTrack::read(Xml& xml, XmlReadStatistics* stats)
                               if(p)
                                 parts()->add(p);
                               }
-// REMOVE Tim. tmp. Added.
                         else if(tag == "AudioTrack")
                               AudioTrack::read(xml);
 

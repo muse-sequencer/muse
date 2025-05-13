@@ -38,8 +38,6 @@
 
 #include "popupmenu.h"
 
-#include <errno.h>
-
 #include "xml.h"
 #include "rack.h"
 #include "song.h"

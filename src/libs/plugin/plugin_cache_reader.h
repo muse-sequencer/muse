@@ -30,8 +30,6 @@
 #include "config.h"
 #include "plugin_scan.h"
 #include "plugin_list.h"
-// REMOVE Tim. tmp. Added.
-//#include "globaldefs.h"
 
 namespace MusECore {
 class Xml;

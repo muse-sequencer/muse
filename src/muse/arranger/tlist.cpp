@@ -66,7 +66,6 @@
 #include "drumedit.h"
 #include "utils.h"
 #include "functions.h"
-// REMOVE Tim. tmp. Added.
 #include "libs/file/file.h"
 
 
@@ -163,7 +162,6 @@ void TList::songChanged(MusECore::SongChangedStruct_t flags)
                  | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
                  | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED
                  | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
-// REMOVE Tim. tmp. Added.
                  | SC_RACK | SC_AUDIO_CONTROLLER_LIST))
         update();
     if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
@@ -232,8 +230,6 @@ bool TList::event(QEvent *event)
                 if (type == MusECore::Track::AUDIO_SOFTSYNTH) {
                     MusECore::SynthI *s = (MusECore::SynthI*)track;
                     QToolTip::showText(helpEvent->globalPos(),track->name() + QString(" : ") +
-// REMOVE Tim. tmp. Changed.
-//                                        (s->synth() ? s->synth()->description() : QString(tr("SYNTH IS UNAVAILABLE!"))) +
                                        (s->synth() ? s->synth()->name() : QString(tr("SYNTH IS UNAVAILABLE!"))) +
                                        (s->synth() ? (s->synth()->uri().isEmpty() ? QString() :
                                                                                     QString(" \n") + s->synth()->uri()) :
@@ -521,18 +517,10 @@ void TList::paint(const QRect& r)
                         int y;
                         for(MusECore::CtrlListList::const_iterator icll =cll->cbegin();icll!=cll->cend();++icll) {
                             const MusECore::CtrlList *cl = icll->second;
-// REMOVE Tim. tmp. Added.
-//                             if (!MusECore::canShowAudioCtrlList((MusECore::AudioTrack*)track, cl))
-//                                 continue;
-
-// REMOVE Tim. tmp. Changed.
-//                             if (!cl->dontShow())
-//                                 countAll++;
                             // Regardless of visible state, hidden controllers aren't considered at all.
                             if (cl->dontShow())
                               continue;
                             countAll++;
-
                             if (cl->isVisible())
                             {
                                 countVisible++;
@@ -718,19 +706,6 @@ void TList::returnPressed()
                 MusECore::TrackList* tl = MusEGlobal::song->tracks();
                 for (MusECore::iTrack i = tl->begin(); i != tl->end(); ++i) {
                     if ((*i)->name() == editor->text()) {
-// REMOVE Tim. tmp. Changed.
-//                         editTrack = nullptr;
-//                         editor->blockSignals(true);
-//                         editor->hide();
-//                         editor->blockSignals(false);
-//                         QMessageBox::critical(this,
-//                                               tr("MusE: bad trackname"),
-//                                               tr("Please choose a unique track name"),
-//                                               QMessageBox::Ok,
-//                                               Qt::NoButton,
-//                                               Qt::NoButton);
-//                         setFocus();
-//                         return;
                         editor->blockSignals(true);
                         editor->hide();
                         editor->blockSignals(false);
@@ -1685,10 +1660,6 @@ void TList::changeAutomation(QAction* act)
         MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
         for (auto& it : *cll) {
             MusECore::CtrlList *cl = it.second;
-// REMOVE Tim. tmp. Changed.
-//             if (!cl->dontShow() && !cl->isVisible() && cl->size() > 0) {
-//             if (!cl->dontShow() && !cl->isVisible() && !cl->empty() &&
-//                 MusECore::canShowAudioCtrlList(static_cast<MusECore::AudioTrack*>(editAutomation), cl))
             if (!cl->dontShow() && !cl->isVisible() && !cl->empty())
             {
                 cl->setVisible(true);
@@ -1728,24 +1699,9 @@ void TList::changeAutomation(QAction* act)
 
         const MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
         MusECore::ciCtrlList icl = cll->find(id);
-// REMOVE Tim. tmp. Changed.
         if(icl != cll->cend())
           icl->second->setVisible(act->isChecked());
         setRead = true;
-//         if(icl != cll->cend())
-//         {
-//           MusECore::CtrlList *cl = icl->second;
-//           if(act->isChecked() && !cl->dontShow() &&
-//             MusECore::canShowAudioCtrlList(static_cast<MusECore::AudioTrack*>(editAutomation), cl))
-//           {
-//             cl->setVisible(true);
-//             setRead = true;
-//           }
-//           else if(!act->isChecked())
-//           {
-//             cl->setVisible(false);
-//           }
-//         }
     }
 
     // if automation is OFF for the track we change it to READ as a convenience
@@ -2254,9 +2210,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                 for (const auto& icll : *cll) {
                     MusECore::CtrlList *cl = icll.second;
-// REMOVE Tim. tmp. Changed.
                     if (cl->dontShow())
-//                     if (cl->dontShow() || !MusECore::canShowAudioCtrlList(static_cast<MusECore::AudioTrack*>(t), cl))
                         continue;
 
                     int ctrl = cl->id();
@@ -2966,42 +2920,6 @@ void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff
           MusECore::UndoOp::SetTrackMute, t, state, double(0), double(0), double(0), double(0)));
 }
 
-// REMOVE Tim. tmp. Changed.
-// void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
-// {
-//     QString fn;
-//
-//     if (fn_==nullptr)
-//         fn=MusEGui::getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
-//                                     this, tr("Muse: Load Track's Drum Map"), 0);
-//     else
-//         fn=QString(fn_);
-//
-//     if (fn.isEmpty())
-//     {
-//         printf("ERROR: TList::loadTrackDrummap(): empty filename\n");
-//         return;
-//     }
-//
-//     bool popenFlag;
-//     FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
-//     if (f == 0)
-//     {
-//         printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toLocal8Bit().data());
-//         return;
-//     }
-//
-//     MusECore::Xml xml(f);
-//     loadTrackDrummapFromXML(t, xml);
-//
-//     if (popenFlag)
-//         pclose(f);
-//     else
-//         fclose(f);
-//
-//     MusEGlobal::song->update(SC_DRUMMAP);
-// }
-
 void TList::loadTrackDrummap(MusECore::MidiTrack* t, const QString &fn_)
 {
     QString fn;
@@ -3091,38 +3009,6 @@ void TList::loadTrackDrummapFromXML(MusECore::MidiTrack *t, MusECore::Xml &xml)
 ende:
     return;
 }
-
-// REMOVE Tim. tmp. Changed.
-// void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const char* fn_)
-// {
-//     QString fn;
-//     if (fn_==nullptr)
-//         fn = MusEGui::getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
-//                                       this, tr("MusE: Store Track's Drum Map"));
-//     else
-//         fn = QString(fn_);
-//
-//     if (fn.isEmpty())
-//         return;
-//
-//     bool popenFlag;
-//     FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "w", popenFlag, false, true);
-//     if (f == 0)
-//         return;
-//
-//     MusECore::Xml xml(f);
-//     xml.header();
-//     xml.tag(0, "muse version=\"1.0\"");
-//
-//     t->workingDrumMap()->write(1, xml);
-//
-//     xml.tag(0, "/muse");
-//
-//     if (popenFlag)
-//         pclose(f);
-//     else
-//         fclose(f);
-// }
 
 void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const QString &fn_)
 {

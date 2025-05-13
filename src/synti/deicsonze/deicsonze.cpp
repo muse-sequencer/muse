@@ -57,8 +57,6 @@ float DEI_denormalBias;
 //   DeicsOnze
 //---------------------------------------------------------
 
-// REMOVE Tim. tmp. Changed.
-// DeicsOnze::DeicsOnze() : Mess(2) {
 DeicsOnze::DeicsOnze(const char *name) : Mess(2) {
 
   MusESimplePlugin::SS_initPlugins(DEI_hostCachePath);
@@ -145,8 +143,6 @@ DeicsOnze::DeicsOnze(const char *name) : Mess(2) {
   //initialization GUI
   _gui = new DeicsOnzeGui(this);
   _gui->hide();   // to avoid flicker during MusE startup
-// REMOVE Tim. tmp. Changed.
-//   _gui->setWindowTitle(QString("DeicsOnze"));
   _gui->setWindowTitle(name);
 
   //FX

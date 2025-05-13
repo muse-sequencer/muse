@@ -49,8 +49,7 @@
 #define SP_DBG_LADSPA2(string1, string2) if (SP_DEBUG_LADSPA) fprintf(stderr, "%s:%d:%s: %s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string1, string2);
 
 // Turn on debugging messages.
-// REMOVE Tim. tmp. Enabled.
-#define PLUGIN_DEBUGIN
+//#define PLUGIN_DEBUGIN
 
 // Turn on constant stream of debugging messages.
 //#define PLUGIN_DEBUGIN_PROCESS

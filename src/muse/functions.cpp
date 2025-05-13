@@ -1832,9 +1832,7 @@ bool delete_selected_audio_automation(Undo& operations)
     AudioTrack* at = static_cast<AudioTrack*>(*it);
     for(iCtrlList icl = at->controller()->begin(); icl != at->controller()->end(); ++icl)
     {
-// REMOVE Tim. tmp. Changed.
       if(!icl->second->isVisible() || icl->second->dontShow())
-//       if(!icl->second->isVisible() || icl->second->dontShow() || !MusECore::canShowAudioCtrlList(at, icl->second))
         continue;
       for(iCtrl ic = icl->second->begin(); ic != icl->second->end(); ++ic)
       {

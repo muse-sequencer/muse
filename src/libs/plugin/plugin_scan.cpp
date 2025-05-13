@@ -22,7 +22,6 @@
 //=========================================================
 
 #include "plugin_scan.h"
-// REMOVE Tim. tmp. Added.
 #include <cstring>
 
 // For debugging output: Uncomment the fprintf section.
@@ -212,81 +211,6 @@ std::string PluginScanInfoStruct::dirPath(bool complete) const
 
 bool PluginScanInfoStruct::inPlaceCapable() const
 { return !(_requiredFeatures & MusEPlugin::PluginNoInPlaceProcessing); }
-
-// REMOVE Tim. tmp. Removed.
-// const char* PluginScanInfoStruct::typeString() const
-// {
-//   switch(_type)
-//   {
-//     case MusEPlugin::PluginTypeLADSPA:
-//       return "ladspa";
-//     break;
-//
-//     case MusEPlugin::PluginTypeDSSI:
-//       return "dssi";
-//     break;
-//
-//     case MusEPlugin::PluginTypeDSSIVST:
-//       return "dssi_vst";
-//     break;
-//
-//     case MusEPlugin::PluginTypeVST:
-//       return "vst";
-//     break;
-//
-//     case MusEPlugin::PluginTypeLinuxVST:
-//       return "linux_vst";
-//     break;
-//
-//     case MusEPlugin::PluginTypeLV2:
-//       return "lv2";
-//     break;
-//
-//     case MusEPlugin::PluginTypeMESS:
-//       return "mess";
-//     break;
-//
-//     case MusEPlugin::PluginTypeUnknown:
-//       return "unknown";
-//     break;
-//
-//     case MusEPlugin::PluginTypeNone:
-//     case MusEPlugin::PluginTypeAll:
-//     break;
-//   }
-//   return 0;
-// }
-//
-// const char* PluginScanInfoStruct::classString() const
-// {
-//   switch(_class)
-//   {
-//     case MusEPlugin::PluginClassEffect:
-//       return "effect";
-//     break;
-//
-//     case MusEPlugin::PluginClassInstrument:
-//       return "instrument";
-//     break;
-//
-//     case MusEPlugin::PluginClassAll:
-//     break;
-//   }
-//   return 0;
-// }
-
-// REMOVE Tim. tmp. Removed.
-// void PluginScanInfoStruct::dump(const char* prefixMessage) const
-// {
-//   fprintf(stderr, "%s plugin:%s type:%s class:%s name:%s label:%s required features:%d\n",
-//           prefixMessage,
-//           PLUGIN_GET_CSTRING(filePath()),
-//           pluginTypeToString(_type),
-//           pluginClassToString(_class),
-//           PLUGIN_GET_CSTRING(_name),
-//           PLUGIN_GET_CSTRING(_label),
-//           _requiredFeatures);
-// }
 
 //=======================================================
 PluginScanInfo::PluginScanInfo() { };

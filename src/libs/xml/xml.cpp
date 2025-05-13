@@ -29,9 +29,6 @@
 
 namespace MusECore {
 
-// REMOVE Tim. tmp. Changed. Major changes in song file warrant major bump up.
-// const int Xml::_latestMajorVersion = 3;   // Latest known songfile major version (as of this release)
-// const int Xml::_latestMinorVersion = 4;   // Latest known songfile minor version (as of this release)
 const int Xml::_latestMajorVersion = 4;   // Latest known songfile major version (as of this release)
 const int Xml::_latestMinorVersion = 0;   // Latest known songfile minor version (as of this release)
 
@@ -850,8 +847,6 @@ void Xml::unknown(const char* s)
 
 void Xml::header()
       {
-// REMOVE Tim. tmp. Changed.
-//       const char* s = "<?xml version=\"1.0\"?>\n";
       const char* s = "<?xml version=\"1.0\" encoding=\"utf8\"?>\n";
       if(f)
         fprintf(f, "%s", s);
@@ -1173,8 +1168,6 @@ void Xml::floatTag(int level, const char* name, float val)
         // toLatin1 will make a string with decimal point instead of
         // decimal comma that some locales use
         QString s("<%1>%2</%3>\n");
-// REMOVE Tim. tmp. Changed.
-//         fprintf(f, "%s", s.arg(name).arg(val).arg(name).toLatin1().constData());
         fprintf(f, "%s", s.arg(name).arg(val).arg(name).toUtf8().constData());
       }
       else
@@ -1196,8 +1189,6 @@ void Xml::doubleTag(int level, const char* name, double val)
         // toLatin1 will make a string with decimal point instead of
         // decimal comma that some locales use
         QString s("<%1>%2</%3>\n");
-// REMOVE Tim. tmp. Changed.
-//         fprintf(f, "%s", s.arg(name).arg(val).arg(name).toLatin1().constData());
         fprintf(f, "%s", s.arg(name).arg(val).arg(name).toUtf8().constData());
       }
       else
