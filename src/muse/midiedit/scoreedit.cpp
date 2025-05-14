@@ -1018,7 +1018,7 @@ MusECore::Part* read_part(MusECore::Xml& xml, QString tag_name="part")
                         part=nullptr;
                     else
                     {
-                        sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
+                        sscanf(tag.toLocal8Bit().constData(), "%d:%d", &trackIdx, &partIdx);
                         if (debugMsg) cout << "read_part: trackIdx="<<trackIdx<<", partIdx="<<partIdx;
                         MusECore::Track* track = MusEGlobal::song->tracks()->index(trackIdx);
                         if (track)
@@ -1101,7 +1101,7 @@ void staff_t::write_status(int level, MusECore::Xml& xml) const
 
         xml.put(level, "<part>%d:%d</part>", trkIdx, partIdx);
     }
-    xml.tag(level, "/staff");
+    xml.etag(--level, "staff");
 }
 
 //---------------------------------------------------------
@@ -1175,7 +1175,7 @@ void ScoreEdit::writeStatus(int level, MusECore::Xml& xml) const
 
     score_canvas->write_staves(level,xml);
 
-    xml.tag(level, "/scoreedit");
+    xml.etag(--level, "scoreedit");
 }
 
 void ScoreCanvas::write_staves(int level, MusECore::Xml& xml) const
@@ -1354,7 +1354,7 @@ void ScoreEdit::write_configuration(int level, MusECore::Xml& xml)
 
     TopWin::writeConfiguration(SCORE, level, xml);
 
-    xml.etag(level, "scoreedit");
+    xml.etag(--level, "scoreedit");
 }
 
 

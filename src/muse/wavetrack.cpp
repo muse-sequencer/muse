@@ -110,7 +110,7 @@ void WaveTrack::assign(const Track& t, int flags)
 
 void WaveTrack::seekData(sf_count_t pos)
       {
-      WAVETRACK_DEBUG(stderr, "WaveTrack::seekData %s pos:%ld\n", name().toLatin1().constData(), pos);
+      WAVETRACK_DEBUG(stderr, "WaveTrack::seekData %s pos:%ld\n", name().toLocal8Bit().constData(), pos);
       
       PartList* pl = parts();
       for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
@@ -152,7 +152,7 @@ void WaveTrack::seekData(sf_count_t pos)
 void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek, bool overwrite, int latency_correction)
       {
       WAVETRACK_DEBUG(stderr, "WaveTrack::fetchData %s samples:%u pos:%u overwrite:%d\n",
-                      name().toLatin1().constData(), samples, pos, overwrite);
+                      name().toLocal8Bit().constData(), samples, pos, overwrite);
 
       // reset buffer to zero
       if(overwrite)
@@ -264,7 +264,7 @@ void WaveTrack::write(int level, Xml& xml, XmlWriteStatistics* stats) const
       const PartList* pl = cparts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
             p->second->write(level, xml, false, false, stats);
-      xml.etag(level, "wavetrack");
+      xml.etag(--level, "wavetrack");
       }
 
 //---------------------------------------------------------
@@ -291,7 +291,11 @@ void WaveTrack::read(Xml& xml, XmlReadStatistics* stats)
                               if(p)
                                 parts()->add(p);
                               }
-                        else if (AudioTrack::readProperties(xml, tag))
+                        else if(tag == "AudioTrack")
+                              AudioTrack::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+                        else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("WaveTrack");
                         break;
                   case Xml::Attribut:
@@ -552,7 +556,7 @@ bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
       const bool use_latency_corr = useLatencyCorrection();
 
       #ifdef NODE_DEBUG_PROCESS
-      fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLatin1().constData(), channels, int(rl->size()));
+      fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLocal8Bit().constData(), channels, int(rl->size()));
       #endif
 
       int dst_ch, dst_chs, src_ch, src_chs, fin_dst_chs, next_chan, i;
@@ -580,7 +584,7 @@ bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
 
             #ifdef NODE_DEBUG_PROCESS
             fprintf(stderr, "    calling copy/addData on %s dst_ch:%d dst_chs:%d fin_dst_chs:%d src_ch:%d src_chs:%d ...\n",
-                    ir->track->name().toLatin1().constData(),
+                    ir->track->name().toLocal8Bit().constData(),
                     dst_ch, dst_chs, fin_dst_chs,
                     src_ch, src_chs);
             #endif
@@ -596,7 +600,7 @@ bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
             if(MusEGlobal::audio->isPlaying())
             {
               fprintf(stderr, "WaveTrack::getInputData() name:%s ir->latency:%lu latencyCompWriteOffset:%lu total:%lu\n",
-                      name().toLatin1().constData(), l, latencyCompWriteOffset(), l + latencyCompWriteOffset());
+                      name().toLocal8Bit().constData(), l, latencyCompWriteOffset(), l + latencyCompWriteOffset());
               for(int ch = 0; ch < channels; ++ch)
               {
                 fprintf(stderr, "channel:%d peak:", ch);
@@ -720,7 +724,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
         }
 
         //fprintf(stderr, "WaveTrack::getData: name:%s RECORD: Putting to fifo: framePos:%d audio pos frame:%d\n",
-        //        name().toLatin1().constData(),
+        //        name().toLocal8Bit().constData(),
         //        framePos, MusEGlobal::audio->pos().frame());
 
         // This will adjust for the latency before putting.

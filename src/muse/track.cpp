@@ -31,7 +31,6 @@
 #include "midictrl.h"
 #include "helper.h"
 #include "limits.h"
-#include "dssihost.h"
 #include "gconfig.h"
 #include "operations.h"
 #include "icons.h"
@@ -39,6 +38,7 @@
 #include "drum_ordering.h"
 #include "globals.h"
 #include "config.h"
+#include "ctrl.h"
 
 // Forwards from header:
 #include "midiport.h"
@@ -304,7 +304,7 @@ int Track::y() const
             }
       // FIXME Get this when loading a song with automation graphs showing. Benign. Likely song not fully loaded yet. p4.0.32
       if(MusEGlobal::debugMsg)
-        printf("Track::y(%s): track not in tracklist\n", name().toLatin1().constData());
+        printf("Track::y(%s): track not in tracklist\n", name().toLocal8Bit().constData());
       return -1;
       }
 
@@ -425,6 +425,35 @@ void Track::internal_assign(const Track& t, int flags)
         _recMonitor   = t._recMonitor;
       }
 }
+
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+void Track::read(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (readProperties(xml, tag))
+                              xml.unknown("Track");
+                        break;
+                  case Xml::Attribut:
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "Track") {
+                              return;
+                              }
+                  default:
+                        break;
+                  }
+            }
+      }
 
 //---------------------------------------------------------
 //   trackTypeIcon
@@ -557,7 +586,7 @@ void Track::setSelected(bool f)
 void Track::dump() const
       {
       printf("Track <%s>: typ %d, parts %zd sel %d sel order%d\n",
-         _name.toLatin1().constData(), _type, _parts.size(), _selected, _selectionOrder);
+         _name.toLocal8Bit().constData(), _type, _parts.size(), _selected, _selectionOrder);
       }
 
 //---------------------------------------------------------
@@ -584,7 +613,7 @@ void Track::updateAuxRoute(int refInc, Track* dst)
   
   if(_nodeTraversed)
   {
-    fprintf(stderr, "Track::updateAuxRoute %s _auxRouteCount:%d refInc:%d :\n", name().toLatin1().constData(), _auxRouteCount, refInc); 
+    fprintf(stderr, "Track::updateAuxRoute %s _auxRouteCount:%d refInc:%d :\n", name().toLocal8Bit().constData(), _auxRouteCount, refInc);
     if(refInc >= 0)
       fprintf(stderr, "  MusE Warning: Please check your routes: Circular path found!\n"); 
     else
@@ -597,7 +626,7 @@ void Track::updateAuxRoute(int refInc, Track* dst)
   _auxRouteCount += refInc;
   if(_auxRouteCount < 0)
   {
-    fprintf(stderr, "Track::updateAuxRoute Ref underflow! %s _auxRouteCount:%d refInc:%d\n", name().toLatin1().constData(), _auxRouteCount, refInc); 
+    fprintf(stderr, "Track::updateAuxRoute Ref underflow! %s _auxRouteCount:%d refInc:%d\n", name().toLocal8Bit().constData(), _auxRouteCount, refInc);
   }
   
   for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i) 
@@ -1553,7 +1582,7 @@ TrackLatencyInfo& MidiTrack::setCorrectionLatencyInfo(bool input, float finalWor
     }
 
     //fprintf(stderr, "MidiTrack::setCorrectionLatencyInfo() name:%s finalWorstLatency:%f branch_lat:%f corr:%f _sourceCorrectionValue:%f\n",
-    //        name().toLatin1().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
+    //        name().toLocal8Bit().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
   }
 
   return _latencyInfo;
@@ -1657,7 +1686,7 @@ void MidiTrack::setLatencyCompWriteOffset(float worstCase)
   {
     _latencyInfo._compensatorWriteOffset = 0;
     //fprintf(stderr, "MidiTrack::setLatencyCompWriteOffset() name:%s worstCase:%f _outputLatency:%f _compensatorWriteOffset:%lu\n",
-    //        name().toLatin1().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._compensatorWriteOffset);
+    //        name().toLocal8Bit().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._compensatorWriteOffset);
     return;
   }
     
@@ -1679,7 +1708,7 @@ void MidiTrack::setLatencyCompWriteOffset(float worstCase)
   }
 
   //fprintf(stderr, "MidiTrack::setLatencyCompWriteOffset() name:%s worstCase:%f _outputLatency:%f _canDominateOutputLatency:%d _compensatorWriteOffset:%lu\n",
-  //        name().toLatin1().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._canDominateOutputLatency, _latencyInfo._compensatorWriteOffset);
+  //        name().toLocal8Bit().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._canDominateOutputLatency, _latencyInfo._compensatorWriteOffset);
 }
 
 //---------------------------------------------------------
@@ -2024,8 +2053,6 @@ void MidiTrack::write(int level, Xml& xml, XmlWriteStatistics* stats) const
 
       xml.intTag(level, "device", outPort());
       xml.intTag(level, "channel", outChannel());
-      xml.intTag(level, "locked", _locked);
-
       xml.intTag(level, "transposition", transposition);
       xml.intTag(level, "velocity", velocity);
       xml.intTag(level, "delay", delay);
@@ -2040,7 +2067,7 @@ void MidiTrack::write(int level, Xml& xml, XmlWriteStatistics* stats) const
 
       writeOurDrumSettings(level, xml);
       
-      xml.etag(level, tag);
+      xml.etag(--level, tag);
       }
 
 void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
@@ -2048,7 +2075,7 @@ void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
   xml.tag(level++, "our_drum_settings");
   _workingDrumMapPatchList->write(level, xml);
   xml.intTag(level, "ordering_tied", _drummap_ordering_tied_to_patch);
-  xml.etag(level, "our_drum_settings");
+  xml.etag(--level, "our_drum_settings");
 }
 
 void MidiTrack::dumpMap()
@@ -2193,8 +2220,6 @@ void MidiTrack::read(Xml& xml, XmlReadStatistics* stats)
                               chanmask = xml.parseInt();            // Obsolete but support old files.
                               chanmask_found = true;
                         }
-                        else if (tag == "locked")
-                              _locked = xml.parseInt();
                         else if (tag == "echo")                     // Obsolete but support old files.
                               setRecMonitor(xml.parseInt());
                         else if (tag == "automation")
@@ -2203,12 +2228,23 @@ void MidiTrack::read(Xml& xml, XmlReadStatistics* stats)
                               clefType = (clefTypes)xml.parseInt();
                         else if (tag == "our_drum_settings")
                               readOurDrumSettings(xml);
-                        else if (Track::readProperties(xml, tag)) {
-                              // version 1.0 compatibility:
-                              if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
-                                    break;
-                              xml.unknown("MidiTrack");
-                              }
+                        else if (tag == "Track")
+                              Track::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+                        else if (xml.isVersionLessThan(4, 0))
+                        {
+                          if(Track::readProperties(xml, tag))
+                          {
+                            // version 1.0 compatibility:
+                            if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
+                                  break;
+                            xml.unknown("MidiTrack");
+                          }
+                        }
+                        else
+                          xml.unknown("MidiTrack");
+
                         break;
                   case Xml::Attribut:
                         break;
@@ -2320,6 +2356,7 @@ bool Track::selectEvents(bool select, unsigned long t0, unsigned long t1)
 
 void Track::writeProperties(int level, Xml& xml) const
 {
+      xml.tag(level++, "Track");
       xml.strTag(level, "name", _name);
       if (!_comment.isEmpty())
             xml.strTag(level, "comment", _comment);
@@ -2340,7 +2377,12 @@ void Track::writeProperties(int level, Xml& xml) const
           xml.strTag(level, "color", m_color.name());
 
       // Write only the assignments for this track.
-      MusEGlobal::song->midiAssignments()->write(level, xml, this);
+      // Exclude any rack plugin controller assignments, they are written by the plugins.
+      const unsigned long startId = 0;
+      const unsigned long endId = genACnum(0, 0);
+      MusEGlobal::song->midiAssignments()->write(
+        level, xml, this, startId, endId, MidiAudioCtrlStruct::AudioControl, false);
+      xml.etag(--level, "Track");
 }
 
 //---------------------------------------------------------
@@ -2385,6 +2427,7 @@ bool Track::readProperties(Xml& xml, const QString& tag)
           if (QColor::isValidColor(c))
               m_color.setNamedColor(c);
       }
+      // Added in song file version 4.
       else if (tag == "midiAssign")
             // Any assignments read go to this track.
             MusEGlobal::song->midiAssignments()->read(xml, this);
@@ -2411,7 +2454,7 @@ void Track::writeRouting(int level, Xml& xml) const
             if(r->channel != -1)
               s += QString(" channel=\"%1\"").arg(r->channel);
             
-            xml.tag(level++, s.toLatin1().constData());
+            xml.tag(level++, s.toUtf8().constData());
             
             // New routing scheme.
             s = "source";
@@ -2419,11 +2462,11 @@ void Track::writeRouting(int level, Xml& xml) const
               s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
             else
               s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
-            xml.tag(level, s.toLatin1().constData());
+            xml.tag(level, s.toUtf8().constData());
 
             xml.tag(level, "dest track=\"%d\"/", MusEGlobal::song->tracks()->index(this));
             
-            xml.etag(level--, "Route");
+            xml.etag(--level, "Route");
           }
         }
       }
@@ -2444,7 +2487,7 @@ void Track::writeRouting(int level, Xml& xml) const
           if(r->remoteChannel != -1)
             s += QString(" remch=\"%1\"").arg(r->remoteChannel);
           
-          xml.tag(level++, s.toLatin1().constData());
+          xml.tag(level++, s.toUtf8().constData());
           
           // Allow for a regular mono or stereo track to feed a multi-channel synti. 
           xml.tag(level, "source track=\"%d\"/", MusEGlobal::song->tracks()->index(this));
@@ -2461,9 +2504,9 @@ void Track::writeRouting(int level, Xml& xml) const
           else  
             s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
             
-          xml.tag(level, s.toLatin1().constData());
+          xml.tag(level, s.toUtf8().constData());
           
-          xml.etag(level--, "Route");
+          xml.etag(--level, "Route");
         }
       }
 }

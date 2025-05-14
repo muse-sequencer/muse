@@ -591,7 +591,7 @@ void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
          QString filename = (const char*) (data+2);
          sampleNameLineEdit[ch]->setText(filename.section('/',-1,-1));
          if (SS_DEBUG_MIDI) {
-            printf("SimpleSynthGui - sample %s loaded OK on channel: %d\n", filename.toLatin1().constData(), ch);
+            printf("SimpleSynthGui - sample %s loaded OK on channel: %d\n", filename.toLocal8Bit().constData(), ch);
          }
          if (!onOff[ch]->isChecked()) {
             onOff[ch]->blockSignals(true);
@@ -815,7 +815,7 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
       lastDir = fi.path();
 
       if (SS_DEBUG)
-         printf("lastDir = %s\n", lastDir.toLatin1().constData());
+         printf("lastDir = %s\n", lastDir.toLocal8Bit().constData());
 
       //int l = filename.length() + 4;
       int l = filename.length() + 6;
@@ -829,7 +829,7 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
       d[2] = SS_SYSEX_LOAD_SAMPLE;
       d[3] = (byte) channel;
       d[4] = (byte) filename.length();
-      memcpy(d+5, filename.toLatin1().constData(), filename.length()+1);
+      memcpy(d+5, filename.toUtf8().constData(), filename.length()+1);
       sendSysex(d, l);
    }
 }
@@ -878,8 +878,8 @@ void SimpleSynthGui::loadEffectInvoked(int fxid, QString lib, QString label)
    d[1] = SIMPLEDRUMS_UNIQUE_ID;
    d[2] = SS_SYSEX_LOAD_SENDEFFECT;
    d[3] = (byte) fxid;
-   memcpy (d+4, lib.toLatin1().constData(), lib.length()+1);
-   memcpy (d+5+lib.length(), label.toLatin1().constData(), label.length()+1);
+   memcpy (d+4, lib.toUtf8().constData(), lib.length()+1);
+   memcpy (d+5+lib.length(), label.toUtf8().constData(), label.length()+1);
    sendSysex(d, l);
 }
 
@@ -985,15 +985,13 @@ void SimpleSynthGui::loadSetup()
       QFile theFile(filename);
       if (theFile.open(QIODevice::ReadOnly)) {
          unsigned initdata_len = 0;
-         if (theFile.read((char*)&initdata_len, sizeof(initdata_len)) == -1)
+         if (theFile.read((char*)&initdata_len, sizeof(initdata_len)) != sizeof(initdata_len))
             success = false;
 
-         ///byte* init_data = new byte[initdata_len];
          byte* init_data = new byte[initdata_len + 2];   // 2 for MFG ID and synth ID.
          init_data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
          init_data[1] = SIMPLEDRUMS_UNIQUE_ID;
-         //if (theFile.read((char*)(init_data), initdata_len) == -1)
-         if (theFile.read((char*)(init_data + 2), initdata_len) == -1)
+         if (theFile.read((char*)(init_data + 2), initdata_len) != initdata_len)
             success = false;
 
          if (!success) {
@@ -1003,7 +1001,6 @@ void SimpleSynthGui::loadSetup()
             delete msgBox;
          }
          else {
-            ///sendSysex(init_data, initdata_len);
             sendSysex(init_data, initdata_len + 2);
          }
 

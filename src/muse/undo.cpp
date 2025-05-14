@@ -43,9 +43,19 @@
 // Forwards from header:
 #include "track.h"
 #include "part.h"
+#include "plugin.h"
 
 // Enable for debugging:
 //#define _UNDO_DEBUG_
+
+// Choice of non-realtime idling or realtime synchronized changes for some operations.
+// Idling can be much more memory efficient.
+// But glitches in the audio would (must) be acceptable for these operations.
+//
+// Use realtime synchronized:
+//#define _UNDO_IDLE_AUDIO(idle);
+// Use non-realtime idling:
+#define _UNDO_IDLE_AUDIO(idle) MusEGlobal::audio->msgIdle(idle);
 
 namespace MusECore {
 
@@ -344,6 +354,8 @@ const char* UndoOp::typeName()
             "SetTrackRecord", "SetTrackMute", "SetTrackSolo", "SetTrackRecMonitor", "SetTrackOff",
             "MoveTrack",
             "ModifyClip", "AddMarker", "DeleteMarker", "ModifyMarker", "SetMarkerPos",
+            "ChangeRackEffectPlugin", "SwapRackEffectPlugins", "MoveRackEffectPlugin",
+
             "ModifySongLen", "SetInstrument", "DoNothing",
             "ModifyMidiDivision",
             "EnableAllAudioControllers",
@@ -362,7 +374,7 @@ void UndoOp::dump()
       switch(type) {
             case AddTrack:
             case DeleteTrack:
-                  printf("%d %s\n", trackno, track->name().toLatin1().constData());
+                  printf("%d %s\n", trackno, track->name().toLocal8Bit().constData());
                   break;
             case AddEvent:
             case DeleteEvent:
@@ -381,22 +393,22 @@ void UndoOp::dump()
                   printf("<%s>-<%s>\n", _oldName->toLocal8Bit().data(), _newName->toLocal8Bit().data());
                   break;
             case ModifyTrackChannel:
-                  printf("%s <%d>-<%d>\n", track->name().toLatin1().constData(), _oldPropValue, _newPropValue);
+                  printf("%s <%d>-<%d>\n", track->name().toLocal8Bit().constData(), _oldPropValue, _newPropValue);
                   break;
             case SetTrackRecord:
-                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  printf("%s %d\n", track->name().toLocal8Bit().constData(), a);
                   break;
             case SetTrackMute:
-                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  printf("%s %d\n", track->name().toLocal8Bit().constData(), a);
                   break;
             case SetTrackSolo:
-                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  printf("%s %d\n", track->name().toLocal8Bit().constData(), a);
                   break;
             case SetTrackRecMonitor:
-                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  printf("%s %d\n", track->name().toLocal8Bit().constData(), a);
                   break;
             case SetTrackOff:
-                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  printf("%s %d\n", track->name().toLocal8Bit().constData(), a);
                   break;
             default:      
                   break;
@@ -476,6 +488,47 @@ void deleteUndoOp(UndoOp& op, bool doUndos = true, bool doRedos = true)
           {
             delete op.newMarker;
             op.newMarker = nullptr;
+          }
+          break;
+
+    case UndoOp::ChangeRackEffectPlugin:
+          if(op._pluginConfiguration)
+          {
+            delete op._pluginConfiguration;
+            op._pluginConfiguration = nullptr;
+          }
+          if(op._pluginI)
+          {
+            delete op._pluginI;
+            op._pluginI = nullptr;
+          }
+          if(op._ctrlListList)
+          {
+            delete op._ctrlListList;
+            op._ctrlListList = nullptr;
+          }
+          if(op._midiAudioCtrlMap)
+          {
+            delete op._midiAudioCtrlMap;
+            op._midiAudioCtrlMap = nullptr;
+          }
+          break;
+
+    case UndoOp::MoveRackEffectPlugin:
+          if(op._plugMoveDstConfiguration)
+          {
+            delete op._plugMoveDstConfiguration;
+            op._plugMoveDstConfiguration = nullptr;
+          }
+          if(op._plugMoveDstCtrlListList)
+          {
+            delete op._plugMoveDstCtrlListList;
+            op._plugMoveDstCtrlListList = nullptr;
+          }
+          if(op._plugMoveDstMidiAudioCtrlMap)
+          {
+            delete op._plugMoveDstMidiAudioCtrlMap;
+            op._plugMoveDstMidiAudioCtrlMap = nullptr;
           }
           break;
 
@@ -871,7 +924,16 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
       fprintf(stderr, "Undo::insert: SetMarkerPos\n");
     break;
 
-    
+    case UndoOp::ChangeRackEffectPlugin:
+      fprintf(stderr, "Undo::insert: ChangeRackEffectPlugin\n");
+    break;
+    case UndoOp::SwapRackEffectPlugins
+      fprintf(stderr, "Undo::insert: SwapRackEffectPlugins\n");
+    break;
+    case UndoOp::MoveRackEffectPlugin
+      fprintf(stderr, "Undo::insert: MoveRackEffectPlugin\n");
+    break;
+
     case UndoOp::ModifySongLen:
       fprintf(stderr, "Undo::insert: ModifySongLen\n");
     break;
@@ -1985,7 +2047,44 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             return;  
           }
         break;
-        
+
+        case UndoOp::ChangeRackEffectPlugin:
+          if(uo.type == UndoOp::ChangeRackEffectPlugin)
+          {
+            if(((uo._pluginConfiguration && uo._pluginConfiguration == n_op._pluginConfiguration) ||
+                (uo._pluginI && uo._pluginI == n_op._pluginI)) &&
+               uo.track == n_op.track && uo._effectRackPos == n_op._effectRackPos)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double ChangeRackEffectPlugin. Ignoring.\n");
+              return;
+            }
+
+            // TODO: PluginConfiguration etc.
+            //
+            // else if(uo.track == n_op.track && uo._effectRackPos == n_op._effectRackPos)
+            // {
+            //   // Simply replace the plugin.
+            //   // To avoid memory leaks, delete the original plugin.
+            //   // TODO:
+            // }
+            // // It's OK to set null to more than one slot.
+            // else if(uo._pluginI && uo._pluginI == n_op._pluginI)
+            // {
+            //   fprintf(stderr,
+            //     "MusE error: Undo::insert(): ChangeRackEffectPlugin: Cannot set same plugin to more than one slot. Ignoring.\n");
+            //   return;
+            // }
+          }
+        break;
+
+        case UndoOp::SwapRackEffectPlugins:
+          // TODO: Not much required here... It's OK if multiple swaps appear.
+        break;
+
+        case UndoOp::MoveRackEffectPlugin:
+          // TODO:
+        break;
+
         // NOTE Some other undo op types may need treatment as well !
         
         default:
@@ -2663,7 +2762,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
 {
   assert(type_ == ModifyTrackChannel || type_ == DeleteAudioCtrlVal ||
     type_ == SetTrackRecord || type_ == SetTrackMute || type_ == SetTrackSolo ||
-    type_ == SetTrackRecMonitor || type_ == SetTrackOff || type_ == AddAudioCtrlVal || type_ == ModifyAudioCtrlVal);
+    type_ == SetTrackRecMonitor || type_ == SetTrackOff || type_ == AddAudioCtrlVal || type_ == ModifyAudioCtrlVal ||
+    type_ == SwapRackEffectPlugins);
   assert(track_);
 
   type = type_;
@@ -2696,9 +2796,84 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
     _audioCtrlVal = d_;
     _audioNewCtrlVal = e_;
   }
+  else if(type_ == SwapRackEffectPlugins)
+  {
+    _effectRackPos = a_;
+    _newEffectRackPos = b_;
+    _pluginConfiguration = nullptr;
+    _pluginI = nullptr;
+    _ctrlListList = nullptr;
+    _midiAudioCtrlMap = nullptr;
+  }
   else
     a = a_;
 
+  _noUndo = noUndo_;
+}
+
+UndoOp::UndoOp(UndoType type_, const Track *track_, PluginConfiguration *pluginConfiguration_,
+             int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
+{
+  assert(type_== ChangeRackEffectPlugin);
+  assert(track_);
+  assert(pluginConfiguration_);
+  type = type_;
+  track = track_;
+  _pluginI = nullptr;
+  _ctrlListList = cll_;
+  _midiAudioCtrlMap = macm_;
+  _pluginConfiguration = pluginConfiguration_;
+  _effectRackPos = effectRackPos_;
+  _newEffectRackPos = 0;
+  _noUndo = noUndo_;
+}
+
+UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &pluginConfiguration_,
+             int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
+{
+  assert(type_== ChangeRackEffectPlugin);
+  assert(track_);
+  type = type_;
+  track = track_;
+  _pluginI = nullptr;
+  _ctrlListList = cll_;
+  _midiAudioCtrlMap = macm_;
+  _pluginConfiguration = new PluginConfiguration(pluginConfiguration_);
+  _effectRackPos = effectRackPos_;
+  _newEffectRackPos = 0;
+  _noUndo = noUndo_;
+}
+
+UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_,
+               int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
+{
+  assert(type_== ChangeRackEffectPlugin);
+  assert(track_);
+  type = type_;
+  track = track_;
+  _pluginI = pluginI_;
+  _ctrlListList = cll_;
+  _midiAudioCtrlMap = macm_;
+  _pluginConfiguration = nullptr;
+  _effectRackPos = effectRackPos_;
+  _newEffectRackPos = 0;
+  _noUndo = noUndo_;
+}
+
+UndoOp::UndoOp(UndoType type_, const Track* srcTrack_, const Track* dstTrack_,
+               int srcEffectRackPos_, int dstEffectRackPos_, bool noUndo_)
+{
+  assert(type_== MoveRackEffectPlugin);
+  assert(srcTrack_);
+  assert(dstTrack_);
+  type = type_;
+  _plugMoveSrcTrack = srcTrack_;
+  track = dstTrack_;
+  _plugMoveDstConfiguration = nullptr;
+  _plugMoveDstCtrlListList = nullptr;
+  _plugMoveDstMidiAudioCtrlMap = nullptr;
+  _plugMoveSrcEffectRackPos = srcEffectRackPos_;
+  _plugMoveDstEffectRackPos = dstEffectRackPos_;
   _noUndo = noUndo_;
 }
 
@@ -2793,6 +2968,18 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::AddTrack:
+                        // --------------------------------------------------------------------------------
+                        // Special: Some plugin UIs do not allow changing the title bar text after creation.
+                        // Inform the track range, from desired track number to the end, of track
+                        //  native UIs and all effect rack plugin native UIs so that all editor URLs
+                        //  and the 'user-friendly' title bar texts are updated next time they are opened.
+                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // Since we are deleting a track, don't bother updating that one, it's going away anyway.
+                        // Note that i->trackno can be -1 meaning at the end.
+                        // --------------------------------------------------------------------------------
+                        if(i->trackno >= 0)
+                          PluginGuiTitlesAboutToChange(i->trackno + 1, -1);
+
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -2854,6 +3041,15 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::DeleteTrack:
+                        // --------------------------------------------------------------------------------
+                        // Special: Some plugin UIs do not allow changing the title bar text after creation.
+                        // Inform the track range, from desired track number to the end,
+                        //  of track native UIs and all effect rack plugin native UIs so that all editor URLs
+                        //  and the 'user-friendly' title bar texts are updated next time they are opened.
+                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // --------------------------------------------------------------------------------
+                        PluginGuiTitlesAboutToChange(i->trackno, -1);
+
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -3018,6 +3214,15 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyTrackName:
+                        // --------------------------------------------------------------------------------
+                        // Special: Some plugin UIs do not allow changing the title bar text after creation.
+                        // Inform the native UI and all effect rack plugin native UIs
+                        //  so that all editor URLs and the 'user-friendly' title bar texts
+                        //  are updated next time they are opened. There does not appear to be a mechanism to
+                        //  change them while the UI is open.
+                        // --------------------------------------------------------------------------------
+                        PluginGuiTitlesAboutToChange(editable_track);
+
                         pendingOperations.add(PendingOperationItem(editable_track, i->_oldName, PendingOperationItem::ModifyTrackName));
                         updateFlags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
                         // If it's an aux track, notify aux UI controls to reload, or change their names etc.
@@ -3026,6 +3231,15 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::MoveTrack:
+                        // --------------------------------------------------------------------------------
+                        // Special: Some plugin UIs do not allow changing the title bar text after creation.
+                        // Inform the range of track native UIs and all the track effect
+                        //  rack plugin native UIs so that all editor URLs and the
+                        //  'user-friendly' title bar texts are updated next time they are opened.
+                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // --------------------------------------------------------------------------------
+                        PluginGuiTitlesAboutToChange(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
+
                         pendingOperations.add(PendingOperationItem(&_tracks, i->b, i->a, PendingOperationItem::MoveTrack));
                         updateFlags |= SC_TRACK_MOVED;
                         break;
@@ -3769,6 +3983,47 @@ void Song::revertOperationGroup1(Undo& operations)
                           updateFlags |= SC_MARKER_MODIFIED;
                         break;
 
+                  case UndoOp::ChangeRackEffectPlugin:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::revertOperationGroup1:ChangeRackEffectPlugin\n");
+#endif
+                            _UNDO_IDLE_AUDIO(true);
+                            changePluginOperation(&(*i));
+                            _UNDO_IDLE_AUDIO(false);
+                        break;
+
+                  case UndoOp::SwapRackEffectPlugins:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::revertOperationGroup1:SwapRackEffectPlugins\n");
+#endif
+                            // --------------------------------------------------------------------------------
+                            // Special: Some plugin UIs do not allow changing the title bar text after creation.
+                            // Inform the two effect rack native UIs so that editor URLs and the
+                            //  'user-friendly' title bar texts are updated next time they are opened.
+                            // There does not appear to be a mechanism to change them while the UI is open.
+                            // --------------------------------------------------------------------------------
+                            PluginGuiTitlesAboutToChange(editable_track, i->_effectRackPos, i->_effectRackPos);
+                            PluginGuiTitlesAboutToChange(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
+
+                            _UNDO_IDLE_AUDIO(true);
+                            swapPluginsOperation(&(*i));
+                            _UNDO_IDLE_AUDIO(false);
+                        break;
+
+                  case UndoOp::MoveRackEffectPlugin:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::revertOperationGroup1:MoveRackEffectPlugin\n");
+#endif
+                            // We are moving the plugin from the destination slot back to the source slot.
+                            // Close any destination editor.
+                            // The destination track is editable_track.
+                            PluginGuiTitlesAboutToChange(editable_track, i->_plugMoveDstEffectRackPos, i->_plugMoveDstEffectRackPos);
+
+                            _UNDO_IDLE_AUDIO(true);
+                            revertMovePluginOperation(&(*i));
+                            _UNDO_IDLE_AUDIO(false);
+                        break;
+
                   default:
                         break;
                   }
@@ -3805,12 +4060,30 @@ void Song::revertOperationGroup3(Undo& operations)
             Part* editable_part = const_cast<Part*>(i->part); // uncomment if needed
             switch(i->type) {
                   case UndoOp::AddTrack:
+                        // --------------------------------------------------------------------------------
+                        // Since we are deleting (un-adding) a track, update from there to the end
+                        //  so that whatever track replaces that index position gets updated too.
+                        // Note that i->trackno can be -1 meaning at the end.
+                        // --------------------------------------------------------------------------------
+                        if(i->trackno >= 0)
+                        {
+                          showPendingPluginGuis(i->trackno, -1);
+                          updateUiWindowTitles(i->trackno, -1);
+                        }
+
                         // Ensure that wave event sndfile file handles are closed.
                         // It should not be the job of the pending operations list to do this.
                         // TODO Coordinate close/open with part mute and/or track off.
                         editable_track->closeAllParts();
                         break;
                   case UndoOp::DeleteTrack:
+                        // --------------------------------------------------------------------------------
+                        // Since the track being re-added will already have a UI name, skip it.
+                        // Hm, actually include it just in case. Harmless anyway.
+                        // --------------------------------------------------------------------------------
+                        showPendingPluginGuis(i->trackno /*+ 1*/, -1);
+                        updateUiWindowTitles(i->trackno /*+ 1*/, -1);
+
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_OUTPUT:
@@ -3876,8 +4149,20 @@ void Song::revertOperationGroup3(Undo& operations)
                           default:
                             break;
                         }
-                        
                         break;
+
+                  case UndoOp::ModifyTrackName:
+                  {
+                        showPendingPluginGuis(editable_track);
+                        updateUiWindowTitles(editable_track);
+                        break;
+                  }
+                  case UndoOp::MoveTrack:
+                  {
+                        showPendingPluginGuis(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
+                        updateUiWindowTitles(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
+                        break;
+                  }
                   case UndoOp::AddPart:
                         // Ensure that wave event sndfile file handles are closed.
                         // It should not be the job of the pending operations list to do this.
@@ -3943,6 +4228,31 @@ void Song::revertOperationGroup3(Undo& operations)
                       if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
                         audio_track->enableController(i->_audioCtrlIdModify, true);
                     }
+                  break;
+
+                  case UndoOp::ChangeRackEffectPlugin:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* at = static_cast<AudioTrack*>(editable_track);
+                      // Note that for DSSI (at least), the track at this point must already
+                      //  have been added to the song's track lists, so that OSC can find the track.
+                      at->showPendingPluginGuis();
+                    }
+                  break;
+                  case UndoOp::SwapRackEffectPlugins:
+                    showPendingPluginGuis(editable_track, i->_effectRackPos, i->_effectRackPos);
+                    showPendingPluginGuis(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
+                    updateUiWindowTitles(editable_track, i->_effectRackPos, i->_effectRackPos);
+                    updateUiWindowTitles(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
+                  break;
+                  case UndoOp::MoveRackEffectPlugin:
+                    // We have moved the plugin from the destination slot back to the source slot.
+                    showPendingPluginGuis(
+                      const_cast<Track*>(i->_plugMoveSrcTrack),
+                      i->_plugMoveSrcEffectRackPos, i->_plugMoveSrcEffectRackPos);
+                    updateUiWindowTitles(
+                      const_cast<Track*>(i->_plugMoveSrcTrack),
+                      i->_plugMoveSrcEffectRackPos, i->_plugMoveSrcEffectRackPos);
                   break;
 
                   default:
@@ -4023,6 +4333,17 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::AddTrack:
+                        // --------------------------------------------------------------------------------
+                        // Special: Some plugin UIs do not allow changing the title bar text after creation.
+                        // Inform the range, from desired track number to the end, of track native
+                        //  UIs and all effect rack plugin native UIs so that all editor URLs
+                        //  and the 'user-friendly' title bar texts are updated next time they are opened.
+                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // Note that i->trackno can be -1 meaning at the end.
+                        // --------------------------------------------------------------------------------
+                        if(i->trackno >= 0)
+                          PluginGuiTitlesAboutToChange(i->trackno, -1);
+
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -4104,6 +4425,16 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::DeleteTrack:
+                        // --------------------------------------------------------------------------------
+                        // Special: Some plugin UIs do not allow changing the title bar text after creation.
+                        // Inform the range, from desired track number to the end, of track native
+                        //  UIs and all effect rack plugin native UIs so that all editor URLs
+                        //  and the 'user-friendly' title bar texts are updated next time they are opened.
+                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // Since we are deleting a track, don't bother updating that one, it's going away anyway.
+                        // --------------------------------------------------------------------------------
+                        PluginGuiTitlesAboutToChange(i->trackno + 1, -1);
+
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -4247,6 +4578,15 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyTrackName:
+                        // --------------------------------------------------------------------------------
+                        // Special: Some plugin UIs do not allow changing the title bar text after creation.
+                        // Inform the native UI and all effect rack plugin native UIs
+                        //  so that all editor URLs and the 'user-friendly' title bar texts
+                        //  are updated next time they are opened. There does not appear to be a mechanism to
+                        //  change them while the UI is open.
+                        // --------------------------------------------------------------------------------
+                        PluginGuiTitlesAboutToChange(editable_track);
+
                         pendingOperations.add(PendingOperationItem(editable_track, i->_newName, PendingOperationItem::ModifyTrackName));
                         updateFlags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
                         // If it's an aux track, notify aux UI controls to reload, or change their names etc.
@@ -4255,6 +4595,15 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::MoveTrack:
+                        // --------------------------------------------------------------------------------
+                        // Special: Some plugin UIs do not allow changing the title bar text after creation.
+                        // Inform the range of track native UIs and all the track effect rack
+                        //  plugin native UIs so that all editor URLs and the
+                        //  'user-friendly' title bar texts are updated next time they are opened.
+                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // --------------------------------------------------------------------------------
+                        PluginGuiTitlesAboutToChange(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
+
                         pendingOperations.add(PendingOperationItem(&_tracks, i->a, i->b, PendingOperationItem::MoveTrack));
                         updateFlags |= SC_TRACK_MOVED;
                         break;
@@ -5114,6 +5463,48 @@ void Song::executeOperationGroup1(Undo& operations)
                           updateFlags |= SC_MARKER_MODIFIED;
                         break;
 
+                  case UndoOp::ChangeRackEffectPlugin:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::executeOperationGroup1:ChangeRackEffectPlugin\n");
+#endif
+                            _UNDO_IDLE_AUDIO(true);
+                            changePluginOperation(&(*i));
+                            _UNDO_IDLE_AUDIO(false);
+                        break;
+
+                  case UndoOp::SwapRackEffectPlugins:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::executeOperationGroup1:SwapRackEffectPlugins\n");
+#endif
+                            // --------------------------------------------------------------------------------
+                            // Special: Some plugin UIs do not allow changing the title bar text after creation.
+                            // Inform the two effect rack native UIs so that editor URLs
+                            //  and the 'user-friendly' title bar texts are updated
+                            //  next time they are opened. There does not appear to be a mechanism to change
+                            //  them while the UI is open.
+                            // --------------------------------------------------------------------------------
+                            PluginGuiTitlesAboutToChange(editable_track, i->_effectRackPos, i->_effectRackPos);
+                            PluginGuiTitlesAboutToChange(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
+
+                            _UNDO_IDLE_AUDIO(true);
+                            swapPluginsOperation(&(*i));
+                            _UNDO_IDLE_AUDIO(false);
+                        break;
+
+                  case UndoOp::MoveRackEffectPlugin:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::executeOperationGroup1:MoveRackEffectPlugin\n");
+#endif
+                            PluginGuiTitlesAboutToChange(
+                              const_cast<Track*>( i->_plugMoveSrcTrack),
+                              i->_plugMoveSrcEffectRackPos,
+                              i->_plugMoveSrcEffectRackPos);
+
+                            _UNDO_IDLE_AUDIO(true);
+                            movePluginOperation(&(*i));
+                            _UNDO_IDLE_AUDIO(false);
+                        break;
+
                   default:
                         break;
                   }
@@ -5151,6 +5542,24 @@ void Song::executeOperationGroup3(Undo& operations)
             Part* editable_part = const_cast<Part*>(i->part); // uncomment if needed
             switch(i->type) {
                   case UndoOp::AddTrack:
+                        // --------------------------------------------------------------------------------
+                        // Note that i->trackno can be -1 meaning at the end.
+                        // Since the track being added will already have a UI name, skip it.
+                        // Hm, actually include it because the track's name might be composed
+                        //  before the track is added, and could not possibly know what the
+                        //  index is, if the index is to be part of the title. Harmless anyway.
+                        // --------------------------------------------------------------------------------
+                        if(i->trackno >= 0)
+                        {
+                          showPendingPluginGuis(i->trackno /*+ 1*/, -1);
+                          updateUiWindowTitles(i->trackno /*+ 1*/, -1);
+                        }
+                        else
+                        {
+                          // Do the track itself.
+                          updateUiWindowTitles(editable_track);
+                        }
+
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_OUTPUT:
@@ -5216,13 +5625,29 @@ void Song::executeOperationGroup3(Undo& operations)
                           default:
                             break;
                         }
-                        
+
                         break;
+
                   case UndoOp::DeleteTrack:
+                        // --------------------------------------------------------------------------------
+                        // Since we are deleting a track, update from there to the end
+                        //  so that whatever track replaces that index position gets updated too.
+                        // --------------------------------------------------------------------------------
+                        showPendingPluginGuis(i->trackno, -1);
+                        updateUiWindowTitles(i->trackno, -1);
+
                         // Ensure that wave event sndfile file handles are closed.
                         // It should not be the job of the pending operations list to do this.
                         // TODO Coordinate close/open with part mute and/or track off.
                         editable_track->closeAllParts();
+                        break;
+                  case UndoOp::ModifyTrackName:
+                        showPendingPluginGuis(editable_track);
+                        updateUiWindowTitles(editable_track);
+                        break;
+                  case UndoOp::MoveTrack:
+                        showPendingPluginGuis(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
+                        updateUiWindowTitles(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
                         break;
                   case UndoOp::DeletePart:
                         // Ensure that wave event sndfile file handles are closed.
@@ -5290,6 +5715,26 @@ void Song::executeOperationGroup3(Undo& operations)
                       if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
                         audio_track->enableController(i->_audioCtrlIdModify, true);
                     }
+                  break;
+                  case UndoOp::ChangeRackEffectPlugin:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* at = static_cast<AudioTrack*>(editable_track);
+                      // Note that for DSSI (at least), the track at this point must already
+                      //  have been added to the song's track lists, so that OSC can find the track.
+                      at->showPendingPluginGuis();
+                    }
+                  break;
+                  case UndoOp::SwapRackEffectPlugins:
+                    showPendingPluginGuis(editable_track, i->_effectRackPos, i->_effectRackPos);
+                    showPendingPluginGuis(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
+                    updateUiWindowTitles(editable_track, i->_effectRackPos, i->_effectRackPos);
+                    updateUiWindowTitles(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
+                  break;
+                  case UndoOp::MoveRackEffectPlugin:
+                    // The destination track is editable_track.
+                    showPendingPluginGuis(editable_track, i->_plugMoveDstEffectRackPos, i->_plugMoveDstEffectRackPos);
+                    updateUiWindowTitles(editable_track, i->_plugMoveDstEffectRackPos, i->_plugMoveDstEffectRackPos);
                   break;
 
                    default:

@@ -33,7 +33,6 @@
 #include <algorithm>
 
 #include <string.h>
-#include <dlfcn.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -43,7 +42,6 @@
 
 #include <QDir>
 #include <QFileInfo>
-#include <QUrl>
 //#include <QX11EmbedWidget>
 #include <QApplication>
 #include <QtGui/QWindow>
@@ -385,6 +383,7 @@ LV2_Feature lv2Features [] =
     {LV2_F_OPTIONS, nullptr},
     {LV2_UI__resize, nullptr},
     {LV2_UI__requestValue, nullptr},
+    {LV2_UI__touch, nullptr},
     {LV2_F_SUPPORTS_STRICT_BOUNDS, nullptr},
     {LV2_PROGRAMS__Host, nullptr},
 #ifdef MIDNAM_SUPPORT
@@ -435,7 +434,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
   LilvNodes *fts = lilv_plugin_get_required_features(plugin);
   LilvIter *nit = lilv_nodes_begin(fts);
   bool shouldLoad = true;
-  MusECore::PluginFeatures_t reqfeat = MusECore::PluginNoFeatures;
+  MusEPlugin::PluginFeatures_t reqfeat = MusEPlugin::PluginNoFeatures;
   while(true)
   {
     if(lilv_nodes_is_end(fts, nit))
@@ -448,13 +447,13 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
     if(isSupported)
     {
       if(std::strcmp(uri, LV2_F_FIXED_BLOCK_LENGTH) == 0)
-        reqfeat |= MusECore::PluginFixedBlockSize;
+        reqfeat |= MusEPlugin::PluginFixedBlockSize;
       else if(std::strcmp(uri, LV2_F_POWER_OF_2_BLOCK_LENGTH) == 0)
-        reqfeat |= MusECore::PluginPowerOf2BlockSize;
+        reqfeat |= MusEPlugin::PluginPowerOf2BlockSize;
       else if(std::strcmp(uri, LV2_F_COARSE_BLOCK_LENGTH) == 0)
-        reqfeat |= MusECore::PluginCoarseBlockSize;
+        reqfeat |= MusEPlugin::PluginCoarseBlockSize;
       else if(std::strcmp(uri, LV2_F_SUPPORTS_STRICT_BOUNDS) == 0)
-        reqfeat |= MusECore::PluginSupportStrictBounds;
+        reqfeat |= MusEPlugin::PluginSupportStrictBounds;
     }
     else
     {
@@ -480,16 +479,14 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
   setPluginScanFileInfo(lfp, &info);
   if(uriNode)
     info._uri = PLUGIN_SET_CSTRING(lilv_node_as_string(uriNode));
-  info._type = MusEPlugin::PluginScanInfoStruct::PluginTypeLV2;
-  info._class = MusEPlugin::PluginScanInfoStruct::PluginClassEffect;
+  info._type = MusEPlugin::PluginTypeLV2;
+  info._class = MusEPlugin::PluginClassEffect;
   // Fake id for LV2PluginWrapper functionality.
   // LV2 does not use unique id numbers and frowns upon using anything but the uri.
   // info._uniqueID =  FakeLv2UniqueID++;
-  //info._label = MusEPlugin::setString(label);
+  // LV2 has no label. Just use the name.
   info._label = PLUGIN_SET_QSTRING(name);
   info._name = PLUGIN_SET_QSTRING(name);
-  //info._maker = MusEPlugin::setString(ladspa_descr->Maker);
-  //info._copyright = MusEPlugin::setString(ladspa_descr->Copyright);
 
   info._requiredFeatures |= reqfeat;
 
@@ -498,7 +495,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
   const char *clsname = lilv_node_as_uri(ncuri);
   if(strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0)
   {
-    info._class |= MusEPlugin::PluginScanInfoStruct::PluginClassInstrument;
+    info._class |= MusEPlugin::PluginClassInstrument;
   }
 
   if(LilvNode *nAuthor = lilv_plugin_get_author_name(plugin))
@@ -558,7 +555,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
     else if(!lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_InputPort))
     {
       DEBUG_LV2_ERROR(stderr, "Ignoring plugin: %s: port: %ld with unknown direction\n",
-                        name.toLatin1().constData(), k);
+                        name.toLocal8Bit().constData(), k);
       continue;
     }
 
@@ -570,7 +567,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       {
         if(hasLatency && k == latencyIdx)
         {
-          info._pluginLatencyReportingType = MusECore::PluginLatencyTypePort;
+          info._pluginLatencyReportingType = MusEPlugin::PluginLatencyTypePort;
           info._latencyPortIdx = cop;
         }
         ++cop;
@@ -579,13 +576,13 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       {
         if(hasFreewheel && k == freewheelIdx)
         {
-          info._pluginFreewheelType = MusECore::PluginFreewheelTypePort;
+          info._pluginFreewheelType = MusEPlugin::PluginFreewheelTypePort;
           info._freewheelPortIdx = cip;
 
         }
         if(hasEnable && k == enableIdx)
         {
-          info._pluginBypassType = MusECore::PluginBypassTypeEnablePort;
+          info._pluginBypassType = MusEPlugin::PluginBypassTypeEnablePort;
           info._enableOrBypassPortIdx = cip;
         }
         ++cip;
@@ -606,7 +603,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       else
         ++eip;
       if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
-        info._pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
+        info._pluginFlags |= MusEPlugin::PluginSupportsTimePosition;
     }
 #endif
     else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.atom_AtomPort))
@@ -616,12 +613,12 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       else
         ++eip;
       if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
-        info._pluginFlags |= MusEPlugin::PluginScanInfoStruct::SupportsTimePosition;
+        info._pluginFlags |= MusEPlugin::PluginSupportsTimePosition;
     }
     else if(!optional)
     {
       DEBUG_LV2_ERROR(stderr, "Ignoring plugin: %s port: %ld with unknown type\n",
-                        name.toLatin1().constData(), k);
+                        name.toLocal8Bit().constData(), k);
       lilv_free((void*)lfp); // Must free.
       lilv_node_free(nameNode);
       return;
@@ -637,13 +634,13 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
 
   // Look for optional features we support (now or later)...
   if(lilv_plugin_has_feature(plugin, lv2CacheNodes.lv2_isLive))
-    info._pluginFlags |= MusEPlugin::PluginScanInfoStruct::Realtime;
+    info._pluginFlags |= MusEPlugin::PluginIsRealtime;
 
   if(lilv_plugin_has_feature(plugin, lv2CacheNodes.lv2_HardRealtimeCapable))
-    info._pluginFlags |= MusEPlugin::PluginScanInfoStruct::HardRealtimeCapable;
+    info._pluginFlags |= MusEPlugin::PluginIsHardRealtimeCapable;
 
   if((info._inports != info._outports) || lilv_plugin_has_feature(plugin, lv2CacheNodes.lv2_InPlaceBroken))
-    info._requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
+    info._requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
 
   lilv_free((void*)lfp); // Must free.
   lilv_node_free(nameNode);
@@ -756,18 +753,22 @@ void initLV2()
         const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
         switch(info._type)
         {
-        case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
+        case MusEPlugin::PluginTypeLV2:
         {
             if(MusEGlobal::loadLV2)
             {
                 const QString inf_cbname = PLUGIN_GET_QSTRING(info._completeBaseName);
                 const QString inf_name   = PLUGIN_GET_QSTRING(info._name);
                 const QString inf_uri    = PLUGIN_GET_QSTRING(info._uri);
+                const QString inf_label    = PLUGIN_GET_QSTRING(info._label);
+                const QString inf_filepath = PLUGIN_GET_QSTRING(info.filePath());
                 const Plugin* plug_found = MusEGlobal::plugins.find(
+                  info._type,
                   inf_cbname,
                   inf_uri,
                   inf_name);
                 const Synth* synth_found = MusEGlobal::synthis.find(
+                  info._type,
                   inf_cbname,
                   inf_uri,
                   inf_name);
@@ -775,22 +776,22 @@ void initLV2()
                 if(plug_found)
                 {
                     fprintf(stderr, "Ignoring LV2 effect name:%s uri:%s path:%s duplicate of path:%s\n",
-                            PLUGIN_GET_CSTRING(info._name),
-                            PLUGIN_GET_CSTRING(info._uri),
-                            PLUGIN_GET_CSTRING(info.filePath()),
-                            plug_found->filePath().toLatin1().constData());
+                            inf_name.toLocal8Bit().constData(),
+                            inf_uri.toLocal8Bit().constData(),
+                            inf_filepath.toLocal8Bit().constData(),
+                            plug_found->filePath().toLocal8Bit().constData());
                 }
                 if(synth_found)
                 {
                     fprintf(stderr, "Ignoring LV2 synth name:%s uri:%s path:%s duplicate of path:%s\n",
-                            PLUGIN_GET_CSTRING(info._name),
-                            PLUGIN_GET_CSTRING(info._uri),
-                            PLUGIN_GET_CSTRING(info.filePath()),
-                            synth_found->filePath().toLatin1().constData());
+                            inf_name.toLocal8Bit().constData(),
+                            inf_uri.toLocal8Bit().constData(),
+                            inf_filepath.toLocal8Bit().constData(),
+                            synth_found->filePath().toLocal8Bit().constData());
                 }
 
-                const bool is_effect = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassEffect;
-                const bool is_synth  = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument;
+                const bool is_effect = info._class & MusEPlugin::PluginClassEffect;
+                const bool is_synth  = info._class & MusEPlugin::PluginClassInstrument;
 
                 const bool add_plug  = (is_effect || is_synth) &&
                                        info._inports > 0 && info._outports > 0 &&
@@ -802,14 +803,15 @@ void initLV2()
                 if(add_plug || add_synth)
                 {
                     const LilvPlugin* plugin = nullptr;
-                    LilvNode* plugin_uri_node = lilv_new_uri(lilvWorld, PLUGIN_GET_CSTRING(info._uri));
+                    LilvNode* plugin_uri_node = lilv_new_uri(lilvWorld, inf_uri.toUtf8().constData());
                     if(plugin_uri_node)
                     {
                         plugin = lilv_plugins_get_by_uri(plugins, plugin_uri_node);
                         lilv_node_free(plugin_uri_node);
                         if(!plugin)
                         {
-                            std::cerr << "LV2Synth: Plugin not found " << PLUGIN_GET_CSTRING(info._label) << "!" << std::endl;
+                            std::cerr << "LV2Synth: Plugin not found " <<
+                              inf_label.toLocal8Bit().constData() << "!" << std::endl;
                             break;
                         }
                     }
@@ -845,15 +847,14 @@ void initLV2()
         }
         break;
 
-        case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
-        case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
-        case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
-        case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
-        case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
-        case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
-        case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
-        case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
-        case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
+        case MusEPlugin::PluginTypeLADSPA:
+        case MusEPlugin::PluginTypeDSSIVST:
+        case MusEPlugin::PluginTypeDSSI:
+        case MusEPlugin::PluginTypeVST:
+        case MusEPlugin::PluginTypeLinuxVST:
+        case MusEPlugin::PluginTypeMESS:
+        case MusEPlugin::PluginTypeUnknown:
+        case MusEPlugin::PluginTypeNone:
             break;
         }
     }
@@ -895,37 +896,41 @@ void initLV2()
       // Now go ahead and scan the textual descriptions of the plugin.
       scanLv2Plugin(plugin, info, supportedFeatures);
 
-      const QString inf_cbname = PLUGIN_GET_QSTRING(info._completeBaseName);
-      const QString inf_name   = PLUGIN_GET_QSTRING(info._name);
-      const QString inf_uri    = PLUGIN_GET_QSTRING(info._uri);
+      const QString inf_cbname   = PLUGIN_GET_QSTRING(info._completeBaseName);
+      const QString inf_name     = PLUGIN_GET_QSTRING(info._name);
+      const QString inf_filepath = PLUGIN_GET_QSTRING(info.filePath());
+      const QString inf_label    = PLUGIN_GET_QSTRING(info._label);
+      const QString inf_uri      = PLUGIN_GET_QSTRING(info._uri);
       const Plugin* plug_found = MusEGlobal::plugins.find(
+        info._type,
         inf_cbname,
         inf_uri,
-        inf_name);
+        inf_label);
       const Synth* synth_found = MusEGlobal::synthis.find(
+        info._type,
         inf_cbname,
         inf_uri,
-        inf_name);
+        inf_label);
 
       if(plug_found)
       {
           fprintf(stderr, "Ignoring LV2 effect name:%s uri:%s path:%s duplicate of path:%s\n",
-                  PLUGIN_GET_CSTRING(info._name),
-                  PLUGIN_GET_CSTRING(info._uri),
-                  PLUGIN_GET_CSTRING(info.filePath()),
-                  plug_found->filePath().toLatin1().constData());
+                  inf_name.toLocal8Bit().constData(),
+                  inf_uri.toLocal8Bit().constData(),
+                  inf_filepath.toLocal8Bit().constData(),
+                  plug_found->filePath().toLocal8Bit().constData());
       }
       if(synth_found)
       {
           fprintf(stderr, "Ignoring LV2 synth name:%s uri:%s path:%s duplicate of path:%s\n",
-                  PLUGIN_GET_CSTRING(info._name),
-                  PLUGIN_GET_CSTRING(info._uri),
-                  PLUGIN_GET_CSTRING(info.filePath()),
-                  synth_found->filePath().toLatin1().constData());
+                  inf_name.toLocal8Bit().constData(),
+                  inf_uri.toLocal8Bit().constData(),
+                  inf_filepath.toLocal8Bit().constData(),
+                  synth_found->filePath().toLocal8Bit().constData());
       }
 
-      const bool is_effect = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassEffect;
-      const bool is_synth  = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument;
+      const bool is_effect = info._class & MusEPlugin::PluginClassEffect;
+      const bool is_synth  = info._class & MusEPlugin::PluginClassInstrument;
 
       const bool add_plug  = (is_effect || is_synth) &&
                               info._inports > 0 && info._outports > 0 &&
@@ -936,7 +941,11 @@ void initLV2()
 
       if(add_plug || add_synth)
       {
-          if(!inf_name.isEmpty())
+          // FIXME: Hm. Could name or label be empty? Keep the synth and remove this line?
+          //        Still, the plugin scanner should never give us an empty label.
+          //        Even if the plugin has no label the scanner should sub something else like the filename.
+          // TODO:  Check how thorough that is. For LinuxVST it *seemed* to be.
+          if(!inf_label.isEmpty())
           {
               LV2Synth *new_synth = new LV2Synth(info, plugin);
               if(new_synth->isConstructed())
@@ -953,7 +962,7 @@ void initLV2()
                   if(add_plug)
                   {
                       if(MusEGlobal::debugMsg)
-                          info.dump(message);
+                          PluginBase::dump(info, message);
                       MusEGlobal::plugins.push_back(new LV2PluginWrapper(new_synth, info._requiredFeatures));
                   }
               }
@@ -1092,14 +1101,61 @@ void LV2Synth::lv2ui_PortWrite(LV2UI_Controller controller, uint32_t port_index,
     LV2Synth::lv2state_PortWrite(controller, port_index, buffer_size, protocol, buffer, true);
 }
 
-void LV2Synth::lv2ui_Touch(LV2UI_Controller /*controller*/, uint32_t /*port_index*/, bool grabbed __attribute__ ((unused)))
+void LV2Synth::lv2ui_Touch(LV2UI_Controller controller, uint32_t port_index, bool grabbed)
 {
+    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)controller;
+
+    assert(state != nullptr); //this shouldn't happen
+    assert(state->inst != nullptr || state->sif != nullptr); // this too
+
+    std::map<uint32_t, uint32_t>::iterator it = state->synth->_idxToControlMap.find(port_index);
+
+    if(it == state->synth->_idxToControlMap.end())
+    {
 #ifdef DEBUG_LV2
-    std::cerr << "LV2Synth::lv2ui_UiTouch: port: %u " << (grabbed ? "grabbed" : "released") << std::endl;
+        std::cerr << "LV2Synth::lv2ui_Touch: wrong port index (" << port_index << ")" << std::endl;
 #endif
+        return;
+    }
 
+    uint32_t cport = it->second;
+
+   AutomationType at = AUTO_OFF;
+   AudioTrack* t = state->sif ? state->sif->track() : state->plugInst->track();
+   int plug_id = state->sif ? state->sif->id() : state->plugInst->id();
+   if(t)
+      at = t->automationType();
+
+   if(t && plug_id != -1)
+   {
+      plug_id = genACnum(plug_id, cport);
+      float val = state->sif ? state->sif->param(cport) : state->plugInst->param(cport);
+      if(grabbed)
+      {
+        t->startAutoRecord(plug_id, val);
+        t->setPluginCtrlVal(plug_id, val);
+      }
+      else
+      {
+        t->stopAutoRecord(plug_id, val);
+      }
+   }
+
+   if (grabbed || (at == AUTO_OFF) || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||
+       (at == AUTO_TOUCH))
+   {
+      if(state->inst != nullptr)
+      {
+          state->plugInst->enableController(cport, !grabbed);
+      }
+      else if(state->sif != nullptr)
+      {
+          state->sif->enableController(cport, !grabbed);
+      }
+   }
+
+   //state->controlTimers [cport] = 1000 / 30; //  1 sec controllers will not be send to guis
 }
-
 
 
 
@@ -1160,6 +1216,10 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
         {
             _ifeatures [i].data = &state->uiRequestValue;
         }
+        else if(i == synth->_fUiTouch)
+        {
+            _ifeatures [i].data = &state->uiTouch;
+        }
         else if(i == synth->_fPrgHost)
         {
             _ifeatures [i].data = &state->prgHost;
@@ -1189,13 +1249,6 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
     }
 
     _ppifeatures [i] = nullptr;
-
-    // REMOVE Tim. lv2. Removed.
-    // No need to fill all these (there are several more now) as they start with zero
-    //  and the next time the send transport routine is called it will update all of them.
-//     state->curBpm = 0.0;//double(60000000.0/MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
-//     state->curIsPlaying = MusEGlobal::audio->isPlaying();
-//     state->curFrame = MusEGlobal::audio->pos().frame();
 
     lv2_atom_forge_init(&state->atomForge, &synth->_lv2_urid_map);
 
@@ -1393,12 +1446,10 @@ void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
 
     state->gtk2Plug = nullptr;
 
-    if(state->uiDlHandle != nullptr)
-    {
-        dlclose(state->uiDlHandle);
-        state->uiDlHandle = nullptr;
-    }
-
+    if(state->uiReferences == 1)
+        state->uiQLib.unload();
+    if(state->uiReferences > 0)
+      --state->uiReferences;
 }
 
 void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
@@ -2077,26 +2128,40 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
         //now open ui library file
 
         // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
-        const  char *uiPath = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)), nullptr);
-
-#ifdef _WIN32
-        state->uiDlHandle = dlopen(uiPath, RTLD_NOW | RTLD_DEFAULT);
-#else
-        state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
-#endif
-
+        const char *uiPath = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)), nullptr);
+        const QString uiPathStr(uiPath);
         lilv_free((void*)uiPath); // Must free.
-        if(state->uiDlHandle == nullptr)
+
+        if(state->uiReferences == 0)
         {
+          state->uiQLib.setFileName(uiPathStr);
+          // Same as dlopen RTLD_NOW.
+          QLibrary::LoadHints hints = QLibrary::ResolveAllSymbolsHint;
+#ifdef _WIN32
+          // TODO: FIXME: Equivalent of dlopen's RTLD_DEFAULT? Someone added this flag for Windows.
+          //hints |= QLibrary::???;
+#endif
+          state->uiQLib.setLoadHints(hints);
+          if(!state->uiQLib.load())
+          {
+            fprintf(stderr, "LV2Synth::lv2ui_ShowNativeGui(): load (%s) failed: %s\n",
+              state->uiQLib.fileName().toLocal8Bit().constData(), state->uiQLib.errorString().toLocal8Bit().constData());
             win->stopNextTime();
             return;
+          }
         }
+
+        ++state->uiReferences;
 
         //find lv2 ui descriptor function and call it to get ui descriptor struct
         LV2UI_DescriptorFunction lv2fUiDesc;
-        *(void **)(&lv2fUiDesc) = dlsym(state->uiDlHandle, "lv2ui_descriptor");
+        lv2fUiDesc = (LV2UI_DescriptorFunction)state->uiQLib.resolve("lv2ui_descriptor");
         if(lv2fUiDesc == nullptr)
         {
+            if(state->uiReferences == 1)
+              state->uiQLib.unload();
+            if(state->uiReferences > 0)
+              --state->uiReferences;
             win->stopNextTime();
             return;
         }
@@ -2115,9 +2180,16 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
 
         if(state->uiDesc == nullptr)
         {
+            if(state->uiReferences == 1)
+              state->uiQLib.unload();
+            if(state->uiReferences > 0)
+              --state->uiReferences;
             win->stopNextTime();
             return;
         }
+
+        // It is important to set a non-null valid human id here because the plugin may try to strdup it.
+        lv2ui_UpdateWindowTitle(state);
 
         void *uiW = nullptr;
         // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
@@ -2241,7 +2313,6 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                 }
 
                 win->show();
-                win->setWindowTitle(state->extHost.plugin_human_id);
             }
             else if(state->hasExternalGui)
             {
@@ -2274,6 +2345,7 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
     LV2Synth *synth = state->synth;
     const char *cKey = synth->unmapUrid(key);
+    bool hasPluginState = false;
 
     assert(cKey != nullptr); //should'n happen
 
@@ -2283,6 +2355,8 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
     {
         if(it.value().second.type() == QVariant::ByteArray)
         {
+            // fprintf(stderr, "lv2state_stateRetreive: Is QVariant::ByteArray\n");
+
             QString sType = it.value().first;
             QByteArray arrType = sType.toUtf8();
             *type = synth->mapUrid(arrType.constData());
@@ -2291,12 +2365,14 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
 
 #ifdef LV2_DEBUG
             QByteArray ba = QByteArray(valArr);
-            ba.append(QChar(0));
+            ba.append(char(0));
             DEBUG_LV2_GENERAL(stderr, "lv2state_stateRetreive synth:%s value:%s size:%d\n", synth->name().toLocal8Bit().constData(), ba.constData(), valArr.size());
 #endif
 
             if(sType.compare(QString(LV2_ATOM__Path)) == 0) //prepend project folder to abstract path
             {
+                // fprintf(stderr, "lv2state_stateRetreive: Type is LV2_ATOM__Path\n");
+
                 // Make everything relative to the plugin config folder.
                 QString cfg_path =
                     MusEGlobal::museProject;
@@ -2324,6 +2400,11 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
                     valArr [len] = 0;
                 }
             }
+            else
+            // It's not a path. Assume it's actual state data.
+            {
+              hasPluginState = true;
+            }
             size_t i;
             size_t numValues = state->numStateValues;
             for(i = 0; i < numValues; ++i)
@@ -2340,6 +2421,10 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
                 memset(state->tmpValues [i], 0, sz);
                 memcpy(state->tmpValues [i], valArr.constData(), sz);
                 *size = sz;
+                // If the data is actual plugin state, inform the caller
+                //  that it was successfully returned to the plugin.
+                if(hasPluginState)
+                  state->tmpHasPluginState = true;
                 return state->tmpValues [i];
             }
         }
@@ -2358,6 +2443,14 @@ LV2_State_Status LV2Synth::lv2state_stateStore(LV2_State_Handle handle, uint32_t
         const char *uriType = synth->unmapUrid(type);
         assert(uriType != nullptr && uriKey != nullptr); //FIXME: buggy plugin or uridBiMap realization?
         QString strKey = QString(uriKey);
+
+        // {
+        //   QByteArray ba = QByteArray((const char *)value, size);
+        //   ba.append(char(0));
+        //   fprintf(stderr, "lv2state_stateStore: name:%s uriKey:%s uriType:%s value:%s\n",
+        //           synth->name().toLocal8Bit().constData(), uriKey, uriType, ba.constData());
+        // }
+
         QMap<QString, QPair<QString, QVariant> >::const_iterator it = state->iStateValues.find(strKey);
         if(it == state->iStateValues.end())
         {
@@ -2366,7 +2459,7 @@ LV2_State_Status LV2Synth::lv2state_stateStore(LV2_State_Handle handle, uint32_t
 
 #ifdef LV2_DEBUG
             QByteArray ba = QByteArray((const char *)value, size);
-            ba.append(QChar(0));
+            ba.append(char(0));
             DEBUG_LV2_GENERAL(stderr, "lv2state_stateStore: name:%s value:%s size:%d\n", synth->name().toLocal8Bit().constData(), ba.constData(), (int)size);
 #endif
 
@@ -2414,7 +2507,12 @@ LV2_Worker_Status LV2Synth::lv2wrk_respond(LV2_Worker_Respond_Handle handle, uin
     return LV2_WORKER_SUCCESS;
 }
 
-void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
+//---------------------------------------------------------
+//   lv2conf_getCustomData
+//---------------------------------------------------------
+
+// Static.
+QString LV2Synth::lv2conf_getCustomData(LV2PluginWrapper_State *state)
 {
     state->iStateValues.clear();
     state->numStateValues = 0;
@@ -2423,14 +2521,6 @@ void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
     {
         state->iState->save(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateStore,
                             state, LV2_STATE_IS_POD, state->_ppifeatures);
-    }
-
-    if(state->sif != nullptr) // write control ports values only for synths
-    {
-        for(size_t c = 0; c < state->sif->_inportsControl; c++)
-        {
-            state->iStateValues.insert(QString(state->sif->_controlInPorts [c].cName), QPair<QString, QVariant>(QString(""), QVariant((double)state->sif->_controls[c].val)));
-        }
     }
 
     if(state->uiCurrent != nullptr)
@@ -2451,13 +2541,13 @@ void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
     {
         customData.insert(pos++,'\n'); // add newlines for readability
     }
-    xml.strTag(level, "customData", customData);
+    return customData;
 }
 
-void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> &customParams)
+bool LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> &customParams)
 {
     if(customParams.size() == 0)
-        return;
+        return false;
 
     state->iStateValues.clear();
     for(size_t i = 0; i < customParams.size(); i++)
@@ -2478,13 +2568,24 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
         break; //one customData tag includes all data in base64
     }
 
+    state->tmpHasPluginState = false;
     size_t numValues = state->iStateValues.size();
     state->numStateValues = numValues;
     if(state->iState != nullptr && numValues > 0)
     {
         state->tmpValues = new char*[numValues];
         memset(state->tmpValues, 0, numValues * sizeof(char *));
-        state->iState->restore(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateRetreive, state, 0, state->_ppifeatures);
+        // According to the docs, the "callback is called repeatedly by the plugin
+        //  to retrieve any properties it requires to restore its state."
+        // But restore() only returns a single value. What if some callbacks succeed and others fail?
+        // (Also, the lilv version lilv_state_restore() does not return a value at all.)
+        // Therefore if the plugin participates in the state feature at all, and there is indeed plugin
+        //  state data besides our own data, our retreive callback will set state->tmpHasPluginState,
+        //  which is used to decide whether to manually set all controls if there was no plugin data
+        //  that would have contained that info already.
+        /*const LV2_State_Status res =*/ state->iState->restore(lilv_instance_get_handle(state->handle),
+                               LV2Synth::lv2state_stateRetreive, state, 0, state->_ppifeatures);
+        //fprintf(stderr, "lv2conf_set: restore result:%d\n", res);
         for(size_t i = 0; i < numValues; ++i)
         {
             if(state->tmpValues [i] != nullptr)
@@ -2493,6 +2594,10 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
         delete [] state->tmpValues;
         state->tmpValues = nullptr;
     }
+
+    // At this point, any QByteArray state values have been restored to the plugin
+    //  and then REMOVED from the state values list, above.
+    // We are now left with QString and floating point number state values...
 
     QMap<QString, QPair<QString, QVariant> >::const_iterator it;
     for(it = state->iStateValues.begin(); it != state->iStateValues.end(); ++it)
@@ -2515,28 +2620,34 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
             }
             else
             {
+                //-----------------------------------------------
+                // Obsolete. Keep for pre-4.0 songfile versions.
+                //-----------------------------------------------
                 if(state->sif != nullptr) //setting control value only for synths
                 {
-
-                    bool ok = false;
-                    float val = (float)qVal.toDouble(&ok);
-                    if(ok)
+                    // We only manually set controls if there was NO state data for that.
+                    // Otherwise a problem might be that the plugin thinks that the controls
+                    //  were manually altered, and flags its current patch as 'modified'.
+                    if(state->tmpHasPluginState)
                     {
-                        const auto& iter = state->controlsNameMap.find(name.toLower());
-                        if(iter != state->controlsNameMap.end())
-                        {
-                            size_t ctrlNum = iter->second;
-                            state->sif->_controls [ctrlNum].val = state->sif->_controls [ctrlNum].tmpVal = val;
-
-                        }
+                      bool ok = false;
+                      float val = (float)qVal.toDouble(&ok);
+                      if(ok)
+                      {
+                          const auto& iter = state->controlsNameMap.find(name.toLower());
+                          if(iter != state->controlsNameMap.end())
+                          {
+                              size_t ctrlNum = iter->second;
+                              state->sif->_controls [ctrlNum].val = val;
+                          }
+                      }
                     }
                 }
             }
-
-
         }
     }
-
+  // Return true to prevent manually setting the controls later (for songfile version >= 4).
+  return state->tmpHasPluginState;
 }
 
 unsigned LV2Synth::lv2ui_IsSupported(const char *, const char *ui_type_uri)
@@ -2914,7 +3025,7 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
                 //at = state->plugInst->_track->automationType();
             }
 
-            //state->plugInst->enableController(cport, false);
+            state->plugInst->enableController(cport, false);
         }
     }
     else if(state->sif != nullptr)
@@ -2934,7 +3045,7 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
                 state->sif->synthI()->recordAutomation(pid, value);
             }
 
-            //state->sif->enableController(cport, false);
+            state->sif->enableController(cport, false);
         }
     }
 
@@ -3174,6 +3285,50 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load, bool updat
     }
 }
 
+// Static
+void LV2Synth::lv2ui_TitleAboutToChange(LV2PluginWrapper_State *state)
+{
+  // If it's an external UI we cannot change the title bar text after creation.
+  // We must close it so that when it opens again it will have the correct text.
+  // Close it even if it exists but is not visible (hidden).
+  if(state->hasExternalGui)
+  {
+    const bool v = (state->plugInst && state->plugInst->nativeGuiVisible()) || (state->sif && state->sif->nativeGuiVisible());
+    lv2ui_ShowNativeGui(state, false, false);
+    // If the UI was visible, schedule it to open again after the title changes.
+    if(state->plugInst)
+      state->plugInst->showNativeGuiPending(v);
+    else if(state->sif)
+      state->sif->showNativeGuiPending(v);
+  }
+}
+
+// Static
+void LV2Synth::lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state)
+{
+  if(state)
+  {
+    if(state->plugInst)
+    {
+      if(state->human_id)
+        free(state->human_id);
+      state->extHost.plugin_human_id = state->human_id =
+        strdup((state->plugInst->track()->displayName() + state->plugInst->name()).toUtf8().constData());
+    }
+    else if(state->sif)
+    {
+      if(state->human_id)
+        free(state->human_id);
+      state->extHost.plugin_human_id = state->human_id =
+        strdup(state->sif->displayName().toUtf8().constData());
+    }
+    else
+      return;
+
+    if(state->pluginWindow)
+      state->pluginWindow->updateWindowTitle(state->extHost.plugin_human_id);
+  }
+}
 
 
 
@@ -3208,7 +3363,6 @@ LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const Lil
   _options(nullptr),
   _isSynth(false),
   _uis(nullptr),
-  _usesTimePosition(false),
   _isConstructed(false),
   _pluginControlsDefault(nullptr),
   _pluginControlsMin(nullptr),
@@ -3329,6 +3483,10 @@ LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const Lil
         else if((std::string(LV2_UI__requestValue) == _features [i].URI))
         {
             _fUiRequestValue = i;
+        }
+        else if((std::string(LV2_UI__touch) == _features [i].URI))
+        {
+            _fUiTouch = i;
         }
         else if((std::string(LV2_PROGRAMS__Host) == _features [i].URI))
         {
@@ -3565,7 +3723,8 @@ LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const Lil
         else if(!optional)
         {
 //#ifdef DEBUG_LV2
-            std::cerr << "plugin has port with unknown type - ignoring plugin " << infoStruct._label.toStdString() << "!" << std::endl;
+            std::cerr << "plugin has port with unknown type - ignoring plugin " <<
+              PLUGIN_GET_STDSTRING(infoStruct._label) << "!" << std::endl;
 //#endif
             if(_nPname != nullptr)
                 lilv_node_free(_nPname);
@@ -3725,26 +3884,36 @@ LV2Synth::~LV2Synth()
     }
 }
 
-Synth::Type LV2Synth::synthType() const {
-        return _isSynth ? Synth::LV2_SYNTH : Synth::LV2_EFFECT;
-}
-
 bool LV2Synth::isSynth() { return _isSynth; }
 size_t LV2Synth::inPorts() { return _audioInPorts.size(); }
 size_t LV2Synth::outPorts() { return _audioOutPorts.size(); }
 bool LV2Synth::isConstructed() {return _isConstructed; }
-bool LV2Synth::usesTimePosition() const { return _usesTimePosition; }
 
+bool LV2Synth::reference()
+{
+  ++_references;
+  return true;
+}
 
+int LV2Synth::release ()
+{
+  if(_references > 0)
+    --_references;
+  return _references;
+}
 
 SynthIF *LV2Synth::createSIF(SynthI *synthi)
 {
-    ++_instances;
+    if(!reference())
+      return nullptr;
+
     LV2SynthIF *sif = new LV2SynthIF(synthi);
 
     if(!sif->init(this))
     {
+        fprintf(stderr, "LV2Synth::createSIF() Error: plugin:%s instantiate failed!\n", _label.toLocal8Bit().constData());
         delete sif;
+        release();
         sif = nullptr;
     }
 
@@ -3919,8 +4088,8 @@ bool LV2SynthIF::init(LV2Synth *s)
     {
         uint32_t idx = _controlInPorts [i].index;
         _controls [i].idx = idx;
-        _controls [i].val = _controls [i].tmpVal = _controlInPorts [i].defVal;
-        if(_synth->_pluginFreewheelType == PluginFreewheelTypePort && _synth->_freewheelPortIndex == i)
+        _controls [i].val = _controlInPorts [i].defVal;
+        if(_synth->_pluginFreewheelType == MusEPlugin::PluginFreewheelTypePort && _synth->_freewheelPortIndex == i)
             _controls [i].enCtrl = false;
         else
             _controls [i].enCtrl = true;
@@ -3948,29 +4117,7 @@ bool LV2SynthIF::init(LV2Synth *s)
             _controls[i].val = cl->curVal();
         }
 
-        float mn, mx;
-        range(i, &mn, &mx);
-        cl->setRange(mn, mx);
-        cl->setName(QString(_controlInPorts [i].cName));
-        CtrlValueType vt = VAL_LINEAR;
-        const LV2ControlPortType_t ct = _controlInPorts[i].cType;
-        if(ct & LV2_PORT_ENUMERATION)
-            vt = VAL_ENUM;
-        else if(ct & LV2_PORT_INTEGER)
-            vt = VAL_INT;
-        else if(ct & LV2_PORT_LOGARITHMIC)
-            vt = VAL_LOG;
-        else if(ct & LV2_PORT_TOGGLE)
-            vt = VAL_BOOL;
-
-        cl->setValueType(vt);
-        // For now we do not allow interpolation of integer or enum controllers.
-        // TODO: It would require custom line drawing and corresponding hit detection.
-        cl->setMode(!_controlInPorts [i].isDiscrete && !(ct & LV2_PORT_NON_CONTINUOUS) ?
-                      CtrlList::INTERPOLATE : CtrlList::DISCRETE);
-
-        // Set the value units index.
-        cl->setValueUnit(valueUnit(i));
+        setupController(cl);
 
         if(!_controlInPorts [i].isCVPort)
             lilv_instance_connect_port(_handle, idx, &_controls [i].val);
@@ -3981,7 +4128,7 @@ bool LV2SynthIF::init(LV2Synth *s)
         uint32_t idx = _controlOutPorts [i].index;
         _controlsOut[i].idx = idx;
         _controlsOut[i].enCtrl  = false;
-        _controlsOut [i].val = _controlsOut [i].tmpVal = _controlOutPorts [i].defVal;
+        _controlsOut [i].val = _controlOutPorts [i].defVal;
         if(!_controlOutPorts [i].isCVPort)
             lilv_instance_connect_port(_handle, idx, &_controlsOut[i].val);
     }
@@ -5080,7 +5227,7 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
     const size_t nop = ((size_t) ports) > _outports ? _outports : ((size_t) ports);
 
     const bool isOn = on();
-    const PluginBypassType bypassType = pluginBypassType();
+    const MusEPlugin::PluginBypassType bypassType = pluginBypassType();
     //  Normally if the plugin is inactive or off we tell it to connect to dummy audio ports.
     //  But this can change depending on detected bypass type, below.
     bool connectToDummyAudioPorts = !_curActiveState || !isOn;
@@ -5095,18 +5242,18 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
     {
       switch(bypassType)
       {
-        case PluginBypassTypeEmulatedEnableController:
-        case PluginBypassTypeEmulatedEnableFunction:
+        case MusEPlugin::PluginBypassTypeEmulatedEnableController:
+        case MusEPlugin::PluginBypassTypeEmulatedEnableFunction:
         break;
 
-        case PluginBypassTypeEnablePort:
-        case PluginBypassTypeBypassPort:
+        case MusEPlugin::PluginBypassTypeEnablePort:
+        case MusEPlugin::PluginBypassTypeBypassPort:
             connectToDummyAudioPorts = false;
             usefixedrate = false;
         break;
 
-        case PluginBypassTypeEnableFunction:
-        case PluginBypassTypeBypassFunction:
+        case MusEPlugin::PluginBypassTypeEnableFunction:
+        case MusEPlugin::PluginBypassTypeBypassFunction:
             connectToDummyAudioPorts = false;
         break;
       }
@@ -5115,7 +5262,10 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
     // See if the features require a fixed control period.
     // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
     //       For now we treat it like fixed control period.
-    if(requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize))
+    if(requiredFeatures() &
+       (MusEPlugin::PluginFixedBlockSize |
+        MusEPlugin::PluginPowerOf2BlockSize |
+        MusEPlugin::PluginCoarseBlockSize))
       usefixedrate = true;
 
     // For now, the fixed size is clamped to the audio buffer size.
@@ -5146,7 +5296,7 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
     LV2EvBuf *evBuf = (_inportsMidi > 0) ? _state->midiInPorts [0].buffer : nullptr;
 
     //set freewheeling property if plugin supports it
-    if(_synth->_pluginFreewheelType == PluginFreewheelTypePort)
+    if(_synth->_pluginFreewheelType == MusEPlugin::PluginFreewheelTypePort)
     {
       _controls [_synth->_freewheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
       // In case the GUI would like to use the new value.
@@ -5227,7 +5377,7 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
                 CtrlList *cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : nullptr;
 
                 //don't process freewheel port
-                if(_synth->_pluginFreewheelType == PluginFreewheelTypePort && _synth->_freewheelPortIndex == k)
+                if(_synth->_pluginFreewheelType == MusEPlugin::PluginFreewheelTypePort && _synth->_freewheelPortIndex == k)
                 {
                     if(cl && icl != cll->end())
                        ++icl;
@@ -5382,7 +5532,7 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
             }
 
             //don't process freewheel port
-            if(_synth->_pluginFreewheelType == PluginFreewheelTypePort && _synth->_freewheelPortIndex == index)
+            if(_synth->_pluginFreewheelType == MusEPlugin::PluginFreewheelTypePort && _synth->_freewheelPortIndex == index)
             {
                 _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
                 continue;
@@ -6040,6 +6190,18 @@ void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
     }
 }
 
+void LV2SynthIF::nativeGuiTitleAboutToChange()
+{
+  if(_synth)
+    _synth->lv2ui_TitleAboutToChange(_state);
+}
+
+void LV2SynthIF::updateNativeGuiWindowTitle()
+{
+  if(_synth)
+    _synth->lv2ui_UpdateWindowTitle(_state);
+}
+
 void LV2SynthIF::setParameter(long unsigned int idx, double value)
 {
     addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
@@ -6047,27 +6209,21 @@ void LV2SynthIF::setParameter(long unsigned int idx, double value)
 
 void LV2SynthIF::showNativeGui(bool bShow)
 {
-    if(track() != nullptr)
-    {
-        if(_state->human_id != nullptr)
-        {
-            free(_state->human_id);
-        }
-
-        _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
-    }
+    PluginIBase::showNativeGui(bShow);
 
     LV2Synth::lv2ui_ShowNativeGui(_state, bShow, cquirks().fixNativeUIScaling());
 }
 
-void LV2SynthIF::write(int level, Xml &xml) const
+std::vector<QString> LV2SynthIF::getCustomData() const
 {
-    LV2Synth::lv2conf_write(_state, level, xml);
+    std::vector<QString> v;
+    v.push_back(LV2Synth::lv2conf_getCustomData(_state));
+    return v;
 }
 
-void LV2SynthIF::setCustomData(const std::vector< QString > &customParams)
+bool LV2SynthIF::setCustomData(const std::vector< QString > &customParams)
 {
-    LV2Synth::lv2conf_set(_state, customParams);
+    return LV2Synth::lv2conf_set(_state, customParams);
 }
 
 
@@ -6376,14 +6532,14 @@ void LV2SynthIF::setParam(long unsigned int i, double val)
 }
 
 void LV2SynthIF::enableController(unsigned long i, bool v)  {
-    _controls[i].enCtrl = v;
+    if(_controls) _controls[i].enCtrl = v;
 }
 bool LV2SynthIF::controllerEnabled(unsigned long i) const   {
-    return _controls[i].enCtrl;
+    return _controls ? _controls[i].enCtrl : true;
 }
 void LV2SynthIF::enableAllControllers(bool v)
 {
-    if(!_synth)
+    if(!_synth || !_controls)
         return;
     for(unsigned long i = 0; i < _inportsControl; ++i)
         _controls[i].enCtrl = v;
@@ -6401,20 +6557,6 @@ void LV2SynthIF::applyPreset(void *preset)
 }
 
 
-
-void LV2SynthIF::writeConfiguration(int level, Xml &xml)
-{
-    MusECore::SynthIF::writeConfiguration(level, xml);
-}
-
-bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
-{
-    return MusECore::SynthIF::readConfiguration(xml, readPreset);
-}
-
-int LV2SynthIF::id() const { return MusECore::MAX_PLUGINS; }
-
-
 //==========================================================
 
 
@@ -6423,7 +6565,7 @@ LV2PluginWrapper_State::LV2PluginWrapper_State():
       _ppifeatures(NULL),
       widget(NULL),
       handle(NULL),
-      uiDlHandle(NULL),
+      uiReferences(0),
       uiDesc(NULL),
       uiInst(NULL),
       inst(NULL),
@@ -6488,6 +6630,9 @@ LV2PluginWrapper_State::LV2PluginWrapper_State():
       uiResize.ui_resize = LV2Synth::lv2ui_Resize;
       uiRequestValue.handle = (LV2UI_Feature_Handle)this;
       uiRequestValue.request = LV2Synth::lv2ui_Request_Value;
+
+      uiTouch.handle = (LV2UI_Feature_Handle)this;
+      uiTouch.touch = LV2Synth::lv2ui_Touch;
 
       prgHost.handle = (LV2_Programs_Handle)this;
       prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
@@ -6610,6 +6755,7 @@ void LV2PluginWrapper_Window::showEvent(QShowEvent *e)
 void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 {
     assert(_state != nullptr);
+
     event->accept();
 
     stopUpdateTimer();
@@ -6771,23 +6917,29 @@ void LV2PluginWrapper_Window::startFromGuiThread()
     updateTimer.start(1000/30);
 }
 
+void LV2PluginWrapper_Window::updateWindowTitle(const QString& title)
+{
+  setWindowTitle(title);
+}
 
-LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures_t reqFeatures)
+LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, MusEPlugin::PluginFeatures_t reqFeatures)
  : Plugin()
 {
     _synth = s;
 
     _requiredFeatures = reqFeatures;
 
-    _fakeLd.Label      = strdup(_synth->name().toUtf8().constData());
+    _fakeLd.Label      = strdup(_synth->label().toUtf8().constData());
     _fakeLd.Name       = strdup(_synth->name().toUtf8().constData());
 // LV2 does not use unique id numbers and frowns upon using anything but the uri.
 //    _fakeLd.UniqueID   = _synth->_uniqueID;
     _fakeLd.UniqueID   = 0;
     _fakeLd.Maker      = strdup(_synth->maker().toUtf8().constData());
     _fakeLd.Copyright  = strdup(_synth->version().toUtf8().constData());
-    _isLV2Plugin = true;
-    _isLV2Synth = s->_isSynth;
+
+    _pluginType = MusEPlugin::PluginTypeLV2;
+    _pluginClass = s->pluginClass();
+
     int numPorts = _synth->_audioInPorts.size()
                    + _synth->_audioOutPorts.size()
                    + _synth->_controlInPorts.size()
@@ -6824,10 +6976,11 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures_t reqFeatures)
     _fakeLd.Properties = 0;
     plugin = &_fakeLd;
 
-    fi = _synth->info;
+    _fileInfo = _synth->_fileInfo;
     _uri = _synth->uri();
-    _label = _synth->name();
-    _name = _synth->description();
+    _label = _synth->label();
+    _name = _synth->name();
+    _description = _synth->description();
     _uniqueID = plugin->UniqueID;
     _maker = _synth->maker();
     _copyright = _synth->version();
@@ -6921,11 +7074,16 @@ void LV2PluginWrapper::connectPort(LADSPA_Handle handle, long unsigned int port,
     lilv_instance_connect_port((LilvInstance *)state->handle, port, (void *)value);
 }
 
-int LV2PluginWrapper::incReferences(int ref)
+bool LV2PluginWrapper::reference()
 {
-    _synth->incInstances(ref);
-    return _synth->instances();
+    return _synth->reference();
 }
+
+int LV2PluginWrapper::release()
+{
+    return _synth->release();
+}
+
 void LV2PluginWrapper::activate(LADSPA_Handle handle)
 {
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
@@ -6976,15 +7134,15 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float latenc
     //  so that it can do its own bypassing.
     // When the plugin is turned on again, the port is again set to the current controller
     //  value, and this code does NOT run.
-    if(!state->plugInst->on() && state->synth->_pluginBypassType == PluginBypassTypeEnablePort)
+    if(!state->plugInst->on() && state->synth->_pluginBypassType == MusEPlugin::PluginBypassTypeEnablePort)
     {
       const long unsigned int enableIdx = state->synth->_enableOrBypassPortIndex;
-      state->plugInst->controls[enableIdx].tmpVal = state->plugInst->controls[enableIdx].val = 0.0f;
+      state->plugInst->controls[enableIdx].val = 0.0f;
       // Inform the GUI.
       state->controlsMask[enableIdx] = true;
     }
 
-    if(state->synth->_pluginFreewheelType == PluginFreewheelTypePort)
+    if(state->synth->_pluginFreewheelType == MusEPlugin::PluginFreewheelTypePort)
     {
       state->plugInst->controls[state->synth->_freewheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
       // In case the GUI would like to use the new value.
@@ -7345,16 +7503,6 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
     assert(p->instances > 0);
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
 
-    if(p->track() != nullptr)
-    {
-        if(state->human_id != nullptr)
-        {
-            free(state->human_id);
-        }
-
-        state->extHost.plugin_human_id = state->human_id = strdup((p->track()->name() + QString(": ") + label()).toUtf8().constData());
-    }
-
     LV2Synth::lv2ui_ShowNativeGui(state, bShow, p->cquirks().fixNativeUIScaling());
 }
 
@@ -7363,6 +7511,22 @@ bool LV2PluginWrapper::nativeGuiVisible(const PluginI *p) const
     assert(p->instances > 0);
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
     return (state->widget != nullptr);
+}
+
+void LV2PluginWrapper::nativeGuiTitleAboutToChange(const PluginI *p)
+{
+  assert(p->instances > 0);
+  LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
+  if(state->synth)
+    state->synth->lv2ui_TitleAboutToChange(state);
+}
+
+void LV2PluginWrapper::updateNativeGuiWindowTitle(const PluginI *p) const
+{
+  assert(p->instances > 0);
+  LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
+  if(state->synth)
+    state->synth->lv2ui_UpdateWindowTitle(state);
 }
 
 void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal)
@@ -7381,20 +7545,19 @@ void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, 
 
 }
 
-void LV2PluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)
+QString LV2PluginWrapper::getCustomConfiguration(LADSPA_Handle handle)
 {
-    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-    assert(state != nullptr);
-
-    LV2Synth::lv2conf_write(state, level, xml);
+  LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+  assert(state != nullptr);
+  return LV2Synth::lv2conf_getCustomData(state);
 }
 
-void LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
+bool LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
 {
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
     assert(state != nullptr);
 
-    LV2Synth::lv2conf_set(state, customParams);
+    return LV2Synth::lv2conf_set(state, customParams);
 }
 
 void LV2PluginWrapper::populatePresetsMenu(PluginI *p, MusEGui::PopupMenu *menu)

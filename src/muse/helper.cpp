@@ -56,6 +56,8 @@
 #include "conf.h"
 #include "synthdialog.h"
 #include "shortcuts.h"
+#include "plugin.h"
+#include "ctrl.h"
 
 #include <strings.h>
 
@@ -169,11 +171,11 @@ void dumpMPEvent(const MEvent* ev)
       fprintf(stderr, "time:%d port:%d chan:%d ", ev->time(), ev->port(), ev->channel()+1);
       if (ev->type() == ME_NOTEON) {   
             QString s = pitch2string(ev->dataA());
-            fprintf(stderr, "NoteOn %s(0x%x) %d\n", s.toLatin1().constData(), ev->dataA(), ev->dataB());
+            fprintf(stderr, "NoteOn %s(0x%x) %d\n", s.toLocal8Bit().constData(), ev->dataA(), ev->dataB());
            }
       else if (ev->type() == ME_NOTEOFF) {  
             QString s = pitch2string(ev->dataA());
-            fprintf(stderr, "NoteOff %s(0x%x) %d\n", s.toLatin1().constData(), ev->dataA(), ev->dataB());
+            fprintf(stderr, "NoteOff %s(0x%x) %d\n", s.toLocal8Bit().constData(), ev->dataA(), ev->dataB());
            }
       else if (ev->type() == ME_SYSEX) {
             fprintf(stderr, "SysEx len %d 0x%0x ...\n", ev->len(), ev->constData()[0]);
@@ -207,7 +209,7 @@ void enumerateJackMidiDevices()
     sl = MusEGlobal::audioDevice->inputPorts(true);
     for(std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
     {
-      QByteArray ba = (*i).toLatin1();
+      QByteArray ba = (*i).toUtf8();
       const char* port_name = ba.constData();
       void* const port = MusEGlobal::audioDevice->findPort(port_name);
       if(port)
@@ -238,7 +240,7 @@ void enumerateJackMidiDevices()
     sl = MusEGlobal::audioDevice->outputPorts(true);
     for(std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
     {
-      QByteArray ba = (*i).toLatin1();
+      QByteArray ba = (*i).toUtf8();
       const char* port_name = ba.constData();
       void* const port = MusEGlobal::audioDevice->findPort(port_name);
       if(port)
@@ -291,7 +293,7 @@ void enumerateJackMidiDevices()
 
     for(std::list<QString>::iterator wi = wsl.begin(); wi != wsl.end(); ++wi)
     {
-      QByteArray w_ba = (*wi).toLatin1();
+      QByteArray w_ba = (*wi).toUtf8();
       const char* w_port_name = w_ba.constData();
 
       bool match_found = false;
@@ -303,7 +305,7 @@ void enumerateJackMidiDevices()
           
         for(std::list<QString>::iterator ri = rsl.begin(); ri != rsl.end(); ++ri)
         {
-          QByteArray r_ba = (*ri).toLatin1();
+          QByteArray r_ba = (*ri).toUtf8();
           const char* r_port_name = r_ba.constData();
 
           void* const r_port = MusEGlobal::audioDevice->findPort(r_port_name);
@@ -416,7 +418,7 @@ void enumerateJackMidiDevices()
       dev = MidiJackDevice::createJackMidiDevice(QString(), 2); // Let it pick the name
       if(dev)
       {
-        QByteArray r_ba = (*ri).toLatin1();
+        QByteArray r_ba = (*ri).toUtf8();
         const char* r_port_name = r_ba.constData();
 
         void* const r_port = MusEGlobal::audioDevice->findPort(r_port_name);
@@ -550,7 +552,7 @@ Part* partFromSerialNumber(const QUuid& serial)
 				return ip->second;
 	}
 
-	printf("ERROR: partFromSerialNumber(%s) wasn't able to find an appropriate part!\n",serial.toString().toLatin1().constData());
+	printf("ERROR: partFromSerialNumber(%s) wasn't able to find an appropriate part!\n",serial.toString().toLocal8Bit().constData());
 	return nullptr;
 }
 
@@ -691,11 +693,11 @@ void write_new_style_drummap(int level, Xml& xml, const char* tagname,
       if (full || dm->mute != idm->mute)   xml.intTag(level, "mute", dm->mute);
       if (full || dm->hide != idm->hide)   xml.intTag(level, "hide", dm->hide);
 
-      xml.tag(--level, "/entry");
+      xml.etag(--level, "entry");
     }
   }
 
-  xml.etag(level, tagname);
+  xml.etag(--level, tagname);
 }
 
 void read_new_style_drummap(Xml& xml, const char* tagname,
@@ -1299,90 +1301,6 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
 }
 
 //---------------------------------------------------------
-//   populateAddSynth
-//---------------------------------------------------------
-
-//QMenu* populateAddSynth(QWidget* parent)
-//{
-//  QMenu* synp = new PopupMenu(parent);
-  
-//  typedef std::multimap<std::string, int > asmap;
-//  typedef std::multimap<std::string, int >::iterator imap;
-  
-//  const int ntypes = MusECore::Synth::SYNTH_TYPE_END;
-//  asmap smaps[ntypes];
-//  PopupMenu* mmaps[ntypes];
-//  for(int itype = 0; itype < ntypes; ++itype)
-//    mmaps[itype] = nullptr;
-  
-//  MusECore::Synth* synth;
-//  MusECore::Synth::Type type;
-
-//  QMap<QString, QAction*> favActions;
-  
-//  int ii = 0;
-//  for(std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin(); i != MusEGlobal::synthis.end(); ++i)
-//  {
-//    synth = *i;
-//    type = synth->synthType();
-
-//// dssi-vst is dead, really no point in keeping this case around
-////#ifdef DSSI_SUPPORT
-////    if (type == MusECore::Synth::DSSI_SYNTH && ((MusECore::DssiSynth*)synth)->isDssiVst() ) // Place Wine VSTs in a separate sub menu
-////      type = MusECore::Synth::VST_SYNTH;
-////#endif
-
-//    if(type >= ntypes)
-//      continue;
-//    smaps[type].insert( std::pair<std::string, int> (synth->description().toLower().toStdString(), ii) );
-  
-//    ++ii;
-//  }
-  
-//  int sz = MusEGlobal::synthis.size();
-//  for(int itype = 0; itype < ntypes; ++itype)
-//  {
-//    for(imap i = smaps[itype].begin(); i != smaps[itype].end(); ++i)
-//    {
-//      int idx = i->second;
-//      if(idx > sz)           // Sanity check
-//        continue;
-//      synth = MusEGlobal::synthis[idx];
-//      if(synth)
-//      {
-//        // No sub-menu yet? Create it now.
-//        if(!mmaps[itype])
-//        {
-//          mmaps[itype] = new PopupMenu(parent);
-//          mmaps[itype]->setToolTipsVisible(true);
-//          mmaps[itype]->setIcon(*synthSVGIcon);
-//          mmaps[itype]->setTitle(MusECore::synthType2String((MusECore::Synth::Type)itype));
-//          synp->addMenu(mmaps[itype]);
-//        }
-//        QAction* act = mmaps[itype]->addAction(synth->description());
-//        act->setData( MENU_ADD_SYNTH_ID_BASE * (itype + 1) + idx );
-//        if(!synth->uri().isEmpty())
-//          act->setToolTip(synth->uri());
-
-//        if (SynthDialog::isFav(synth))
-//            favActions.insert(synth->description().toLower(), act);
-//      }
-//    }
-//  }
-
-//  if (!favActions.isEmpty()) {
-//      QAction *fa = synp->actions().at(0);
-//      synp->insertAction(fa, new MusEGui::MenuTitleItem("Favorites", synp));
-//      for (const auto& it : favActions)
-//          synp->insertAction(fa, it);
-
-//      synp->insertAction(fa, new MusEGui::MenuTitleItem("All", synp));
-//  }
-
-//  return synp;
-//}
-
-//---------------------------------------------------------
 //   populateAddTrack
 //    this is also used in "mixer"
 //---------------------------------------------------------
@@ -1400,7 +1318,6 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* midi = addTrack->addAction(*pianorollSVGIcon,
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Midi Track")));
         midi->setData(MusECore::Track::MIDI);
-//        midi->setShortcut(shortcuts[insert ? SHRT_INSERT_MIDI_TRACK : SHRT_ADD_MIDI_TRACK].key);
         if (addkey)
             midi->setText(midi->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_MIDI_TRACK : SHRT_ADD_MIDI_TRACK].key).toString());
         grp->addAction(midi);
@@ -1408,7 +1325,6 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* drum = addTrack->addAction(*drumeditSVGIcon,
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Drum Track")));
         drum->setData(MusECore::Track::DRUM);
-//        drum->setShortcut(shortcuts[insert ? SHRT_INSERT_DRUM_TRACK : SHRT_ADD_DRUM_TRACK].key);
         if (addkey)
             drum->setText(drum->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_DRUM_TRACK : SHRT_ADD_DRUM_TRACK].key).toString());
         grp->addAction(drum);
@@ -1417,7 +1333,6 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* wave = addTrack->addAction(*waveeditorSVGIcon,
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Wave Track")));
        wave->setData(MusECore::Track::WAVE);
-//       wave->setShortcut(shortcuts[insert ? SHRT_INSERT_WAVE_TRACK : SHRT_ADD_WAVE_TRACK].key);
        if (addkey)
            wave->setText(wave->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_WAVE_TRACK : SHRT_ADD_WAVE_TRACK].key).toString());
        grp->addAction(wave);
@@ -1427,7 +1342,6 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* aoutput = addTrack->addAction(*trackOutputSVGIcon,
                                                qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Audio Output")));
         aoutput->setData(MusECore::Track::AUDIO_OUTPUT);
-//        aoutput->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_OUTPUT : SHRT_ADD_AUDIO_OUTPUT].key);
         if (addkey)
             aoutput->setText(aoutput->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_AUDIO_OUTPUT : SHRT_ADD_AUDIO_OUTPUT].key).toString());
         grp->addAction(aoutput);
@@ -1437,7 +1351,6 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* agroup = addTrack->addAction(*trackGroupVGIcon,
                                               qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Audio Group")));
         agroup->setData(MusECore::Track::AUDIO_GROUP);
-//        agroup->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_GROUP : SHRT_ADD_AUDIO_GROUP].key);
         if (addkey)
             agroup->setText(agroup->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_AUDIO_GROUP : SHRT_ADD_AUDIO_GROUP].key).toString());
         grp->addAction(agroup);
@@ -1447,7 +1360,6 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* ainput = addTrack->addAction(*trackInputSVGIcon,
                                               qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Audio Input")));
         ainput->setData(MusECore::Track::AUDIO_INPUT);
-//        ainput->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_INPUT : SHRT_ADD_AUDIO_INPUT].key);
         if (addkey)
             ainput->setText(ainput->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_AUDIO_INPUT : SHRT_ADD_AUDIO_INPUT].key).toString());
         grp->addAction(ainput);
@@ -1457,7 +1369,6 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* aaux = addTrack->addAction(*trackAuxSVGIcon,
                                             qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Aux Send")));
         aaux->setData(MusECore::Track::AUDIO_AUX);
-//        aaux->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_AUX : SHRT_ADD_AUDIO_AUX].key);
         if (addkey)
             aaux->setText(aaux->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_AUDIO_AUX : SHRT_ADD_AUDIO_AUX].key).toString());
         grp->addAction(aaux);
@@ -1468,7 +1379,6 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
           QAction *asynthd = addTrack->addAction(*synthSVGIcon,
                                                    qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synths...")));
           asynthd->setData(MusECore::Track::AUDIO_SOFTSYNTH);
-//          asynthd->setShortcut(shortcuts[insert ? SHRT_INSERT_SYNTH_TRACK : SHRT_ADD_SYNTH_TRACK].key);
           if (addkey)
               asynthd->setText(asynthd->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_SYNTH_TRACK : SHRT_ADD_SYNTH_TRACK].key).toString());
           grp->addAction(asynthd);
@@ -1479,7 +1389,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
               synfav->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Favorites")));
 
               for (const auto it : favsIdx) {
-                  synfav->addAction(MusEGlobal::synthis[it]->description())->setData(MENU_ADD_SYNTH_ID_BASE + it);
+                  synfav->addAction(MusEGlobal::synthis[it]->name())->setData(MENU_ADD_SYNTH_ID_BASE + it);
               }
               addTrack->addMenu(synfav);
           }
@@ -1487,26 +1397,16 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
           auto recentsIdx = SynthDialog::getRecentsIdx();
           if (!recentsIdx.empty()) {
               addTrack->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Recently Used")), addTrack));
-//              QMenu* synrec = new QMenu(addTrack);
-//              synrec->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Recently Used")));
 
               int ik = 0;
               for (const auto it : recentsIdx) {
-                  QAction *a = new QAction("&" + QString::number(++ik) + " " + MusEGlobal::synthis[it]->description(), addTrack);
+                  QAction *a = new QAction("&" + QString::number(++ik) + " " + MusEGlobal::synthis[it]->name(), addTrack);
                   a->setData(MENU_ADD_SYNTH_ID_BASE + it);
                   addTrack->addAction(a);
-//                  addTrack->addAction(MusEGlobal::synthis[it]->description())->setData(MENU_ADD_SYNTH_ID_BASE + it);
                   if (ik >= SynthDialog::RECENTS_SIZE)
                       break;
               }
           }
-
-//          // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
-//          QMenu* synp = populateAddSynth(addTrack);
-//          synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synth")));
-
-//          // Add the sub-menu to the given menu.
-//          addTrack->addMenu(synp);
       }
 
       return grp;
@@ -2161,8 +2061,8 @@ QRect normalizeQRect(const QRect& rect)
 
 //            if (MusEGlobal::debugMsg)
 //            {
-//                fprintf(stderr, "loadQtStyle: Setting app style to default: %s\n", Appearance::getSetDefaultStyle().toLatin1().constData());
-//                fprintf(stderr, "   App style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//                fprintf(stderr, "loadQtStyle: Setting app style to default: %s\n", Appearance::getSetDefaultStyle().toLocal8Bit().constData());
+//                fprintf(stderr, "   App style is now: %s\n", qApp->style()->objectName().toLocal8Bit().constData());
 //            }
 
 //            // No style object name? It will happen when a stylesheet is active.
@@ -2172,7 +2072,7 @@ QRect normalizeQRect(const QRect& rect)
 //            {
 //                qApp->style()->setObjectName(Appearance::getSetDefaultStyle().toLower());
 //                if (MusEGlobal::debugMsg)
-//                    fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//                    fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLocal8Bit().constData());
 //            }
 //        }
 //    }
@@ -2183,8 +2083,8 @@ QRect normalizeQRect(const QRect& rect)
 
 //        if(MusEGlobal::debugMsg)
 //        {
-//            fprintf(stderr, "loadTheme setting app style to: %s\n", style.toLatin1().constData());
-//            fprintf(stderr, "   app style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//            fprintf(stderr, "loadTheme setting app style to: %s\n", style.toLocal8Bit().constData());
+//            fprintf(stderr, "   app style is now: %s\n", qApp->style()->objectName().toLocal8Bit().constData());
 //        }
 
 //        // No style object name? It will happen when a stylesheet is active.
@@ -2194,7 +2094,7 @@ QRect normalizeQRect(const QRect& rect)
 //        {
 //            qApp->style()->setObjectName(style.toLower());
 //            if(MusEGlobal::debugMsg)
-//                fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//                fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLocal8Bit().constData());
 //        }
 //    }
 //}
@@ -2209,7 +2109,7 @@ void loadTheme(const QString& theme)
         return;
 
     if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadTheme: %s\n", theme.toLatin1().constData());
+        fprintf(stderr, "loadTheme: %s\n", theme.toLocal8Bit().constData());
 
     QString stylePathUser = MusEGlobal::configPath + "/themes/" + theme + ".qss";
     QString stylePathDef = MusEGlobal::museGlobalShare + "/themes/" + theme + ".qss";
@@ -2275,7 +2175,7 @@ void loadTheme(const QString& theme)
 void loadThemeColors(const QString& theme)
 {
     if (MusEGlobal::debugMsg)
-        fprintf(stderr, "loadThemeColors: %s\n", theme.toLatin1().constData());
+        fprintf(stderr, "loadThemeColors: %s\n", theme.toLocal8Bit().constData());
 
     QString configColorPath = MusEGlobal::configPath + "/themes/" + theme + ".cfc";
     if (!QFile::exists(configColorPath)) {

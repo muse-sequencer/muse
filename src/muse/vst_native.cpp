@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
-#include <dlfcn.h>
 #include "muse_math.h"
 #include <set>
 #include <string>
@@ -52,6 +51,7 @@
 #include "sync.h"
 #include "sig.h"
 #include "minstrument.h"
+#include "hex_float.h"
 
 #include "vst_native.h"
 #include "pluglist.h"
@@ -117,7 +117,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
       // No instance found. So we are just scanning for plugins...
     
 #ifdef VST_NATIVE_DEBUG      
-      fprintf(stderr, "vstNativeHostCallback eff:%p opcode:%ld\n", effect, opcode);
+      fprintf(stderr, "vstNativeHostCallback eff:%p opcode:%d\n", effect, opcode);
 #endif      
       
       switch (opcode) {
@@ -353,42 +353,45 @@ void initVST_Native()
     const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
     switch(info._type)
     {
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
+      case MusEPlugin::PluginTypeLinuxVST:
       {
 #ifdef VST_NATIVE_SUPPORT
         if(MusEGlobal::loadNativeVST)
         {
           const QString inf_cbname = PLUGIN_GET_QSTRING(info._completeBaseName);
           const QString inf_name   = PLUGIN_GET_QSTRING(info._name);
+          const QString inf_label  = PLUGIN_GET_QSTRING(info._label);
           const QString inf_uri    = PLUGIN_GET_QSTRING(info._uri);
           const Plugin* plug_found = MusEGlobal::plugins.find(
+            info._type,
             inf_cbname,
             inf_uri,
-            inf_name);
+            inf_label);
           const Synth* synth_found = MusEGlobal::synthis.find(
+            info._type,
             inf_cbname,
             inf_uri,
-            inf_name);
-          
+            inf_label);
+
           if(plug_found)
           {
             fprintf(stderr, "Ignoring LinuxVST effect name:%s uri:%s path:%s duplicate of path:%s\n",
-                    PLUGIN_GET_CSTRING(info._name),
-                    PLUGIN_GET_CSTRING(info._uri),
-                    PLUGIN_GET_CSTRING(info.filePath()),
-                    plug_found->filePath().toLatin1().constData());
+                    inf_name.toLocal8Bit().constData(),
+                    inf_uri.toLocal8Bit().constData(),
+                    PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+                    plug_found->filePath().toLocal8Bit().constData());
           }
           if(synth_found)
           {
             fprintf(stderr, "Ignoring LinuxVST synth name:%s uri:%s path:%s duplicate of path:%s\n",
-                    PLUGIN_GET_CSTRING(info._name),
-                    PLUGIN_GET_CSTRING(info._uri),
-                    PLUGIN_GET_CSTRING(info.filePath()),
-                    synth_found->filePath().toLatin1().constData());
+                    inf_name.toLocal8Bit().constData(),
+                    inf_uri.toLocal8Bit().constData(),
+                    PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+                    synth_found->filePath().toLocal8Bit().constData());
           }
           
-          const bool is_effect = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassEffect;
-          const bool is_synth  = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument;
+          const bool is_effect = info._class & MusEPlugin::PluginClassEffect;
+          const bool is_synth  = info._class & MusEPlugin::PluginClassInstrument;
           
           const bool add_plug  = (is_effect || is_synth) &&
                                  info._inports > 0 && info._outports > 0 &&
@@ -405,11 +408,11 @@ void initVST_Native()
             {
               if(MusEGlobal::debugMsg)
                 fprintf(stderr, "scanVstNativeLib: adding vst synth plugin:%s name:%s effectName:%s vendorString:%s productString:%s vstver:%d\n",
-                        PLUGIN_GET_CSTRING(info.filePath()),
-                        PLUGIN_GET_CSTRING(info._completeBaseName),
-                        PLUGIN_GET_CSTRING(info._name),
-                        PLUGIN_GET_CSTRING(info._maker),
-                        PLUGIN_GET_CSTRING(info._description),
+                        PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+                        inf_cbname.toLocal8Bit().constData(),
+                        inf_name.toLocal8Bit().constData(),
+                        PLUGIN_GET_QSTRING(info._maker).toLocal8Bit().constData(),
+                        PLUGIN_GET_QSTRING(info._description).toLocal8Bit().constData(),
                         info._apiVersionMajor
                         );
 
@@ -419,7 +422,7 @@ void initVST_Native()
             if(add_plug)
             {
               if(MusEGlobal::debugMsg)
-                info.dump(message);
+                PluginBase::dump(info, message);
               MusEGlobal::plugins.push_back( new VstNativePluginWrapper(new_synth, info._requiredFeatures) );
             }
           }
@@ -428,15 +431,15 @@ void initVST_Native()
       }
       break;
       
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
+      case MusEPlugin::PluginTypeLADSPA:
+      case MusEPlugin::PluginTypeDSSIVST:
+      case MusEPlugin::PluginTypeDSSI:
+      case MusEPlugin::PluginTypeVST:
+      case MusEPlugin::PluginTypeLV2:
+      case MusEPlugin::PluginTypeMESS:
+      case MusEPlugin::PluginTypeMETRONOME:
+      case MusEPlugin::PluginTypeUnknown:
+      case MusEPlugin::PluginTypeNone:
       break;
     }
   }
@@ -448,44 +451,70 @@ void initVST_Native()
 //---------------------------------------------------------
 
 VstNativeSynth::VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info)
-  : Synth(info), _handle(nullptr)
+  : Synth(info)
 {
-  _id = info._subID;
-  _hasGui = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::HasGui;
+  _id = info._uniqueID;
+  _hasGui = info._pluginFlags & MusEPlugin::PluginHasGui;
   _inports = info._inports;
   _outports = info._outports;
   _controlInPorts = info._controlInPorts;
-  _hasChunks = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::HasChunks;
+  _hasChunks = info._pluginFlags & MusEPlugin::PluginHasChunks;
   _vst_version = info._apiVersionMajor;
   _flags = info._vstPluginFlags;
-  _isSynth = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument;
-  _usesTransportSource = info._vstPluginFlags & canReceiveVstTimeInfo;
+  _usesTransportSource = info._vstPluginFlags & MusEPlugin::canReceiveVstTimeInfo;
 }
 
 //---------------------------------------------------------
-//   incInstances
+//   reference
 //---------------------------------------------------------
 
-void VstNativeSynth::incInstances(int val)
+bool VstNativeSynth::reference()
 {
-  _instances += val;
-  if(_instances == 0)
+  if(_references == 0)
   {
-    if(_handle && _id == 0)
+    _qlib.setFileName(filePath());
+    // Same as dlopen RTLD_NOW.
+    _qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    if(!_qlib.load())
     {
-      #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynth::incInstances no more instances, closing library\n");
-      #endif
-
-      dlclose(_handle);
-      _handle = nullptr;
+      fprintf(stderr, "VstNativeSynth::reference: load (%s) failed: %s\n",
+        _qlib.fileName().toLocal8Bit().constData(), _qlib.errorString().toLocal8Bit().constData());
+      return false;
     }
+  }
+
+  ++_references;
+
+  return true;
+}
+
+//---------------------------------------------------------
+//   release
+//---------------------------------------------------------
+
+int VstNativeSynth::release()
+{
+  if(_references == 1)
+  {
+    // Attempt to unload the library.
+    // It will remain loaded if the plugin has shell plugins still in use or there are other references.
+    const bool ulres = _qlib.unload();
+    // Dummy usage stops unused warnings.
+    (void)ulres;
+    #ifdef VST_NATIVE_DEBUG
+    fprintf(stderr, "VstNativeSynth::release(): No more instances. Result of unloading library %s: %d\n",
+      _qlib.fileName().toLocal8Bit().constData(), ulres);
+    #endif
+
     iIdx.clear();
     oIdx.clear();
     rpIdx.clear();
     midiCtl2PortMap.clear();
     port2MidiCtlMap.clear();
   }
+  if(_references > 0)
+    --_references;
+  return _references;
 }
 
 //---------------------------------------------------------
@@ -494,42 +523,25 @@ void VstNativeSynth::incInstances(int val)
 
 AEffect* VstNativeSynth::instantiate(void* userData)
 {
-  int inst_num = _instances;
-  inst_num++;
-  QString n;
-  n.setNum(inst_num);
-  QString instanceName = baseName() + "-" + n;
-  QByteArray ba = info.filePath().toLatin1();
-  const char* path = ba.constData();
-  void* hnd = _handle;
-  //int vst_version;
-
-  if(hnd == nullptr)
-  {
-    hnd = dlopen(path, RTLD_NOW);
-    if(hnd == nullptr)
-    {
-      fprintf(stderr, "dlopen(%s) failed: %s\n", path, dlerror());
-      return nullptr;
-    }
-  }
+  if(!reference())
+    return nullptr;
 
   AEffect *(*getInstance)(audioMasterCallback);
-  getInstance = (AEffect*(*)(audioMasterCallback))dlsym(hnd, NEW_PLUGIN_ENTRY_POINT);
+  getInstance = (AEffect*(*)(audioMasterCallback))_qlib.resolve(NEW_PLUGIN_ENTRY_POINT);
   if(!getInstance)
   {
     if(MusEGlobal::debugMsg)
     {
       fprintf(stderr, "VST 2.4 entrypoint \"" NEW_PLUGIN_ENTRY_POINT "\" not found in library %s, looking for \""
-                      OLD_PLUGIN_ENTRY_POINT "\"\n", path);
+                      OLD_PLUGIN_ENTRY_POINT "\"\n", _qlib.fileName().toLocal8Bit().constData());
     }
 
-    getInstance = (AEffect*(*)(audioMasterCallback))dlsym(hnd, OLD_PLUGIN_ENTRY_POINT);
+    getInstance = (AEffect*(*)(audioMasterCallback))_qlib.resolve(OLD_PLUGIN_ENTRY_POINT);
     if(!getInstance)
     {
       fprintf(stderr, "ERROR: VST entrypoints \"" NEW_PLUGIN_ENTRY_POINT "\" or \""
                       OLD_PLUGIN_ENTRY_POINT "\" not found in library\n");
-      dlclose(hnd);
+      release();
       return nullptr;
     }
     else if(MusEGlobal::debugMsg)
@@ -552,9 +564,8 @@ AEffect* VstNativeSynth::instantiate(void* userData)
   sem_post(&_vstIdLock);
   if(!plugin)
   {
-    fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", path);
-    if(_id == 0)
-      dlclose(hnd);
+    fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", _qlib.fileName().toLocal8Bit().constData());
+    release();
     return nullptr;
   }
   else if(MusEGlobal::debugMsg)
@@ -562,9 +573,8 @@ AEffect* VstNativeSynth::instantiate(void* userData)
 
   if(plugin->magic != kEffectMagic)
   {
-    fprintf(stderr, "Not a VST plugin in library \"%s\"\n", path);
-    if(_id == 0)
-      dlclose(hnd);
+    fprintf(stderr, "Not a VST plugin in library \"%s\"\n", _qlib.fileName().toLocal8Bit().constData());
+    release();
     return nullptr;
   }
   else if(MusEGlobal::debugMsg)
@@ -585,28 +595,7 @@ AEffect* VstNativeSynth::instantiate(void* userData)
 
   plugin->user = userData;
 
-  // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
-  //vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, nullptr, 0.0f);
-  /*if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
-  {
-    if(MusEGlobal::debugMsg)
-      fprintf(stderr, "Plugin is not a synth\n");
-    goto _error;
-  }*/
-
-
-  ++_instances;
-  _handle = hnd;
-
   return plugin;
-/*
-_error:
-  //plugin->dispatcher(plugin, effMainsChanged, 0, 0, nullptr, 0);
-  plugin->dispatcher(plugin, effClose, 0, 0, nullptr, 0);
-  if(_id == 0)
-    dlclose(hnd);
-  return nullptr;
-  */
 }
 
 //---------------------------------------------------------
@@ -700,9 +689,9 @@ VstNativeSynthIF::~VstNativeSynthIF()
 //   init
 //---------------------------------------------------------
 
-bool VstNativeSynthIF::init(Synth* s)
+bool VstNativeSynthIF::init(VstNativeSynth* s)
       {
-      _synth = (VstNativeSynth*)s;
+      _synth = s;
       _plugin = _synth->instantiate(&userData);
       if(!_plugin)
         return false;
@@ -813,21 +802,13 @@ bool VstNativeSynthIF::init(Synth* s)
         _controls[i].idx = i;
         //float val;  // TODO
         //ladspaDefaultValue(ld, k, &val);   // FIXME TODO
-        float val = _plugin->getParameter(_plugin, i);  // TODO
-        _controls[i].val    = val;
-        _controls[i].tmpVal = val;
+        // Port value is not used with VST.
+        _controls[i].val    = 0.0;
         _controls[i].enCtrl  = true;
 
         // Support a special block for synth ladspa controllers.
         // Put the ID at a special block after plugins (far after).
         int id = genACnum(MusECore::MAX_PLUGINS, i);
-        const char* param_name = paramName(i);
-
-        // TODO FIXME!
-        ///float min, max;
-        ///ladspaControlRange(ld, k, &min, &max);
-        float min = 0.0, max = 1.0;
-
         CtrlList* cl;
         CtrlListList* cll = track()->controller();
         iCtrlList icl = cll->find(id);
@@ -835,14 +816,11 @@ bool VstNativeSynthIF::init(Synth* s)
         {
           cl = new CtrlList(id);
           cll->add(cl);
-          cl->setCurVal(_controls[i].val);
-          //cl->setCurVal(_plugin->getParameter(_plugin, i));
+          cl->setCurVal(_plugin->getParameter(_plugin, i));
         }
         else
         {
           cl = icl->second;
-          _controls[i].val = cl->curVal();
-          
           if(dispatch(effCanBeAutomated, i, 0, nullptr, 0.0f) == 1)
           {
             double v = cl->curVal();
@@ -852,16 +830,12 @@ bool VstNativeSynthIF::init(Synth* s)
 
   #ifdef VST_NATIVE_DEBUG
           else  
-            fprintf(stderr, "VstNativeSynthIF::init %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), i);
+            fprintf(stderr, "VstNativeSynthIF::init %s parameter:%lu cannot be automated\n",
+                    name().toLocal8Bit().constData(), i);
   #endif
         }
         
-        cl->setRange(min, max);
-        cl->setName(QString(param_name));
-        cl->setValueType(ctrlValueType(i));
-        cl->setMode(ctrlMode(i));
-        // Set the value units index.
-        cl->setValueUnit(valueUnit(i));
+        setupController(cl);
       }
       
       activate();     
@@ -886,19 +860,35 @@ bool VstNativeSynth::resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h
     return true;
 }
 
+// Static
+void VstNativeSynth::guiUpdateWindowTitle(VstNativeSynthOrPlugin *userData)
+{
+  if(userData)
+  {
+    if(userData->pstate && userData->pstate->pluginI && userData->pstate->pluginI->track() && userData->pstate->editor)
+    {
+      const QString newtitle = userData->pstate->pluginI->track()->displayName() + userData->pstate->pluginI->pluginName();
+      userData->pstate->editor->updateWindowTitle(newtitle);
+    }
+    else if(userData->sif && userData->sif->_editor)
+    {
+      const QString newtitle = userData->sif->displayName();
+      userData->sif->_editor->updateWindowTitle(newtitle);
+    }
+  }
+}
+
 //---------------------------------------------------------
-//   vstconfWrite
+//   vstconfGetCustomData
 //---------------------------------------------------------
 
-void VstNativeSynth::vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml)
+QString VstNativeSynth::vstconfGetCustomData(AEffect *plugin)
 {
    if(hasChunks())
    {
       //---------------------------------------------
       // dump current state of synth
       //---------------------------------------------
-      fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n",
-              name.toLatin1().constData(), vstVersion());
       unsigned long len = 0;
       void* p = 0;
       len = plugin->dispatcher(plugin, effGetChunk, 0, 0, &p, 0.0);
@@ -908,31 +898,33 @@ void VstNativeSynth::vstconfWrite(AEffect *plugin, const QString& name, int leve
 
          // Weee! Compression!
          QByteArray outEnc64 = qCompress(arrOut).toBase64();
-         
+
          QString customData(outEnc64);
          for (int pos=0; pos < customData.size(); pos+=150)
          {
             customData.insert(pos++,'\n'); // add newlines for readability
          }
-         xml.strTag(level, "customData", customData);
+         return customData;
       }
    }
+   return QString();
 }
 
 //---------------------------------------------------------
 //   vstconfSet
 //---------------------------------------------------------
 
-void VstNativeSynth::vstconfSet(AEffect *plugin, const std::vector<QString> &customParams)
+bool VstNativeSynth::vstconfSet(AEffect *plugin, const std::vector<QString> &customParams)
 {
    if(customParams.size() == 0)
-      return;
+      return false;
 
    if(!hasChunks())
    {
-      return;
+      return false;
    }
 
+   bool hasCustomData = false;
    for(size_t i = 0; i < customParams.size(); i++)
    {
       QString param = customParams [i];
@@ -946,8 +938,10 @@ void VstNativeSynth::vstconfSet(AEffect *plugin, const std::vector<QString> &cus
         dec64 = QByteArray::fromBase64(paramIn);
       
       plugin->dispatcher(plugin, effSetChunk, 0, dec64.size(), (void*)dec64.data(), 0.0); // index 0: is bank 1: is program
+      hasCustomData = true;
       break; //one customData tag includes all data in base64
    }
+   return hasCustomData;
 }
 
 void VstNativeSynth::setPluginEnabled(AEffect *plugin, bool en)
@@ -965,7 +959,14 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
 
 #ifdef VST_NATIVE_DEBUG
    if(opcode != audioMasterGetTime)
-      fprintf(stderr, "VstNativeSynthIF::hostCallback %s opcode:%ld\n", name().toLatin1().constData(), opcode);
+   {
+     QString name;
+     if(userData->sif)
+        name = userData->sif->pluginName();
+     else if(userData->pstate)
+        name = userData->pstate->pluginI->pluginName();
+     fprintf(stderr, "VstNativeSynth::hostCallback %s opcode:%d\n", name.toLocal8Bit().constData(), opcode);
+   }
 #endif
 
    switch (opcode) {
@@ -1015,8 +1016,8 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       //              due to our multi-run slices. Some of the (costly) info will be redundant.
       //             So try to add some flag to try to only call some or all of this once per cycle.
 
-#ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::hostCallback master time: valid: nanos:%d ppqpos:%d tempo:%d bars:%d cyclepos:%d sig:%d smpte:%d clock:%d\n",
+#ifdef VST_NATIVE_DEBUG_PROCESS
+      fprintf(stderr, "VstNativeSynth::hostCallback master time: valid: nanos:%d ppqpos:%d tempo:%d bars:%d cyclepos:%d sig:%d smpte:%d clock:%d\n",
               (bool)(value & kVstNanosValid),
               (bool)(value & kVstPpqPosValid),
               (bool)(value & kVstTempoValid),
@@ -1109,8 +1110,8 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
          _timeInfo.flags |= kVstTempoValid;
       }
 
-#ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::hostCallback master time: sample pos:%f samplerate:%f sig num:%ld den:%ld tempo:%f\n",
+#ifdef VST_NATIVE_DEBUG_PROCESS
+      fprintf(stderr, "VstNativeSynth::hostCallback master time: sample pos:%f samplerate:%f sig num:%d den:%d tempo:%f\n",
               _timeInfo.samplePos, _timeInfo.sampleRate, _timeInfo.timeSigNumerator, _timeInfo.timeSigDenominator, _timeInfo.tempo);
 #endif
 
@@ -1133,7 +1134,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
      VstEvents* ve = (VstEvents*)ptr;
      int num_ev = ve->numEvents;
 #ifdef VST_NATIVE_DEBUG
-     fprintf(stderr, "VstNativeSynthIF::hostCallback audioMasterProcessEvents: numEvents:%d\n", num_ev);
+     fprintf(stderr, "VstNativeSynth::hostCallback audioMasterProcessEvents: numEvents:%d\n", num_ev);
 #endif
      for(int i = 0; i < num_ev; ++i)
      {
@@ -1412,7 +1413,7 @@ void VstNativeSynthIF::guiHeartBeat()
 {
   SynthIF::guiHeartBeat();
 
-#ifdef VST_NATIVE_DEBUG
+#ifdef VST_NATIVE_DEBUG_PROCESS
   fprintf(stderr, "VstNativeSynthIF::guiHeartBeat %p\n", this);
 #endif
 
@@ -1440,6 +1441,8 @@ bool VstNativeSynthIF::nativeGuiVisible() const
 
 void VstNativeSynthIF::showNativeGui(bool v)
       {
+      PluginIBase::showNativeGui(v);
+
       if(!(_plugin->flags & effFlagsHasEditor)) // || v == nativeGuiVisible())
             return;
       if(v)
@@ -1462,6 +1465,7 @@ void VstNativeSynthIF::showNativeGui(bool v)
           _editor = new MusEGui::VstNativeEditor(nullptr, wflags);
           _editor->open(this, nullptr);
         }
+        updateNativeGuiWindowTitle();
       }
       else
       {
@@ -1502,6 +1506,12 @@ void VstNativeSynthIF::setNativeGeometry(int x, int y, int w, int h)
     return;
 
   _editor->setGeometry(x, y, w, h);
+}
+
+void VstNativeSynthIF::updateNativeGuiWindowTitle()
+{
+  if(_synth)
+    _synth->guiUpdateWindowTitle(&userData);
 }
 
 //---------------------------------------------------------
@@ -1737,7 +1747,8 @@ void VstNativeSynthIF::deactivate3()
       {
       if(_editor)
       {
-        delete _editor;
+        // Don't delete the editor directly here. Call close.
+        _editor->close();
         _editor = nullptr;
         _guiVisible = false;
       }
@@ -1853,9 +1864,7 @@ void VstNativeSynthIF::doSelectProgram(int bankH, int bankL, int prog)
       // We're in the audio thread context: no need to send a message, just modify directly.
       //synti->setPluginCtrlVal(genACnum(id(), k), _controls[k].val);
       //synti->setPluginCtrlVal(genACnum(id(), k), _plugin->getParameter(_plugin, k));
-      const float v = _plugin->getParameter(_plugin, k);
-      _controls[k].val = v;
-      synti->setPluginCtrlVal(genACnum(id(), k), v);
+      synti->setPluginCtrlVal(genACnum(id(), k), _plugin->getParameter(_plugin, k));
     }
   }
 
@@ -1955,13 +1964,7 @@ void VstNativeSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/
 
 double VstNativeSynthIF::getParameter(unsigned long idx) const
       {
-      if(idx >= _synth->inControls())
-      {
-        fprintf(stderr, "VstNativeSynthIF::getParameter param number %lu out of range of ports:%lu\n", idx, _synth->inControls());
-        return 0.0;
-      }
-
-      return _plugin->getParameter(_plugin, idx);
+        return _plugin->getParameter(_plugin, idx);
       }
 
 //---------------------------------------------------------
@@ -1979,51 +1982,19 @@ void VstNativeSynthIF::setParameter(unsigned long idx, double value)
 
 void VstNativeSynth::guiAutomationBegin(VstNativeSynthOrPlugin *userData, unsigned long param_idx)
 {
-   //_gw[param_idx].pressed = true; //not used
    AudioTrack* t = userData->sif ? userData->sif->track() : userData->pstate->pluginI->track();
    int plug_id = userData->sif ? userData->sif->id() : userData->pstate->pluginI->id();
    if(t && plug_id != -1)
    {
       plug_id = genACnum(plug_id, param_idx);
-
-      //if(params[param].type == GuiParam::GUI_SLIDER)
-      //{
-      //double val = ((Slider*)params[param].actuator)->value();
       float val = userData->sif ? userData->sif->param(param_idx) : userData->pstate->pluginI->param(param_idx);
-      // FIXME TODO:
-      //if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-      //      val = pow(10.0, val/20.0);
-      //else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-      //      val = rint(val);
-      //plugin->setParam(param, val);
-      //((DoubleLabel*)params[param].label)->setValue(val);
-
-      //if(t)
-      //{
       t->startAutoRecord(plug_id, val);
       t->setPluginCtrlVal(plug_id, val);
-      //}
-      //}
-      //   else if(params[param].type == GuiParam::GUI_SWITCH)
-      //   {
-      //     float val = (float)((CheckBox*)params[param].actuator)->isChecked();
-      //     plugin->setParam(param, val);
-      //
-      //     //if(t)
-      //     //{
-      //       t->startAutoRecord(plug_id, val);
-      //       t->setPluginCtrlVal(plug_id, val);
-      //     //}
-      //   }
    }
    if(userData->sif)
-   {
       userData->sif->enableController(param_idx, false);
-   }
    else
-   {
       userData->pstate->pluginI->enableController(param_idx, false);
-   }
 }
 
 //---------------------------------------------------------
@@ -2041,36 +2012,18 @@ void VstNativeSynth::guiAutomationEnd(VstNativeSynthOrPlugin *userData, unsigned
    if(t && plug_id != -1)
    {
       plug_id = genACnum(plug_id, param_idx);
-
-      //if(params[param].type == GuiParam::GUI_SLIDER)
-      //{
-      //double val = ((Slider*)params[param].actuator)->value();
       float val = userData->sif ? userData->sif->param(param_idx) : userData->pstate->pluginI->param(param_idx);
-      // FIXME TODO:
-      //if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-      //      val = pow(10.0, val/20.0);
-      //else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-      //      val = rint(val);
       t->stopAutoRecord(plug_id, val);
-      //}
    }
 
-   // Special for switch - don't enable controller until transport stopped.
-   if ((at == AUTO_OFF) ||
-       (at == AUTO_TOUCH)) // && (params[param].type != GuiParam::GUI_SWITCH ||  // FIXME TODO
-      //   !MusEGlobal::audio->isPlaying()) ) )
+   if ((at == AUTO_OFF) || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||
+       (at == AUTO_TOUCH))
    {
       if(userData->sif)
-      {
          userData->sif->enableController(param_idx, true);
-      }
       else
-      {
          userData->pstate->pluginI->enableController(param_idx, true);
-      }
    }
-
-   //_gw[param_idx].pressed = false; //not used
 }
 
 //---------------------------------------------------------
@@ -2102,7 +2055,8 @@ int VstNativeSynth::guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned
       }
       else
       {
-         userData->pstate->pluginI->track()->recordAutomation(pid, value);
+         if(userData->pstate->pluginI->track())
+           userData->pstate->pluginI->track()->recordAutomation(pid, value);
       }
    }
 
@@ -2134,33 +2088,23 @@ int VstNativeSynth::guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned
 }
 
 //---------------------------------------------------------
-//   write
+//   getCustomData
 //---------------------------------------------------------
 
-void VstNativeSynthIF::write(int level, Xml& xml) const
+std::vector<QString> VstNativeSynthIF::getCustomData() const
 {
-//#ifndef VST_VESTIGE_SUPPORT
-  _synth->vstconfWrite(_plugin, name(), level, xml);
-//#else
-//  fprintf(stderr, "support for vst chunks not compiled in!\n");
-//#endif
-
-  //---------------------------------------------
-  // dump current state of synth
-  //---------------------------------------------
-
-  int params = _plugin->numParams;
-  for (int i = 0; i < params; ++i)
-    xml.doubleTag(level, "param", _plugin->getParameter(_plugin, i));
+    std::vector<QString> v;
+    v.push_back(_synth->vstconfGetCustomData(_plugin));
+    return v;
 }
 
 //---------------------------------------------------------
 //   setCustomData
 //---------------------------------------------------------
 
-void VstNativeSynthIF::setCustomData(const std::vector< QString > &customParams)
+bool VstNativeSynthIF::setCustomData(const std::vector< QString > &customParams)
 {
-  _synth->vstconfSet(_plugin, customParams);
+  return _synth->vstconfSet(_plugin, customParams);
 }
 
 bool VstNativeSynthIF::usesTransportSource() const { return _synth->usesTransportSource(); }
@@ -2510,7 +2454,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
                       fprintf(stderr, "chunk flags:%x compressed chunks not supported yet.\n", chunk_flags);
                     else
                     {
-                      fprintf(stderr, "%s: loading chunk from sysex!\n", name().toLatin1().constData());
+                     fprintf(stderr, "%s: loading chunk from sysex!\n", name().toLocal8Bit().constData());
                       // 10 = 2 bytes header + "VSTSAVE" + 1 byte flags (compression etc)
                       dispatch(effSetChunk, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
                     }
@@ -2564,7 +2508,7 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
   unsigned long sample = 0;
 
   const bool isOn = on();
-  const PluginBypassType bypassType = pluginBypassType();
+  const MusEPlugin::PluginBypassType bypassType = pluginBypassType();
 
   //  Normally if the plugin is inactive or off we tell it to connect to dummy audio ports.
   //  But this can change depending on detected bypass type, below.
@@ -2580,20 +2524,20 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
   {
     switch(bypassType)
     {
-      case PluginBypassTypeEmulatedEnableController:
+      case MusEPlugin::PluginBypassTypeEmulatedEnableController:
       break;
 
-      case PluginBypassTypeEnablePort:
-      case PluginBypassTypeBypassPort:
+      case MusEPlugin::PluginBypassTypeEnablePort:
+      case MusEPlugin::PluginBypassTypeBypassPort:
           connectToDummyAudioPorts = false;
           usefixedrate = false;
       break;
 
-      case PluginBypassTypeEmulatedEnableFunction:
+      case MusEPlugin::PluginBypassTypeEmulatedEnableFunction:
       break;
 
-      case PluginBypassTypeEnableFunction:
-      case PluginBypassTypeBypassFunction:
+      case MusEPlugin::PluginBypassTypeEnableFunction:
+      case MusEPlugin::PluginBypassTypeBypassFunction:
           connectToDummyAudioPorts = false;
       break;
     }
@@ -2602,7 +2546,10 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
   // See if the features require a fixed control period.
   // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
   //       For now we treat it like fixed control period.
-  if(requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize))
+  if(requiredFeatures() &
+     (MusEPlugin::PluginFixedBlockSize |
+      MusEPlugin::PluginPowerOf2BlockSize |
+      MusEPlugin::PluginCoarseBlockSize))
     usefixedrate = true;
 
   // For now, the fixed size is clamped to the audio buffer size.
@@ -2729,7 +2676,7 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
             ci.sFrame   = 0;
             ci.eFrame   = 0;
             ci.eFrameValid = false;
-            ci.sVal     = _controls[k].val;
+            ci.sVal     =  getParameter(k);
             ci.eVal     = ci.sVal;
             ci.doInterp = false;
             ci.eStop    = false;
@@ -2776,19 +2723,17 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
           new_val = cl->interpolate(MusEGlobal::audio->isPlaying() ? slice_frame : pos, ci);
         else
           new_val = ci.sVal;
-        if(_controls[k].val != new_val)
+        if(dispatch(effCanBeAutomated, k, 0, nullptr, 0.0f) == 1)
         {
-          _controls[k].val = new_val;
-          if(dispatch(effCanBeAutomated, k, 0, nullptr, 0.0f) == 1)
-          {
-            if(_plugin->getParameter(_plugin, k) != new_val)
-              _plugin->setParameter(_plugin, k, new_val);
-          }
-  #ifdef VST_NATIVE_DEBUG
-          else
-            fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), k);
-  #endif
+          if(_plugin->getParameter(_plugin, k) != new_val)
+            _plugin->setParameter(_plugin, k, new_val);
         }
+  #ifdef VST_NATIVE_DEBUG
+        else
+          fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n",
+                  name().toLocal8Bit().constData(), k);
+  #endif
+//         }
 
 #ifdef VST_NATIVE_DEBUG_PROCESS
         fprintf(stderr, "VstNativeSynthIF::getData k:%lu sample:%lu frame:%lu ci.eFrame:%d slice_samps:%lu \n",
@@ -3068,17 +3013,13 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 //--------------------------------
 
 unsigned long VstNativeSynthIF::pluginID() const                  { return (_plugin) ? _plugin->uniqueID : 0; }
-int VstNativeSynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
-QString VstNativeSynthIF::pluginLabel() const                     { return _synth ? QString(_synth->name()) : QString(); } // FIXME Maybe wrong
-QString VstNativeSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
-QString VstNativeSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
-QString VstNativeSynthIF::dirPath() const                         { return _synth ? _synth->absolutePath() : QString(); }
-QString VstNativeSynthIF::fileName() const                        { return _synth ? _synth->fileName() : QString(); }
-void VstNativeSynthIF::enableController(unsigned long i, bool v)  { _controls[i].enCtrl = v; }
-bool VstNativeSynthIF::controllerEnabled(unsigned long i) const   { return _controls[i].enCtrl;}
+void VstNativeSynthIF::enableController(unsigned long i, bool v)
+{ if(_controls) _controls[i].enCtrl = v; }
+bool VstNativeSynthIF::controllerEnabled(unsigned long i) const
+{ return _controls ? _controls[i].enCtrl : true;}
 void VstNativeSynthIF::enableAllControllers(bool v)
 {
-  if(!_synth)
+  if(!_synth || !_controls)
     return;
   const unsigned long sic = _synth->inControls();
   for(unsigned long i = 0; i < sic; ++i)
@@ -3127,7 +3068,7 @@ double VstNativeSynthIF::paramOut(unsigned long) const            { return 0.0; 
 const char* VstNativeSynthIF::paramName(unsigned long i) const
 {
   if(!_plugin)
-    return 0;
+    return nullptr;
   static char buf[256];
   buf[0] = 0;
   dispatch(effGetParamName, i, 0, buf, 0);
@@ -3172,20 +3113,22 @@ CtrlList::Mode VstNativeSynthIF::ctrlMode(unsigned long /*i*/) const     { retur
 CtrlValueType VstNativeSynthIF::ctrlOutValueType(unsigned long /*i*/) const { return VAL_LINEAR; }
 CtrlList::Mode VstNativeSynthIF::ctrlOutMode(unsigned long /*i*/) const     { return CtrlList::INTERPOLATE; }
 
-VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, PluginFeatures_t reqFeatures)
+VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, MusEPlugin::PluginFeatures_t reqFeatures)
  : Plugin()
 {
    _synth = s;
 
    _requiredFeatures = reqFeatures;
    
-   _fakeLd.Label = strdup(_synth->name().toUtf8().constData());
+   _fakeLd.Label = strdup(_synth->label().toUtf8().constData());
    _fakeLd.Name = strdup(_synth->name().toUtf8().constData());
    _fakeLd.UniqueID = _synth->_id;
    _fakeLd.Maker = strdup(_synth->maker().toUtf8().constData());
    _fakeLd.Copyright = strdup(_synth->version().toUtf8().constData());
-   _isVstNativePlugin = true;
-   _isVstNativeSynth = s->isSynth();
+
+   _pluginType = MusEPlugin::PluginTypeLinuxVST;
+   _pluginClass = s->pluginClass();
+
    int numPorts = _synth->inPorts()
                   + _synth->outPorts()
                   + _synth->inControls();
@@ -3215,10 +3158,11 @@ VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, PluginFeatures
    _fakeLd.Properties = 0;
    plugin = &_fakeLd;
 
-   fi = _synth->info;
+   _fileInfo = _synth->_fileInfo;
    _uri = _synth->uri();
-   _label = _synth->name();
-   _name = _synth->description();
+   _label = _synth->label();
+   _name = _synth->name();
+   _description = _synth->description();
    _uniqueID = plugin->UniqueID;
    _maker = _synth->maker();
    _copyright = _synth->version();
@@ -3272,95 +3216,80 @@ VstNativePluginWrapper::~VstNativePluginWrapper()
 
 LADSPA_Handle VstNativePluginWrapper::instantiate(PluginI *pluginI)
 {
-   VstNativePluginWrapper_State *state = new VstNativePluginWrapper_State;
-   if(!state)
-   {
-      abort();
-   }
-   state->plugin = _synth->instantiate(&state->userData);
-   if(!state->plugin)
-   {
-      delete state;
-      return 0;
-   }
+  VstNativePluginWrapper_State *state = new VstNativePluginWrapper_State;
+  if(!state)
+  {
+    abort();
+  }
+  state->plugin = _synth->instantiate(&state->userData);
+  if(!state->plugin)
+  {
+    delete state;
+    return 0;
+  }
 
-   if(!_synth->openPlugin(state->plugin))
-   {
-      delete state;
-      return 0;
-   }
+  if(!_synth->openPlugin(state->plugin))
+  {
+    delete state;
+    return 0;
+  }
 
-   state->pluginI = pluginI;
-   state->pluginWrapper = this;
-   state->inPorts.resize(_inports);
-   state->outPorts.resize(_outports);
-   state->inControlPorts.resize(_controlInPorts);
-   state->inControlLastValues.resize(_controlInPorts);
-   bool refillDefCtrls = false;
-   if(inControlDefaults.size() == 0)
-   {
-      refillDefCtrls = true;
-      inControlDefaults.resize(_controlInPorts);
-      portNames.resize(_inports + _outports + _controlInPorts);
-   }
-   memset(&state->inPorts [0], 0, _inports * sizeof(float *));
-   memset(&state->outPorts [0], 0, _outports * sizeof(float *));
-   memset(&state->inControlPorts [0], 0, _controlInPorts * sizeof(float *));
+  state->pluginI = pluginI;
+  state->pluginWrapper = this;
+  state->inPorts.resize(_inports);
+  state->outPorts.resize(_outports);
+  state->inControlPorts.resize(_controlInPorts);
+  portNames.resize(_inports + _outports + _controlInPorts);
+  memset(&state->inPorts [0], 0, _inports * sizeof(float *));
+  memset(&state->outPorts [0], 0, _outports * sizeof(float *));
+  memset(&state->inControlPorts [0], 0, _controlInPorts * sizeof(float *));
 
-   if(refillDefCtrls)
-   {
-      for(size_t i = 0; i < _controlInPorts; i++)
-      {
-         if(state->plugin->getParameter)
-         {
-            state->inControlLastValues [i] = inControlDefaults [i] = state->plugin->getParameter(state->plugin, i);
-         }         
-      }
+  for(size_t i = 0; i < portNames.size(); i++)
+  {
+     if(i < _inports)
+     {
+        std::stringstream ss;
+        ss << "input" << i;
+        portNames [i] = ss.str();
+     }
+     else if(i < _inports + _outports)
+     {
+        std::stringstream ss;
+        ss << "output" << (i - _inports);
+        portNames [i] = ss.str();
+     }
+     else if(i < _inports + _outports + _controlInPorts)
+     {
+        char buf[256];
+        memset(buf, 0, sizeof(buf));
+        dispatch(state, effGetParamName, i - _inports - _outports, 0, buf, 0);
+        if(strlen(buf) > 0)
+        {
+           portNames [i] = buf;
+        }
+        else
+        {
+           std::stringstream ss;
+           ss << "control" << (i - _inports - _outports);
+           portNames [i] = ss.str();
+        }
+     }
+  }
 
+  QObject::connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), state, SLOT(heartBeat()));
 
-      for(size_t i = 0; i < portNames.size(); i++)
-      {
-         if(i < _inports)
-         {
-            std::stringstream ss;
-            ss << "input" << i;
-            portNames [i] = ss.str();
-         }
-         else if(i < _inports + _outports)
-         {
-            std::stringstream ss;
-            ss << "output" << (i - _inports);
-            portNames [i] = ss.str();
-         }
-         else if(i < _inports + _outports + _controlInPorts)
-         {
-            char buf[256];
-            memset(buf, 0, sizeof(buf));
-            dispatch(state, effGetParamName, i - _inports - _outports, 0, buf, 0);
-            if(strlen(buf) > 0)
-            {
-               portNames [i] = buf;
-            }
-            else
-            {
-               std::stringstream ss;
-               ss << "control" << (i - _inports - _outports);
-               portNames [i] = ss.str();
-            }
-         }
-      }
-   }
-
-   QObject::connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), state, SLOT(heartBeat()));
-
-   return(LADSPA_Handle)state;
+  return(LADSPA_Handle)state;
 
 }
 
-int VstNativePluginWrapper::incReferences(int ref)
+bool VstNativePluginWrapper::reference()
 {
-   _synth->incInstances(ref);
-   return _synth->instances();
+   return _synth->reference();
+}
+
+int VstNativePluginWrapper::release()
+{
+   return _synth->release();
 }
 
 void VstNativePluginWrapper::activate(LADSPA_Handle handle)
@@ -3374,13 +3303,6 @@ void VstNativePluginWrapper::activate(LADSPA_Handle handle)
    dispatch(state, effMainsChanged, 0, 1, nullptr, 0.0f);
    dispatch(state, effStartProcess, 0, 0, nullptr, 0.0f);
 
-   if(state->plugin->getParameter)
-   {
-      for(size_t i = 0; i < _controlInPorts; i++)
-      {
-         state->pluginI->controls [i].val = state->pluginI->controls [i].tmpVal = inControlDefaults [i];
-      }
-   }
    state->active = true;
 }
 
@@ -3448,7 +3370,7 @@ void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float 
   //  remember and take effect when reactivated, or would it take effect
   //  immediately, or would it be ignored?
   // So we defer until activated...
-  if(state->active && _pluginBypassType == PluginBypassTypeBypassFunction)
+  if(state->active && _pluginBypassType == MusEPlugin::PluginBypassTypeBypassFunction)
   {
     // To avoid repeated settings, we keep a current state and compare with it.
     // The initial value is ON since it is assumed the plugin is created in
@@ -3462,26 +3384,6 @@ void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float 
     }
   }
 
-   if(state->pluginI->controls)
-   {
-      for(size_t i = 0; i < _controlInPorts; i++)
-      {
-         if(state->pluginI->controls [i].val == state->inControlLastValues [i])
-         {
-            continue;
-         }
-         state->inControlLastValues [i] = state->pluginI->controls [i].val;
-         if(dispatch(state, effCanBeAutomated, i, 0, nullptr, 0.0f) == 1)
-         {
-            if(state->plugin->getParameter && state->plugin->setParameter)
-            {
-               if(state->plugin->getParameter(state->plugin, i) != state->inControlLastValues [i])
-                  state->plugin->setParameter(state->plugin, i, state->inControlLastValues [i]);
-            }
-         }
-
-      }
-   }
    if((state->plugin->flags & effFlagsCanReplacing) && state->plugin->processReplacing)
    {
      state->plugin->processReplacing(state->plugin, &state->inPorts [0], &state->outPorts [0], n);
@@ -3514,9 +3416,10 @@ void VstNativePluginWrapper::range(unsigned long, float *min, float *max) const
    *max = 1.0f;
 }
 
-double VstNativePluginWrapper::defaultValue(unsigned long port) const
+// VST does not use port values and therefore does not need defaults.
+double VstNativePluginWrapper::defaultValue(unsigned long ) const
 {
-   return inControlDefaults [port];
+   return 0.0;
 }
 
 const char *VstNativePluginWrapper::portName(unsigned long port) const
@@ -3565,6 +3468,10 @@ void VstNativePluginWrapper::showNativeGui(PluginI *p, bool bShow)
          state->editor = new MusEGui::VstNativeEditor(nullptr, wflags);
          state->editor->open(0, state);
       }
+      if(state->pluginI)
+      {
+        updateNativeGuiWindowTitle(state->pluginI);
+      }
    }
    else
    {
@@ -3584,16 +3491,26 @@ bool VstNativePluginWrapper::nativeGuiVisible(const PluginI *p) const
    return state->guiVisible;
 }
 
-void VstNativePluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)
+void VstNativePluginWrapper::updateNativeGuiWindowTitle(const PluginI *p) const
 {
-   VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
-   _synth->vstconfWrite(state->plugin, name(), level, xml); // index 0: is bank 1: is program
+  if(p->instances > 0)
+  {
+    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)p->handle [0];
+    if(_synth)
+      _synth->guiUpdateWindowTitle(&state->userData);
+  }
 }
 
-void VstNativePluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
+QString VstNativePluginWrapper::getCustomConfiguration(LADSPA_Handle handle)
+{
+  VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
+  return _synth->vstconfGetCustomData(state->plugin);
+}
+
+bool VstNativePluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
 {
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
-  _synth->vstconfSet(state->plugin, customParams);
+  return _synth->vstconfSet(state->plugin, customParams);
 }
 
 void VstNativePluginWrapper_State::heartBeat()

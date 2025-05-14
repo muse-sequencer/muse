@@ -43,7 +43,7 @@ BValue::BValue(QObject* parent, const char* name)
 
 void BValue::save(int level, Xml& xml)
       {
-      xml.intTag(level, objectName().toLatin1().constData(), val);
+      xml.intTag(level, objectName().toUtf8().constData(), val);
       }
 
 //---------------------------------------------------------
@@ -52,7 +52,7 @@ void BValue::save(int level, Xml& xml)
 
 void IValue::save(int level, Xml& xml)
       {
-      xml.intTag(level, objectName().toLatin1().constData(), val);
+      xml.intTag(level, objectName().toUtf8().constData(), val);
       }
 
 //---------------------------------------------------------

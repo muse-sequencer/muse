@@ -53,28 +53,28 @@ QStringList pluginGetLinuxVstDirectories();
 QStringList pluginGetLv2Directories();
 QStringList pluginGetVstDirectories();
 QStringList pluginGetDirectories(const QString& museGlobalLib,
-                                 PluginScanInfoStruct::PluginType type = PluginScanInfoStruct::PluginTypeNone);
+                                 MusEPlugin::PluginType type = MusEPlugin::PluginTypeNone);
 
 // Returns the name of a cache file, without path.
 const char* pluginCacheFilename(
   // The type of plugin cache to check.
-  PluginScanInfoStruct::PluginType type = PluginScanInfoStruct::PluginTypeNone
+  MusEPlugin::PluginType type = MusEPlugin::PluginTypeNone
 );
 
 // Returns the given type parameter if the cache file for the given type exists.
-PluginScanInfoStruct::PluginType pluginCacheFileExists(
+MusEPlugin::PluginType pluginCacheFileExists(
   // Path to the cache file directory (eg. config path + /scanner).
   const QString& path,
   // The type of plugin cache to check.
-  PluginScanInfoStruct::PluginType type = PluginScanInfoStruct::PluginTypeNone
+  MusEPlugin::PluginType type = MusEPlugin::PluginTypeNone
 );
 
 // Returns plugin type true if the cache file(s) for the given type(s) exist.
-PluginScanInfoStruct::PluginType_t pluginCacheFilesExist(
+MusEPlugin::PluginTypes_t pluginCacheFilesExist(
   // Path to the cache file directory (eg. config path + /scanner).
   const QString& path,
   // The types of plugin caches to check.
-  PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll
+  MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypesAll
 );
 
 // Return true on error
@@ -97,7 +97,7 @@ bool readPluginCacheFile(
   // Whether to read port value enumeration information.
   bool readEnums = false,
   // The type of plugin cache file to read.
-  PluginScanInfoStruct::PluginType type = PluginScanInfoStruct::PluginTypeNone
+  MusEPlugin::PluginType type = MusEPlugin::PluginTypeNone
 );
 
 // Read all plugin cache text files to a plugin list.
@@ -111,7 +111,7 @@ bool readPluginCacheFiles(
   // Whether to read port value enumeration information.
   bool readEnums = false,
   // The types of plugin cache files to read.
-  PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll);
+  MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypesAll);
 
 
 } // namespace MusEPlugin

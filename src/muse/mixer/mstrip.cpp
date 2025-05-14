@@ -1003,7 +1003,7 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
     MusECore::SynthI *si = static_cast<MusECore::SynthI *>(instr);
     MusECore::Synth *s = si->synth();
     //only for lv2 synths call applyPreset function.
-    if(s && s->synthType() == MusECore::Synth::LV2_SYNTH)
+    if(s && s->pluginType() == MusEPlugin::PluginTypeLV2)
     {
         MusECore::LV2SynthIF *sif = static_cast<MusECore::LV2SynthIF *>(si->sif());
         //be pedantic about checks
@@ -2256,7 +2256,8 @@ void MidiStrip::configChanged()
   
   // Set the strip label's font.
   setLabelText();
-  
+  computeExtraWidth();
+
   slider->setFillColor(MusEGlobal::config.midiVolumeSliderColor);
   slider->setHandleColor(MusEGlobal::config.midiVolumeHandleColor);
 
@@ -2336,7 +2337,7 @@ void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
       {
             setRecordFlag(track->recordFlag());
       }
-      if (val & SC_TRACK_MODIFIED)
+      if (val & (SC_TRACK_MODIFIED | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MOVED))
       {
             setLabelText();
       }      

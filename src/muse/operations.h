@@ -54,6 +54,7 @@ class MetroAccentsMap;
 class AudioConverterSettingsGroup;
 class AudioConverterPluginI;
 class MidiRemote;
+class PluginI;
 
 typedef std::list < iMidiCtrlValList > MidiCtrlValListIterators_t;
 typedef MidiCtrlValListIterators_t::iterator iMidiCtrlValListIterators_t;
@@ -192,8 +193,9 @@ struct PendingOperationItem
     SwitchMetronomeSettings, ModifyMetronomeAccentMap,
     SetExternalSyncFlag, SetUseJackTransport, SetUseMasterTrack,
     ModifyMarkerList,
-    SwitchMidiRemoteSettings, ModifyMidiRemote
-    }; 
+    SwitchMidiRemoteSettings, ModifyMidiRemote,
+    SetRackEffectPlugin, SwapRackEffectPlugins, MoveRackEffectPlugin, ModifyMidiAudioCtrlMap
+    };
                               
   PendingOperationType _type;
 
@@ -203,6 +205,8 @@ struct PendingOperationItem
     void* _void_track_list;
     int* _audioSamplesLen;
     CtrlListList* _src_aud_ctrl_list_list;
+    Track* _srcTrack;
+    MidiAudioCtrlMap *_src_midi_audio_ctrl_map;
   };
   
   union {
@@ -224,6 +228,7 @@ struct PendingOperationItem
     float** _audioSamplesPointer;
     MetroAccentsMap** _metroAccentsMap;
     MidiRemote* _midiRemote;
+    MidiAudioCtrlMap *_midi_audio_ctrl_map;
   };
             
   union {
@@ -273,6 +278,7 @@ struct PendingOperationItem
     int _address_client;
     int _rw_flags;
     int _newAudioSamplesLen;
+    int _rackEffectPos;
     //DrumMapOperation* _drum_map_operation;
     DrumMapTrackOperation* _drum_map_track_operation;
     DrumMapTrackPatchOperation* _drum_map_track_patch_operation;
@@ -293,6 +299,7 @@ struct PendingOperationItem
     int _address_port;
     int _open_flags;
     int _ctl_num;
+    int _newRackEffectPos;
     CtrlVal::CtrlValueFlags _ctl_flags;
     int _stretch_type;
     AudioConverterPluginI* _audio_converter_ui;
@@ -306,6 +313,7 @@ struct PendingOperationItem
     double _audio_converter_value;
     bool _marker_lock;
     CtrlVal* _audCtrlValStruct;
+    PluginI *_pluginI;
     int _event_spos;
   };
 
@@ -601,6 +609,24 @@ struct PendingOperationItem
   PendingOperationItem(MarkerList** orig_marker_l, MarkerList* new_marker_l, PendingOperationType type = ModifyMarkerList)
     { _type = type; _orig_marker_list = orig_marker_l; _marker_list = new_marker_l; }
     
+  // pluginI can be null.
+  PendingOperationItem(Track* track, PluginI* pluginI, int rackPos, PendingOperationType type = SetRackEffectPlugin)
+    { _type = type; _track = track; _pluginI = pluginI; _rackEffectPos = rackPos; }
+
+  // Dummy param is to avoid ambiguity with other constructors.
+  PendingOperationItem(Track* track, int rackPos, int newRackPos, int /*dummy*/, PendingOperationType type = SwapRackEffectPlugins)
+    { _type = type; _track = track; _rackEffectPos = rackPos; _newRackEffectPos = newRackPos; }
+
+  // After the plugin has moved from source slot to destination slot, srcReplPlugin fills the empty source slot.
+  PendingOperationItem(Track* srcTrack, Track* dstTrack,
+                       int srcRackPos, int dstRackPos, PluginI* srcReplPlugin = nullptr,
+                       PendingOperationType type = MoveRackEffectPlugin)
+    { _type = type; _srcTrack = srcTrack;  _track = dstTrack;
+      _rackEffectPos = srcRackPos; _newRackEffectPos = dstRackPos; _pluginI = srcReplPlugin; }
+
+  PendingOperationItem(MidiAudioCtrlMap* dst, MidiAudioCtrlMap* src, PendingOperationType type = ModifyMidiAudioCtrlMap)
+    { _type = type; _midi_audio_ctrl_map = dst; _src_midi_audio_ctrl_map = src; }
+
   PendingOperationItem()
     { _type = Uninitialized; }
     

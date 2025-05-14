@@ -237,7 +237,7 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       if(f.audioConverterSettings())
         f.audioConverterSettings()->write(level, xml, &MusEGlobal::audioConverterPluginList);
       
-      xml.etag(level, "event");
+      xml.etag(--level, "event");
       }
 
 //---------------------------------------------------------

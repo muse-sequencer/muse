@@ -326,10 +326,12 @@ bool midiToAudioAssignIsLearning = false;
 bool automation = true;
 
 const QString inputRoutingToolTipBase = QObject::tr("Input routing");
-const QString noInputRoutingToolTipWarn = inputRoutingToolTipBase + QString("\n") + QObject::tr("Warning: No input routes! Click to connect...");
+const QString noInputRoutingToolTipWarn =
+ inputRoutingToolTipBase + QString("\n") + QObject::tr("Warning: No input routes! Click to connect...");
 
 const QString outputRoutingToolTipBase = QObject::tr("Output routing");
-const QString noOutputRoutingToolTipWarn = outputRoutingToolTipBase + QString("\n") + QObject::tr("Warning: No output routes! Click to connect...");
+const QString noOutputRoutingToolTipWarn =
+ outputRoutingToolTipBase + QString("\n") + QObject::tr("Warning: No output routes! Click to connect...");
 
 // REMOVE Tim. setuid. Removed.
 //uid_t euid, ruid;  // effective user id, real user id
@@ -413,7 +415,7 @@ bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilename)
         // Try to create a tmpdir
         QDir projdir(museProject);
         if (!projdir.mkdir(subDir)) {
-            printf("Could not create tmp dir %s!\n", tmpInDir.toLatin1().data() );
+            printf("Could not create tmp dir %s!\n", tmpInDir.toLocal8Bit().data() );
             return false;
         }
     }
@@ -438,7 +440,7 @@ bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilename)
         if (!tmpdir.exists(tmpInDir +"/" + filename)) {
             newFilename = tmpInDir + "/" + filename;
             if (debugMsg)
-                printf("returning temporary filename %s\n", newFilename.toLatin1().data());
+                printf("returning temporary filename %s\n", newFilename.toLocal8Bit().data());
             return true;
         }
 

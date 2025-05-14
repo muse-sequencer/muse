@@ -25,6 +25,8 @@
 #define __FILEDIALOG_H__
 
 #include <QFileDialog>
+#include <QIODevice>
+#include "libs/file/file.h"
 
 #include "ui_fdialogbuttons.h"
 
@@ -82,9 +84,9 @@ QString getOpenFileName(const QString& startWith, const char** filters,
 QString getImageFileName(const QString& startWith, const char** filters, 
          QWidget* parent, const QString& name);
 
-FILE* fileOpen(QWidget*, QString, const QString&,
-   const char*, bool&, bool = false, bool = false);
-
+MusEFile::File::ErrorCode fileOpen(
+  MusEFile::File &file, QIODevice::OpenMode mode, QWidget *parent = nullptr,
+  bool noError = false, bool overwriteWarning = false);
 
 //---------------------------------------------------------
 //   MFile
@@ -93,16 +95,15 @@ FILE* fileOpen(QWidget*, QString, const QString&,
 
 class MFile {
       bool isPopen;
-      FILE* f;
+      MusEFile::File f;
       QString path;
       QString ext;
 
    public:
       MFile(const QString& path, const QString& ext);
       ~MFile();
-      FILE* open(const char* mode, const char** patterns,
-         QWidget* parent, bool noError,
-         bool warnIfOverwrite, const QString& caption);
+      MusEFile::File::ErrorCode open(MusEFile::File &file, QIODevice::OpenMode mode, const char** patterns_chararray,
+         QWidget* parent, bool noError, bool warnIfOverwrite, const QString& caption);
       };
 
 } // namespace MusEGui

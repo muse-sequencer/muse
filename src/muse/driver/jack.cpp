@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <jack/midiport.h>
 #include <string.h>
+// TODO Switch dlsym stuff over to QLibrary.
 #include <dlfcn.h>
 #include <sys/time.h>
 
@@ -379,6 +380,39 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
       }
 
 //---------------------------------------------------------
+//  pos_to_jack_position
+//---------------------------------------------------------
+
+static void pos_to_jack_position(const Pos& p, jack_position_t* pos) {
+
+      pos->valid = JackPositionBBT;
+      int bar, beat, tick;
+      p.mbt(&bar, &beat, &tick);
+      pos->bar = bar;
+      pos->beat = beat;
+      pos->tick = tick;
+
+      pos->bar_start_tick = Pos(pos->bar, 0, 0).tick();
+      pos->bar++;
+      pos->beat++;
+
+      int z, n;
+      MusEGlobal::sigmap.timesig(p.tick(), z, n);
+      pos->beats_per_bar = z;
+      pos->beat_type = n;
+      pos->ticks_per_beat = MusEGlobal::config.division;
+      //pos->ticks_per_beat = 24;
+
+      double tempo = MusEGlobal::tempomap.tempo(p.tick());
+      pos->beats_per_minute = ((double)MusEGlobal::tempomap.globalTempo() * 600000.0) / tempo;
+#if JACK_DEBUG
+      fprintf(stderr, "pos_to_jack_position new: bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+              pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
+#endif
+
+      }
+
+//---------------------------------------------------------
 //   timebase_callback
 //---------------------------------------------------------
 
@@ -423,34 +457,13 @@ static void timebase_callback(jack_transport_state_t,
       Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag ? true : false);
       // Can't use song pos - it is only updated every (slow) GUI heartbeat !
       //Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag ? true : false);
-      
-      pos->valid = JackPositionBBT;
-      int bar, beat, tick;
-      p.mbt(&bar, &beat, &tick);
-      pos->bar = bar;
-      pos->beat = beat;
-      pos->tick = tick;
 
-      pos->bar_start_tick = Pos(pos->bar, 0, 0).tick();
-      pos->bar++;
-      pos->beat++;
-      
-      int z, n;
-      MusEGlobal::sigmap.timesig(p.tick(), z, n);
-      pos->beats_per_bar = z;
-      pos->beat_type = n;
-      pos->ticks_per_beat = MusEGlobal::config.division;
-      //pos->ticks_per_beat = 24;
-      
-      double tempo = MusEGlobal::tempomap.tempo(p.tick());
-      pos->beats_per_minute = ((double)MusEGlobal::tempomap.globalTempo() * 600000.0) / tempo;
+      pos_to_jack_position(p, pos);
+
 #if JACK_DEBUG
-      fprintf(stderr, "timebase_callback is new_pos:%d nframes:%u frame:%u tickPos:%d cpos:%d\n", new_pos, nframes, pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
-      fprintf(stderr, " new: bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
-              pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
+      // fprintf(stderr, "timebase_callback is new_pos:%d nframes:%u frame:%u tickPos:%d cpos:%d\n", new_pos, nframes, pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
 #endif
-      
-      }
+  }
 
 //---------------------------------------------------------
 //   processShutdown
@@ -1848,7 +1861,7 @@ void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_
               if(na >= 1)
               {
                 qname = QString(al[0]);
-                    //fprintf(stderr, "Checking port name for: %s\n", (QString("alsa_pcm:") + cname + QString("/")).toLatin1().constData());  
+                    //fprintf(stderr, "Checking port name for: %s\n", (QString("alsa_pcm:") + cname + QString("/")).toLocal8Bit().constData());
                 // Ignore our own ALSA client!
                 if(qname.startsWith(QString("alsa_pcm:") + cname + QString("/")))
                   continue;
@@ -2033,7 +2046,7 @@ unsigned int JackAudioDevice::portLatency(void* port, bool capture) const
     return 0;
 
   //QString s(jack_port_name((jack_port_t*)port));
-  //fprintf(stderr, "Jack::portName %p %s\n", port, s.toLatin1().constData());  
+  //fprintf(stderr, "Jack::portName %p %s\n", port, s.toLocal8Bit().constData());
 
   
   // NOTICE: For at least the ALSA driver (tested), the input latency is
@@ -2261,7 +2274,21 @@ void JackAudioDevice::seekTransport(unsigned frame)
       
       if(!checkJackClient(_client)) return;
 //      fprintf(stderr, "JACK: seekTransport %d\n", frame);
-      jack_transport_locate(_client, frame);
+
+      if(MusEGlobal::timebaseMasterState)
+      {
+        // We are timebase master. Provide a BBT representation of the new
+        // position as well.
+        jack_position_t jp;
+        Pos p(frame, false);
+        jp.frame = frame;
+        pos_to_jack_position(p, &jp);
+        jack_transport_reposition(_client, &jp);
+      }
+      else
+      {
+        jack_transport_locate(_client, frame);
+      }
     }
 
 //---------------------------------------------------------
@@ -2281,29 +2308,19 @@ void JackAudioDevice::seekTransport(const Pos &p)
       
       if(!checkJackClient(_client)) return;
 
-// TODO: Be friendly to other apps... Sadly not many of us use jack_transport_reposition.
-//       This is actually required IF we want the extra position info to show up
-//        in the sync callback, otherwise we get just the frame only.
-//       This information is shared on the server, it is directly passed around. 
-//       jack_transport_locate blanks the info from sync until the timebase callback reads 
-//        it again right after, from some timebase master. See process in audio.cpp     
-
-//       jack_position_t jp;
-//       jp.frame = p.frame();
-//       
-//       jp.valid = JackPositionBBT;
-//       p.mbt(&jp.bar, &jp.beat, &jp.tick);
-//       jp.bar_start_tick = Pos(jp.bar, 0, 0).tick();
-//       jp.bar++;
-//       jp.beat++;
-//       jp.beats_per_bar = 5;  // TODO Make this correct !
-//       jp.beat_type = 8;      //
-//       jp.ticks_per_beat = MusEGlobal::config.division;
-//       int tempo = MusEGlobal::tempomap.tempo(p.tick());
-//       jp.beats_per_minute = (60000000.0 / tempo) * MusEGlobal::tempomap.globalTempo()/100.0;
-//       jack_transport_reposition(_client, &jp);
-      
-      jack_transport_locate(_client, p.frame());
+      if(MusEGlobal::timebaseMasterState)
+      {
+        // We are timebase master. Provide a BBT representation of the new
+        // position as well.
+        jack_position_t jp;
+        jp.frame = p.frame();
+        pos_to_jack_position(p, &jp);
+        jack_transport_reposition(_client, &jp);
+      }
+      else
+      {
+        jack_transport_locate(_client, p.frame());
+      }
       }
 
 //---------------------------------------------------------

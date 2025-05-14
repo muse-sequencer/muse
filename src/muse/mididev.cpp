@@ -188,7 +188,7 @@ QString MidiDevice::deviceTypeString() const
     {
       const SynthI* s = dynamic_cast<const SynthI*>(this);
       if(s && s->synth())
-        return MusECore::synthType2String(s->synth()->synthType());
+        return QApplication::translate("MusEPlugin", MusEPlugin::pluginTypeToString(s->synth()->pluginType()));
       else
         return "SYNTH";
     }
@@ -488,7 +488,8 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev, LatencyType latencyType, Even
   //                  deviceType(), fin_ev.time(), fin_ev.type(), fin_ev.channel(), fin_ev.dataA(), fin_ev.dataB());
   if (MusEGlobal::midiOutputTrace)
   {
-    fprintf(stderr, "MidiDevice::putEvent: %s: <%s>: ", deviceTypeString().toLatin1().constData(), name().toLatin1().constData());
+    fprintf(stderr, "MidiDevice::putEvent: %s: <%s>: ", deviceTypeString().toLocal8Bit().constData(),
+            name().toLocal8Bit().constData());
     dumpMPEvent(&fin_ev);
   }
   
@@ -1687,7 +1688,7 @@ void MidiDevice::setLatencyCompWriteOffsetMidi(float worstCase, bool capture)
   {
     tli->_compensatorWriteOffset = 0;
     //fprintf(stderr, "MidiDevice::setLatencyCompWriteOffset() name:%s capture:%d worstCase:%f _outputLatency:%f _compensatorWriteOffset:%lu\n",
-    //        name().toLatin1().constData(), capture, worstCase, tli->_outputLatency, tli->_compensatorWriteOffset);
+    //        name().toLocal8Bit().constData(), capture, worstCase, tli->_outputLatency, tli->_compensatorWriteOffset);
     return;
   }
     
@@ -1711,7 +1712,7 @@ void MidiDevice::setLatencyCompWriteOffsetMidi(float worstCase, bool capture)
   //fprintf(stderr,
   //  "MidiDevice::setLatencyCompWriteOffset() name:%s capture:%d worstCase:%f"
   //  " _outputLatency:%f _canDominateOutputLatency:%d _compensatorWriteOffset:%lu\n",
-  //     name().toLatin1().constData(), capture, worstCase, tli->_outputLatency,
+  //     name().toLocal8Bit().constData(), capture, worstCase, tli->_outputLatency,
   //     tli->_canDominateOutputLatency, tli->_compensatorWriteOffset);
 }
 

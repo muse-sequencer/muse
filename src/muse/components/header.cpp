@@ -70,9 +70,9 @@ void Header::readStatus(MusECore::Xml& xml)
 
 void Header::writeStatus(int level, MusECore::Xml& xml) const
       {
-      xml.nput(level, "<%s> ", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
+      xml.nput(level, "<%s> ", MusECore::Xml::xmlString(objectName()).toUtf8().constData());
       xml.nput("%s", saveState().toHex().constData());
-      xml.put("</%s>", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
+      xml.put("</%s>", MusECore::Xml::xmlString(objectName()).toUtf8().constData());
       }
 
 //---------------------------------------------------------
@@ -113,7 +113,7 @@ QIcon Header::columnIcon(int col)
 
 void Header::setColumnLabel(const QString & text, int col, int width )
       {
-      //printf("column set to %s %d %d \n", text.toLatin1().data(), col, width);
+      //printf("column set to %s %d %d \n", text.toLocal8Bit().data(), col, width);
       QStandardItem *sitem = new QStandardItem(text );
       itemModel->setHorizontalHeaderItem(col, sitem);
       if (width > -1)

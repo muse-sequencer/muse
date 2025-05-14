@@ -22,8 +22,6 @@
 //
 //=========================================================
 
-#include <errno.h>
-
 #include "song.h"
 #include "midi_consts.h"
 #include "midifile.h"
@@ -111,9 +109,9 @@ QString MidiFile::error()
 //   MidiFile
 //---------------------------------------------------------
 
-MidiFile::MidiFile(FILE* f)
+MidiFile::MidiFile(MusEFile::File* f)
       {
-      fp        = f;
+      fp    = f;
       curPos    = 0;
       lastMtype = MT_UNKNOWN;
       _error    = MF_NO_ERROR;
@@ -150,14 +148,19 @@ void MidiFile::setTrackList(MidiFileTrackList* tr, int n)
 //    return true on error
 //---------------------------------------------------------
 
-bool MidiFile::read(void* p, size_t len)
+bool MidiFile::read(char* p, qint64 len)
       {
       for (;;) {
             curPos += len;
-            size_t rv = fread(p, 1, len, fp);
+            // "Reads at most maxSize bytes from the device into data, and returns the number of bytes read.
+            //  If an error occurs, such as when attempting to read from a device opened in WriteOnly mode,
+            //   this function returns -1. 0 is returned when no more data is available for reading.
+            //  However, reading past the end of the stream is considered an error, so this function returns -1
+            //   in those cases (that is, reading on a closed socket or after a process has died)."
+            qint64 rv = fp->iodevice()->read(p, len);
             if (rv == len)
                   return false;
-            if (feof(fp)) {
+            if (fp->iodevice()->atEnd()) {
                   _error = MF_EOF;
                   return true;
                   }
@@ -172,14 +175,18 @@ bool MidiFile::read(void* p, size_t len)
 //    return true on error
 //---------------------------------------------------------
 
-bool MidiFile::write(const void* p, size_t len)
+bool MidiFile::write(const char* p, qint64 len)
       {
-      size_t rv = fwrite(p, 1, len, fp);
+      // "Writes at most maxSize bytes of data from data to the device.
+      //  Returns the number of bytes that were actually written, or -1 if an error occurred."
+      qint64 rv = fp->iodevice()->write(p, len);
       if (rv == len)
             return false;
       _error = MF_WRITE;
       return true;
       }
+
+void MidiFile::put(char c) { write(&c, 1); }
 
 //---------------------------------------------------------
 //   writeShort
@@ -189,7 +196,7 @@ bool MidiFile::write(const void* p, size_t len)
 bool MidiFile::writeShort(int i)
       {
       short format = BE_SHORT(i);
-      return write(&format, 2);
+      return write((char*)&format, 2);
       }
 
 //---------------------------------------------------------
@@ -200,7 +207,7 @@ bool MidiFile::writeShort(int i)
 bool MidiFile::writeLong(int i)
       {
       int format = BE_LONG(i);
-      return write(&format, 4);
+      return write((char*)&format, 4);
       }
 
 //---------------------------------------------------------
@@ -210,7 +217,7 @@ bool MidiFile::writeLong(int i)
 int MidiFile::readShort()
       {
       short format;
-      read(&format, 2);
+      read((char*)&format, 2);
       return BE_SHORT(format);
       }
 
@@ -222,7 +229,7 @@ int MidiFile::readShort()
 int MidiFile::readLong()
       {
       int format;
-      read(&format, 4);
+      read((char*)&format, 4);
       return BE_LONG(format);
       }
 
@@ -232,10 +239,19 @@ int MidiFile::readLong()
  *    file or fifo.
  *---------------------------------------------------------*/
 
-bool MidiFile::skip(size_t len)
+bool MidiFile::skip(qint64 len)
       {
+#if QT_VERSION >= 0x050a00
+      // "Skips up to maxSize bytes from the device.
+      //  Returns the number of bytes actually skipped, or -1 on error."
+      qint64 rv = fp->iodevice()->skip(len);
+      if(rv == len)
+        return false;
+      return true;
+#else
       char tmp[len];
       return read(tmp, len);
+#endif
       }
 
 /*---------------------------------------------------------
@@ -248,7 +264,7 @@ int MidiFile::getvl()
       int l = 0;
       for (int i = 0; i < 16; i++) {
             uchar c;
-            if (read(&c, 1))
+            if (read((char*)&c, 1))
                   return -1;
             l += (c & 0x7f);
             if (!(c & 0x80))
@@ -438,7 +454,7 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
             }
       click += nclick;
       for (;;) {
-            if (read(&me, 1)) {
+            if (read((char*)&me, 1)) {
                   printf("readEvent: error 2\n");
                   return 0;
                   }
@@ -469,7 +485,7 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                         }
                   // Buffer can be deleted by caller's event when it goes out of scope.
                   buffer = new unsigned char[len];
-                  if (read(buffer, len)) {
+                  if (read((char*)buffer, len)) {
                         printf("readEvent: error 4\n");
                         delete[] buffer;
                         return -2;
@@ -545,7 +561,7 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                   //    META
                   //
                   status = -1;                  // no running status
-                  if (read(&type, 1)) {         // read type
+                  if (read((char*)&type, 1)) {         // read type
                         printf("readEvent: error 5\n");
                         return -2;
                         }
@@ -556,7 +572,7 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                         }
                   buffer = new unsigned char[len+1];
                   if (len) {
-                        if (read(buffer, len)) {
+                        if (read((char*)buffer, len)) {
                               printf("readEvent: error 7\n");
                               delete[] buffer;
                               return -2;
@@ -601,7 +617,7 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
       if (me & 0x80) {                     // status byte
             status   = me;
             sstatus  = status;
-            if (read(&a, 1)) {
+            if (read((char*)&a, 1)) {
                   printf("readEvent: error 9\n");
                   return -2;
                   }
@@ -623,7 +639,7 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
             case ME_POLYAFTER:
             case ME_CONTROLLER:
             case ME_PITCHBEND:
-                  if (read(&b, 1)) {
+                  if (read((char*)&b, 1)) {
                         printf("readEvent: error 15\n");
                         return -2;
                         }
@@ -668,13 +684,13 @@ bool MidiFile::writeTrack(const MidiFileTrack* t)
       //FIXME: By T356 01/19/2010
       // If saving as a compressed file (gz or bz2),
       //  the file is a pipe, and pipes can't seek !
-      // This results in a corrupted midi file. 
+      // This results in a corrupted midi file.
       // So exporting compressed midi has been disabled (elsewhere)
       //  for now...
-      
+
       const MPEventList* events = &(t->events);
       write("MTrk", 4);
-      int lenpos = ftell(fp);
+      qint64 lenpos = fp->iodevice()->pos();
       writeLong(0);                 // dummy len
 
       status = -1;
@@ -699,10 +715,11 @@ bool MidiFile::writeTrack(const MidiFileTrack* t)
       put(0xff);        // Meta
       put(0x2f);        // EOT
       putvl(0);         // len 0
-      int endpos = ftell(fp);
-      fseek(fp, lenpos, SEEK_SET);
+
+      qint64 endpos = fp->iodevice()->pos();
+      fp->iodevice()->seek(lenpos);
       writeLong(endpos-lenpos-4);   // tracklen
-      fseek(fp, endpos, SEEK_SET);
+      fp->iodevice()->seek(endpos);
       return false;
       }
 
@@ -744,7 +761,7 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
             case ME_SYSEX:
                   put(0xf0);
                   putvl(event->len() + 1);  // including 0xf7
-                  write(event->constData(), event->len());
+                  write((char*)event->constData(), event->len());
                   put(0xf7);
                   status = -1;      // invalidate running status
                   break;
@@ -752,7 +769,7 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
                   put(0xff);
                   put(event->dataA());
                   putvl(event->len());
-                  write(event->constData(), event->len());
+                  write((char*)event->constData(), event->len());
                   status = -1;
                   break;
             }
@@ -775,40 +792,40 @@ bool MidiFile::write()
             for (iMidiFileTrack i = _tracks->begin(); i != _tracks->end(); ++i) {
                   MPEventList* sl = &((*i)->events);
                   for (iMPEvent ie = sl->begin(); ie != sl->end(); ++ie)
-                  {  
-                        // ALERT: Observed a problem here, apparently some of the events are being added too fast. 
-                        //        The dump below tells me some of the events (sysex/meta) are missing from the list! 
-                        //        Apparently it's a timing problem. Very puzzling. 
+                  {
+                        // ALERT: Observed a problem here, apparently some of the events are being added too fast.
+                        //        The dump below tells me some of the events (sysex/meta) are missing from the list!
+                        //        Apparently it's a timing problem. Very puzzling.
                         //        Attempting wild-guess fix now to eliminate multiple MidiFileTracks in MusE::exportMidi()...
                         //        Nope. Didn't help. Now that it's a single MidiFileTrack, try skipping this section altogether...
                         //        Yes that appears to have fixed it. Weird. What's the difference - the local 'dst' variable ?
                         //        Or are there still lurking problems, or something more fundamentally wrong with Event or MPEvent?
-                        printf("MidiFile::write adding event to dst:\n"); 
-                        ie->dump();  
+                        printf("MidiFile::write adding event to dst:\n");
+                        ie->dump();
                         dst.events.add(*ie);
-                  }      
+                  }
                   }
             writeShort(1);
             writeShort(_division);
             writeTrack(&dst);
             */
-            
+
             writeShort(1);
             //writeShort(_division); DELETETHIS 3
             //if(!_tracks->empty())
             //  writeTrack(*(_tracks->begin()));
-            
+
             }
       else {
-        
-        
+
+
             writeShort(ntracks);
       }
             writeShort(_division);
             for (ciMidiFileTrack i = _tracks->begin(); i != _tracks->end(); ++i)
                   writeTrack(*i);
 
-      return (ferror(fp) != 0);
+      return fp->error() != MusEFile::File::NoError;
       }
 
 //---------------------------------------------------------

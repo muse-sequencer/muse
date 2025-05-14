@@ -1,3 +1,170 @@
+13.05.2025
+    * Spring 2025 large fixes and features: (Tim)
+
+    - Effect rack plugins: Persistent plugins now added.
+      Even if a song is missing effect rack plugins and it is saved, all the information
+       necessary to recreate the plugins is saved. When the missing plugins are finally installed,
+       the song loads noramlly and everything is preserved.
+      (Previously only synth tracks had this persistence.)
+
+    - Effect rack plugins: Fixed drag and drop. Both drag move and copy work now.
+      Controllers and midi assignments are also moved or copied.
+      Fixed corrupt XML in drag and drop plugins. QByteArray was not being used correctly.
+      TODO: Drag to desktop still not working, apparently it's very complicated.
+
+    - All effect rack operations (adding/removing/moving/drag etc.) are now undoable/redoable.
+
+    - Mixer: Added Undo and Redo menu items to mixer 'View' menu.
+      Tested Ctrl-Z and Shift-Ctrl-Z: Works OK now.
+      Helps when dragging plugins but also works with some of the other mixer functions
+       like track rename, track create.
+
+    - Effect/synth plugins: Do not store or recognize initial parameters if custom data is present.
+      The assumption is that control or parameter values would be included in the custom data.
+      This is in fact alluded to in the vst spec. It says chunks can store the whole state,
+       but if chunks are not used then an alternative is to store the parameter values.
+      One of the things this might fix is complaints that some plugins immediately show
+       an indicator that they have been 'modified'. It might be because we were sending all
+       these parameters along with (after) the custom data.
+
+    - Effect/synth plugins: Fixed name vs. label issues. Made consistent in both.
+
+    - DSSI plugins: DSSI OSC path url cannot contain spaces (verified).
+      Major rewrite of OSC support. Switched to sending indexes rather than text in the OSC URL.
+
+    - Effect/synth plugins: Fixed: Editing track name does not change titlebars in UI windows.
+      Fixed for generic UIs, DSSI, LV2 and native VST.
+      For DSSI, and LV2 External UIs: Unfortunately these take a titlebar name at creation time
+       and cannot be changed. So we close them and then re-open them again with the new text.
+
+      Note that when closing and re-opening a DSSI UI, either manually or automatically,
+       it does not save and restore the UI's geometry.
+      That's because there is no way to query the UI for the current geometry! Or set it as well.
+
+      Note that AMSynth DSSI for example insists on putting a prefix in front of your title bar text.
+      The LV2 version does not.
+
+    - All plugin/synth native and generic UIs, and all mixer strips, now show fully qualified track
+       name with track index number as prefix.
+      This is because we allow blank and even duplicate track names. So this helps identify them.
+      Rack plugin UIs show a fully qualified name including the rack position number.
+
+    - VST: Some VSTs were not saving or updating our mirrors of control values when controls changed.
+      VST does not use 'ports'. Eliminated the mirrors for VST. Use VST parameters throughout.
+      This bug was mentioned by a user. Tests OK now.
+
+    - VST: Fixed crashes with open native VST UIs when exiting app, because we delete on close.
+      Removed close() call in ~VstNativeEditor(), and changed "delete _editor" to "_editor->close()"
+       in VstNativeSynthIF::deactivate3(). Testing OK so far!
+
+    - VST: Fixed VST native window open state not updated when closed, menu item still said open.
+
+    - Effect/synth plugins: Major rewrites and changes:
+      Ongoing efforts towards a unified single 'plugin' system (still in progress).
+      Both Plugin and Synth now share a base class PluginBase.
+      Many common members have been moved there.
+      There is no more SynthType member of class Synth, or separate _isDssiSynth, _isDssi, _isLV2Synth,
+       _isLV2Plugin, _isDssiVst, _isVstNativeSynth, _isVstNativePlugin etc. members of class Plugin.
+      Instead there is now one common member in PluginBase, an enum PluginType.
+      This enum PluginType, and several other plugin-related enums that were in global_defs.h
+       were all moved into plugin_scan.h, in namespace MusEPlugin.
+
+      Before any more plugin architectures (VST3, CLAP etc.) can be supported in MusE, it would be most wise
+       to complete this work first, instead of trying to 'shoe-horn' it into the Plugin/PluginI class.
+
+      Added a Description column to the SynthDialog.
+      Added column sorting as well.
+
+    - XML files: Fixed XML file saving ending tag indentation eyesores: Over 100 places where
+       tag was used instead of etag, and/or things like: tag(level, "/someEnd") or level--.
+      Replaced all with etag(--level, "someEnd")
+
+    - Song files: CHANGED Song file format. Added AudioTrack and Track tags.
+      Controllers and midi assignments no longer have upper bits for rack position.
+      They have been moved under the plugin tag and the AudioTrack tag.
+
+    - Song file version bump required !!!
+      Bumped to 4.0
+
+    - Translations: Fixed several problems with updating translation files (*.ts)
+       (when UPDATE_TRANSLATIONS cmake variable is set on).
+      Still one remaining issue with one global string in globals.cpp:
+
+      Most of the problems were actually caused by very stale ifdef optional sections of code
+       with bad bracketing, missing/stale variables and so on, like this:
+      "Parenthesis/brace mismatch between #if and #else branches; using #if branch"
+
+      Updated translation files. They had not been done for a long time.
+
+    - Character encoding: Fixed all usages of QString::toLatin1(), toLocal8Bit, and toUtf8.
+      After much research and a better undertanding of encoding, it was realised that
+       many mistakes were made. Several hundred places were corrected.
+
+      For example all our XML files now store text as UTF8.
+
+      This should help a with different locales having various issues with name characters etc.
+      Short story: Use toUtf8 for storing strings in files and use toLocal8Bit for system calls,
+       and BANISH usage of QString::toLatin1 wherever possible.
+
+    - Song loading: Eliminated waiting cursor while loading songs.
+      Various incident dialogs or message boxes might come up during song loading,
+       which made clicking OK awkward since the cursor was a waiting cursor, not a pointer.
+      It turns out, we don't even need a waiting cursor because... we already have a progress dialog!
+      But it kept getting hidden by other various windows as they would appear (mixer etc).
+      Fixed progress dialog: QProgressDialog::setWindowModality(Qt::ApplicationModal)
+       appears to be what we wanted. Tested OK.
+
+    - Song loading: When effect or synth plugins are missing, replaced individual message boxes
+       for each missing plugin with a single 'missing plugins dialog' showing all missing plugins.
+      This was a request from a few dozen months ago.
+
+    - Track names: Allow user to change track name to one that's already used.
+      Changed three relevant dialogs: In track list, mixer, and strip to ask if user really
+       wants to use the name, instead of forbidding it completely.
+      Duplicate track names have actually been allowed in the application for many years now,
+       since many midi files have blank or duplicate track names.
+      The app never searches by track name any more, it uses track index.
+
+    - OS cross-compatibility: Ongoing efforts:
+      Replaced ALL usages of popen with QProcess for better portability across platforms.
+      Rewrote grepmidi application to be all QT with no popen etc.
+
+      Replaced ALL usages of dlopen, dlclose etc. with QLibrary for better portability across platforms.
+      TODO: Switch jack dlsym stuff over to QLibrary.
+
+      Replaced all hard-coded "*.so" with QLibrary::isLibrary() for better portability across platforms.
+
+      Replaced all fdopen with Qt equivalents. Rewrote Scripts class to use QTemporaryFile instead.
+      TODO: Some scripts don't seem to work?
+
+20.02.2025
+    - Python: Removed one dependency on 'six' library found in utils/muse-find-unused-wavs. (Tim)
+      By request from Arch packagers. 'Six' is old and will be unsupported soon. Tested the file OK.
+13.02.2025
+    - Arranger: Fixed loading song with mixer strip disabled. Blank splitter was still appearing. (Tim)
+      Added showTrackInfo() to Arranger::readStatus(). Tested OK.
+10.02.2025
+    - Fixed: Midi strip 'LCD' seven-segment patch number readouts not mouse-wheeling properly. (Tim)
+      Somehow LCDPatchEdit::wheelEvent() got changed several years ago. Fixed.
+      Also fixed drum list entry cells 'Shift + Wheel' same behaviour.
+06.02.2025
+    - LV2: Fixed some plugins can't operate controls when there is automation, even in stop mode. (Tim)
+      Implemented missing LV2 UI Touch extension.
+      Also added missing lines to disable automation when control changed, in lv2state_PortWrite().
+02.12.2024
+    - Merge PR 1293: Force the use of in-window menu. (Tim)
+      Fixes usage of KDE Global Menu applet, possibly Mac/Unity as well, missing menus.
+      Simply set attribute Qt::AA_DontUseNativeMenuBar. Thanks to user Icenowy for the work.
+17.10.2024
+    - Fix issue 1287: Focus doesn't return to arranger window when pianoroll closed. (Tim)
+      In MusE::toplevelDeleting(), call TopWin::focusCanvas() to direct focus to the canvas.
+16.10.2024
+    - Event List Editor: Fixed cannot open multiple parts. (Tim)
+      Thanks to forum user 'enaiel' for spotting that.
+    - Fixed Roland INTEGRA-7.idf file XML errors (added 13.05.2024).
+30.09.2024
+    - Track list context menu audio controller 'midi assign': Fixed cannot assign to song.
+      Oops, broken at 10.07.2022
 13.05.2024
     - Added instrument file for the Roland INTEGRA-7 sound module, made by Cookston (rj)
 26.04.2024

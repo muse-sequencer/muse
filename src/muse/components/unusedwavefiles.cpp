@@ -22,10 +22,11 @@
 //=========================================================
 #include <stdio.h>
 #include <qdir.h>
-#include <qfileinfo.h>
-#include <qstringlist.h>
-#include <qtextstream.h>
-#include <qmessagebox.h>
+#include <QFile>
+#include <QFileInfo>
+#include <QStringList>
+#include <QTextStream>
+#include <QMessageBox>
 #include "unusedwavefiles.h"
 #include "ui_unusedwavefiles.h"
 #include "globals.h"
@@ -49,9 +50,6 @@ UnusedWaveFiles::UnusedWaveFiles(QWidget *parent) :
 void UnusedWaveFiles::findWaveFiles()
 {
     ui->filelistWidget->clear();
-    //printf("MusEGlobal::museProject =%s\n", MusEGlobal::museProject.toLatin1().data());
-//    QFileInfo proj(MusEGlobal::museProject);
-//    QString projPath = proj.absolutePath();
     QDir dir(MusEGlobal::museProject);
     QStringList filter;
     filter.append("*.wav");
@@ -73,24 +71,27 @@ void UnusedWaveFiles::findWaveFiles()
 
     foreach (QString medFile, medFiles) {
         QString fname = MusEGlobal::museProject+"/"+ medFile;
-        //printf("fopen %s\n", fname.toLatin1().data());
-        FILE *fp =fopen(fname.toLatin1().data(),"r");
-        QTextStream fileContent(fp);
-        while (!fileContent.atEnd()) {
-            QString line = fileContent.readLine();
-            if (line.contains(".wav") || line.contains(".ogg") || line.contains(".flac")) { // optimization
-                foreach (QString wav, allWaveFiles) {
-                    //printf("checking wav [%s]\n", wav.toLatin1().data() );
-                    if (line.contains(wav)) {
-                        //int beforeSize=allWaveFiles.size();
-                        allWaveFiles.removeOne(wav);
-                        //printf("removed one from list, %d %d\n", beforeSize, allWaveFiles.size());
-                        break;
-                    }
-                }
-            }
+        //printf("fopen %s\n", fname.toLocal8Bit().data());
+        QFile f(fname);
+        if(f.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+          QTextStream fileContent(&f);
+          while (!fileContent.atEnd()) {
+              QString line = fileContent.readLine();
+              if (line.contains(".wav") || line.contains(".ogg") || line.contains(".flac")) { // optimization
+                  foreach (QString wav, allWaveFiles) {
+                      //printf("checking wav [%s]\n", wav.toLocal8Bit().data() );
+                      if (line.contains(wav)) {
+                          //int beforeSize=allWaveFiles.size();
+                          allWaveFiles.removeOne(wav);
+                          //printf("removed one from list, %d %d\n", beforeSize, allWaveFiles.size());
+                          break;
+                      }
+                  }
+              }
+          }
+          f.close();
         }
-        fclose(fp);
     }
 
     ui->filelistWidget->addItems(allWaveFiles);

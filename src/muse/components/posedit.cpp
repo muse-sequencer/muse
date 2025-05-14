@@ -383,7 +383,7 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
 
 void PosEdit::fixup(QString& /*input*/) const
       {
-      //printf("fixup <%s>\n", input.toLatin1().constData()); 
+      //printf("fixup <%s>\n", input.toLocal8Bit().constData());
       }
 
 //---------------------------------------------------------
@@ -392,8 +392,8 @@ void PosEdit::fixup(QString& /*input*/) const
 
 QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
 {
-      //printf("validate string:%s int:%d\n", s.toLatin1().data(), i);  
-      //printf("validate string:%s\n", s.toLatin1().data());  
+      //printf("validate string:%s int:%d\n", s.toLocal8Bit().data(), i);
+      //printf("validate string:%s\n", s.toLocal8Bit().data());
       
       QStringList sl = s.split(_smpte ? ':' : '.');
       QValidator::State state;
@@ -405,7 +405,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
       {
         if(sl.size() != 4)
         {
-          printf("validate smpte string:%s sections:%d != 4\n", s.toLatin1().data(), sl.size());  
+          printf("validate smpte string:%s sections:%d != 4\n", s.toLocal8Bit().data(), sl.size());
           return QValidator::Invalid;
         }  
         
@@ -456,7 +456,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
       {
         if(sl.size() != 3)
         {
-          printf("validate bbt string:%s sections:%d != 3\n", s.toLatin1().data(), sl.size());  
+          printf("validate bbt string:%s sections:%d != 3\n", s.toLocal8Bit().data(), sl.size());
           return QValidator::Invalid;
         }
           
@@ -467,7 +467,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
         int bm = tm / tb;
 
         validator->setRange(1, 9999);
-        //printf("validate substring 0:%s\n", sl[0].toLatin1().data());  
+        //printf("validate substring 0:%s\n", sl[0].toLocal8Bit().data());
         // Special hack because validator says 0000 is intermediate.
         if(sl[0] == "0000")
           return QValidator::Invalid;
@@ -478,7 +478,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
           rv = state;
           
         validator->setRange(1, bm);
-        //printf("validate substring 1:%s\n", sl[1].toLatin1().data());  
+        //printf("validate substring 1:%s\n", sl[1].toLocal8Bit().data());
         // Special hack because validator says 00 is intermediate.
         if(sl[1] == "00")
           return QValidator::Invalid;
@@ -489,7 +489,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
           rv = state;
           
         validator->setRange(0, tb-1);
-        //printf("validate substring 2:%s\n", sl[2].toLatin1().data());  
+        //printf("validate substring 2:%s\n", sl[2].toLocal8Bit().data());
         state = validator->validate(sl[2], dpos);
         if(state == QValidator::Invalid)
           return state;
@@ -689,7 +689,7 @@ bool PosEdit::finishEdit()
       {
         if(sl.size() != 4)
         {
-          printf("finishEdit smpte string:%s sections:%d != 4\n", text().toLatin1().data(), sl.size());  
+          printf("finishEdit smpte string:%s sections:%d != 4\n", text().toLocal8Bit().data(), sl.size());
           return false;
         }  
         
@@ -704,7 +704,7 @@ bool PosEdit::finishEdit()
       {
         if(sl.size() != 3)
         {
-          printf("finishEdit bbt string:%s sections:%d != 3\n", text().toLatin1().data(), sl.size());  
+          printf("finishEdit bbt string:%s sections:%d != 3\n", text().toLocal8Bit().data(), sl.size());
           return false;
         }
           

@@ -138,7 +138,7 @@ void FluidSynthGui::pushClicked()
       const QString& fns = Filename->text();
       if (fns.isEmpty())
             return;
-      const char * fn = fns.toLatin1();
+      const char * fn = fns.toUtf8();
 
       int datalen = strlen(fn) + 3;
       unsigned char data [datalen];
@@ -184,8 +184,8 @@ void FluidSynthGui::sendLastdir(QString dir)
       data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
       data[1] = FLUIDSYNTH_UNIQUE_ID;
       data[2] = FS_LASTDIR_CHANGE;
-      //memcpy(data+1, dir.toLatin1(), dir.length()+1);
-      memcpy(data+3, dir.toLatin1().constData(), dir.length()+1);
+      //memcpy(data+1, dir.toUtf8(), dir.length()+1);
+      memcpy(data+3, dir.toUtf8().constData(), dir.length()+1);
       sendSysex(data,l);
       }
 
@@ -218,8 +218,8 @@ void FluidSynthGui::sendLoadFont(QString filename)
       data[1] = FLUIDSYNTH_UNIQUE_ID;
       data[2] = FS_PUSH_FONT;
       data[3] = FS_UNSPECIFIED_ID;
-      //memcpy(data+2, filename.toLatin1(), filename.length()+1);
-      memcpy(data+4, filename.toLatin1().constData(), filename.length()+1);
+      //memcpy(data+2, filename.toUtf8(), filename.length()+1);
+      memcpy(data+4, filename.toUtf8().constData(), filename.length()+1);
       sendSysex(data,l);
       }
 
@@ -530,7 +530,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
             int lastindex = 0;
             for (std::list<FluidGuiSoundFont>::reverse_iterator it = stack.rbegin(); it != stack.rend(); it++) {
                 i++;
-                /*byte* d = (byte*) it->name.toLatin1();
+                /*byte* d = (byte*) it->name.toUtf8();
                   for (int i=0; i<96; i++) {
                         if (i%16 == 0)
                               printf("%x:",(i+d));
@@ -570,7 +570,6 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
                     //sfid = getSoundFontId(act->text());
                     fontname = getSoundFontName((byte)sfid);
                 }
-                //byte channel = atoi(item->text().toLatin1()) - 1;
                 if (keymod & (Qt::ShiftModifier|Qt::ControlModifier)) {
                     for (int i = 0; i < FS_MAX_NR_OF_CHANNELS; i++) {
                         if (keymod & Qt::ShiftModifier && channels[i] != FS_UNSPECIFIED_ID && i != row)
@@ -599,7 +598,6 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
 	    yes->setData(1);
             QAction * no = popup->addAction("No");
 	    no->setData(0);
-            //byte channel = atoi(item->text().toLatin1()) - 1;
             byte channel = row;
 
             QAction * act2 = popup->exec(ppt, 0);
@@ -679,7 +677,7 @@ void FluidSynthGui::popClicked()
 void FluidSynthGui::sfItemClicked(QTreeWidgetItem* item, int /*col*/)
       {
       if (item != 0) {
-            currentlySelectedFont = atoi(item->text(FS_ID_COL).toLatin1().constData());
+            currentlySelectedFont = item->text(FS_ID_COL).toInt();
             Pop->setEnabled(true);
             }
       else {
@@ -885,9 +883,9 @@ int main(int argc, char* argv[])
   museGlobalShare = getenv("MUSE");
   if (museGlobalShare == 0) {
     museGlobalShare = "/usr/muse";
-    if (access(museGlobalShare.toLatin1(), R_OK) != 0) {
+    if (access(museGlobalShare.toUtf8(), R_OK) != 0) {
       museGlobalShare = "/usr/local/muse";
-      if (access(museGlobalShare.toLatin1(), R_OK) != 0)
+      if (access(museGlobalShare.toUtf8(), R_OK) != 0)
         museGlobalShare = museUser;
     }
   }*/

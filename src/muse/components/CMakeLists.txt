@@ -94,6 +94,7 @@ QT5_WRAP_CPP (components_mocs
       midi_audio_control.h  
       midisyncimpl.h  
       midi_warn_init_pending_impl.h
+      missing_plugins.h
       mixdowndialog.h  
 #       mlabel.h  
       mtscale.h  
@@ -184,6 +185,7 @@ file (GLOB components_ui_files
       midisync.ui  
       midi_warn_init_pending.ui
       midi_audio_control_base.ui  
+      missing_plugins_base.ui
       mixdowndialogbase.ui  
       # mtrackinfobase.ui
       pastedialogbase.ui
@@ -261,6 +263,7 @@ file (GLOB components_source_files
       midi_audio_control.cpp 
       midisyncimpl.cpp 
       midi_warn_init_pending_impl.cpp
+      missing_plugins.cpp
       mixdowndialog.cpp 
 #       mlabel.cpp 
 #       mmath.cpp

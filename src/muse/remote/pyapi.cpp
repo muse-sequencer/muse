@@ -163,7 +163,7 @@ PyObject* getTrackNames(PyObject*, PyObject*)
       PyObject* res = Py_BuildValue("[]");
       for (ciTrack t = tracks->begin(); t != tracks->end(); ++t) {
             Track* track = *t;
-            PyObject* ptrackname = Py_BuildValue("s", track->name().toLatin1().constData());
+            PyObject* ptrackname = Py_BuildValue("s", track->name().toUtf8().constData());
             PyList_Append(res, ptrackname);
             Py_DECREF(ptrackname);
             }
@@ -218,7 +218,7 @@ PyObject* getParts(PyObject*, PyObject* args)
                   PyObject* pitick = Py_BuildValue("i", tick);
                   PyObject* pstrid = Py_BuildValue("s","id");
 //                   PyObject* pstrserial = Py_BuildValue("s", serialnr.toByteArray().constData());
-                  PyObject* pstrserial = Py_BuildValue("s", serialnr.toString().toLatin1().constData());
+                  PyObject* pstrserial = Py_BuildValue("s", serialnr.toString().toUtf8().constData());
                   PyObject* pstrlen = Py_BuildValue("s","len");
                   PyObject* pstrtick2 = Py_BuildValue("i", lentick);
 
@@ -773,7 +773,7 @@ PyObject* getSelectedTrack(PyObject*, PyObject*)
       for (ciTrack t = tracks->begin(); t != tracks->end(); ++t) {
             Track* track = *t;
             if (track->selected())
-                  return Py_BuildValue("s", track->name().toLatin1().constData());
+                  return Py_BuildValue("s", track->name().toUtf8().constData());
             }
 
       Py_RETURN_NONE;
@@ -822,8 +822,8 @@ PyObject* getTrackEffects(PyObject*, PyObject* args)
       const Pipeline* pipeline = track->efxPipe();
       for (int i = 0; i < MusECore::PipelineDepth; i++) {
             QString name = pipeline->name(i);
-            printf("fx %d name: %s\n", i, name.toLatin1().constData());
-            PyObject* pyname = Py_BuildValue("s", name.toLatin1().constData());
+            printf("fx %d name: %s\n", i, name.toLocal8Bit().constData());
+            PyObject* pyname = Py_BuildValue("s", name.toUtf8().constData());
             PyList_Append(pyfxnames, pyname);
             Py_DECREF(pyname);
             }
@@ -975,7 +975,7 @@ PyObject* getOutputRoute(PyObject*, PyObject* args)
                  // for (iRoute ir = r->begin(); ir != r->end(); ++ir) {
                  //       if (ir->type == 0 && ir->track == track) {
                  //             s += "*";
-                 //             PyList_Append(routes, Py_BuildValue("s", s.toLatin1()));
+                 //             PyList_Append(routes, Py_BuildValue("s", s.toUtf8()));
                  //             break;
                  //             }
                  //       }
@@ -996,7 +996,7 @@ PyObject* getOutputRoute(PyObject*, PyObject* args)
 //------------------------------------------------------------
 PyObject* getConfigPyroNSHostname(PyObject*, PyObject*)
 {
-      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroNSHostname.toLatin1().constData());
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroNSHostname.toUtf8().constData());
 }
 
 //------------------------------------------------------------
@@ -1004,7 +1004,7 @@ PyObject* getConfigPyroNSHostname(PyObject*, PyObject*)
 //------------------------------------------------------------
 PyObject* getConfigPyroNSPort(PyObject*, PyObject*)
 {
-      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroNSPort.toLatin1().constData());
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroNSPort.toUtf8().constData());
 }
 
 //------------------------------------------------------------
@@ -1012,7 +1012,7 @@ PyObject* getConfigPyroNSPort(PyObject*, PyObject*)
 //------------------------------------------------------------
 PyObject* getConfigPyroDaemonHostname(PyObject*, PyObject*)
 {
-      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroDaemonHostname.toLatin1().constData());
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroDaemonHostname.toUtf8().constData());
 }
 
 //------------------------------------------------------------
@@ -1020,7 +1020,7 @@ PyObject* getConfigPyroDaemonHostname(PyObject*, PyObject*)
 //------------------------------------------------------------
 PyObject* getConfigPyroDaemonPort(PyObject*, PyObject*)
 {
-      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroDaemonPort.toLatin1().constData());
+      return Py_BuildValue("s", MusEGlobal::pythonBridgePyroDaemonPort.toUtf8().constData());
 }
 
 //------------------------------------------------------------

@@ -89,7 +89,9 @@
 #include <QThread>
 #include <QTimer>
 #include <QWindow>
+#include <QLibrary>
 
+#include "type_defs.h"
 #include "globaldefs.h"
 #include "midictrl.h"
 #include "synth.h"
@@ -378,6 +380,7 @@ private:
     uint32_t _fWrkSchedule;
     uint32_t _fUiResize;
     uint32_t _fUiRequestValue;
+    uint32_t _fUiTouch;
     uint32_t _fPrgHost;
 #ifdef MIDNAM_SUPPORT
     uint32_t _fMidNamUpdate;
@@ -406,7 +409,6 @@ private:
     LV2_URID _uAtom_Sequence;
     LV2_URID _uAtom_StateChanged;
     LV2_URID _uAtom_Object;
-    bool _usesTimePosition;
     bool _isConstructed;
     float *_pluginControlsDefault;
     float *_pluginControlsMin;
@@ -414,11 +416,13 @@ private:
     std::map<QString, LilvNode *> _presets;
 
 public:
-    virtual Type synthType() const;
     LV2Synth (const MusEPlugin::PluginScanInfoStruct&, const LilvPlugin*);
     virtual ~LV2Synth();
 
-    virtual SynthIF *createSIF ( SynthI * );
+    bool reference() override;
+    int release () override;
+
+    SynthIF *createSIF ( SynthI * ) override;
     bool isSynth();
 
     //own public functions
@@ -427,8 +431,6 @@ public:
     size_t inPorts();
     size_t outPorts();
     bool isConstructed();
-    // Returns true if ANY of the midi input ports uses time position (transport).
-    bool usesTimePosition() const;
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
     static LV2UI_Request_Value_Status lv2ui_Request_Value (
@@ -454,8 +456,12 @@ public:
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
     static LV2_Worker_Status lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void* data);    
-    static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
-    static void lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
+    static QString lv2conf_getCustomData(LV2PluginWrapper_State *state);
+    // Returns true if, among other data, there was indeed custom data.
+    // This means there is, or likely is, parameter values stored with the data,
+    //  meaning we should not try to manually restore parameters since the data
+    //  already has them.
+    static bool lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
     static unsigned lv2ui_IsSupported (const char *, const char *ui_type_uri);
     static void lv2prg_updateProgram(LV2PluginWrapper_State *state, int idx);
     static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);
@@ -475,6 +481,9 @@ public:
     static const void* lv2state_getPortValue(const char *port_symbol, void *user_data, uint32_t *size, uint32_t *type);
     static void lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset);
     static void lv2state_UnloadLoadPresets(LV2Synth *synth, bool load = false, bool update = false);
+    static void lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state);
+    static void lv2ui_TitleAboutToChange(LV2PluginWrapper_State *state);
+
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -541,6 +550,10 @@ public:
     virtual bool hasNativeGui() const override;
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const override;
     virtual void setNativeGeometry (int x, int y, int w, int h) override;
+    // Informs the plugin that we are about to change the UI title bar text.
+    // Some UIs may need to close because their title bar text is not alterable after creation.
+    void nativeGuiTitleAboutToChange() override;
+    void updateNativeGuiWindowTitle() override;
     virtual bool getData ( MidiPort *, unsigned pos, int ports, unsigned n, float **buffer ) override;
     virtual MidiPlayEvent receiveEvent() override;
     virtual int eventsPending() const override;
@@ -551,7 +564,6 @@ public:
     virtual void deactivate3() override;
     virtual QString getPatchName (int, int, bool ) const override;
     virtual void populatePatchPopup ( MusEGui::PopupMenu *, int, bool ) override;
-    virtual void write ( int level, Xml &xml ) const override;
     virtual double getParameter ( unsigned long idx ) const override;
     virtual double getParameterOut ( unsigned long n ) const;
     virtual void setParameter ( unsigned long idx, double value ) override;
@@ -562,11 +574,13 @@ public:
     virtual bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const override;
 
-    virtual void writeConfiguration ( int level, Xml &xml ) override;
-    virtual bool readConfiguration ( Xml &xml, bool readPreset=false ) override;
-
-    virtual void setCustomData ( const std::vector<QString> & ) override;
-
+    // Returns a list of strings containing any custom configurations provided by the plugin.
+    virtual std::vector<QString> getCustomData() const override;
+    // Returns true if, among other data, there was indeed custom data.
+    // This means there is, or likely is, parameter values stored with the data,
+    //  meaning we should not try to manually restore parameters since the data
+    //  already has them.
+    virtual bool setCustomData ( const std::vector<QString> & ) override;
 
     unsigned long parameters() const override;
     unsigned long parametersOut() const override;
@@ -611,8 +625,6 @@ public:
     void populatePresetsMenu(MusEGui::PopupMenu *menu);
     void applyPreset(void *preset);
 
-    int id() const override;
-
     static void lv2prg_Changed(LV2_Programs_Handle handle, int32_t index);
 #ifdef MIDNAM_SUPPORT
     static void lv2midnam_Changed(LV2_Midnam_Handle handle);
@@ -640,7 +652,8 @@ struct LV2PluginWrapper_State {
 #endif
     LV2_State_Map_Path mapPath;
     LilvInstance *handle;
-    void *uiDlHandle;
+    QLibrary uiQLib;
+    int uiReferences;
     const LV2UI_Descriptor *uiDesc;
     LV2UI_Handle uiInst;
     LV2PluginWrapper *inst;
@@ -655,6 +668,9 @@ struct LV2PluginWrapper_State {
     QMap<QString, QPair<QString, QVariant> > iStateValues;
     char **tmpValues;
     size_t numStateValues;
+    // Temporary during state restoration. Whether the custom data does actually
+    //  contain state data put there by the plugin, besides any data we put there.
+    bool tmpHasPluginState;
     LockFreeDataRingBuffer *wrkDataBuffer;
     LockFreeDataRingBuffer *wrkRespDataBuffer;
     LV2PluginWrapper_Worker *wrkThread;
@@ -680,6 +696,7 @@ struct LV2PluginWrapper_State {
     const LilvUI *uiCurrent;    
     LV2UI_Resize uiResize;
     LV2UI_Request_Value uiRequestValue;
+    LV2UI_Touch uiTouch;
     QSize uiX11Size;
     LV2PluginWrapper_Window *pluginWindow;
     QWindow *pluginQWindow;
@@ -758,6 +775,7 @@ public:
    void startNextTime();
    void stopNextTime();
    void setClosing(bool closing);
+   void updateWindowTitle(const QString&);
 signals:
    void makeStopFromGuiThread();
    void makeStartFromGuiThread();
@@ -775,11 +793,12 @@ private:
     LADSPA_Descriptor _fakeLd;
     LADSPA_PortDescriptor *_fakePds;       
 public:
-    LV2PluginWrapper ( LV2Synth *s, PluginFeatures_t reqFeatures = PluginNoFeatures );
+    LV2PluginWrapper ( LV2Synth *s, MusEPlugin::PluginFeatures_t reqFeatures = MusEPlugin::PluginNoFeatures );
     LV2Synth *synth() const;
     virtual ~LV2PluginWrapper();
     virtual LADSPA_Handle instantiate ( PluginI * ) override;
-    virtual int incReferences ( int ref ) override;
+    bool reference() override;
+    int release () override;
     virtual void activate ( LADSPA_Handle handle ) override;
     virtual void deactivate ( LADSPA_Handle handle ) override;
     virtual void cleanup ( LADSPA_Handle handle ) override;
@@ -796,9 +815,17 @@ public:
     virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
     virtual bool nativeGuiVisible (const PluginI *p ) const;
+    // Informs the plugin that we are about to change the UI title bar text.
+    // Some UIs may need to close because their title bar text is not alterable after creation.
+    void nativeGuiTitleAboutToChange(const PluginI *p);
+    void updateNativeGuiWindowTitle(const PluginI *p) const;
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
-    virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
-    virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
+    virtual QString getCustomConfiguration(LADSPA_Handle handle);
+    // Returns true if, among other data, there was indeed custom data.
+    // This means there is, or likely is, parameter values stored with the data,
+    //  meaning we should not try to manually restore parameters since the data
+    //  already has them.
+    virtual bool setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
     // Returns a value unit string for displaying unit symbols.
     QString unitSymbol(unsigned long ) const override;
     // Returns index into the global value units for displaying unit symbols.

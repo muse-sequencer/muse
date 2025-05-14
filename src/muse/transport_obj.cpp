@@ -261,7 +261,7 @@ TrackLatencyInfo& TransportSource::setCorrectionLatencyInfo(
   }
 
   //fprintf(stderr, "TransportSource::setCorrectionLatencyInfo() name:%s finalWorstLatency:%f branch_lat:%f corr:%f _sourceCorrectionValue:%f\n",
-  //        name().toLatin1().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
+  //        name().toLocal8Bit().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
 
   return _latencyInfo;
 }

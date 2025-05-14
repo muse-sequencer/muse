@@ -239,6 +239,8 @@ class Track {
       // Returns true if anything changed.
       bool selectEvents(bool select, unsigned long t0 = 0, unsigned long t1 = 0);
       
+      void read(Xml& xml);
+
       virtual void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const = 0;
 
       virtual Track* clone(int flags) const    = 0;
@@ -717,14 +719,33 @@ class AudioTrack : public Track {
 
       bool processed() { return _processed; }
 
-      void addController(CtrlList*);
+      // Adds a controller. Returns true if successful or false if error.
+      // Note that it will fail if the controller already exists.
+      bool addController(CtrlList*);
       void removeController(int id);
+      // Adds a controller. If an existing controller is found, this overwrites it.
+      // This method is specialized in that it is designed to add controllers that
+      //  were loaded from XML. Since we do not store certain controller members such as
+      //  name, min, max, etc. in the XML, those members will be invalid or blank.
+      // So this method will be careful not to overwrite the existing members if
+      //  an existing controller is found since those members may have already been
+      //  set up beforehand. Returns true if successful or false if error.
+      // This takes ownership of the controller and will either add/transfer it or delete it.
+      bool addControllerFromXml(CtrlList*);
+      // If the controller is a plugin or synth controller, sets up controller members
+      //  such as name, min, max, etc. from the plugin or synth.
+      // Returns true if successful or false if error.
+      bool setupController(CtrlList*);
 
       bool readProperties(Xml&, const QString&);
       void writeProperties(int, Xml&) const;
 
+      void read(Xml& xml);
+
       void mapRackPluginsToControllers();
-      void showPendingPluginNativeGuis();
+      // This shows any pending native and generic rack effect plugin guis.
+      void showPendingPluginGuis();
+      void updateUiWindowTitles();
 
       SndFileR recFile() const;
       void setRecFile(SndFileR sf);
@@ -784,20 +805,14 @@ class AudioTrack : public Track {
 
       void setPrefader(bool val);
       Pipeline* efxPipe()                { return _efxPipe;  }
+      const Pipeline* efxPipe() const    { return _efxPipe;  }
       void deleteAllEfxGuis();
-      void clearEfxList();
-      // Removes any existing plugin and inserts plugin into effects rack, and calls setupPlugin.
-      void addPlugin(PluginI* plugin, int idx);
       // Assigns valid ID and track to plugin, and creates controllers for plugin.
       void setupPlugin(PluginI* plugin, int idx);
-      // Swaps plugins at slots idx1 and idx2, including empty slots.
-      void swapPlugins(int idx1, int idx2);
 
       double pluginCtrlVal(int ctlID) const;
       void setPluginCtrlVal(int param, double val);
       
-      void readVolume(Xml& xml);
-
       virtual void preProcessAlways();
 
       // Gathers this track's audio data and either copies or adds it to a supplied destination buffer.

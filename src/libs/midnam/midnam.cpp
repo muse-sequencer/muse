@@ -389,7 +389,7 @@ bool readSysEx(
                       //         after the 42 and give us the ending tag,
                       //         and how would we continue after the end tag?
     
-                      QByteArray ba = tag.toLatin1();
+                      QByteArray ba = tag.toUtf8();
                       // In case there are embedded tags which have no space
                       //  separating them from values, insert spaces so that
                       //  they are treated separately by the split.
@@ -1354,7 +1354,7 @@ bool readMIDIDelay(MusECore::Xml& xml, int& delay)
 // Writes element name, and channel if not zero.
 void writeMIDICommandElementPrefix(int level, MusECore::Xml& xml, const QString& element, int chan = 0)
 {
-  xml.nput(level, "<%s ", Xml::xmlString(element).toLocal8Bit().constData());
+  xml.nput(level, "<%s ", Xml::xmlString(element).toUtf8().constData());
   if(chan != 0)
     // MidName Channel range is 1..16
     xml.nput(level, "Channel=\"%d\" ", chan + 1);
@@ -1917,7 +1917,7 @@ void MidiNamChannelNameSetAssign::write(int level, MusECore::Xml& xml) const
 {
   // MidNam Channel range is 1..16
   xml.put(level, "<ChannelNameSetAssign Channel=\"%d\" NameSet=\"%s\" />",
-          _channel + 1, Xml::xmlString(_name).toLocal8Bit().constData());
+          _channel + 1, Xml::xmlString(_name).toUtf8().constData());
 }
 
 bool MidiNamChannelNameSetAssign::read(MusECore::Xml& xml)
@@ -2141,7 +2141,7 @@ bool MidiNamChannelNameSetAssignments::getNoteSampleName(
 
 void MidiNamNote::write(int level, MusECore::Xml& xml) const
 {
-  xml.put(level, "<Note Number=\"%d\" Name=\"%s\" />", _number, Xml::xmlString(_name).toLocal8Bit().constData());
+  xml.put(level, "<Note Number=\"%d\" Name=\"%s\" />", _number, Xml::xmlString(_name).toUtf8().constData());
 }
 
 bool MidiNamNote::read(MusECore::Xml& xml)
@@ -2259,7 +2259,7 @@ bool MidiNamNotes::getNoteSampleName(
 
 void MidiNamNoteGroup::write(int level, MusECore::Xml& xml, const MidiNamNotes* notes) const
 {
-  xml.tag(level++, "NoteGroup Name=\"%s\"", Xml::xmlString(_name).toLocal8Bit().constData());
+  xml.tag(level++, "NoteGroup Name=\"%s\"", Xml::xmlString(_name).toUtf8().constData());
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     // Write only the notes that are part of the group.
@@ -2366,10 +2366,10 @@ void MidiNamNoteGroups::write(int level, MusECore::Xml& xml, const MidiNamNotes*
 void MidNamNoteNameList::write(int level, MusECore::Xml& xml) const
 {
   if(isReference()) {
-    xml.put(level, "<UsesNoteNameList Name=\"%s\" />", Xml::xmlString(_name).toLocal8Bit().constData());
+    xml.put(level, "<UsesNoteNameList Name=\"%s\" />", Xml::xmlString(_name).toUtf8().constData());
   }
   else {
-    xml.tag(level++, "NoteNameList Name=\"%s\"", Xml::xmlString(_name).toLocal8Bit().constData());
+    xml.tag(level++, "NoteNameList Name=\"%s\"", Xml::xmlString(_name).toUtf8().constData());
     _noteList.write(level, xml);
     xml.etag(--level, "NoteNameList");
   }
@@ -2451,7 +2451,7 @@ bool MidNamNoteNameList::getNoteSampleName(
 
 void MidiNamVal::write(int level, MusECore::Xml& xml) const
 {
-  xml.put(level, "<Value Number=\"%d\" Name=\"%s\" />", _number, Xml::xmlString(_name).toLocal8Bit().constData());
+  xml.put(level, "<Value Number=\"%d\" Name=\"%s\" />", _number, Xml::xmlString(_name).toUtf8().constData());
 }
 
 bool MidiNamVal::read(MusECore::Xml& xml)
@@ -2538,10 +2538,10 @@ bool MidiNamValNames::add(MidiNamVal* a)
 void MidiNamValNames::write(int level, MusECore::Xml& xml) const
 {
   if(isReference()) {
-    xml.put(level, "<UsesValueNameList Name=\"%s\" />", Xml::xmlString(_name).toLocal8Bit().constData());
+    xml.put(level, "<UsesValueNameList Name=\"%s\" />", Xml::xmlString(_name).toUtf8().constData());
   }
   else {
-    xml.tag(level++, "ValueNameList Name=\"%s\"", Xml::xmlString(_name).toLocal8Bit().constData());
+    xml.tag(level++, "ValueNameList Name=\"%s\"", Xml::xmlString(_name).toUtf8().constData());
     for(const_iterator i = cbegin(); i != cend(); ++i)
       i->second->write(level, xml);
     xml.etag(--level, "ValueNameList");
@@ -2717,7 +2717,7 @@ void MidiNamCtrl::writeMidnam(int level, MusECore::Xml& xml) const
   xml.nput(level, "<Control Type=\"%s\" Number=\"%d\" Name=\"%s\"",
           type_str,
           number,
-          Xml::xmlString(_name).toLocal8Bit().constData());
+          Xml::xmlString(_name).toUtf8().constData());
 
   if(_values.empty())
   {
@@ -2840,10 +2840,10 @@ MidiNamCtrls::~MidiNamCtrls()
 void MidiNamCtrls::writeMidnam(int level, MusECore::Xml& xml) const
 {
   if(isReference()) {
-    xml.put(level, "<UsesControlNameList Name=\"%s\" />", Xml::xmlString(_name).toLocal8Bit().constData());
+    xml.put(level, "<UsesControlNameList Name=\"%s\" />", Xml::xmlString(_name).toUtf8().constData());
   }
   else {
-    xml.tag(level++, "ControlNameList Name=\"%s\"", Xml::xmlString(_name).toLocal8Bit().constData());
+    xml.tag(level++, "ControlNameList Name=\"%s\"", Xml::xmlString(_name).toUtf8().constData());
     for(const_iterator i = cbegin(); i != cend(); ++i)
       static_cast<MidiNamCtrl*>(i->second)->writeMidnam(level, xml);
     xml.etag(--level, "ControlNameList");
@@ -2914,8 +2914,8 @@ const MidiControllerList* MidiNamCtrls::getControllers(int /*channel*/, int /*pa
 void MidiNamPatch::write(int level, MusECore::Xml& xml) const
 {
   xml.nput(level, "<Patch Number=\"%s\" Name=\"%s\" ProgramChange=\"%d\"",
-          Xml::xmlString(_number).toLocal8Bit().constData(),
-          Xml::xmlString(_name).toLocal8Bit().constData(),
+          Xml::xmlString(_number).toUtf8().constData(),
+          Xml::xmlString(_name).toUtf8().constData(),
              _patchNumber);
   if(_patchMIDICommands.empty() &&
     _channelNameSetAssignments.empty() &&
@@ -3079,10 +3079,10 @@ bool MidiNamPatchNameList::add(MidiNamPatch* a)
 void MidiNamPatchNameList::write(int level, MusECore::Xml& xml) const
 {
   if(isReference()) {
-    xml.put(level, "<UsesPatchNameList Name=\"%s\" />", Xml::xmlString(_name).toLocal8Bit().constData());
+    xml.put(level, "<UsesPatchNameList Name=\"%s\" />", Xml::xmlString(_name).toUtf8().constData());
   }
   else {
-    xml.tag(level++, "PatchNameList Name=\"%s\"", Xml::xmlString(_name).toLocal8Bit().constData());
+    xml.tag(level++, "PatchNameList Name=\"%s\"", Xml::xmlString(_name).toUtf8().constData());
     for(const_iterator i = cbegin(); i != cend(); ++i)
       i->second->write(level, xml);
     xml.etag(--level, "PatchNameList");
@@ -3253,7 +3253,7 @@ bool MidiNamPatchNameList::getNoteSampleName(
 void MidiNamPatchBank::write(int level, MusECore::Xml& xml) const
 {
   xml.nput(level, "<PatchBank Name=\"%s\" ROM=\"%s\"",
-          Xml::xmlString(_name).toLocal8Bit().constData(),
+          Xml::xmlString(_name).toUtf8().constData(),
           _ROM ? "true" : "false");
   if(_MIDICommands.empty() &&
     !_patchNameList.isReference() && _patchNameList.empty())
@@ -3485,7 +3485,7 @@ bool MidiNamPatchBankList::getNoteSampleName(
 void MidNamChannelNameSet::write(int level, MusECore::Xml& xml) const
 {
   xml.nput(level, "<ChannelNameSet Name=\"%s\"",
-          Xml::xmlString(_name).toLocal8Bit().constData());
+          Xml::xmlString(_name).toUtf8().constData());
   if(_availableForChannels.empty() &&
     _patchBankList.empty() &&
     !_noteNameList.isReference() && _noteNameList.empty() &&
@@ -3823,11 +3823,11 @@ bool MidNamNameList::gatherReferences(MidNamReferencesList* refs) const
 void MidNamDeviceMode::write(int level, MusECore::Xml& xml) const
 {
   if(isReference()) {
-    xml.put(level, "<SupportsStandardDeviceMode Name=\"%s\" />", Xml::xmlString(_name).toLocal8Bit().constData());
+    xml.put(level, "<SupportsStandardDeviceMode Name=\"%s\" />", Xml::xmlString(_name).toUtf8().constData());
   }
   else {
     xml.nput(level, _isCustomDeviceMode ? "<CustomDeviceMode Name=\"%s\"" : "<StandardDeviceMode Name=\"%s\"",
-            Xml::xmlString(_name).toLocal8Bit().constData());
+            Xml::xmlString(_name).toUtf8().constData());
     if(_deviceModeEnable.MIDICommands().empty() &&
       _deviceModeDisable.MIDICommands().empty() &&
       _channelNameSetAssignments.empty() &&
@@ -4059,7 +4059,7 @@ bool MidNamDeviceModeList::gatherReferences(MidNamReferencesList* refs) const
 void MidNamDevice::write(int level, MusECore::Xml& xml) const
 {
   xml.put(level, "<Device Name=\"%s\" UniqueID=\"%d\" />",
-          Xml::xmlString(_name).toLocal8Bit().constData(), _uniqueID);
+          Xml::xmlString(_name).toUtf8().constData(), _uniqueID);
 }
 
 bool MidNamDevice::read(MusECore::Xml& xml)

@@ -160,11 +160,11 @@ void Preset::readConfiguration(MusECore::Xml& xml)
 void Preset::writeConfiguration(MusECore::Xml& xml, int level)
 {
 	//xml.tag(level++, "preset name=\"%s\"", name.ascii());
-        xml.tag(level++, "preset name=\"%s\"", MusECore::Xml::xmlString(name).toLatin1().constData());
+	xml.tag(level++, QString("preset name=\"%1\"").arg(MusECore::Xml::xmlString(name)));
 	for (int i = 0; i < NUM_CONTROLLER; ++i) {
-		xml.tag(level, "control idx=\"%d\" val=\"%d\" /", i, ctrl[i]);
+		xml.emptyTag(level, QString("control idx=\"%1\" val=\"%2\"").arg(i).arg(ctrl[i]));
 	}
-	xml.tag(level--, "/preset");
+	xml.etag(--level, "preset");
 }
 
 //---------------------------------------------------------
@@ -455,7 +455,7 @@ void VAMGui::setPreset(Preset* preset)
 	putchar(MUSE_SYNTH_SYSEX_MFG_ID);    // mess
 	putchar(VAM_UNIQUE_ID);              // vam
 	putchar(0x3);                        // setPreset
-        QByteArray ba = preset->name.toLatin1();
+        QByteArray ba = preset->name.toUtf8();
 	const char* name = ba.constData();
 	while (*name)
 		putchar(*name++ & 0x7f);
@@ -600,7 +600,7 @@ void VAMGui::loadPresetsPressed()
 	if (fn.isEmpty())
 		return;
 // 	bool popenFlag=false;
-	FILE* f = fopen(fn.toLatin1().constData(),"r");//fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
+	FILE* f = fopen(fn.toLocal8Bit().constData(),"r");//fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
 	if (f == 0)
 		return;
 	presets.clear();
@@ -632,7 +632,7 @@ void VAMGui::loadPresetsPressed()
 				break;
 			case MusECore::Xml::Attribut:
 				if(mode == 1 && tag == "iname") {
-//					fprintf(stderr, "%s\n", xml.s2().toLatin1());
+//					fprintf(stderr, "%s\n", xml.s2().toLocal8Bit());
 					if(xml.s2() != "vam-1.0")
 						return;
 					else mode = 2;
@@ -675,8 +675,8 @@ void VAMGui::doSavePresets(const QString& fn, bool /*_showWarning*/)
     printf("empty name\n");
     return;
     } 
-  printf("fn=%s\n",fn.toLatin1().constData());
-  FILE* f = fopen(fn.toLatin1().constData(),"w");
+  printf("fn=%s\n",fn.toLocal8Bit().constData());
+  FILE* f = fopen(fn.toLocal8Bit().constData(),"w");
 	if (f == 0)
 		return;
 	MusECore::Xml xml(f);

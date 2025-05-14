@@ -29,8 +29,6 @@
 #include <QtWidgets>
 #include <stdlib.h>
 #include <stdio.h>
-//#include <unistd.h>
-#include <dlfcn.h>
 #include <string>
 
 #include "simpler_plugin.h"
@@ -96,14 +94,14 @@ void SS_initPlugins(const QString& hostCachePath)
                                   &scan_list,
                                   false,
                                   false,
-                                  MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA);
+                                  MusEPlugin::PluginTypeLADSPA);
   for(MusEPlugin::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
   {
     const MusEPlugin::PluginScanInfoRef inforef = *isl;
     const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
     switch(info._type)
     {
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
+      case MusEPlugin::PluginTypeLADSPA:
       {
         //if(MusEGlobal::loadPlugins)
         {
@@ -112,9 +110,9 @@ void SS_initPlugins(const QString& hostCachePath)
              PLUGIN_GET_QSTRING(info._label)))
           {
             //fprintf(stderr, "Ignoring LADSPA effect label:%s path:%s duplicate of path:%s\n",
-            //        info._label.toLatin1().constData(),
-            //        info._fi.filePath().toLatin1().constData(),
-            //        pl->filePath().toLatin1().constData());
+            //        info._label.toLocal8Bit().constData(),
+            //        info._fi.filePath().toLocal8Bit().constData(),
+            //        pl->filePath().toLocal8Bit().constData());
           }
           else
           {
@@ -124,15 +122,15 @@ void SS_initPlugins(const QString& hostCachePath)
       }
       break;
       
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
+      case MusEPlugin::PluginTypeDSSI:
+      case MusEPlugin::PluginTypeDSSIVST:
+      case MusEPlugin::PluginTypeVST:
+      case MusEPlugin::PluginTypeLV2:
+      case MusEPlugin::PluginTypeLinuxVST:
+      case MusEPlugin::PluginTypeMESS:
+      case MusEPlugin::PluginTypeMETRONOME:
+      case MusEPlugin::PluginTypeUnknown:
+      case MusEPlugin::PluginTypeNone:
       break;
     }
   }
@@ -153,7 +151,7 @@ Plugin* PluginList::find(const QString& file, const QString& name)
                   return *i;
                   }
             }
-      //fprintf(stderr, "Plugin <%s> not found\n", name.toLatin1().constData());
+      //fprintf(stderr, "Plugin <%s> not found\n", name.toLocal8Bit().constData());
       SP_TRACE_OUT
       return 0;
       }
@@ -167,11 +165,11 @@ PluginList::~PluginList()
      if((*i)->references() != 0)
      {
        fprintf(stderr, "~PluginList: Plugin <%s> reference count not zero! Cannot delete.\n",
-              (*i)->name().toLatin1().constData());
+              (*i)->name().toLocal8Bit().constData());
        continue;
      }
      //fprintf(stderr, "~PluginList: deleting plugin <%s>\n",
-     //       (*i)->name().toLatin1().constData());
+     //       (*i)->name().toLocal8Bit().constData());
      delete (*i);
    }
 }
@@ -180,9 +178,27 @@ PluginList::~PluginList()
 //   Plugin
 //---------------------------------------------------------
 
+Plugin::Plugin(const QFileInfo* f)
+  : _fi(*f),
+    _pluginType(MusEPlugin::PluginTypeNone),
+    _pluginClass(MusEPlugin::PluginClassNone),
+    _references(0),
+    _instNo(0),
+    _uniqueID(0),
+    _portCount(0),
+    _inports(0),
+    _outports(0),
+    _controlInPorts(0),
+    _controlOutPorts(0),
+    _requiredFeatures(MusEPlugin::PluginNoFeatures)
+{
+
+}
+
 Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
   : _fi(PLUGIN_GET_QSTRING(info.filePath())),
-    _libHandle(0),
+    _pluginType(info._type),
+    _pluginClass(info._class),
     _references(0),
     _instNo(0),
     _uniqueID(info._uniqueID), 
@@ -195,7 +211,22 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
     _outports(info._outports),
     _controlInPorts(info._controlInPorts),
     _controlOutPorts(info._controlOutPorts),
-    _requiredFeatures(info._requiredFeatures) { }
+    _requiredFeatures(info._requiredFeatures)
+{
+
+}
+
+//---------------------------------------------------------
+//   reference
+//---------------------------------------------------------
+
+bool Plugin::reference() { return false; }
+
+//---------------------------------------------------------
+//   release
+//---------------------------------------------------------
+
+int Plugin::release() { return _references; }
 
 //---------------------------------------------------------
 //   LadspaPlugin
@@ -207,8 +238,6 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
    : Plugin(f)
       {
       SP_TRACE_IN
-      
-      _plugin = nullptr;
       
       _label = QString(d->Label);
       _name = QString(d->Name);
@@ -225,11 +254,13 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
           if(pd & LADSPA_PORT_INPUT)
           {
             ++_inports;
+            _iIdx.push_back(k);
           }
           else
           if(pd & LADSPA_PORT_OUTPUT)
           {
             ++_outports;
+            _oIdx.push_back(k);
           }
         }
         else
@@ -238,24 +269,26 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
           if(pd & LADSPA_PORT_INPUT)
           {
             ++_controlInPorts;
+            _pIdx.push_back(k);
           }
           else
           if(pd & LADSPA_PORT_OUTPUT)
           {
             ++_controlOutPorts;
+            _poIdx.push_back(k);
           }
         }
       }
   
       /*if (SP_DEBUG_LADSPA) {
-            printf("Label: %s\tLib: %s\tPortCount: %d\n", this->label().toLatin1().constData(), this->lib().toLatin1().constData(), plugin->PortCount);
+            printf("Label: %s\tLib: %s\tPortCount: %d\n", this->label().toLocal8Bit().constData(), this->lib().toLocal8Bit().constData(), plugin->PortCount);
             printf("LADSPA_PORT_CONTROL|LADSPA_PORT_INPUT: %d\t", pIdx.size());
             printf("Input ports: %d\t", iIdx.size());
             printf("Output ports: %d\n\n", oIdx.size());
             }*/
 
       if ((_inports != _outports) || (LADSPA_IS_INPLACE_BROKEN(d->Properties)))
-        _requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
+        _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
       
       SP_TRACE_OUT
       }
@@ -264,7 +297,6 @@ LadspaPlugin::LadspaPlugin(const MusEPlugin::PluginScanInfoStruct& info)
   : Plugin(info), _plugin(NULL)
 {
    SP_TRACE_IN
-
   SP_TRACE_OUT
 }
       
@@ -285,7 +317,7 @@ PluginI* LadspaPlugin::createPluginI(int chans, float sampleRate, unsigned int s
       denormalBias))
    {
      fprintf(stderr, "LadspaPlugin::createPluginI: cannot instantiate plugin <%s>\n",
-       name().toLatin1().constData());
+       name().toLocal8Bit().constData());
      // Make sure to delete the PluginI.
      delete plug_i;
      return 0;
@@ -293,54 +325,25 @@ PluginI* LadspaPlugin::createPluginI(int chans, float sampleRate, unsigned int s
    return plug_i;
 }
       
-      
 //---------------------------------------------------------
-//   incReferences
+//   reference
 //---------------------------------------------------------
 
-int LadspaPlugin::incReferences(int val)
+bool LadspaPlugin::reference()
 {
-  #ifdef PLUGIN_DEBUGIN
-  fprintf(stderr, "LadspaPlugin::incReferences _references:%d val:%d\n", _references, val);
-  #endif
-
-  int newref = _references + val;
-
-  if(newref <= 0)
+  if(_references == 0)
   {
-    _references = 0;
-    if(_libHandle)
+    _qlib.setFileName(_fi.filePath());
+    // Same as dlopen RTLD_NOW.
+    _qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    if(!_qlib.load())
     {
-      #ifdef PLUGIN_DEBUGIN
-      fprintf(stderr, "LadspaPlugin::incReferences no more instances, closing library\n");
-      #endif
-
-      dlclose(_libHandle);
+      fprintf(stderr, "LadspaPlugin::reference(): load (%s) failed: %s\n",
+        _qlib.fileName().toLocal8Bit().constData(), _qlib.errorString().toLocal8Bit().constData());
+      return false;
     }
 
-    _libHandle = 0;
-    _plugin = nullptr;
-    _pIdx.clear();
-    _poIdx.clear();
-    _iIdx.clear();
-    _oIdx.clear();
-    _requiredFeatures = MusECore::PluginNoFeatures;
-
-    return 0;
-  }
-
-  if(_libHandle == 0)
-  {
-    _libHandle = dlopen(_fi.filePath().toLatin1().constData(), RTLD_NOW);
-
-    if(_libHandle == 0)
-    {
-      fprintf(stderr, "LadspaPlugin::incReferences dlopen(%s) failed: %s\n",
-                    _fi.filePath().toLatin1().constData(), dlerror());
-      return 0;
-    }
-
-    LADSPA_Descriptor_Function ladspadf = (LADSPA_Descriptor_Function)dlsym(_libHandle, "ladspa_descriptor");
+    LADSPA_Descriptor_Function ladspadf = (LADSPA_Descriptor_Function)_qlib.resolve("ladspa_descriptor");
     if(ladspadf)
     {
       const LADSPA_Descriptor* descr;
@@ -350,8 +353,8 @@ int LadspaPlugin::incReferences(int val)
         if(descr == nullptr)
           break;
 
-        QString desc_label(descr->Label);
-        if(desc_label == label())
+        QString label(descr->Label);
+        if(label == _label)
         {
           _plugin = descr;
           break;
@@ -361,19 +364,12 @@ int LadspaPlugin::incReferences(int val)
 
     if(_plugin != nullptr)
     {
-      _uniqueID = _plugin->UniqueID;
-
-      _label = QString(_plugin->Label);
-      _name = QString(_plugin->Name);
-      _maker = QString(_plugin->Maker);
-      _copyright = QString(_plugin->Copyright);
-
       _portCount = _plugin->PortCount;
+
       _inports = 0;
       _outports = 0;
       _controlInPorts = 0;
       _controlOutPorts = 0;
-      
       for(unsigned long k = 0; k < _portCount; ++k)
       {
         LADSPA_PortDescriptor pd = _plugin->PortDescriptors[k];
@@ -407,23 +403,61 @@ int LadspaPlugin::incReferences(int val)
           }
         }
       }
+
+      /*if (SP_DEBUG_LADSPA) {
+            printf("Label: %s\tLib: %s\tPortCount: %d\n", this->label().toLocal8Bit().constData(), this->lib().toLocal8Bit().constData(), plugin->PortCount);
+            printf("LADSPA_PORT_CONTROL|LADSPA_PORT_INPUT: %d\t", pIdx.size());
+            printf("Input ports: %d\t", iIdx.size());
+            printf("Output ports: %d\n\n", oIdx.size());
+            }*/
+
+      if ((_inports != _outports) || (LADSPA_IS_INPLACE_BROKEN(_plugin->Properties)))
+        _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
     }
   }
 
+  ++_references;
+
   if(_plugin == nullptr)
   {
-    dlclose(_libHandle);
-    _libHandle = 0;
-    _references = 0;
-    fprintf(stderr, "LadspaPlugin::incReferences Error: %s no plugin!\n", _fi.filePath().toLatin1().constData());
-    return 0;
+    fprintf(stderr, "LadspaPlugin::reference() Error: cannot find LADSPA plugin %s\n", label().toLocal8Bit().constData());
+    release();
+    return false;
   }
 
-  if ((_inports != _outports) || (LADSPA_IS_INPLACE_BROKEN(_plugin->Properties)))
-    _requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
-  
-  _references = newref;
+  return true;
+}
 
+//---------------------------------------------------------
+//   release
+//---------------------------------------------------------
+int LadspaPlugin::release()
+{
+  #ifdef PLUGIN_DEBUGIN
+  fprintf(stderr, "LadspaPlugin::release() references:%d\n", _references);
+  #endif
+
+  if(_references == 1)
+  {
+    // Attempt to unload the library.
+    // It will remain loaded if the plugin has shell plugins still in use or there are other references.
+    const bool ulres = _qlib.unload();
+    // Dummy usage stops unused warnings.
+    (void)ulres;
+    #ifdef PLUGIN_DEBUGIN
+    fprintf(stderr, "LadspaPlugin::release(): No more instances. Result of unloading library %s: %d\n",
+      _qlib.fileName().toLocal8Bit().constData(), ulres);
+    #endif
+
+    _plugin = nullptr;
+
+    _pIdx.clear();
+    _poIdx.clear();
+    _iIdx.clear();
+    _oIdx.clear();
+  }
+  if(_references > 0)
+    --_references;
   return _references;
 }
 
@@ -432,18 +466,22 @@ int LadspaPlugin::incReferences(int val)
 //---------------------------------------------------------
 
 void* LadspaPlugin::instantiate(float sampleRate, void*)
-{
-  if(!_plugin)
-    return nullptr;
-  bool success = false;
-  LADSPA_Handle h = _plugin->instantiate(_plugin, sampleRate);
-  success = (h != nullptr);
-  if(success)
-  {
-    SP_DBG_LADSPA2("LadspaPlugin instantiated", label().toLatin1().constData());
-  }
-  return h;
-}
+      {
+      if(!reference())
+        return nullptr;
+
+      LADSPA_Handle h = _plugin->instantiate(_plugin, sampleRate);
+      if(h == nullptr)
+      {
+        fprintf(stderr, "LadspaPlugin::instantiate() Error: plugin:%s instantiate failed!\n", label().toLocal8Bit().constData());
+        release();
+        return nullptr;
+      }
+
+      SP_DBG_LADSPA2("LadspaPlugin instantiated", label().toLocal8Bit().constData());
+
+      return h;
+      }
 
 //---------------------------------------------------------
 //   range
@@ -939,7 +977,7 @@ bool PluginI::setControl(const QString& s, float val)
                   }
             }
       fprintf(stderr, "PluginI:setControl(%s, %f) controller not found\n",
-         s.toLatin1().constData(), val);
+         s.toLocal8Bit().constData(), val);
       return true;
       }
 
@@ -970,11 +1008,25 @@ LadspaPluginI::~LadspaPluginI()
     // Deactivate is pure virtual, it cannot be 
     //  called from the base destructor. Do it here.
     deactivate();
-    _plugin->incReferences(-1);
+    cleanup();
+    release();
   }
   
   if(_handle)
     delete[] _handle;
+}
+
+void LadspaPluginI::release() const
+{
+  if(!_plugin)
+    return;
+  for(int i = 0; i < _instances; ++i)
+  {
+    #ifdef PLUGIN_DEBUGIN
+    fprintf(stderr, "LadspaPluginI::release Releasing instance:%d\n", i);
+    #endif
+    _plugin->release();
+  }
 }
 
 //---------------------------------------------------------
@@ -995,9 +1047,6 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
     return true;
   }
   _plugin = plug;
-
-  if (_plugin->incReferences(1)==0)
-    return true;
 
   QString inst("-" + QString::number(_plugin->instNo()));
   _name  = _plugin->name() + inst;
@@ -1256,6 +1305,7 @@ void LadspaPluginI::setChannels(int chans)
             //  previously the native GUI would close when changing channels. Now it doesn't, which is good.
             _plugin->deactivate(_handle[i]);
             _plugin->cleanup(_handle[i]);
+            _plugin->release();
           }
         }
       }
@@ -1346,6 +1396,19 @@ bool LadspaPluginI::deactivate()
         return false;
       for (int i = 0; i < _instances; ++i) {
             _plugin->deactivate(_handle[i]);
+            }
+      return true;
+      }
+
+//---------------------------------------------------------
+//   cleanup
+//---------------------------------------------------------
+
+bool LadspaPluginI::cleanup()
+      {
+      if(!_plugin)
+        return false;
+      for (int i = 0; i < _instances; ++i) {
             _plugin->cleanup(_handle[i]);
             }
       return true;

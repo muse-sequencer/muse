@@ -646,7 +646,7 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
       QString lib = (const char*) (data + 2);
       QString label = (const char*) (data + lib.length() + 3);
       if (SS_DEBUG_MIDI) {
-         printf("Sysex cmd load effect: %d %s %s\n", fxid, lib.toLatin1().constData(), label.toLatin1().constData());
+         printf("Sysex cmd load effect: %d %s %s\n", fxid, lib.toLocal8Bit().constData(), label.toLocal8Bit().constData());
       }
       initSendEffect(fxid, lib, label);
       break;
@@ -1005,6 +1005,12 @@ void SimpleSynth::guiHeartBeat()
     gui->heartBeat();
 };
 
+void SimpleSynth::setNativeGuiWindowTitle(const char* text) const
+{
+  if(gui)
+    gui->setWindowTitle(text);
+}
+
 //---------------------------------------------------------
 /*!
     \fn SimpleSynth::init
@@ -1187,7 +1193,7 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
       if (sendEffects[j].plugin) {
          int labelnamelen = sendEffects[j].plugin->pluginLabel().size() + 1;
          initBuffer[i] = labelnamelen;
-         memcpy((initBuffer+i+1), sendEffects[j].plugin->pluginLabel().toLatin1().constData(), labelnamelen);
+         memcpy((initBuffer+i+1), sendEffects[j].plugin->pluginLabel().toUtf8().constData(), labelnamelen);
          if (SS_DEBUG_INIT) {
             printf("initBuffer[%d] - labelnamelen: %d\n", i, labelnamelen);
             printf("initBuffer[%d] - initBuffer[%d] - filename: ", (i+1), (i+1) + labelnamelen - 1);
@@ -1201,7 +1207,7 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
 
          int namelen = sendEffects[j].plugin->lib().size() + 1;
          initBuffer[i] = namelen;
-         memcpy((initBuffer+i+1), sendEffects[j].plugin->lib().toLatin1().constData(), namelen);
+         memcpy((initBuffer+i+1), sendEffects[j].plugin->lib().toUtf8().constData(), namelen);
          if (SS_DEBUG_INIT) {
             printf("initBuffer[%d] - libnamelen : %d\n", i, namelen);
             printf("initBuffer[%d] - initBuffer[%d] - filename: ", (i+1), (i+1) + namelen - 1);
@@ -1480,8 +1486,8 @@ bool SimpleSynth::loadSample(int chno, const char* filename)
    else
    {
       printf("current path: %s\nmuseProject %s\nfilename %s\n", 
-             QDir::currentPath().toLatin1().constData(),
-             SS_projectPath.toLatin1().constData(), 
+             QDir::currentPath().toLocal8Bit().constData(),
+             SS_projectPath.toLocal8Bit().constData(),
              filename);
       QFileInfo fi(filename);
       if (QFile::exists(fi.fileName()))
@@ -1876,7 +1882,7 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
     if(!plug)
     {
         fprintf(stderr, "initSendEffect: cannot find plugin id:%d lib:%s name:%s\n",
-            id, lib.toLatin1().constData(), name.toLatin1().constData());
+            id, lib.toLocal8Bit().constData(), name.toLocal8Bit().constData());
         return false;
     }
 
@@ -1895,7 +1901,7 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
     sendEffects[id].inputs  = plugin->inports();
     sendEffects[id].outputs = plugin->outports();
 
-    SS_DBG2("Plugin instantiated", name.toLatin1().constData());
+    SS_DBG2("Plugin instantiated", name.toLocal8Bit().constData());
     SS_DBG_I("Parameters",     (int)plugin->parameters());
     SS_DBG_I("No of inputs",   (int)plugin->inports());
     SS_DBG_I("No of outputs",  (int)plugin->outports());
@@ -1948,7 +1954,7 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
 
    if (!success) {
       QString errorString = "Error loading plugin \"" + plugin->label() + "\"";
-      guiSendError(errorString.toLatin1().constData());
+      guiSendError(errorString.toUtf8().constData());
    }
    SS_TRACE_OUT
          return success;
@@ -1975,7 +1981,7 @@ void SimpleSynth::cleanupPlugin(int id)
    MusESimplePlugin::PluginI* plugin = sendEffects[id].plugin;
    //plugin->stop();
    if(plugin)
-     SS_DBG2("Stopped fx", plugin->label().toLatin1().constData());
+     SS_DBG2("Stopped fx", plugin->label().toLocal8Bit().constData());
    sendEffects[id].nrofparameters = 0;
    sendEffects[id].state = SS_SENDFX_OFF;
    if(plugin)

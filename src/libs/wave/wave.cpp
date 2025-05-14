@@ -30,6 +30,7 @@
 #include <samplerate.h>
 
 #include <QProgressDialog>
+#include <QFile>
 
 #include "wave.h"
 #include "type_defs.h"
@@ -231,7 +232,7 @@ SndFile::~SndFile()
       {
         for (iSndFile i = _sndFiles->begin(); i != _sndFiles->end(); ++i) {
             if (*i == this) {
-                  //DEBUG_WAVE(stderr, "erasing from sndfiles:%s\n", finfo->canonicalFilePath().toLatin1().constData());
+                  //DEBUG_WAVE(stderr, "erasing from sndfiles:%s\n", finfo->canonicalFilePath().toLocal8Bit().constData());
                   _sndFiles->erase(i);
                   break;
                   }
@@ -588,7 +589,7 @@ void SndFile::update(bool showProgress)
       // force recreation of wca data
       QString cacheName = finfo->absolutePath() +
          QString("/") + finfo->completeBaseName() + QString(".wca");
-      ::remove(cacheName.toLocal8Bit().constData());
+      QFile::remove(cacheName);
       if (openRead(true, showProgress)) {
             ERROR_WAVE(stderr, "SndFile::update openRead(%s) failed: %s\n", path().toLocal8Bit().constData(), strerror().toLocal8Bit().constData());
             }
@@ -1627,7 +1628,7 @@ void ClipBase::write(int level, Xml& xml) const
       xml.strTag(level, "name", _name);
       xml.intTag(level, "tick", _spos);
       xml.intTag(level, "len", len);
-      xml.etag(level, "clip");
+      xml.etag(--level, "clip");
       }
 
 //---------------------------------------------------------

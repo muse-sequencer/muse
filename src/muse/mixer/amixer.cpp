@@ -229,6 +229,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       // Add the change track name action to the menu.
       menuView->addAction(changeTrackNameId);
 
+      menuView->addActions(MusEGlobal::undoRedo->actions());
+
       ///view = new QScrollArea();
       view = new ScrollArea();
       view->setFocusPolicy(Qt::NoFocus);
@@ -450,7 +452,7 @@ void AudioMixerApp::redrawMixer()
         MusECore::TrackList *tl = MusEGlobal::song->tracks();
         MusECore::TrackList::iterator tli = tl->begin();
         for (; tli != tl->end(); tli++) {
-          DEBUG_MIXER(stderr, "Adding strip %s\n", (*tli)->name().toLatin1().data());
+          DEBUG_MIXER(stderr, "Adding strip %s\n", (*tli)->name().toLocal8Bit().data());
           StripList::iterator si = stripList.begin();
           for (; si != stripList.end(); si++) {
             if((*si)->getTrack() == *tli) {
@@ -467,7 +469,7 @@ void AudioMixerApp::redrawMixer()
         // add them back in the selected order
         StripList::iterator si = stripList.begin();
         for (; si != stripList.end(); ++si) {
-            DEBUG_MIXER(stderr, "Adding strip %s\n", (*si)->getTrack()->name().toLatin1().data());
+            DEBUG_MIXER(stderr, "Adding strip %s\n", (*si)->getTrack()->name().toLocal8Bit().data());
             addStripToLayoutIfVisible(*si);
         }
         DEBUG_MIXER(stderr, "redrawMixer after draw with edited view: mixerLayout count:%d\n", mixerLayout->count());
@@ -589,7 +591,7 @@ void AudioMixerApp::moveStrip(Strip *s)
     fillStripListTraditional();
     cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW;
   }
-  DEBUG_MIXER(stderr, "moveStrip %s! stripList.size = %d\n", s->getLabelText().toLatin1().data(), stripList.size());
+  DEBUG_MIXER(stderr, "moveStrip %s! stripList.size = %d\n", s->getLabelText().toLocal8Bit().data(), stripList.size());
 
   for (int i=0; i< stripList.size(); i++)
   {
@@ -706,14 +708,14 @@ void AudioMixerApp::stripVisibleChanged(Strip* s, bool v)
     const int sz = cfg->stripConfigList.size();
     for (int i=0; i < sz; i++) {
       MusEGlobal::StripConfig& sc = cfg->stripConfigList[i];
-      DEBUG_MIXER(stderr, "stripVisibleChanged() processing strip [%s][%d]\n", sc._uuid.toString().toLatin1().constData(), sc._visible);
+      DEBUG_MIXER(stderr, "stripVisibleChanged() processing strip [%s][%d]\n", sc._uuid.toString().toLocal8Bit().constData(), sc._visible);
       if(!sc.isNull() && sc._uuid == uuid) {
           sc._visible = v;
           return;
         }
       }
     }
-  fprintf(stderr, "stripVisibleChanged() StripConfig not found [%s]\n", uuid.toString().toLatin1().constData());
+  fprintf(stderr, "stripVisibleChanged() StripConfig not found [%s]\n", uuid.toString().toLocal8Bit().constData());
 }
 
 void AudioMixerApp::stripUserWidthChanged(Strip* s, int w)
@@ -724,14 +726,14 @@ void AudioMixerApp::stripUserWidthChanged(Strip* s, int w)
     const int sz = cfg->stripConfigList.size();
     for (int i=0; i < sz; i++) {
       MusEGlobal::StripConfig& sc = cfg->stripConfigList[i];
-      DEBUG_MIXER(stderr, "stripUserWidthChanged() processing strip [%s][%d]\n", sc._uuid.toString().toLatin1().constData(), sc._width);
+      DEBUG_MIXER(stderr, "stripUserWidthChanged() processing strip [%s][%d]\n", sc._uuid.toString().toLocal8Bit().constData(), sc._width);
       if(!sc.isNull() && sc._uuid == uuid) {
           sc._width = w;
           return;
         }
       }
     }
-  fprintf(stderr, "stripUserWidthChanged() StripConfig not found [%s]\n", uuid.toString().toLatin1().constData());
+  fprintf(stderr, "stripUserWidthChanged() StripConfig not found [%s]\n", uuid.toString().toLocal8Bit().constData());
 }
 
 void AudioMixerApp::menuViewAboutToShow()
@@ -986,12 +988,12 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
     // No insert position given?
     if(insert_pos == -1)
     {
-      DEBUG_MIXER(stderr, "putting new strip [%s] at end\n", t->name().toLatin1().data());
+      DEBUG_MIXER(stderr, "putting new strip [%s] at end\n", t->name().toLocal8Bit().data());
       stripList.append(strip);
     }
     else
     {
-      DEBUG_MIXER(stderr, "inserting new strip [%s] at %d\n", t->name().toLatin1().data(), insert_pos);
+      DEBUG_MIXER(stderr, "inserting new strip [%s] at %d\n", t->name().toLocal8Bit().data(), insert_pos);
       stripList.insert(insert_pos, strip);
     }
 
@@ -1062,7 +1064,7 @@ void AudioMixerApp::initMixer()
   if (!cfg->stripOrder.empty()) {
     const int sz = cfg->stripOrder.size();
     for (int i=0; i < sz; i++) {
-      DEBUG_MIXER(stderr, "processing strip [%s][%d]\n", cfg->stripOrder.at(i).toLatin1().data(), cfg->stripVisibility.at(i));
+      DEBUG_MIXER(stderr, "processing strip [%s][%d]\n", cfg->stripOrder.at(i).toLocal8Bit().data(), cfg->stripVisibility.at(i));
       for (const auto& tli : *tl) {
         if (tli->name() == cfg->stripOrder.at(i)) {
           MusEGlobal::StripConfig sc;
@@ -1078,7 +1080,7 @@ void AudioMixerApp::initMixer()
       const int sz = cfg->stripConfigList.size();
       for (int i=0; i < sz; i++) {
           const MusEGlobal::StripConfig& sc = cfg->stripConfigList.at(i);
-          DEBUG_MIXER(stderr, "processing strip #:%d [%s][%d]\n", i, sc._uuid.toString().toLatin1().constData(), sc._visible);
+          DEBUG_MIXER(stderr, "processing strip #:%d [%s][%d]\n", i, sc._uuid.toString().toLocal8Bit().constData(), sc._visible);
           if(!sc._deleted && !sc.isNull()) {
               const MusECore::Track* t = tl->findUuid(sc._uuid);
               if (t)
@@ -1136,7 +1138,7 @@ bool AudioMixerApp::updateStripList()
   // check for superfluous strips
   for (StripList::iterator si = stripList.begin(); si != stripList.end(); ) {
     if (!tl->contains((*si)->getTrack())) {
-      DEBUG_MIXER(stderr, "Did not find track for strip %s - Removing\n", (*si)->getLabelText().toLatin1().data());
+      DEBUG_MIXER(stderr, "Did not find track for strip %s - Removing\n", (*si)->getLabelText().toLocal8Bit().data());
       //(*si)->deleteLater();
       delete (*si);
       si = stripList.erase(si);
@@ -1167,7 +1169,7 @@ bool AudioMixerApp::updateStripList()
       }
     }
     if (si == stripList.cend()) {
-      DEBUG_MIXER(stderr, "Did not find strip for track %s - Adding\n", track->name().toLatin1().data());
+      DEBUG_MIXER(stderr, "Did not find strip for track %s - Adding\n", track->name().toLocal8Bit().data());
       // Check if there's an existing strip config for this track.
       int idx = 0;
       int i = 0;
@@ -1567,13 +1569,16 @@ void AudioMixerApp::changeTrackName(MusECore::Track* track)
   {
     if ((*i)->name() == newname)
     {
-      QMessageBox::critical(this,
-        tr("MusE: Bad Trackname"),
-        tr("Please choose a unique track name"),
-        QMessageBox::Ok,
-        Qt::NoButton,
-        Qt::NoButton);
-      return;
+      QMessageBox msg(this);
+      msg.setWindowTitle(tr("MusE: bad trackname"));
+      msg.setText(tr("The track name is already used."));
+      msg.setInformativeText(tr("Do you really want to use the name again?"));
+      msg.setIcon(QMessageBox::Warning);
+      msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+      int ret = msg.exec();
+      if(ret != QMessageBox::Yes)
+        return;
+      break;
     }
   }
 

@@ -173,6 +173,7 @@ public:
       virtual bool hasNativeGui() const { return true; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool val);
+      virtual void setNativeGuiWindowTitle(const char*) const;
 
       void sendError(const char*);
       void sendSoundFontData();

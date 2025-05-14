@@ -28,6 +28,7 @@
 #include <map>
 
 #include <QMessageBox>
+#include <QFile>
 
 #include "globals.h"
 #include "globaldefs.h"
@@ -304,13 +305,13 @@ AudioTrack::AudioTrack(TrackType t, int channels)
       _automationType = AUTO_OFF;
       setChannels(channels);
 
-      CtrlList *cl = new CtrlList(AC_VOLUME,"Volume",0.0,3.16227766017 /* roughly 10 db */, VAL_LOG);
+      CtrlList *cl = new CtrlList(AC_VOLUME,"Volume",0.0,3.16227766017 /* roughly 10 db */, VAL_LOG, 1.0);
       cl->setValueUnit(MusEGlobal::valueUnits.addSymbol("dB"));
       cl->setDisplayHint(CtrlList::DisplayLogDB);
       addController(cl);
 
-      addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
-      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*don't show in arranger */));
+      addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR, 0.0));
+      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, 0.0, true /*don't show in arranger */));
       _controlPorts = 3;
 
       _curVolume = 0.0;
@@ -346,13 +347,13 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       _efxPipe        = new Pipeline();                 // Start off with a new pipeline.
       recFileNumber = 1;
 
-      CtrlList *cl = new CtrlList(AC_VOLUME,"Volume",0.0,3.16227766017 /* roughly 10 db */, VAL_LOG);
+      CtrlList *cl = new CtrlList(AC_VOLUME,"Volume",0.0,3.16227766017 /* roughly 10 db */, VAL_LOG, 1.0);
       cl->setValueUnit(MusEGlobal::valueUnits.addSymbol("dB"));
       cl->setDisplayHint(CtrlList::DisplayLogDB);
       addController(cl);
 
-      addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
-      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*don't show in arranger */));
+      addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR, 0.0));
+      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, 0.0, true /*don't show in arranger */));
       _controlPorts = 3;
 
       _curVolume = 0.0;
@@ -656,17 +657,6 @@ void AudioTrack::deleteAllEfxGuis()
 }
 
 //---------------------------------------------------------
-//   clearEfxList
-//---------------------------------------------------------
-
-void AudioTrack::clearEfxList()
-{
-  if(_efxPipe)
-    for(int i = 0; i < MusECore::PipelineDepth; i++)
-      (*_efxPipe)[i] = 0;
-}
-
-//---------------------------------------------------------
 //   newPart
 //---------------------------------------------------------
 
@@ -674,42 +664,6 @@ Part* AudioTrack::newPart(Part*, bool /*clone*/)
       {
       return 0;
       }
-
-//---------------------------------------------------------
-//   addPlugin
-//---------------------------------------------------------
-
-void AudioTrack::addPlugin(PluginI* plugin, int idx)
-{
-  // Some heavy lifting required here, not easily done
-  //  in the realtime thread. Idle the audio processing.
-  // Here any glitches in the audio would be acceptable.
-  // Gain access to structures, and sync with audio.
-  MusEGlobal::audio->msgIdle(true);
-
-  if (plugin == 0)
-  {
-    PluginI* oldPlugin = (*_efxPipe)[idx];
-    if (oldPlugin)
-    {
-      oldPlugin->setID(-1);
-      oldPlugin->setTrack(0);
-
-      int controller = oldPlugin->parameters();
-      for (int i = 0; i < controller; ++i)
-      {
-        int id = genACnum(idx, i);
-        removeController(id);
-      }
-    }
-  }
-  efxPipe()->insert(plugin, idx);
-  setupPlugin(plugin, idx);
-
-  MusEGlobal::audio->msgIdle(false);
-
-  MusEGlobal::song->update(SC_RACK | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER);
-}
 
 //---------------------------------------------------------
 //   setupPlugin
@@ -722,23 +676,30 @@ void AudioTrack::setupPlugin(PluginI* plugin, int idx)
     plugin->setID(idx);
     plugin->setTrack(this);
 
-    int controller = plugin->parameters();
-    for (int i = 0; i < controller; ++i)
+    // Grab the information from the plugin if it exists.
+    if(plugin->plugin())
     {
-      int id = genACnum(idx, i);
-      const char* name = plugin->paramName(i);
-      float min, max;
-      plugin->range(i, &min, &max);
-      CtrlList* cl = new CtrlList(id);
-      cl->setRange(min, max);
-      cl->setName(QString(name));
-      cl->setValueType(plugin->ctrlValueType(i));
-      cl->setMode(plugin->ctrlMode(i));
-      cl->setCurVal(plugin->param(i));
-      // Set the value units index.
-      cl->setValueUnit(plugin->valueUnit(i));
-      addController(cl);
+      int params = plugin->parameters();
+      for (int i = 0; i < params; ++i)
+      {
+        int id = genACnum(idx, i);
+        CtrlList* cl = new CtrlList(id);
+        addController(cl);
+      }
     }
+    else
+    // Plugin is missing. Grab the information from the plugin's persistent properies.
+    {
+      const PluginConfiguration &pc = plugin->initialConfiguration();
+      for(ciPluginControlList ipcl = pc._initParams.cbegin(); ipcl != pc._initParams.cend(); ++ipcl)
+      {
+        const PluginControlConfig &cc = ipcl->second;
+        const int id = genACnum(idx, cc._ctlnum);
+        CtrlList* cl = new CtrlList(id);
+        addController(cl);
+      }
+    }
+    plugin->setupControllers(controller());
   }
 }
 
@@ -759,9 +720,9 @@ void AudioTrack::addAuxSend(int n)
 //   addController
 //---------------------------------------------------------
 
-void AudioTrack::addController(CtrlList* list)
+bool AudioTrack::addController(CtrlList* list)
       {
-      _controller.add(list);
+      return _controller.add(list);
       }
 
 //---------------------------------------------------------
@@ -783,116 +744,121 @@ void AudioTrack::removeController(int id)
       _controller.erase(i);
       }
 
-//---------------------------------------------------------
-//   swapPlugins
-//---------------------------------------------------------
-
-void AudioTrack::swapPlugins(int idx1, int idx2)
+bool AudioTrack::addControllerFromXml(CtrlList* l)
 {
-  if(idx1 == idx2 || idx1 < 0 || idx2 < 0 || idx1 >= MusECore::PipelineDepth || idx2 >= MusECore::PipelineDepth)
-    return;
-
-  // Move the effects in the rack.
-  if(_efxPipe)
-    _efxPipe->move(idx1, idx2);
-
-  // Swap the indexes if required, to get lowest idx1 to highest idx2.
-  if(idx1 > idx2) {
-    const int i = idx1;
-    idx1 = idx2;
-    idx2 = i;
-  }
-
-  //--------------------------------------------------------------------------------------
-  // Swap the controller list control numbers. Using (should be) rt-safe C++17 features...
-  // Not as easy as it sounds. If a pair of swappable items are found they must both be
-  //  extracted / modified / re-inserted at the same time to avoid index collisions with
-  //  existing items - especially with map. We'll use arrays to make things easier, their
-  //  maximum required size is AC_PLUGIN_CTL_BASE (4096).
-  //--------------------------------------------------------------------------------------
-  CtrlList *cl;
-  int id1 = (idx1 + 1) * AC_PLUGIN_CTL_BASE;
-  int id2 = (idx2 + 1) * AC_PLUGIN_CTL_BASE;
-  int id_mask = ~((int)AC_PLUGIN_CTL_ID_MASK);
-  int i, j;
-  // Count the number of required array elements,
-  //  and find the first instances of each controller.
-  int count1 = 0, count2 = 0;
-  ciCtrlList icl1 = _controller.cend();
-  ciCtrlList icl2 = _controller.cend();
-  for(ciCtrlList icl = _controller.cbegin(); icl != _controller.cend(); ++icl)
+  // Controller IDs less than zero cannot be added.
+  if(l->id() >= 0)
   {
-    cl = icl->second;
-    j = cl->id() & id_mask;
-    if(j > id2)
-      break;
-    if(j == id1) {
-      count1++;
-      if(icl1 == _controller.cend())
-        icl1 = icl;
+      // Try to add the controller to the list.
+      std::pair<CtrlListList::iterator, bool> res = _controller.insert(std::pair<const int, CtrlList*>(l->id(), l));
+      // Controller already exists?
+      if(!res.second)
+      {
+        CtrlList* d = res.first->second;
+        // The track controller should be empty at this point.
+        // The given controller contains the desired items.
+        // Simply swap the items in the two controller lists.
+        d->swap(*l);
+        // And... make sure to assign the properties.
+        // We can't use simple assign methods because some of the
+        //  information in the given controller is not supplied
+        //  in the XML and is blank, such as name. Don't overwrite with that.
+        // NOTE: Very old versions may have written a 'zero' for plugin controller current value
+        //  in the XML file. We can't use that value. We must take the value from the plugin port value.
+        // Otherwise we break all existing .med files with plugins, because the gui controls would all be set to zero.
+        // If it's a plugin or synth controller, it's OK, the value will be set later from the port value.
+        d->setCurVal(l->curVal());
+        d->setColor(l->color());
+        d->setVisible(l->isVisible());
+        d->setDefault(l->getDefault());
+        // Yes we want this one as well. The caller will either set it beforehand or will
+        //  set it later in (or after) mapRackPluginsToControllers() for example.
+        // Special: If the destination controller's flag is already set, DO NOT upset it by resetting it.
+        if(l->dontShow())
+          d->setDontShow(true);
+        // Done with the given controller. Delete it.
+        delete l;
+        l = d;
       }
-    else if(j == id2) {
-      count2++;
-      if(icl2 == _controller.cend())
-        icl2 = icl;
-      }
-  }
-  // Extract the node handles to the arrays...
-  ciCtrlList icl_tmp;
-  CtrlListList::node_type array1[count1];
-  CtrlListList::node_type array2[count2];
-  for(int k = 0; k < count1; ++k)
-  {
-    // Iterator is invalidated after extraction. Save it.
-    icl_tmp = icl1;
-    ++icl_tmp;
-    array1[k] = _controller.extract(icl1);
-    icl1 = icl_tmp;
-  }
-  for(int k = 0; k < count2; ++k)
-  {
-    // Iterator is invalidated after extraction. Save it.
-    icl_tmp = icl2;
-    ++icl_tmp;
-    array2[k] = _controller.extract(icl2);
-    icl2 = icl_tmp;
-  }
-  // Modify and re-insert the elements...
-  for(int k = 0; k < count1; ++k)
-  {
-    cl = array1[k].mapped();
-    i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
-    cl->setId(i | id2);
-    array1[k].key() = i | id2;
-    _controller.insert(move(array1[k]));
-  }
-  for(int k = 0; k < count2; ++k)
-  {
-    cl = array2[k].mapped();
-    i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
-    cl->setId(i | id1);
-    array2[k].key() = i | id1;
-    _controller.insert(move(array2[k]));
-  }
-
-  // Remap midi to audio controls...
-  MidiAudioCtrlMap* macm = MusEGlobal::song->midiAssignments();
-  for(iMidiAudioCtrlMap imacm = macm->begin(); imacm != macm->end(); ++imacm)
-  {
-    if(imacm->second.track() != this || imacm->second.idType() != MidiAudioCtrlStruct::AudioControl)
-      continue;
-
-    int actrl = imacm->second.id();
-    int id = actrl & id_mask;
-    actrl &= AC_PLUGIN_CTL_ID_MASK;
-    if(id == id1)
-      actrl |= id2;
-    else if(id == id2)
-      actrl |= id1;
+    }
     else
-      continue;
-    imacm->second.setId(actrl);
+    {
+      // The controller is orphaned now. Delete it.
+      delete l;
+      return false;
+    }
+
+    return true;
+}
+
+bool AudioTrack::setupController(CtrlList* l)
+{
+  if(!l || l->id() < 0)
+    return false;
+
+  const PluginConfiguration *pc = nullptr;
+  const PluginIBase* p = 0;
+  unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;
+  int n = (l->id() >> AC_PLUGIN_CTL_BASE_POW) - 1;
+  if(n >= 0 && n < MusECore::PipelineDepth)
+  {
+    const PluginI *pi = (*_efxPipe)[n];
+    p = pi;
+    if(!pi->plugin())
+      pc = &pi->initialConfiguration();
   }
+  // Support a special block for synth controllers.
+  else if(n == MusECore::MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)
+  {
+    const SynthI* synti = static_cast < SynthI* > (this);
+    const SynthIF* sif = synti->sif();
+    if(sif)
+      p = static_cast < const PluginIBase* > (sif);
+    if(!sif || !synti->synth())
+      pc = &synti->initialConfiguration();
+  }
+
+  // Plugin or synth is missing? Use the persistent information.
+  if(pc)
+  {
+    // The plugin is missing. If the original file version is valid and less than 4
+    //  we need to hide all the automation controllers because the range, type, mode
+    //  are not available so the graphs cannot be scaled properly.
+    const bool isPersistentPre4 = pc->_fileVerMaj >= 0 && pc->_fileVerMaj < 4;
+    ciPluginControlList ipcl = pc->_initParams.find(m);
+    if(ipcl != pc->_initParams.cend())
+    {
+      const PluginControlConfig &cc = ipcl->second;
+      l->setRange(cc._min, cc._max);
+      l->setName(cc._name);
+      l->setValueType(cc._valueType);
+      l->setMode(cc._ctlMode);
+      l->setCurVal(cc._val);
+      // Set the value units index.
+      l->setValueUnit(cc._valueUnit);
+    }
+    if(isPersistentPre4)
+      l->setDontShow(true);
+    return true;
+  }
+  else
+  {
+    if(p && m < p->parameters())
+    {
+      float min, max;
+      p->range(m, &min, &max);
+      l->setRange(min, max);
+      l->setName(QString(p->paramName(m)));
+      l->setValueType(p->ctrlValueType(m));
+      l->setMode(p->ctrlMode(m));
+      l->setCurVal(p->param(m));
+      // Set the value units index.
+      l->setValueUnit(p->valueUnit(m));
+      return true;
+    }
+  }
+
+  return false;
 }
 
 //---------------------------------------------------------
@@ -1379,7 +1345,7 @@ TrackLatencyInfo& AudioTrack::setCorrectionLatencyInfo(bool input, float finalWo
     }
 
     //fprintf(stderr, "AudioTrack::setCorrectionLatencyInfo() name:%s finalWorstLatency:%f branch_lat:%f corr:%f _sourceCorrectionValue:%f\n",
-    //        name().toLatin1().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
+    //        name().toLocal8Bit().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
   }
 
   return _latencyInfo;
@@ -1495,7 +1461,7 @@ void AudioTrack::setLatencyCompWriteOffset(float worstCase)
   {
     _latencyInfo._compensatorWriteOffset = 0;
     //fprintf(stderr, "AudioTrack::setLatencyCompWriteOffset() name:%s worstCase:%f _outputLatency:%f _compensatorWriteOffset:%lu\n",
-    //        name().toLatin1().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._compensatorWriteOffset);
+    //        name().toLocal8Bit().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._compensatorWriteOffset);
     return;
   }
     
@@ -1519,7 +1485,7 @@ void AudioTrack::setLatencyCompWriteOffset(float worstCase)
   //fprintf(stderr,
   //  "AudioTrack::setLatencyCompWriteOffset() name:%s worstCase:%f"
   //  " _outputLatency:%f _canDominateOutputLatency:%d _compensatorWriteOffset:%lu\n",
-  //      name().toLatin1().constData(), worstCase, _latencyInfo._outputLatency,
+  //      name().toLocal8Bit().constData(), worstCase, _latencyInfo._outputLatency,
   //      _latencyInfo._canDominateOutputLatency, _latencyInfo._compensatorWriteOffset);
 }
 
@@ -1542,7 +1508,7 @@ void AudioTrack::setVolume(double val)
       iCtrlList cl = _controller.find(AC_VOLUME);
       if (cl == _controller.end()) {
             printf("no volume controller %s %zd\n",
-               name().toLatin1().constData(), _controller.size());
+               name().toLocal8Bit().constData(), _controller.size());
             return;
             }
       cl->second->setCurVal(val);
@@ -1908,6 +1874,7 @@ void AudioTrack::stopAutoRecord(int n, double v)
 
 void AudioTrack::writeProperties(int level, Xml& xml) const
       {
+      xml.tag(level++, "AudioTrack");
       Track::writeProperties(level, xml);
       xml.intTag(level, "prefader", prefader());
       xml.intTag(level, "sendMetronome", sendMetronome());
@@ -1917,14 +1884,22 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
             int naux = MusEGlobal::song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
                   QString s("<auxSend idx=\"%1\">%2</auxSend>\n");  // Aux fix from Remon, thanks.
-                  xml.nput(level, s.arg(idx).arg(_auxSend[idx]).toLatin1().constData());
+                  xml.nput(level, s.arg(idx).arg(_auxSend[idx]).toUtf8().constData());
                   }
             }
       for (ciPluginI ip = _efxPipe->begin(); ip != _efxPipe->end(); ++ip) {
             if (*ip)
-                  (*ip)->writeConfiguration(level, xml);
+                  // Write the plugin. Also write the automation controllers and midi mapping
+                  //  and strip away the rack position id bits.
+                  (*ip)->writeConfiguration(level, xml, true);
             }
-      _controller.write(level, xml);
+      // Range of controllers. (track ctrls -> effect rack plugin ctrls -> synth plugin ctrls).
+      const int startId = 0;
+      const int   endId = genACnum(0, 0);
+      // Write the block of controllers.
+      controller()->write(level, xml, startId, endId);
+
+      xml.etag(--level, "AudioTrack");
       }
 
 //---------------------------------------------------------
@@ -1971,24 +1946,120 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
       {
       if (tag == "plugin")
       {
-            int rackpos;
-            for(rackpos = 0; rackpos < MusECore::PipelineDepth; ++rackpos)
-            {
-              if(!(*_efxPipe)[rackpos])
-                break;
-            }
-            if(rackpos < MusECore::PipelineDepth)
-            {
               PluginI* pi = new PluginI();
+              // Set the track now, in case anything needs it BEFORE the plugin is set, below.
               pi->setTrack(this);
-              pi->setID(rackpos);
-              if(pi->readConfiguration(xml, false))
+              if(pi->readConfiguration(xml, false, channels()))
+              {
+                // Be sure to clear and delete the controller list.
+                pi->initialConfiguration()._ctrlListList.clearDelete();
                 delete pi;
+                pi = nullptr;
+              }
               else
-                (*_efxPipe)[rackpos] = pi;
+              {
+                // If a plugin id was read and there's no existing plugin at that rack slot.
+                const int conf_id = pi->initialConfiguration()._id;
+                if(conf_id >= 0 && conf_id < MusECore::PipelineDepth &&
+                  (!(*_efxPipe)[conf_id]))
+                {
+                  pi->setID(conf_id);
+                }
+                else
+                // No plugin id was read or there's an existing plugin at that rack slot.
+                {
+                  int rackpos;
+                  // Look for an empty rack slot.
+                  for(rackpos = 0; rackpos < MusECore::PipelineDepth; ++rackpos)
+                  {
+                    if(!(*_efxPipe)[rackpos])
+                      break;
+                  }
+                  // Valid empty rack slot found?
+                  if(rackpos < MusECore::PipelineDepth)
+                  {
+                    pi->setID(rackpos);
+                  }
+                  else
+                  // No valid empty rack slot found.
+                  {
+                    // Be sure to clear and delete the controller list.
+                    pi->initialConfiguration()._ctrlListList.clearDelete();
+                    delete pi;
+                    pi = nullptr;
+                    fprintf(stderr, "can't load plugin - plugin rack is already full\n");
+                  }
+                }
+
+                if(pi)
+                {
+                  PluginConfiguration &pic = pi->initialConfiguration();
+                  (*_efxPipe)[pi->id()] = pi;
+
+                  //---------------------------------------------------------
+                  // If any automation controllers were included with in XML,
+                  //  convert controller IDs and transfer to given list.
+                  // This is for song file versions >= 4
+                  //---------------------------------------------------------
+                  CtrlListList &conf_cll = pic._ctrlListList;
+                  for(ciCtrlList icl = conf_cll.cbegin(); icl != conf_cll.cend(); )
+                  {
+                    CtrlList *cl = icl->second;
+                    // Strip away the controller's rack position bits,
+                    //  leaving just the controller numbers.
+                    // Still, they should already be stripped by now.
+                    const int m = cl->id() & AC_PLUGIN_CTL_ID_MASK;
+                    // Generate the new id.
+                    const unsigned long new_id = genACnum(pi->id(), m);
+                    cl->setId(new_id);
+                    // This takes ownership of the controller and will either
+                    //  add/transfer it to the controller list, or delete it.
+                    // We won't bother calling setupController() afterwards, although we could
+                    //  because in song file version >= 4 we know the rack position of the plugin.
+                    // We'll just do it in (or after) mapRackPluginsToControllers() for example.
+                    if(!addControllerFromXml(cl))
+                      fprintf(stderr, "AudioTrack::readProperties: Error: Could not add plugin controller #%ld!\n", new_id);
+
+                    // Done with the item. Erase it. Iterator will point to the next item.
+                    icl = conf_cll.erase(icl);
+                  }
+                  // All of the items should be erased by now.
+
+                  //---------------------------------------------------------
+                  // If any midi controller mappings were included with in XML,
+                  //  convert controller IDs and transfer to given list.
+                  // This is for song file versions >= 4
+                  //---------------------------------------------------------
+                  MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+                  MidiAudioCtrlMap &conf_macm = pic._midiAudioCtrlMap;
+                  if(macm)
+                  {
+                    for(iMidiAudioCtrlMap imacm = conf_macm.begin(); imacm != conf_macm.end(); )
+                    {
+                      MidiAudioCtrlStruct &macs = imacm->second;
+                      // Strip away the controller ID's rack position bits,
+                      //  leaving just the controller numbers.
+                      // Still, they should already be stripped by now.
+                      const int m = macs.id() & AC_PLUGIN_CTL_ID_MASK;
+                      // Generate the new id.
+                      const unsigned long new_id = genACnum(pi->id(), m);
+                      macs.setId(new_id);
+                      macs.setTrack(this);
+                      macm->add_ctrl_struct(imacm->first, macs);
+                      // Done with the item. Erase it. Iterator will point to the next item.
+                      imacm = conf_macm.erase(imacm);
+                    }
+                    // All of the items should be erased by now.
+                  }
+                  else
+                  {
+                    // Mappings were not transferred. Clear the list.
+                    conf_macm.clear();
+                  }
+
+
+              }
             }
-            else
-              printf("can't load plugin - plugin rack is already full\n");
       }
       else if (tag == "auxSend")
             readAuxSend(xml);
@@ -2004,77 +2075,70 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             CtrlList* l = new CtrlList();
             if(l->read(xml) && l->id() >= 0)
             {
-              // Since (until now) muse wrote a 'zero' for plugin controller current value
-              //  in the XML file, we can't use that value, now that plugin automation is added.
-              // We must take the value from the plugin control value.
-              // Otherwise we break all existing .med files with plugins, because the gui
-              //  controls would all be set to zero.
-              // But we will allow for the (unintended, useless) possibility of a controller
-              //  with no matching plugin control.
-              const PluginIBase* p = 0;
-              bool ctlfound = false;
-              unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;
-              int n = (l->id() >> AC_PLUGIN_CTL_BASE_POW) - 1;
-              if(n >= 0 && n < MusECore::PipelineDepth)
-                p = (*_efxPipe)[n];
-              // Support a special block for synth controllers.
-              else if(n == MusECore::MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)
-              {
-                const SynthI* synti = static_cast < SynthI* > (this);
-                const SynthIF* sif = synti->sif();
-                if(sif)
-                  p = static_cast < const PluginIBase* > (sif);
-              }
-
-              if(p && m < p->parameters())
-                ctlfound = true;
-
-              iCtrlList icl = _controller.find(l->id());
-              if (icl == _controller.end())
-                    _controller.add(l);
-              else {
-                    CtrlList* d = icl->second;
-                    for (iCtrl i = l->begin(); i != l->end(); ++i)
-                          d->insert(CtrlListInsertPair_t(i->first, i->second));
-
-                    if(!ctlfound)
-                          d->setCurVal(l->curVal());
-                    d->setColor(l->color());
-                    d->setVisible(l->isVisible());
-                    d->setDefault(l->getDefault());
-                    delete l;
-                    l = d;
-                    }
-
-                if(ctlfound)
-                  {
-                    l->setCurVal(p->param(m));
-                    l->setValueType(p->ctrlValueType(m));
-                    l->setMode(p->ctrlMode(m));
-                  }
+              // This takes ownership of the controller and will either
+              //  add/transfer it to the controller list, or delete it.
+              // We cannot call setupController() just yet afterwards, that needs
+              //  be done later in (or after) mapRackPluginsToControllers() for example.
+              if(!addControllerFromXml(l))
+                fprintf(stderr, "AudioTrack::readProperties: Error: Could not add controller #%d!\n", l->id());
             }
             else
             {
+              // Controller is orphaned now. Delete it.
               delete l;
             }
-
           }
       // Obsolete. Handled by class Track now. Keep for compatibility.
-      else if (tag == "midiMapper")
+      // Tag midiMapper is obsolete, changed to midiAssign now.
+      else if (tag == "midiAssign" || tag == "midiMapper")
             // Any assignments read go to this track.
             MusEGlobal::song->midiAssignments()->read(xml, this);
-      else
+
+      // Added in song file version 4.
+      else if (tag == "Track")
+            Track::read(xml);
+
+      // Obsolete. Keep for compatibility.
+      else if(xml.isVersionLessThan(4, 0))
             return Track::readProperties(xml, tag);
+
       return false;
       }
 
 //---------------------------------------------------------
-//   showPendingPluginNativeGuis
-//   This is needed because OSC needs all tracks with plugins to be already
-//    added to their track lists so it can find them and show their native guis.
+//   read
 //---------------------------------------------------------
 
-void AudioTrack::showPendingPluginNativeGuis()
+void AudioTrack::read(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (readProperties(xml, tag))
+                              xml.unknown("AudioTrack");
+                        break;
+                  case Xml::Attribut:
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "AudioTrack") {
+                              return;
+                              }
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   showPendingPluginGuis
+//---------------------------------------------------------
+
+void AudioTrack::showPendingPluginGuis()
 {
   for(int idx = 0; idx < MusECore::PipelineDepth; ++idx)
   {
@@ -2082,8 +2146,24 @@ void AudioTrack::showPendingPluginNativeGuis()
     if(!p)
       continue;
 
+    if(p->isShowGuiPending())
+      p->showGui(true);
+
     if(p->isShowNativeGuiPending())
       p->showNativeGui(true);
+  }
+}
+
+void AudioTrack::updateUiWindowTitles()
+{
+  for(int idx = 0; idx < MusECore::PipelineDepth; ++idx)
+  {
+    PluginI* p = (*_efxPipe)[idx];
+    if(!p)
+      continue;
+
+    p->updateGuiWindowTitle();
+    p->updateNativeGuiWindowTitle();
   }
 }
 
@@ -2113,7 +2193,8 @@ void AudioTrack::mapRackPluginsToControllers()
         (*_efxPipe)[i] = 0;
         (*_efxPipe)[idx] = p;
       }
-      p->setID(idx);
+      if(p->id() != idx)
+        p->setID(idx);
 
       // It is now safe to update the controllers.
       p->updateControllers();
@@ -2136,33 +2217,27 @@ void AudioTrack::mapRackPluginsToControllers()
     if(p->id() != idx)
       p->setID(idx);
 
-    int j = p->parameters();
+    // Get the number of parameters. If the plugin is missing, use the persistent information.
+    const int j = p->plugin() ? p->parameters() : p->initialConfiguration()._initParams.size();
 
     for(int i = 0; i < j; i++)
     {
+      CtrlList *cl;
       int id = genACnum(idx, i);
-      CtrlList* l = 0;
-
-      ciCtrlList icl = _controller.find(id);
-      if(icl == _controller.end())
+      ciCtrlList icl = controller()->find(id);
+      if(icl == controller()->end())
       {
-        l = new CtrlList(id);
-        addController(l);
+        cl = new CtrlList(id);
+        addController(cl);
       }
       else
-        l = icl->second;
+      {
+        cl = icl->second;
+      }
 
       // Force all of these now, even though they may have already been set. With a pre-
       //  0.9pre1 med file with broken controller sections they may not be set correct.
-      float min, max;
-      p->range(i, &min, &max);
-      l->setRange(min, max);
-      l->setName(QString(p->paramName(i)));
-      l->setValueType(p->ctrlValueType(i));
-      l->setMode(p->ctrlMode(i));
-      l->setCurVal(p->param(i));
-      // Set the value units index.
-      l->setValueUnit(p->valueUnit(i));
+      setupController(cl);
     }
   }
 
@@ -2182,11 +2257,12 @@ void AudioTrack::mapRackPluginsToControllers()
     int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
 
     bool do_remove = false;
-    const PluginIBase* p = 0;
     if(idx >= 0 && idx < MusECore::PipelineDepth)
     {
-      p = (*_efxPipe)[idx];
-      if(!p || (param >= p->parameters()))
+      const PluginI *p = (*_efxPipe)[idx];
+      // If there is a PluginI at that slot but its plugin is missing,
+      //  do NOT remove the loaded controllers, to preserve data upon re-saving.
+      if(!p || (p->plugin() && param >= p->parameters()))
         do_remove = true;
     }
     // Support a special block for synth controllers.
@@ -2194,12 +2270,10 @@ void AudioTrack::mapRackPluginsToControllers()
     {
       const SynthI* synti = static_cast < const SynthI* > (this);
       SynthIF* sif = synti->sif();
-      // Special for synths: If no sif could be found or loaded (missing pplugin etc.),
-      //  do NOT remove the loaded controllers, to preserve data upon re-saving.
+      // If the sif is missing, do NOT remove the loaded controllers, to preserve data upon re-saving.
       if(sif)
       {
-        p = static_cast < const PluginIBase* > (sif);
-        if(param >= p->parameters())
+        if(param >= sif->parameters())
           do_remove = true;
       }
     }
@@ -2211,6 +2285,8 @@ void AudioTrack::mapRackPluginsToControllers()
     if(do_remove)
     {
       // C++11.
+// REMOVE Tim. tmp. Added comment.
+      // FIXME TODO: Shouldn't the list be deleted before removal ???
       icl = _controller.erase(icl);
     }
     else
@@ -2364,7 +2440,7 @@ void AudioInput::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "AudioInput");
       AudioTrack::writeProperties(level, xml);
-      xml.etag(level, "AudioInput");
+      xml.etag(--level, "AudioInput");
       }
 
 //---------------------------------------------------------
@@ -2381,7 +2457,11 @@ void AudioInput::read(Xml& xml, XmlReadStatistics*)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (AudioTrack::readProperties(xml, tag))
+                        if(tag == "AudioTrack")
+                              AudioTrack::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+                        else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("AudioInput");
                         break;
                   case Xml::Attribut:
@@ -2628,7 +2708,7 @@ void AudioOutput::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "AudioOutput");
       AudioTrack::writeProperties(level, xml);
-      xml.etag(level, "AudioOutput");
+      xml.etag(--level, "AudioOutput");
       }
 
 //---------------------------------------------------------
@@ -2645,7 +2725,11 @@ void AudioOutput::read(Xml& xml, XmlReadStatistics*)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (AudioTrack::readProperties(xml, tag))
+                        if(tag == "AudioTrack")
+                              AudioTrack::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+                        else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("AudioOutput");
                         break;
                   case Xml::Attribut:
@@ -2684,7 +2768,7 @@ void AudioGroup::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "AudioGroup");
       AudioTrack::writeProperties(level, xml);
-      xml.etag(level, "AudioGroup");
+      xml.etag(--level, "AudioGroup");
       }
 
 //---------------------------------------------------------
@@ -2701,7 +2785,11 @@ void AudioGroup::read(Xml& xml, XmlReadStatistics*)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (AudioTrack::readProperties(xml, tag))
+                        if(tag == "AudioTrack")
+                              AudioTrack::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+                        else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("AudioGroup");
                         break;
                   case Xml::Attribut:
@@ -2728,7 +2816,7 @@ void AudioAux::write(int level, Xml& xml, XmlWriteStatistics*) const
       xml.tag(level++, "AudioAux");
       AudioTrack::writeProperties(level, xml);
       xml.intTag(level, "index", _index);
-      xml.etag(level, "AudioAux");
+      xml.etag(--level, "AudioAux");
       }
 
 
@@ -2855,7 +2943,11 @@ void AudioAux::read(Xml& xml, XmlReadStatistics*)
                   case Xml::TagStart:
                       if (tag == "index")
                         _index = xml.parseInt();
-                      else if (AudioTrack::readProperties(xml, tag))
+                      else if(tag == "AudioTrack")
+                        AudioTrack::read(xml);
+
+                      // Obsolete. Keep for compatibility.
+                      else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("AudioAux");
                         break;
                   case Xml::Attribut:
@@ -2986,9 +3078,9 @@ bool AudioTrack::setRecordFlag1(bool f)
               QString s = _recFile->path();
               setRecFile(nullptr);
 
-              remove(s.toLatin1().constData());
+              QFile::remove(s);
               if(MusEGlobal::debugMsg)
-                printf("AudioNode::setRecordFlag1: remove file %s if it exists\n", s.toLatin1().constData());
+                printf("AudioNode::setRecordFlag1: remove file %s if it exists\n", s.toLocal8Bit().constData());
             }
           }
       return true;
@@ -3005,7 +3097,7 @@ bool AudioTrack::setRecordFlag1(bool f)
 bool AudioTrack::prepareRecording()
 {
       if(MusEGlobal::debugMsg)
-        printf("prepareRecording for track %s\n", name().toLatin1().constData());
+        printf("prepareRecording for track %s\n", name().toLocal8Bit().constData());
 
       if (_recFile.isNull()) {
             //
@@ -3029,7 +3121,7 @@ bool AudioTrack::prepareRecording()
       }
 
       if (MusEGlobal::debugMsg)
-          printf("AudioTrack::prepareRecording: init internal file %s\n", _recFile->path().toLatin1().constData());
+          printf("AudioTrack::prepareRecording: init internal file %s\n", _recFile->path().toLocal8Bit().constData());
 
       if(_recFile->openWrite())
             {
@@ -3049,7 +3141,7 @@ double AudioTrack::auxSend(int idx) const
       {
       if (unsigned(idx) >= _auxSend.size()) {
             printf("%s auxSend: bad index: %d >= %zd\n",
-               name().toLatin1().constData(), idx, _auxSend.size());
+               name().toLocal8Bit().constData(), idx, _auxSend.size());
             return 0.0;
             }
       return _auxSend[idx];
@@ -3059,7 +3151,7 @@ void AudioTrack::setAuxSend(int idx, double v)
       {
       if (unsigned(idx) >= _auxSend.size()) {
             printf("%s setAuxSend: bad index: %d >= %zd\n",
-               name().toLatin1().constData(), idx, _auxSend.size());
+               name().toLocal8Bit().constData(), idx, _auxSend.size());
             return;
             }
       _auxSend[idx] = v;

@@ -53,7 +53,7 @@ void SnooperTreeWidgetItem::init()
       if(_object)
       {
         const QMetaObject* mo = _object->metaObject();
-        const QString cls_name = QString::fromLatin1(mo->className());
+        const QString cls_name = QString(mo->className());
         const QString obj_name = _object->objectName();
         setText(Name, cls_name + QStringLiteral("::") + obj_name);
       }
@@ -75,8 +75,8 @@ void SnooperTreeWidgetItem::init()
           const QString prop_str = (_metaPropertyIndex < prop_offset) ?
                         QObject::tr("<Base Property>") : QObject::tr("<Property>");
           setText(Name, prop_str);
-          setText(Property, QString::fromLatin1(prop.name()));
-          setText(PropertyType, QString::fromLatin1(prop.typeName()));
+          setText(Property, QString(prop.name()));
+          setText(PropertyType, QString(prop.typeName()));
           setText(PropertyValue, prop.read(_object).toString());
         }
       }
@@ -185,7 +185,7 @@ void SnooperDialog::disconnectAll()
     // NOTE QMetaObject::Connection has a boolean operator.
     if(conn && !disconnect(conn))
       fprintf(stderr, "SnooperDialog::disconnectAll(): disconnected failed: obj:%p cls_name:%s obj_name:%s\n",
-              obj, obj->metaObject()->className(), obj->objectName().toLatin1().constData());
+              obj, obj->metaObject()->className(), obj->objectName().toLocal8Bit().constData());
     ++iObjTree;
   }
 }
@@ -299,7 +299,7 @@ bool SnooperDialog::filterBranch(bool parentIsRelevant, QTreeWidgetItem* parentI
     }
     
     const QMetaObject* mo = object->metaObject();
-    const QString cls_name = QString::fromLatin1(mo->className());
+    const QString cls_name = QString(mo->className());
     const QString obj_name = object->objectName();
     const bool onlyAppClasses = onlyAppCheckBox->isChecked();
     const bool onlyWidgets = onlyWidgetCheckBox->isChecked();
@@ -362,7 +362,7 @@ bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem
   SnooperTreeWidgetItem* prop_parent_item = nullptr;
   SnooperTreeWidgetItem* prop_item = nullptr;
   const QMetaObject* mo = object->metaObject();
-  const QString cls_name = QString::fromLatin1(mo->className());
+  const QString cls_name = QString(mo->className());
   const QString obj_name = object->objectName();
   const bool is_top_item = !parentItem || parentItem == root_item;
   const bool has_parent_obj = object->parent();
@@ -384,7 +384,7 @@ bool SnooperDialog::addBranch(QObject* object, SnooperTreeWidgetItem* parentItem
 
   DEBUG_SNOOPER(stderr,
     "SnooperDialog::addBranch(): adding connection: obj:%p cls_name:%s obj_name:%s isParentedTopLevelBranch:%d isWindowBranch:%d\n",
-    object, mo->className(), obj_name.toLatin1().constData(), isParentedTopLevelBranch, isWindowBranch);
+    object, mo->className(), obj_name.toLocal8Bit().constData(), isParentedTopLevelBranch, isWindowBranch);
 
   QMetaObject::Connection conn =
     connect(object, &QObject::destroyed, [this](QObject* o = nullptr) { objectDestroyed(o); } );
@@ -612,7 +612,7 @@ SnooperTreeWidgetItem* SnooperDialog::selectObject(const QObject *obj, const QEv
   {
     // Careful, crash might happen here. Object might not exist?
     //fprintf(stderr, "SnooperDialog::selectObject() Did not find class name:%s object name:%s\n",
-    //        obj->metaObject()->className(), obj->objectName().toLatin1().constData());
+    //        obj->metaObject()->className(), obj->objectName().toLocal8Bit().constData());
     //fprintf(stderr, "SnooperDialog::selectObject() Did not find object:%p\n", obj);
     return nullptr;
   }

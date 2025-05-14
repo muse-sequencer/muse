@@ -27,7 +27,6 @@
 #include <QString>
 
 #include "config.h"
-#include "globaldefs.h"
 #include "plugin_scan.h"
 #include "plugin_list.h"
 
@@ -158,7 +157,7 @@ void scanAllPlugins(const QString& museGlobalLib,
                     PluginScanList* list,
                     bool scanPorts,
                     bool debugStdErr,
-                    PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll);
+                    MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypesAll);
 
 //-----------------------------------------
 // Public cache writer functions
@@ -169,7 +168,7 @@ bool createPluginCacheFile(
   // Path to the cache file directory (eg. config path + /scanner).
   const QString& path,
   // The type of plugin cache file to write.
-  PluginScanInfoStruct::PluginType type,
+  MusEPlugin::PluginType type,
   // List to read into and write from.
   PluginScanList* list,
   // Whether to write port information.
@@ -177,7 +176,7 @@ bool createPluginCacheFile(
   // Where to find the application's installed libraries.
   const QString& museGlobalLib = QString(),
   // The types of plugins to write into this one file.
-  PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll,
+  MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypesAll,
   // Print some stderr text
   bool debugStdErr = false
 );
@@ -192,7 +191,7 @@ bool createPluginCacheFiles(
   // Where to find the application's installed libraries.
   const QString& museGlobalLib,
   // The types of plugin cache files to create.
-  PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll,
+  MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypesAll,
   // Print some stderr text
   bool debugStdErr = false
 );
@@ -214,7 +213,7 @@ bool checkPluginCacheFiles(
   // Where to find the application's installed libraries.
   const QString& museGlobalLib = QString(),
   // The types of plugin cache files to write.
-  PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll,
+  MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypesAll,
   // Print some stderr text
   bool debugStdErr = false
 );
@@ -230,7 +229,7 @@ bool writePluginCacheFile(
   // Whether to write port information.
   bool writePorts,
   // The types of plugins to write.
-  PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll);
+  MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypesAll);
 
 
 } // namespace MusEPlugin

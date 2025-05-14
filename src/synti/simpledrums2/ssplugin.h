@@ -28,6 +28,7 @@
 #define __PLUGIN_H__
 
 #include <QFileInfo>
+#include <QLibrary>
 
 #include <ladspa.h>
 #include "muse_math.h"
@@ -48,15 +49,40 @@ class Plugin
    {
    protected:
       QFileInfo fi;
+      QLibrary _qlib;
+      int _references;
+
+      unsigned long _uniqueID;
+      // Universal resource identifier, for plugins that use it (LV2).
+      // If this exists, it should be used INSTEAD of file info, for comparison etc.
+      // Never rely on the file info if a uri exists.
+      QString _uri;
+      QString _name;
+      QString _label;
+      QString _description;
+      QString _maker;
+      QString _version;
+      QString _copyright;
 
    public:
       Plugin(const QFileInfo* f);
       virtual ~Plugin() {}
-      virtual QString label() const     { return QString(); }
-      virtual QString name() const      { return QString(); }
-      virtual unsigned long id() const  { return 0;         }
-      virtual QString maker() const     { return QString(); }
-      virtual QString copyright() const { return QString(); }
+      // Reference the library. Increases the reference count. Loads the library if required (ref 0 -> 1).
+      // Returns true on success.
+      virtual bool reference();
+      // Releases one reference and returns the resulting number of references.
+      // When the number of references reaches zero, the plugin library file, if any, tries to unload.
+      // The library will remain loaded until all usages reach zero references.
+      virtual int release();
+
+      virtual QString uri() const;
+      virtual QString description() const;
+      virtual QString version() const;
+      virtual QString label() const;
+      virtual QString name() const;
+      virtual QString maker() const;
+      virtual QString copyright() const;
+      virtual unsigned long id() const;
       virtual int parameter() const       { return 0;     }
       virtual int inports() const         { return 0;     }
       virtual int outports() const        { return 0;     }
@@ -113,11 +139,13 @@ private:
    public:
       LadspaPlugin(const QFileInfo* f, const LADSPA_Descriptor_Function, const LADSPA_Descriptor* d);
       virtual ~LadspaPlugin();
-      virtual QString label() const     { return QString(plugin->Label); }
-      virtual QString name() const      { return QString(plugin->Name); }
-      virtual unsigned long id() const  { return plugin->UniqueID; }
-      virtual QString maker() const     { return QString(plugin->Maker); }
-      virtual QString copyright() const { return QString(plugin->Copyright); }
+      bool reference();
+      int release();
+//       virtual QString label() const     { return QString(plugin->Label); }
+//       virtual QString name() const      { return QString(plugin->Name); }
+//       virtual unsigned long id() const  { return plugin->UniqueID; }
+//       virtual QString maker() const     { return QString(plugin->Maker); }
+//       virtual QString copyright() const { return QString(plugin->Copyright); }
       virtual int parameter() const { return _parameter;     }
       virtual int inports() const   { return _inports; }
       virtual int outports() const  { return _outports; }
@@ -155,7 +183,6 @@ private:
       void setParam(int i, float val);
 
    };
-
 
 static inline float fast_log2 (float val)
       {

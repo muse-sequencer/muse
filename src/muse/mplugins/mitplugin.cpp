@@ -178,7 +178,7 @@ void writeStatusMidiInputTransformPlugins(int level, Xml& xml)
       for (iMITPlugin i = mitPlugins.begin(); i != mitPlugins.end(); ++i) {
             xml.tag(level++, "mplugin name=\"%d\"");
             (*i)->writeStatus(level, xml);
-            xml.etag(level, "mplugin");
+            xml.etag(--level, "mplugin");
             }
       }
 

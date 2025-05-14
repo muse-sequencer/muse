@@ -45,6 +45,8 @@ class MidiPort;
 class MidiInstrument;
 class Track;
 class Part;
+class PluginConfiguration;
+class PluginI;
 
 extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files, for cleanup on shutdown
 //---------------------------------------------------------
@@ -74,6 +76,8 @@ struct UndoOp {
             SetMarkerPos,
             //// For wholesale changes to the list. Preferred if multiple additions or deletions are required.
             //ModifyMarkerList,
+            ChangeRackEffectPlugin, SwapRackEffectPlugins, MoveRackEffectPlugin,
+
             ModifySongLen, // a = new len, b = old len
             SetInstrument,
             DoNothing,
@@ -142,6 +146,30 @@ struct UndoOp {
                   //  while in copy mode since they are the items that are actually being copied.
                   CtrlList* _doNotEraseCtrlList;
                 };
+            struct {
+                  PluginI *_pluginI;
+                  PluginConfiguration *_pluginConfiguration;
+                  CtrlListList *_ctrlListList;
+                  MidiAudioCtrlMap *_midiAudioCtrlMap;
+                  int _effectRackPos;
+                  int _newEffectRackPos;
+                };
+
+            struct {
+                  // Source track. Destination track is member 'track'.
+                  const Track* _plugMoveSrcTrack;
+                  // Holds any existing plugin configuration at the destination position, for recreation later.
+                  PluginConfiguration *_plugMoveDstConfiguration;
+                  // Holds any existing automation control lists for the plugin at the destination position, for recreation later.
+                  CtrlListList *_plugMoveDstCtrlListList;
+                  // Holds any existing midi to audio control mapping for the plugin at the destination position, for recreation later.
+                  MidiAudioCtrlMap *_plugMoveDstMidiAudioCtrlMap;
+                  // The source tracks's effect rack position.
+                  int _plugMoveSrcEffectRackPos;
+                  // The destination tracks's effect rack position.
+                  int _plugMoveDstEffectRackPos;
+                };
+
             struct {
                   int _audioCtrlID;
                   unsigned int _audioCtrlFrame;
@@ -259,6 +287,19 @@ struct UndoOp {
       //  a constructor that takes a track pointer and a constructor that takes an integer !!!
       UndoOp(UndoType type, const Track* track, double a, double b, double c, double d = 0.0, double e = 0.0, bool noUndo = false);
 
+      // To avoid potentially a lot of copying and double memory use, the pluginConfiguration
+      //  argument is allocated externally, and the undo system takes ownership of it.
+      UndoOp(UndoType type, const Track *track, PluginConfiguration *pluginConfiguration, int effectRackPos,
+             CtrlListList *cll = nullptr, MidiAudioCtrlMap *macm = nullptr, bool noUndo = false);
+      // This convenience version makes a copy of the pluginConfiguration for you.
+      UndoOp(UndoType type, const Track *track, const PluginConfiguration &pluginConfiguration, int effectRackPos,
+             CtrlListList *cll = nullptr, MidiAudioCtrlMap *macm = nullptr, bool noUndo = false);
+      // This one takes a pre-created PluginI. It can also be null.
+      UndoOp(UndoType type, const Track *track, PluginI *pluginI, int effectRackPos,
+             CtrlListList *cll = nullptr, MidiAudioCtrlMap *macm = nullptr, bool noUndo = false);
+      // This is for moving a plugin from one rack position to another, even to a different track's rack.
+      UndoOp(UndoType type, const Track *srcTrack, const Track *dstTrack, int srcEffectRackPos,
+             int dstEffectRackPos, bool noUndo = false);
 
       UndoOp(UndoType type, CtrlList* ctrlList, unsigned int frame, bool oldSelected, bool newSelected, bool noUndo = false);
       UndoOp(UndoType type, CtrlList::PasteEraseOptions newOpts, bool noUndo = false);

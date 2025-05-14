@@ -42,7 +42,7 @@ void AudioConverterSettingsGroupOptions::write(int level, Xml& xml) const
       xml.intTag(level, "preferredResampler", _preferredResampler);
       xml.intTag(level, "preferredShifter", _preferredShifter);
       
-      xml.tag(--level, "/settings");
+      xml.etag(--level, "settings");
       
       }
 
@@ -68,7 +68,7 @@ void AudioConverterSettingsGroupOptions::read(Xml& xml)
                               xml.unknown("settings");
                         break;
                   case Xml::Attribut:
-                              fprintf(stderr, "settings unknown tag %s\n", tag.toLatin1().constData());
+                              fprintf(stderr, "settings unknown tag %s\n", tag.toLocal8Bit().constData());
                         break;
                   case Xml::TagEnd:
                         if (tag == "settings") {
@@ -166,11 +166,11 @@ void AudioConverterSettingsGroup::readItem(Xml& xml, AudioConverterPluginList* p
                   case Xml::Attribut:
                         if (tag == "name")
                         {
-                          if(AudioConverterPlugin* p = plugList->find(xml.s2().toLatin1().constData()))
+                          if(AudioConverterPlugin* p = plugList->find(xml.s2().toLocal8Bit().constData()))
                             setI = find(p->id());
                         }
                         else
-                              fprintf(stderr, "audioConverterSetting unknown tag %s\n", tag.toLatin1().constData());
+                              fprintf(stderr, "audioConverterSetting unknown tag %s\n", tag.toLocal8Bit().constData());
                         break;
                   case Xml::TagEnd:
                         if (tag == "audioConverterSetting")
@@ -198,13 +198,13 @@ void AudioConverterSettingsGroup::read(Xml& xml, AudioConverterPluginList* plugL
                         else if (tag == "preferredResampler")
                         {
                               if(AudioConverterPlugin* plugin = 
-                                   plugList->find(xml.parse1().toLatin1().constData()))
+                                   plugList->find(xml.parse1().toLocal8Bit().constData()))
                                 _options._preferredResampler = plugin->id();
                         }
                         else if (tag == "preferredShifter")
                         {
                               if(AudioConverterPlugin* plugin = 
-                                   plugList->find(xml.parse1().toLatin1().constData()))
+                                   plugList->find(xml.parse1().toLocal8Bit().constData()))
                               _options._preferredShifter = plugin->id();
                         }
                         else if (tag == "audioConverterSetting")
@@ -213,7 +213,7 @@ void AudioConverterSettingsGroup::read(Xml& xml, AudioConverterPluginList* plugL
                               xml.unknown("audioConverterSettingsGroup");
                         break;
                   case Xml::Attribut:
-                              fprintf(stderr, "audioConverterSettingsGroup unknown tag %s\n", tag.toLatin1().constData());
+                              fprintf(stderr, "audioConverterSettingsGroup unknown tag %s\n", tag.toLocal8Bit().constData());
                         break;
                   case Xml::TagEnd:
                         if (tag == "audioConverterSettingsGroup") {
@@ -238,13 +238,13 @@ void AudioConverterSettingsGroup::write(int level, Xml& xml, AudioConverterPlugi
   if(_options._preferredResampler != AudioConverterSettingsGroupOptions::defaultOptions._preferredResampler)
   {
     if(AudioConverterPlugin* plugin = plugList->find(nullptr, _options._preferredResampler))
-      xml.strTag(level, "preferredResampler", plugin->name().toLatin1().constData());
+      xml.strTag(level, "preferredResampler", plugin->name().toUtf8().constData());
   }
   
   if(_options._preferredShifter != AudioConverterSettingsGroupOptions::defaultOptions._preferredShifter)
   {
     if(AudioConverterPlugin* plugin = plugList->find(nullptr, _options._preferredShifter))
-      xml.strTag(level, "preferredShifter", plugin->name().toLatin1().constData());
+      xml.strTag(level, "preferredShifter", plugin->name().toUtf8().constData());
   }
   
   for(const_iterator i = cbegin(); i != cend(); ++i)
@@ -253,7 +253,7 @@ void AudioConverterSettingsGroup::write(int level, Xml& xml, AudioConverterPlugi
       settings->write(level, xml);
   }
   
-  xml.tag(--level, "/audioConverterSettingsGroup");
+  xml.etag(--level, "audioConverterSettingsGroup");
 }
 
 bool AudioConverterSettingsGroup::useSettings(int mode) const

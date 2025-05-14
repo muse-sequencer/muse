@@ -220,15 +220,38 @@ class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioC
   public:
       static MidiAudioCtrlMap_idx_t index_hash(int midi_port, int midi_chan, int midi_ctrl_num);
       static void hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num);
-      // Add will not replace if found. TODO Decide, do we want to?
+      // Adds a mapping item given a control structure, port, channel, and control number.
+      // Add will not replace if found. Returns existing item if found. TODO Decide, do we want to?
       iMidiAudioCtrlMap add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, const MidiAudioCtrlStruct& amcs); 
+      // Adds a mapping item given a control structure and an index hash made up of port, channel, and control number.
+      // Add will not replace if found. Returns existing item if found. TODO Decide, do we want to?
+      iMidiAudioCtrlMap add_ctrl_struct(MidiAudioCtrlMap_idx_t indexHash, const MidiAudioCtrlStruct& macs);
       // Track can be NULL.
       void find_audio_ctrl_structs(
         MidiAudioCtrlStruct::IdType type, int id,
         const Track* track, bool anyTracks, bool includeNullTracks, AudioMidiCtrlStructMap* amcs); // const;
       void erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, MidiAudioCtrlStruct::IdType type, int id);
-      void write(int level, Xml& xml, const Track* track /*= nullptr*/) const; // TODO Resinstate default after testing
-      void read(Xml& xml, Track* track /*= nullptr*/); // TODO Resinstate default after testing
+      // Saves ONLY entries whose tracks match the given track, including null.
+      // If startId and/or endId are given, writes ONLY that range - except if
+      //  excludeIds is true it writes entries EXCLUDING the given id range,
+      //  and idType is the type of id to affect.
+      // Either startId or endId can be -1 meaning open-ended.
+      // Note that endId means one past the last id.
+      // If idMask is given, mask (bitwise AND) the entries' id bits when saving.
+      void write(
+        int level, Xml& xml,
+        const Track* track = nullptr,
+        int startId = -1, int endId = -1,
+        MidiAudioCtrlStruct::IdType idType = MidiAudioCtrlStruct::AudioControl,
+        bool excludeIds = false, int idMask = -1) const;
+      // Reads entries and applies track, which can be null, to them.
+      // If idUnmask is given, unmask (bitwise OR) the entries' id bits when reading,
+      //  and idType is the type of id to affect.
+      void read(
+        Xml& xml,
+        Track* track /*= nullptr*/,
+        int idUnmask = 0,
+        MidiAudioCtrlStruct::IdType idType = MidiAudioCtrlStruct::AudioControl);
       };
 
 
@@ -281,7 +304,7 @@ class CtrlList : public CtrlList_t {
    public:
       CtrlList(bool dontShow=false);
       CtrlList(int id, bool dontShow=false);
-      CtrlList(int id, QString name, double min, double max, CtrlValueType v, bool dontShow=false);
+      CtrlList(int id, QString name, double min, double max, CtrlValueType v, double defaultVal=0.0, bool dontShow=false);
       CtrlList(const CtrlList& l, int flags);
       CtrlList(const CtrlList& cl);
 
@@ -365,13 +388,15 @@ class CtrlList : public CtrlList_t {
       // The samplerate of the complete controller graph is given. Graph times are converted.
       void readValues(const QString& tag, const int samplerate);
       bool read(Xml& xml);
-      void write(int level, Xml& xml, bool isCopy = false) const;
+      // If idMask is given, mask the id bits when saving.
+      void write(int level, Xml& xml, int idMask = -1) const;
 
       void initColor(int i);
       void setColor( QColor c );
       QColor color() const;
       void setVisible(bool v);
       bool isVisible() const;
+      void setDontShow(bool v);
       bool dontShow() const;
       // Returns index into the global value units for displaying unit symbols.
       // Can be -1 meaning no units.
@@ -414,12 +439,17 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
       void clearDelete();
       iCtrlList find(int id);
       ciCtrlList find(int id) const;
-            
+      iCtrlList findName(const QString &);
+      ciCtrlList findName(const QString &) const;
+
       double value(int ctrlId, unsigned int frame, bool cur_val_only = false,
                    unsigned int* nextFrame = nullptr, bool* nextFrameValid = nullptr) const;
       void updateCurValues(unsigned int frame);
       void clearAllAutomation();
-      void write(int level, Xml& xml) const;
+      // If startId and/or endId are given, writes only that range.
+      // Either can be -1 meaning open-ended. Note that endId means one past the last id.
+      // If idMask is given, mask the id bits when saving.
+      void write(int level, Xml& xml, int startId = -1, int endId = -1, int idMask = -1) const;
       void initColors();
       };
 

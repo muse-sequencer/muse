@@ -70,7 +70,6 @@ enum {
       SEQM_UPDATE_SOLO_STATES,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
-      AUDIO_SWAP_PLUGINS,
       AUDIO_SEEK_PREV_AC_EVENT,
       AUDIO_SEEK_NEXT_AC_EVENT,
       AUDIO_SET_SEND_METRONOME,
@@ -293,7 +292,6 @@ class Audio {
       void msgIdle(bool);
       void msgAudioWait();
       void msgBounce();
-      void msgSwapPlugins(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);
       void msgSeekNextACEvent(AudioTrack*, int);

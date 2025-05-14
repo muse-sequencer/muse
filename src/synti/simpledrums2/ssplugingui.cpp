@@ -193,7 +193,7 @@ void SS_PluginFront::loadButton()
       pluginChooser->exec();
       if ((pluginChooser->result() == QDialog::Accepted) && pluginChooser->getSelectedPlugin()) {
             MusESimplePlugin::Plugin* p = pluginChooser->getSelectedPlugin();
-            //printf("Selected plugin: %s\n", pluginChooser->getSelectedPlugin()->name().toLatin1().constData());
+            //printf("Selected plugin: %s\n", pluginChooser->getSelectedPlugin()->name().toLocal8Bit().constData());
             emit loadPlugin(fxid, p->lib(), p->label());
             }
       SS_TRACE_OUT

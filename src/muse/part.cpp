@@ -108,7 +108,7 @@ void MidiPartViewState::write(int level, Xml& xml) const
               }
       }
 
-      xml.tag(level, "/viewState");
+      xml.etag(--level, "viewState");
       
       }
 
@@ -174,8 +174,8 @@ void Part::unchainClone()
   _nextClone = this;
 
   DEBUG_PART_LOADSAVE(stderr, "Part::unchainClone:%p %s muuid cur:%s new:%s\n",
-    this, name().toUtf8().constData(),
-    _clonemaster_uuid.toString().toUtf8().constData(), _uuid.toString().toUtf8().constData());
+    this, name().toLocal8Bit().constData(),
+    _clonemaster_uuid.toString().toLocal8Bit().constData(), _uuid.toString().toLocal8Bit().constData());
 
   _clonemaster_uuid = this->_uuid;
 }
@@ -202,9 +202,9 @@ void Part::chainClone(Part* p)
   // we only chain clones. we must trust in the GUI thread that the eventlist is consistent.
   
   DEBUG_PART_LOADSAVE(stderr, "Part::chainClone:%p %s part:%p %s muuid cur:%s new:%s\n",
-    this, name().toUtf8().constData(),
-    p, p->name().toUtf8().constData(),
-    _clonemaster_uuid.toString().toUtf8().constData(), p->_uuid.toString().toUtf8().constData());
+    this, name().toLocal8Bit().constData(),
+    p, p->name().toLocal8Bit().constData(),
+    _clonemaster_uuid.toString().toLocal8Bit().constData(), p->_uuid.toString().toLocal8Bit().constData());
 
   this->_clonemaster_uuid = p->clonemaster_uuid();
 }
@@ -214,10 +214,10 @@ void Part::rechainClone()
     if(_backupClone)
     {
       DEBUG_PART_LOADSAVE(stderr, "Part::rechainClone:%p %s muuid:%s _backupClone:%p %s muuid:%s calling chainClone...\n",
-        this, name().toUtf8().constData(),
-        _clonemaster_uuid.toString().toUtf8().constData(),
-        _backupClone, _backupClone->name().toUtf8().constData(),
-        _backupClone->clonemaster_uuid().toString().toUtf8().constData());
+        this, name().toLocal8Bit().constData(),
+        _clonemaster_uuid.toString().toLocal8Bit().constData(),
+        _backupClone, _backupClone->name().toLocal8Bit().constData(),
+        _backupClone->clonemaster_uuid().toString().toLocal8Bit().constData());
 
         this->chainClone(_backupClone);
         _backupClone = nullptr;
@@ -272,9 +272,9 @@ void chainCheckErr(Part* p)
 {
   // At all times these must be false...
   if(p->nextClone()->prevClone() != p)
-    printf("chainCheckErr: Next clone:%s %p prev clone:%s %p != %s %p\n", p->nextClone()->name().toLatin1().constData(), p->nextClone(), p->nextClone()->prevClone()->name().toLatin1().constData(), p->nextClone()->prevClone(), p->name().toLatin1().constData(), p); 
+    printf("chainCheckErr: Next clone:%s %p prev clone:%s %p != %s %p\n", p->nextClone()->name().toLocal8Bit().constData(), p->nextClone(), p->nextClone()->prevClone()->name().toLocal8Bit().constData(), p->nextClone()->prevClone(), p->name().toLocal8Bit().constData(), p);
   if(p->prevClone()->nextClone() != p)
-    printf("chainCheckErr: Prev clone:%s %p next clone:%s %p != %s %p\n", p->prevClone()->name().toLatin1().constData(), p->prevClone(), p->prevClone()->nextClone()->name().toLatin1().constData(), p->prevClone()->nextClone(), p->name().toLatin1().constData(), p); 
+    printf("chainCheckErr: Prev clone:%s %p next clone:%s %p != %s %p\n", p->prevClone()->name().toLocal8Bit().constData(), p->prevClone(), p->prevClone()->nextClone()->name().toLocal8Bit().constData(), p->prevClone()->nextClone(), p->name().toLocal8Bit().constData(), p);
 }
 
 //---------------------------------------------------------
@@ -866,7 +866,7 @@ void Part::dump(int n) const
       {
       for (int i = 0; i < n; ++i)
             putchar(' ');
-      printf("Part: <%s> ", _name.toLatin1().constData());
+      printf("Part: <%s> ", _name.toLocal8Bit().constData());
       for (int i = 0; i < n; ++i)
             putchar(' ');
       PosLen::dump();

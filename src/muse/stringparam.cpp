@@ -77,7 +77,7 @@ void StringParamMap::read(Xml& xml, const QString& name)
       case Xml::End:
             return;
       case Xml::TagStart:
-            xml.unknown(name.toLatin1().constData());
+            xml.unknown(name.toLocal8Bit().constData());
             break;
       case Xml::Attribut:
             if(tag == "name") 
@@ -86,13 +86,13 @@ void StringParamMap::read(Xml& xml, const QString& name)
             if(tag == "val") 
               value = xml.s2();      
             else
-              xml.unknown(name.toLatin1().constData());
+              xml.unknown(name.toLocal8Bit().constData());
             break;
       case Xml::TagEnd:
             if(tag == name) 
             {
               // Add or modify the item.
-              set(n.toLatin1(), value.toLatin1());
+              set(n.toUtf8(), value.toUtf8());
               return;
             }
       default:

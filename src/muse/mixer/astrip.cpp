@@ -942,6 +942,7 @@ void AudioStrip::configChanged()
 
   // Set the strip label's font.
   setLabelText();
+  computeExtraWidth();
 
   slider->setFillColor(MusEGlobal::config.audioVolumeSliderColor);
   slider->setHandleColor(MusEGlobal::config.audioVolumeHandleColor);
@@ -1061,7 +1062,7 @@ void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
       {
             setRecordFlag(track->recordFlag());
       }
-      if (val & SC_TRACK_MODIFIED)
+      if (val & (SC_TRACK_MODIFIED | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MOVED))
       {
             setLabelText();
       }

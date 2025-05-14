@@ -57,7 +57,7 @@ void global_drum_ordering_t::write(int level, MusECore::Xml& xml)
   for (iterator it = begin(); it != end(); it++)
     write_single(level, xml, *it);
 
-  xml.etag(level, "drum_ordering");
+  xml.etag(--level, "drum_ordering");
 }
 
 void global_drum_ordering_t::write_single(int level, MusECore::Xml& xml, const entry_t& entry)
@@ -66,7 +66,7 @@ void global_drum_ordering_t::write_single(int level, MusECore::Xml& xml, const e
   if(trk_idx >= 0)
   {
     const QString s= QString("<item track=\"%1\" instr=\"%2\" />").arg(trk_idx).arg(entry.second);
-    xml.put(level, "%s", s.toLatin1().constData());
+    xml.put(level, "%s", s.toUtf8().constData());
   }
 }
 
@@ -195,7 +195,7 @@ global_drum_ordering_t::entry_t global_drum_ordering_t::read_item(MusECore::Xml&
             else if (tag == "instr")
               instr = xml.s2().toInt();
             else
-              fprintf(stderr, "unknown tag %s\n", tag.toLatin1().constData());
+              fprintf(stderr, "unknown tag %s\n", tag.toLocal8Bit().constData());
         break;
 
       case Xml::TagEnd:

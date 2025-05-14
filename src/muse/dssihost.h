@@ -80,9 +80,7 @@ struct Port;
 
 class DssiSynth : public Synth {
    protected:
-      void* handle;
       const DSSI_Descriptor* dssi;
-      DSSI_Descriptor_Function df;
       unsigned long _portCount, _inports, _outports, _controlInPorts, _controlOutPorts;
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
@@ -94,9 +92,9 @@ class DssiSynth : public Synth {
    public:
       DssiSynth(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~DssiSynth();
-      virtual Type synthType() const { return DSSI_SYNTH; }
 
-      virtual void incInstances(int);
+      bool reference();
+      int release();
       virtual SynthIF* createSIF(SynthI*);
       
       friend class DssiSynthIF;
@@ -136,6 +134,8 @@ class DssiSynthIF : public SynthIF
       float** _audioOutBuffers;
       float*  _audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
 
+      bool init(DssiSynth* s);
+
    protected:
       void activate();
       void deactivate();
@@ -148,8 +148,6 @@ class DssiSynthIF : public SynthIF
       
       virtual ~DssiSynthIF();
 
-      bool init(DssiSynth* s);
-
       virtual DssiSynth* dssiSynth() { return _synth; }
       virtual SynthI* dssiSynthI()   { return synti; }
       
@@ -157,7 +155,11 @@ class DssiSynthIF : public SynthIF
       virtual bool hasGui() const { return true; }
       virtual bool nativeGuiVisible() const;                                        
       virtual void showNativeGui(bool);                                              
-      virtual bool hasNativeGui() const { return !dssi_ui_filename().isEmpty(); }    
+      virtual void closeNativeGui();
+      // Informs the plugin that we are about to change the UI title bar text.
+      // Some UIs may need to close because their title bar text is not alterable after creation.
+      void nativeGuiTitleAboutToChange();
+      virtual bool hasNativeGui() const { return !dssi_ui_filename().isEmpty(); }
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}
       
@@ -195,13 +197,7 @@ class DssiSynthIF : public SynthIF
       //-------------------------
       
       unsigned long pluginID() const;
-      int id() const;
-      QString pluginLabel() const;  
-      QString lib() const;            
-      QString uri() const;
-      QString dirPath() const;
-      QString fileName() const;
-      void enableController(unsigned long i, bool v = true);      
+      void enableController(unsigned long i, bool v = true);
       bool controllerEnabled(unsigned long i) const;          
       void enableAllControllers(bool v = true);
       void updateControllers();

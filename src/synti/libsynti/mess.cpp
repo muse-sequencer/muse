@@ -26,6 +26,48 @@
 
 static const int FIFO_SIZE = 32;
 
+MessConfig::MessConfig() {
+    _segmentSize = 1024;
+    _sampleRate = 44100;
+    _minMeterVal = 0;
+    _useDenormalBias = false;
+    _denormalBias = 0.0;
+    _leftMouseButtonCanDecrease = false;
+    _configPath = 0;
+    _cachePath = 0;
+    _globalLibPath = 0;
+    _globalSharePath = 0;
+    _userPath = 0;
+    _projectPath = 0;
+  }
+
+MessConfig::MessConfig(unsigned int segmentSize,
+             int sampleRate,
+             int minMeterVal,
+             bool useDenormalBias,
+             float denormalBias,
+             bool leftMouseButtonCanDecrease,
+             const char* configPath,
+             const char* cachePath,
+             const char* globalLibPath,
+             const char* globalSharePath,
+             const char* userPath,
+             const char* projectPath)
+{
+    _segmentSize = segmentSize;
+    _sampleRate = sampleRate;
+    _minMeterVal = minMeterVal;
+    _useDenormalBias = useDenormalBias;
+    _denormalBias = denormalBias;
+    _leftMouseButtonCanDecrease = leftMouseButtonCanDecrease;
+    _configPath = configPath;
+    _cachePath = cachePath;
+    _globalLibPath = globalLibPath;
+    _globalSharePath = globalSharePath;
+    _userPath = userPath;
+    _projectPath = projectPath;
+}
+
 //---------------------------------------------------------
 //   MessP
 //---------------------------------------------------------
@@ -60,6 +102,29 @@ Mess::~Mess()
       {
       delete d;
       }
+
+int Mess::oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; }
+int Mess::channels() const       { return _channels;   }
+int Mess::sampleRate() const     { return _sampleRate; }
+void Mess::setSampleRate(int r)  { _sampleRate = r;    }
+void Mess::processMessages() { };
+bool Mess::setController(int, int, int) { return false; }
+bool Mess::playNote(int, int, int) { return false; }
+bool Mess::sysex(int, const unsigned char*) { return false; }
+void Mess::getInitData(int* n, const unsigned char**) /*const*/ { *n = 0; }
+int Mess::getControllerInfo(int, const char**, int*, int*, int*, int*) const {return 0;}
+const char* Mess::getPatchName(int, int, bool) const { return "?"; }
+const MidiPatch* Mess::getPatchInfo(int, const MidiPatch*) const { return 0; }
+bool Mess::getNoteSampleName(bool /*drum*/, int /*channel*/,
+                               int /*patch*/, int /*note*/,
+                               const char** /*name*/) const { return false; }
+bool Mess::hasNativeGui() const { return false; }
+bool Mess::nativeGuiVisible() const { return false; }
+void Mess::showNativeGui(bool) {}
+void Mess::setNativeGeometry(int, int, int, int) {}
+void Mess::guiHeartBeat() {}
+void Mess::setNativeGuiWindowTitle(const char*) const { }
+
 
 //---------------------------------------------------------
 //   getNativeGeometry

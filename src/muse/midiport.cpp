@@ -1764,15 +1764,15 @@ void MidiPort::writeRouting(int level, Xml& xml) const
           s = "Route";
           if(r->channel != -1)
             s += QString(" channel=\"%1\"").arg(r->channel);
-          xml.tag(level++, s.toLatin1().constData());
+          xml.tag(level++, s);
           
-          xml.tag(level, "source mport=\"%d\"/", portno());
-          
+          xml.emptyTag(level, QString("source mport=\"%1\"").arg(portno()));
+
           s = "dest";
-          s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
-          xml.tag(level, s.toLatin1().constData());
-          
-          xml.etag(level--, "Route");
+          s += QString(" track=\"%1\"").arg(MusEGlobal::song->tracks()->index(r->track));
+          xml.emptyTag(level, s);
+
+          xml.etag(--level, "Route");
         }
       }
 }

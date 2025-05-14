@@ -724,6 +724,12 @@ void Organ::showNativeGui(bool val)
       gui->setVisible(val);
       }
 
+void Organ::setNativeGuiWindowTitle(const char* text) const
+{
+  if(gui)
+    gui->setWindowTitle(text);
+}
+
 //---------------------------------------------------------
 //   getNativeGeometry
 //---------------------------------------------------------

@@ -52,14 +52,16 @@ if (UPDATE_TRANSLATIONS)
             widgets
             awl
             deicsonze
-            fluid
-            fluidsynth
-            libsynti
+            #fluid
+            fluid_synth
+            synti
             organ
-            s1
-            simpledrums2
+            #s1
+            simpledrums
             vam
             components
+            plugin_scan_module
+            grepmidi
             )
 endif (UPDATE_TRANSLATIONS)
 

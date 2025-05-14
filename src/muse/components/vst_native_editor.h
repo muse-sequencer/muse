@@ -25,6 +25,7 @@
 #define __VST_NATIVE_EDITOR_H__
 
 #include <QWidget>
+#include <QString>
 
 #include "config.h"
 
@@ -92,6 +93,7 @@ public:
     void close();
 
     bool fixScaling() { return m_fixScaling; }
+    void updateWindowTitle(const QString&);
 
 #if defined(Q_WS_X11)
     // Local X11 event filter.

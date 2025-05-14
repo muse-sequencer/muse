@@ -468,7 +468,7 @@ void MidiSyncInfo::write(int level, Xml& xml)
   if(!_recRewOnStart)
     xml.intTag(level, "recRewStart", false);
 
-  xml.etag(level, "midiSyncInfo");
+  xml.etag(--level, "midiSyncInfo");
 }
 
 

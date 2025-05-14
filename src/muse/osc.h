@@ -56,6 +56,8 @@ class OscIF
       char* _uiOscProgramPath;
       char* _uiOscControlPath;
       char* _uiOscShowPath;
+      char* _uiOscHidePath;
+      char* _uiOscQuitPath;
       bool _oscGuiVisible;
       
       unsigned long old_prog;
@@ -64,17 +66,20 @@ class OscIF
       unsigned long maxDssiPort;
       const std::vector<unsigned long>* control_port_mapper;
       
-      virtual bool oscInitGui(const QString& typ, const QString& baseName, const QString& name, 
-                       const QString& label, const QString& filePath, const QString& guiPath,
-                       const std::vector<unsigned long>* control_port_mapper_);
-                       
+      virtual bool oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginLabel,
+                       int trackno, const QString& filePath, const QString& guiPath,
+                       const std::vector<unsigned long>* control_port_mapper_, int rackpos = -1);
+      void oscCleanupGui();
+
    public:
       OscIF();
       virtual ~OscIF();
       
-      virtual int oscUpdate(lo_arg**);    
-      virtual int oscProgram(lo_arg**)   { return 0; }   
-      virtual int oscControl(lo_arg**)   { return 0; }    
+      bool isRunning() const;
+
+      virtual int oscUpdate(lo_arg**);
+      virtual int oscProgram(lo_arg**);
+      virtual int oscControl(lo_arg**);
       virtual int oscExiting(lo_arg**);   
       virtual int oscMidi(lo_arg**)      { return 0; }      
       virtual int oscConfigure(lo_arg**) { return 0; } 
@@ -86,8 +91,9 @@ class OscIF
       virtual bool oscInitGui() { return false; }
       virtual void oscShowGui(bool);
       virtual bool oscGuiVisible() const;
-      
-      virtual QString titlePrefix() const { return QString(); }
+      virtual bool oscQuitGui();
+
+      virtual QString displayName() const { return QString(); }
 };
  
 class OscEffectIF : public OscIF
@@ -106,7 +112,7 @@ class OscEffectIF : public OscIF
       
       virtual bool oscInitGui();
       
-      virtual QString titlePrefix() const; 
+      virtual QString displayName() const;
 };
  
 #ifdef DSSI_SUPPORT
@@ -128,7 +134,7 @@ class OscDssiIF : public OscIF
       
       virtual bool oscInitGui();
       
-      virtual QString titlePrefix() const; 
+      virtual QString displayName() const;
 };
 #endif // DSSI_SUPPORT
 

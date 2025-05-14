@@ -144,7 +144,7 @@ void MidiRemoteStruct::read(const char *name, Xml& xml)
                           _ccenable = v;
                       }
                       else
-                        fprintf(stderr,"MidiRemoteStruct::read unknown tag %s\n", tag.toUtf8().constData());
+                        fprintf(stderr,"MidiRemoteStruct::read unknown tag %s\n", tag.toLocal8Bit().constData());
                     }
                     break;
               case Xml::TagStart:
@@ -165,7 +165,7 @@ void MidiRemoteStruct::write(const char *name, int level, Xml& xml) const
   xml.nput(level,
     "<%s noteport=\"%d\" notechan=\"%d\" note=\"%d\" notevaltype=\"%d\" noteen=\"%d\""
     " ccport=\"%d\" ccchan=\"%d\" ccnum=\"%d\" ccvaltype=\"%d\" ccen=\"%d\"",
-    Xml::xmlString(name).toLatin1().constData(), _noteport, _notechannel, _note, _noteValType, _noteenable,
+    Xml::xmlString(name).toUtf8().constData(), _noteport, _notechannel, _note, _noteValType, _noteenable,
     _ccport, _ccchannel, _ccnum, _ccValType, _ccenable);
   xml.put(" />");
 }
@@ -220,7 +220,7 @@ void MidiRemote::read(Xml& xml)
               case Xml::End:
                     return;
               case Xml::Attribut:
-                      fprintf(stderr,"MidiRemote::read unknown tag %s\n", tag.toUtf8().constData());
+                      fprintf(stderr,"MidiRemote::read unknown tag %s\n", tag.toLocal8Bit().constData());
                     break;
               case Xml::TagStart:
                     {
@@ -272,7 +272,7 @@ void MidiRemote::write(int level, Xml& xml) const
   _forward.write("forward", level, xml);
   _backward.write("backward", level, xml);
 
-  xml.etag(level--, "midiRemote");
+  xml.etag(--level, "midiRemote");
 }
 
 bool MidiRemote::matchesStepRec(int port, int chan) const

@@ -207,6 +207,7 @@ class Organ : public Mess {
       virtual bool hasNativeGui() const { return true; }
       virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
       virtual void setNativeGeometry(int x, int y, int w, int h);
+      virtual void setNativeGuiWindowTitle(const char*) const;
       virtual bool sysex(int, const unsigned char*);
       static SynthCtrl synthCtrl[];
       Organ(int sampleRate);

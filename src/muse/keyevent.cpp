@@ -213,10 +213,10 @@ void KeyList::delKey(unsigned tick)
 
 void KeyList::write(int level, Xml& xml) const
       {
-      xml.tag(level, "keylist");
+      xml.tag(level++, "keylist");
       for (ciKeyEvent i = begin(); i != end(); ++i)
             i->second.write(level, xml, i->first);
-      xml.tag(level, "/keylist");
+      xml.etag(--level, "keylist");
       }
 
 //---------------------------------------------------------
@@ -280,7 +280,7 @@ void KeyEvent::write(int level, Xml& xml, int at) const
       xml.intTag(level, "tick", tick);
       xml.intTag(level, "val", key);
       xml.intTag(level, "minor", minor);
-      xml.tag(level, "/key");
+      xml.etag(--level, "key");
       }
 
 //---------------------------------------------------------

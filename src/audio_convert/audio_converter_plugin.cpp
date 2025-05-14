@@ -31,8 +31,6 @@
 
 #include <string.h>
 
-#include <dlfcn.h>
-
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
 #define INFO_AUDIOCONVERT(dev, format, args...)  fprintf(dev, format, ##args)
@@ -44,10 +42,10 @@ void AudioConverterPluginList::discover(const QString& museGlobalLib, bool debug
 {
   QString s = museGlobalLib + "/converters";
 
-  QDir pluginDir(s, QString("*.so"));
+  QDir pluginDir(s);
   if(debugMsg)
   {
-    INFO_AUDIOCONVERT(stderr, "searching for audio converters in <%s>\n", s.toLatin1().constData());
+    INFO_AUDIOCONVERT(stderr, "searching for audio converters in <%s>\n", s.toLocal8Bit().constData());
   }
   if(pluginDir.exists())
   {
@@ -57,35 +55,35 @@ void AudioConverterPluginList::discover(const QString& museGlobalLib, bool debug
     {
       fi = &*it;
 
-      QByteArray ba = fi->filePath().toLatin1();
-      const char* path = ba.constData();
+      if(!QLibrary::isLibrary(fi->filePath()))
+        continue;
 
-      void* handle = dlopen(path, RTLD_NOW);
-      if(!handle)
+      QLibrary qlib;
+      qlib.setFileName(fi->filePath());
+      // Same as dlopen RTLD_NOW.
+      qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+      if(!qlib.load())
       {
-        ERROR_AUDIOCONVERT(stderr, "AudioConverterList::discover(): dlopen(%s) failed: %s\n", path, dlerror());
+        ERROR_AUDIOCONVERT(stderr, "AudioConverterList::discover(): Load library(%s) failed: %s\n",
+                           qlib.fileName().toLocal8Bit().constData(), qlib.errorString().toLocal8Bit().constData());
         continue;
       }
       Audio_Converter_Descriptor_Function desc_func =
-          (Audio_Converter_Descriptor_Function)dlsym(handle, "audio_converter_descriptor");
+          (Audio_Converter_Descriptor_Function)qlib.resolve("audio_converter_descriptor");
 
       if(!desc_func)
       {
-        const char *txt = dlerror();
-        if(txt)
-        {
-          ERROR_AUDIOCONVERT(stderr,
-            "Unable to find audio_converter_descriptor() function in plugin "
-            "library file \"%s\": %s.\n"
-            "Are you sure this is a MusE Audio Converter plugin file?\n",
-            path, txt);
-        }
-        dlclose(handle);
+        ERROR_AUDIOCONVERT(stderr,
+          "Unable to find audio_converter_descriptor() function in plugin "
+          "library file \"%s\": %s.\n"
+          "Are you sure this is a MusE Audio Converter plugin file?\n",
+          qlib.fileName().toLocal8Bit().constData(), qlib.errorString().toLocal8Bit().constData());
+        qlib.unload();
         continue;
       }
-      
+
       const AudioConverterDescriptor* descr;
-      
+
       for(unsigned long i = 0;; ++i)
       {
         descr = desc_func(i);
@@ -96,12 +94,9 @@ void AudioConverterPluginList::discover(const QString& museGlobalLib, bool debug
           continue;
         add(fi, descr);
       }
-        
-#ifndef __KEEP_LIBRARY_OPEN__
-      // The library must be kept open to use the shared object code.
-      dlclose(handle);
-#endif
-      
+
+      qlib.unload();
+
     }
     if(debugMsg)
     {
@@ -150,7 +145,7 @@ AudioConverterPlugin* AudioConverterPluginList::find(const char* name, int ID, i
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     AudioConverterPlugin* plugin = *i;
-    const bool name_match = (name && (strcmp(name, plugin->name().toLatin1().constData()) == 0));
+    const bool name_match = (name && (strcmp(name, plugin->name().toUtf8().constData()) == 0));
     const bool ID_match = (id_valid && ID == plugin->id());
     const bool caps_match = (caps_valid && (plugin->capabilities() & capabilities) == capabilities);
     if((name && id_valid && name_match && ID_match) || 
@@ -175,7 +170,6 @@ AudioConverterPlugin::AudioConverterPlugin(const QFileInfo* f, const AudioConver
   fi = *f;
   plugin = nullptr;
   _descriptorFunction = nullptr;
-  _handle = nullptr;
   _references = 0;
   _instNo     = 0;
   _label = QString(d->_label);
@@ -196,64 +190,32 @@ AudioConverterPlugin::~AudioConverterPlugin()
 {
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: this:%p plugin:%p id:%d\n", this, plugin, id());
 
-  // Actually, not an error, currently. We are the ones who purposely leave the library open.
-  // Therefore we are the ones who must close it here.
-  // TODO: Try to find a way to NOT leave the library open?
-  //if(plugin)
-  //{
-  //  ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: Error: plugin is not NULL\n");
-  //}
-    
-  if(_handle)
+  if(_references > 0)
   {
-    DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: _handle is not nullptr, closing library...\n");
-    dlclose(_handle);
+    DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: _references is not zero\n");
   }
-  
-  _handle = nullptr;
-  _descriptorFunction = nullptr;
-  plugin = nullptr;
 }
 
+//---------------------------------------------------------
+//   reference
+//---------------------------------------------------------
 
-int AudioConverterPlugin::incReferences(int val)
+bool AudioConverterPlugin::reference()
 {
-  DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin::incReferences: this:%p id:%d _references:%d val:%d\n", this, id(), _references, val);
-
-  int newref = _references + val;
-
-  if(newref <= 0)
+  if(_references == 0)
   {
-    _references = 0;
-    
-#ifndef __KEEP_LIBRARY_OPEN__
-    if(_handle)
+    _qlib.setFileName(fi.filePath());
+    // Same as dlopen RTLD_NOW.
+    _qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    if(!_qlib.load())
     {
-      DEBUG_AUDIOCONVERT(stderr, "  no more instances, closing library\n");
-      dlclose(_handle);
+      ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::reference(): load (%s) failed: %s\n",
+        _qlib.fileName().toLocal8Bit().constData(), _qlib.errorString().toLocal8Bit().constData());
+      return false;
     }
 
-    _handle = nullptr;
-    _descriptorFunction = nullptr;
-    plugin = nullptr;
-
-#endif
-    
-    return 0;
-  }
-
-  if(!_handle)
-  {
-    _handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
-
-    if(!_handle)
-    {
-      ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::incReferences dlopen(%s) failed: %s\n",
-              fi.filePath().toLatin1().constData(), dlerror());
-      return 0;
-    }
-
-    Audio_Converter_Descriptor_Function acdf = (Audio_Converter_Descriptor_Function)dlsym(_handle, "audio_converter_descriptor");
+    Audio_Converter_Descriptor_Function acdf =
+      (Audio_Converter_Descriptor_Function)_qlib.resolve("audio_converter_descriptor");
     if(acdf)
     {
       const AudioConverterDescriptor* descr;
@@ -280,32 +242,58 @@ int AudioConverterPlugin::incReferences(int val)
     }
   }
 
+  ++_references;
+
   if(!plugin)
   {
-    dlclose(_handle);
-    _handle = nullptr;
-    _references = 0;
-    ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::incReferences Error: %s no plugin!\n", fi.filePath().toLatin1().constData());
-    return 0;
+    ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::reference() Error: %s no plugin!\n",
+                       fi.filePath().toLocal8Bit().constData());
+    release();
+    return false;
   }
 
-  _references = newref;
+  return true;
+}
 
+//---------------------------------------------------------
+//   release
+//---------------------------------------------------------
+
+int AudioConverterPlugin::release()
+{
+  if(_references == 1)
+  {
+    // Attempt to unload the library.
+    // It will remain loaded if the plugin has shell plugins still in use or there are other references.
+    const bool ulres = _qlib.unload();
+    // Dummy usage stops unused warnings.
+    (void)ulres;
+    DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin::release(): No more instances. Result of unloading library %s: %d\n",
+      _qlib.fileName().toLocal8Bit().constData(), ulres);
+
+    _descriptorFunction = nullptr;
+    plugin = nullptr;
+  }
+  if(_references > 0)
+    --_references;
   return _references;
 }
 
-AudioConverterHandle AudioConverterPlugin::instantiate(AudioConverterPluginI* /*plugi*/, 
+AudioConverterHandle AudioConverterPlugin::instantiate(AudioConverterPluginI* /*plugi*/,
                                                        int systemSampleRate,
                                                        int channels, 
                                                        AudioConverterSettings* settings, 
                                                        AudioConverterSettings::ModeType mode)
 {
+  if(!reference())
+    return nullptr;
+
   DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin::instantiate\n");
   AudioConverterHandle h = plugin->instantiate(systemSampleRate, plugin, channels, settings, mode);
   if(!h)
   {
     ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::instantiate() Error: plugin:%s instantiate failed!\n", plugin->_name);
-    return 0;
+    return nullptr;
   }
 
   return h;
@@ -331,15 +319,13 @@ AudioConverterPluginI::~AudioConverterPluginI()
     {
       // Cleanup each of the converters.
       if(_plugin)
+      {
         _plugin->cleanup(handle[i]);
+        _plugin->release();
+      }
     }
     // Delete the array of converters.
     delete[] handle;
-  }
-  
-  if (_plugin)
-  {
-    _plugin->incReferences(-1);
   }
 }
 
@@ -368,12 +354,6 @@ bool AudioConverterPluginI::initPluginInstance(AudioConverterPlugin* plug,
   _plugin = plug;
   _channels = channels;
   
-  // We are creating an object from the library. Increment the references
-  //  so that the library may be opened.
-  if(_plugin->incReferences(1) == 0)
-    return true;
-
-
   QString inst("-" + QString::number(_plugin->instNo()));
   _name  = _plugin->name() + inst;
   _label = _plugin->label() + inst;
@@ -508,7 +488,7 @@ AudioConverterSettingsI::~AudioConverterSettingsI()
     if(_settings)
       _plugin->cleanupSettings(_settings);
     
-    _plugin->incReferences(-1);
+    _plugin->release();
   }
 }
 
@@ -525,14 +505,14 @@ void AudioConverterSettingsI::assign(const AudioConverterSettingsI& other)
   {
     // We are creating an object from the library. Increment the references
     //  so that the library may be opened.
-    if(_plugin->incReferences(1) == 0)
+    if(!_plugin->reference())
       return;
     
     _settings = _plugin->createSettings(false); // Don't care about isLocal argument.
     if(!_settings)
     {
       // Give up the reference.
-      _plugin->incReferences(-1);
+      _plugin->release();
       return;
     }
   }
@@ -553,14 +533,14 @@ bool AudioConverterSettingsI::initSettingsInstance(AudioConverterPlugin* plug, b
     
   // We are creating an object from the library. Increment the references
   //  so that the library may be opened.
-  if(_plugin->incReferences(1) == 0)
+  if(!_plugin->reference())
     return true;
   
   _settings = _plugin->createSettings(isLocal);
   if(!_settings)
   {
     // Give up the reference.
-    _plugin->incReferences(-1);
+    _plugin->release();
     return true;
   }
   

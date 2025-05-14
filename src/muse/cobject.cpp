@@ -211,7 +211,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 //        setParent(nullptr);
 //    }
 
-    DEBUG_LOADING_AND_CLEARING(stderr, "TopWin::TopWin:%p <%s>\n", this, typeName(_type).toUtf8().constData());
+    DEBUG_LOADING_AND_CLEARING(stderr, "TopWin::TopWin:%p <%s>\n", this, typeName(_type).toLocal8Bit().constData());
 
 #ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
     // Inform when destroyed.
@@ -224,9 +224,9 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 TopWin::~TopWin()
 {
-    DEBUG_COBJECT(stderr, "TopWin dtor: %s\n", objectName().toLatin1().constData());
+    DEBUG_COBJECT(stderr, "TopWin dtor: %s\n", objectName().toLocal8Bit().constData());
 
-    DEBUG_LOADING_AND_CLEARING(stderr, "~TopWin:%p <%s>\n", this, typeName(_type).toUtf8().constData());
+    DEBUG_LOADING_AND_CLEARING(stderr, "~TopWin:%p <%s>\n", this, typeName(_type).toLocal8Bit().constData());
 
     // Toolbars must be deleted explicitly to avoid memory leakage and corruption.
     // For some reason (toolbar sharing?) they are reparented and thus
@@ -411,7 +411,7 @@ void TopWin::writeStatus(int level, MusECore::Xml& xml) const
     else
         xml.strTag(level, "toolbars", saveState().toHex().data());
 
-    xml.tag(level, "/topwin");
+    xml.etag(--level, "topwin");
 }
 
 void TopWin::hide()
@@ -741,7 +741,7 @@ void TopWin::writeConfiguration(ToplevelType t, int level, MusECore::Xml& xml)
     xml.strTag(level, "nonshared_toolbars", _toolbarNonsharedInit[t].toHex().data());
     xml.strTag(level, "shared_toolbars", _toolbarSharedInit[t].toHex().data());
     xml.intTag(level, "default_subwin", _openTabbed[t]);
-    xml.etag(level, "topwin");
+    xml.etag(--level, "topwin");
 }
 
 void TopWin::finalizeInit()

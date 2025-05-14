@@ -1414,7 +1414,7 @@ void PianoRoll::writeConfiguration(int level, MusECore::Xml& xml)
       xml.intTag(level, "canvaswidth", _canvasWidthInit);
       xml.intTag(level, "colormode", (int)colorModeInit);
       TopWin::writeConfiguration(PIANO_ROLL, level, xml);
-      xml.etag(level, "pianoroll");
+      xml.etag(--level, "pianoroll");
       }
 
 //---------------------------------------------------------
@@ -1505,7 +1505,7 @@ void PianoRoll::writeStatus(int level, MusECore::Xml& xml) const
       xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ymag", vscroll->mag());
       xml.intTag(level, "ypos", vscroll->pos());
-      xml.tag(level, "/pianoroll");
+      xml.etag(--level, "pianoroll");
       }
 
 //---------------------------------------------------------
@@ -1992,7 +1992,7 @@ void PianoRoll::initShortcuts()
 void PianoRoll::execDeliveredScript(int id)
 {
       QString scriptfile = scripts.getScriptPath(id, true);
-      scripts.executeScript(this, scriptfile.toLatin1().data(), parts(), raster(), true);
+      scripts.executeScript(this, scriptfile, parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -2001,7 +2001,7 @@ void PianoRoll::execDeliveredScript(int id)
 void PianoRoll::execUserScript(int id)
 {
       QString scriptfile = scripts.getScriptPath(id, false);
-      scripts.executeScript(this, scriptfile.toLatin1().data(), parts(), raster(), true);
+      scripts.executeScript(this, scriptfile, parts(), raster(), true);
 }
 
 //---------------------------------------------------------

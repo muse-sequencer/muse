@@ -149,7 +149,7 @@ void Setlen::write_configuration(int level, MusECore::Xml& xml)
   xml.intTag(level, "range", _range);
   xml.intTag(level, "parts", _parts);
   xml.intTag(level, "len", len);
-  xml.tag(level, "/setlen");
+  xml.etag(--level, "setlen");
 }
 
 } // namespace MusEGui

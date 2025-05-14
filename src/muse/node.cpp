@@ -151,7 +151,7 @@ void MidiTrack::updateInternalSoloStates()
 {
   if(_nodeTraversed)         // Anti circular mechanism.
   {
-    fprintf(stderr, "MidiTrack::updateInternalSoloStates %s :\n  MusE Warning: Please check your routes: Circular path found!\n", name().toLatin1().constData());
+    fprintf(stderr, "MidiTrack::updateInternalSoloStates %s :\n  MusE Warning: Please check your routes: Circular path found!\n", name().toLocal8Bit().constData());
     return;
   }
   //if(this == _tmpSoloChainTrack)
@@ -173,7 +173,7 @@ void AudioTrack::updateInternalSoloStates()
 {
   if(_nodeTraversed)         // Anti circular mechanism.
   {
-    fprintf(stderr, "AudioTrack::updateInternalSoloStates %s :\n  MusE Warning: Please check your routes: Circular path found!\n", name().toLatin1().constData());
+    fprintf(stderr, "AudioTrack::updateInternalSoloStates %s :\n  MusE Warning: Please check your routes: Circular path found!\n", name().toLocal8Bit().constData());
     return;
   }
   //if(this == _tmpSoloChainTrack)
@@ -802,7 +802,7 @@ void AudioTrack::copyData(unsigned pos,
   // Previously only WaveTrack used them. (Changed WaveTrack as well).
 
   #ifdef NODE_DEBUG_PROCESS
-  fprintf(stderr, "MusE: AudioTrack::copyData name:%s processed:%d _haveData:%d\n", name().toLatin1().constData(), processed(), _haveData);
+  fprintf(stderr, "MusE: AudioTrack::copyData name:%s processed:%d _haveData:%d\n", name().toLocal8Bit().constData(), processed(), _haveData);
   #endif
 
   if(srcStartChan == -1)
@@ -1025,7 +1025,7 @@ void AudioTrack::copyData(unsigned pos,
     if(isOff)
     {
       #ifdef NODE_DEBUG_PROCESS
-      fprintf(stderr, "MusE: AudioTrack::copyData name:%s dstChannels:%d Off, zeroing buffers\n", name().toLatin1().constData(), availDstChannels);
+      fprintf(stderr, "MusE: AudioTrack::copyData name:%s dstChannels:%d Off, zeroing buffers\n", name().toLocal8Bit().constData(), availDstChannels);
       #endif
 
       // Track is off. Zero the supplied buffers.
@@ -1069,7 +1069,7 @@ void AudioTrack::copyData(unsigned pos,
     if(!getData(pos, srcTotalOutChans, nframes, buffer))
     {
       #ifdef NODE_DEBUG_PROCESS
-      fprintf(stderr, "MusE: AudioTrack::copyData name:%s srcTotalOutChans:%d zeroing buffers\n", name().toLatin1().constData(), srcTotalOutChans);
+      fprintf(stderr, "MusE: AudioTrack::copyData name:%s srcTotalOutChans:%d zeroing buffers\n", name().toLocal8Bit().constData(), srcTotalOutChans);
       #endif
 
       // No data was available. Track is not off. Zero the working buffers and continue on.
@@ -1338,38 +1338,6 @@ void AudioTrack::copyData(unsigned pos,
 }
 
 //---------------------------------------------------------
-//   readVolume
-//---------------------------------------------------------
-
-void AudioTrack::readVolume(Xml& xml)
-      {
-      for (;;) {
-            Xml::Token token = xml.parse();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return;
-                  case Xml::TagStart:
-                        xml.unknown("readVolume");
-                        break;
-                  case Xml::Text:
-                        setVolume(xml.s1().toDouble());
-                        break;
-                  case Xml::Attribut:
-                        if (xml.s1() == "ch")
-                              //ch = xml.s2().toInt();
-                              xml.s2();
-                        break;
-                  case Xml::TagEnd:
-                        if (xml.s1() == "volume")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
 //   setChannels
 //---------------------------------------------------------
 
@@ -1502,7 +1470,7 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
       // We want this (wave) track's input latency.
       const TrackLatencyInfo& li = getLatencyInfo(true /*input*/);
       route_worst_case_latency = li._inputLatency;
-      //li.dump(name().toLatin1().constData(), "AudioTrack::putFifo input");
+      //li.dump(name().toLocal8Bit().constData(), "AudioTrack::putFifo input");
     }
   }
         
@@ -1534,7 +1502,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       const bool use_latency_corr = useLatencyCorrection();
 
       #ifdef NODE_DEBUG_PROCESS
-      fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLatin1().constData(), channels, int(rl->size()));
+      fprintf(stderr, "AudioTrack::getData name:%s channels:%d inRoutes:%d\n", name().toLocal8Bit().constData(), channels, int(rl->size()));
       #endif
 
       int dst_ch, dst_chs, src_ch, src_chs, fin_dst_chs, next_chan, i;
@@ -1566,7 +1534,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
 
             #ifdef NODE_DEBUG_PROCESS
             fprintf(stderr, "    calling copy/addData on %s dst_ch:%d dst_chs:%d fin_dst_chs:%d src_ch:%d src_chs:%d ...\n",
-                    ir->track->name().toLatin1().constData(),
+                    ir->track->name().toLocal8Bit().constData(),
                     dst_ch, dst_chs, fin_dst_chs,
                     src_ch, src_chs);
             #endif
@@ -1720,7 +1688,7 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
       if(MusEGlobal::audio->isPlaying())
       {
         fprintf(stderr, "AudioInput::getData() name:%s\n",
-                name().toLatin1().constData());
+                name().toLocal8Bit().constData());
         for(int ch = 0; ch < _channels; ++ch)
         {
           fprintf(stderr, "channel:%d peak:", ch);
@@ -1773,11 +1741,11 @@ bool AudioInput::registerPorts(int idx)
       for (int i = b; i < e; ++i) {
             if (!jackPorts[i]) {
                   const QString s = QString("%1-%2").arg(name()).arg(i).left(127);
-                  jackPorts[i] = MusEGlobal::audioDevice->registerInPort(s.toLatin1().constData(), false);
+                  jackPorts[i] = MusEGlobal::audioDevice->registerInPort(s.toUtf8().constData(), false);
                   if(jackPorts[i])
                     res = true;
                   else
-                    fprintf(stderr, "AudioInput::registerPorts: Port <%s> registration FAILED !\n", s.toLatin1().constData());
+                    fprintf(stderr, "AudioInput::registerPorts: Port <%s> registration FAILED !\n", s.toLocal8Bit().constData());
                   }
             }
       return res;
@@ -1794,7 +1762,7 @@ void AudioInput::setName(const QString& s)
       const QString n("%1-%2");
       for (int i = 0; i < channels(); ++i) {
             if (jackPorts[i])
-                  MusEGlobal::audioDevice->setPortName(jackPorts[i], n.arg(name()).arg(i).left(127).toLatin1().constData());
+                  MusEGlobal::audioDevice->setPortName(jackPorts[i], n.arg(name()).arg(i).left(127).toUtf8().constData());
             }
       }
 
@@ -2070,7 +2038,7 @@ void AudioOutput::processInit(unsigned nframes)
 void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
 {
       #ifdef NODE_DEBUG_PROCESS
-      fprintf(stderr, "MusE: AudioOutput::process name:%s processed:%d\n", name().toLatin1().constData(), processed());
+      fprintf(stderr, "MusE: AudioOutput::process name:%s processed:%d\n", name().toLocal8Bit().constData(), processed());
       #endif
 
       for (int i = 0; i < _channels; ++i) {
@@ -2086,7 +2054,7 @@ void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
       if(MusEGlobal::audio->isPlaying())
       {
         fprintf(stderr, "AudioOutput::process() name:%s pos:%u offset:%u\n",
-                name().toLatin1().constData(), pos, offset);
+                name().toLocal8Bit().constData(), pos, offset);
         for(int ch = 0; ch < _channels; ++ch)
         {
           fprintf(stderr, "channel:%d peak:", ch);
@@ -2250,11 +2218,11 @@ bool AudioOutput::registerPorts(int idx)
       for (int i = b; i < e; ++i) {
             if (!jackPorts[i]) {
                   const QString s = QString("%1-%2").arg(name()).arg(i).left(127);
-                  jackPorts[i] = MusEGlobal::audioDevice->registerOutPort(s.toLatin1().constData(), false);
+                  jackPorts[i] = MusEGlobal::audioDevice->registerOutPort(s.toUtf8().constData(), false);
                   if(jackPorts[i])
                     res = true;
                   else
-                    fprintf(stderr, "AudioOutput::registerPorts: Port <%s> registration FAILED !\n", s.toLatin1().constData());
+                    fprintf(stderr, "AudioOutput::registerPorts: Port <%s> registration FAILED !\n", s.toLocal8Bit().constData());
                   }
             }
       return res;
@@ -2271,7 +2239,7 @@ void AudioOutput::setName(const QString& s)
       const QString n("%1-%2");
       for (int i = 0; i < channels(); ++i) {
             if (jackPorts[i])
-                  MusEGlobal::audioDevice->setPortName(jackPorts[i], n.arg(name()).arg(i).left(127).toLatin1().constData());
+                  MusEGlobal::audioDevice->setPortName(jackPorts[i], n.arg(name()).arg(i).left(127).toUtf8().constData());
             }
       }
 

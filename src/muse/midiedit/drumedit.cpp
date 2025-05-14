@@ -55,6 +55,7 @@
 #include "trackinfo_layout.h"
 #include "midi_editor_layout.h"
 #include "shortcuts.h"
+#include "libs/file/file.h"
 
 // Forwards from header:
 #include <QAction>
@@ -1233,7 +1234,7 @@ void DrumEdit::writeStatus(int level, MusECore::Xml& xml) const
       xml.intTag(level, "ymag", vscroll->mag());
       xml.intTag(level, "ypos", vscroll->pos());
       xml.intTag(level, "ignore_hide", _ignore_hide);
-      xml.tag(level, "/drumedit");
+      xml.etag(--level, "drumedit");
       }
 
 //---------------------------------------------------------
@@ -1361,7 +1362,7 @@ void DrumEdit::writeConfiguration(int level, MusECore::Xml& xml)
       xml.intTag(level, "dcanvaswidth", _dcanvasWidthInit);
       xml.intTag(level, "ignore_hide_init", _ignore_hide_init);
       TopWin::writeConfiguration(DRUM, level,xml);
-      xml.tag(level, "/drumedit");
+      xml.etag(--level, "drumedit");
       }
 
 //---------------------------------------------------------
@@ -1374,12 +1375,12 @@ void DrumEdit::load()
          this, tr("Muse: Load Drum Map"), 0);
       if (fn.isEmpty())
             return;
-      bool popenFlag;
-      FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
-      if (f == 0)
+      MusEFile::File f(fn, QString(".map"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::ReadOnly, this, true);
+      if (res != MusEFile::File::NoError)
             return;
 
-      MusECore::Xml xml(f);
+      MusECore::Xml xml(f.iodevice());
       int mode = 0;
       for (;;) {
             MusECore::Xml::Token token = xml.parse();
@@ -1417,10 +1418,7 @@ void DrumEdit::load()
                   }
             }
 ende:
-      if (popenFlag)
-            pclose(f);
-      else
-            fclose(f);
+      f.close();
       dlist->redraw();
       canvas->redraw();
       }
@@ -1435,20 +1433,17 @@ void DrumEdit::save()
         this, tr("MusE: Store Drum Map"));
       if (fn.isEmpty())
             return;
-      bool popenFlag;
-      FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "w", popenFlag, false, true);
-      if (f == 0)
+      MusEFile::File f(fn, QString(".map"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, true);
+      if (res != MusEFile::File::NoError)
             return;
-      MusECore::Xml xml(f);
+      MusECore::Xml xml(f.iodevice());
       xml.header();
       xml.tag(0, "muse version=\"1.0\"");
       writeDrumMap(1, xml, true);
       xml.tag(1, "/muse");
 
-      if (popenFlag)
-            pclose(f);
-      else
-            fclose(f);
+      f.close();
       }
 
 //---------------------------------------------------------
@@ -2213,7 +2208,7 @@ void DrumEdit::initShortcuts()
 void DrumEdit::execDeliveredScript(int id)
 {
       QString scriptfile = scripts.getScriptPath(id, true);
-      scripts.executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
+      scripts.executeScript(this, scriptfile, parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -2222,7 +2217,7 @@ void DrumEdit::execDeliveredScript(int id)
 void DrumEdit::execUserScript(int id)
 {
       QString scriptfile = scripts.getScriptPath(id, false);
-      scripts.executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
+      scripts.executeScript(this, scriptfile, parts(), raster(), true);
 }
 
 void DrumEdit::setStep(QString v)

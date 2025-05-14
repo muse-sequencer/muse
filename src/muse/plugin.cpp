@@ -24,7 +24,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <dlfcn.h>
 #include <string>
 #include "muse_math.h"
 #include <sys/stat.h>
@@ -37,6 +36,7 @@
 #include <QByteArray>
 #include <QComboBox>
 #include <QGroupBox>
+#include <QStringLiteral>
 
 #include "app.h"
 #include "globals.h"
@@ -56,6 +56,7 @@
 #include "pluginsettings.h"
 #include "switch.h"
 #include "hex_float.h"
+#include "libs/file/file.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -72,10 +73,8 @@
 #include <QScrollArea>
 #include <QHideEvent>
 #include <QAction>
-#include "xml.h"
 #include "plugin_list.h"
 #include "track.h"
-#include "plugin_scan.h"
 #include "doublelabel.h"
 
 #ifdef _WIN32
@@ -92,7 +91,7 @@ namespace MusEGlobal {
 MusECore::PluginList plugins;
 MusECore::PluginGroups plugin_groups;
 QList<QString> plugin_group_names;
-
+MusECore::MissingPluginList missingPlugins;
 }
 
 namespace MusECore {
@@ -627,10 +626,94 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
             *max = 1.0;
       }
 
+// NOTE: Some ladspa plugins put a web address as the label (lsp ladpsa plugins).
+// Although legal, the slashes are not good for folder names, and the long label is not good for display.
+// This function strips away any unusual characters and everything before them, like slashes etc.
+static QString stripPluginLabel(const QString& s)
+{
+  // The config name is empty. This will happen if an old song without the new plugin 'name' tag is loaded.
+  // No choice but to compose a name from the label, which must always exist.
+  const int sz = s.size();
+  int last_char = -1;
+  int first_char = -1;
+  int i = sz;
+  while(i > 0)
+  {
+    --i;
+    const QChar c = s.at(i);
+    // TODO: Check for other unusual characters?
+    if(c == '/')
+    {
+      if(last_char != -1)
+        break;
+      continue;
+    }
+
+    if(last_char == -1)
+      last_char = i;
+
+    first_char = i;
+  }
+
+  QString res;
+
+  // Nothing found? (That's an error.)
+  if(last_char == -1)
+    res = QString("unknown");
+  else
+    res = s.mid(first_char, last_char - first_char + 1);
+
+  return res;
+}
+
+// OBSOLETE. Keep for compatibility.
+static MusEPlugin::PluginType string2SynthType(const QString& type)
+{
+  if(type.isEmpty())
+    return MusEPlugin::PluginTypeNone;
+
+  if(type == "METRONOME")
+    return MusEPlugin::PluginTypeMETRONOME;
+
+  if(type == "MESS")
+    return MusEPlugin::PluginTypeMESS;
+
+  if(type == "DSSI")
+    return MusEPlugin::PluginTypeDSSI;
+
+  if(type == "Wine VST")
+    return MusEPlugin::PluginTypeDSSIVST;
+
+  if(type == "VST (synths)")
+    return MusEPlugin::PluginTypeLinuxVST;
+
+  if(type == "VST (effects)")
+    return MusEPlugin::PluginTypeLinuxVST;
+
+  if(type == "LV2 (synths)")
+    return MusEPlugin::PluginTypeLV2;
+
+  if(type == "LV2 (effects)")
+    return MusEPlugin::PluginTypeLV2;
+
+  if(type == "UNKNOWN")
+    return MusEPlugin::PluginTypeUnknown;
+
+  return MusEPlugin::PluginTypeUnknown;
+}
 
 //==============================================================
 //   BEGIN PluginQuirks
 //==============================================================
+
+PluginQuirks::PluginQuirks() :
+  _fixedSpeed(false),
+  _transportAffectsAudioLatency(false),
+  _overrideReportedLatency(false),
+  _latencyOverrideValue(0),
+  _fixNativeUIScaling(NatUISCaling::GLOBAL)
+  { }
+
 
 //---------------------------------------------------------
 //   write
@@ -713,45 +796,630 @@ bool PluginQuirks::fixNativeUIScaling() const {
             || _fixNativeUIScaling == NatUISCaling::ON);
 }
 
+void PluginQuirks::setFixNativeUIScaling(NatUISCaling fixScaling) { _fixNativeUIScaling = fixScaling; };
+
+PluginQuirks::NatUISCaling PluginQuirks::getFixNativeUIScaling() const { return _fixNativeUIScaling; };
+
 //==============================================================
 //   END PluginQuirks
 //==============================================================
 
+//---------------------------------------------------------
+//   BEGIN PluginControlConfig
+//---------------------------------------------------------
 
+PluginControlConfig::PluginControlConfig()
+{
+  _ctlnum = 0;
+  _val = 0.0f;
+  _min = 0.0f;
+  _max = 1.0f;
+  _valueType = MusECore::VAL_LINEAR;
+  _ctlMode = CtrlList::INTERPOLATE;
+  _valueUnit = -1;
+  _validMembers = NoneValid;
+}
+
+PluginControlConfig::PluginControlConfig(
+  int ctlnum, const QString& name, float val, float min, float max,
+  MusECore::CtrlValueType valueType, CtrlList::Mode mode, int valueUnit,
+  ValidMembers validMembers)
+{
+  _ctlnum = ctlnum;
+  _name = name;
+  _val = val;
+  _min = min;
+  _max = max;
+  _valueType = valueType;
+  _ctlMode = mode;
+  _valueUnit = valueUnit;
+  _validMembers = validMembers;
+}
+
+bool PluginControlConfig::write(int level, Xml& xml) const
+{
+  QString s("control");
+
+  // Do not store the control number if it is below 0 or if this configuration
+  //  is for a persistent pre-4 version synth or effect which never had it.
+  if(_ctlnum >= 0 && (_validMembers & CtlNumValid))
+    s += QString(" ctl=\"%1\"").arg(_ctlnum);
+
+  // Do not store the name if this configuration is for a
+  //  persistent pre-4 version synth which never had it.
+  if(_validMembers & NameValid)
+    s += QString(" name=\"%1\"").arg(Xml::xmlString(_name));
+
+  // Use hex value string when appropriate.
+  s += QString(" val=\"%1\"").arg(MusELib::museStringFromFloat(_val));
+
+  // Do not store these if this configuration is for a persistent pre-4 version
+  //  synth or effect which never had them.
+  if((_validMembers & MinValid) && (_validMembers & MaxValid) /*&& (_min != 0.0 || _max != 1.0)*/ )
+    s += QString(" min=\"%1\" max=\"%2\"")
+       // Use hex value string when appropriate.
+       .arg(MusELib::museStringFromFloat(_min))
+       .arg(MusELib::museStringFromFloat(_max));
+  if((_validMembers & ValueTypeValid) /*&& (_valueType != VAL_LINEAR)*/ )
+    s += QString(" valType=\"%1\"").arg(_valueType);
+  if((_validMembers & CtlModeValid) /*&& _ctlMode != CtrlList::INTERPOLATE)*/ )
+    s += QString(" ctlMode=\"%1\"").arg(_ctlMode);
+  if((_validMembers & ValueUnitValid) && (_valueUnit != -1) )
+    s += QString(" valUnit=\"%1\"").arg(_valueUnit);
+
+  xml.emptyTag(level, s);
+  return false;
+}
+
+//---------------------------------------------------------
+//   END PluginControlConfig
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+//   BEGIN PluginControlList
+//---------------------------------------------------------
+
+bool PluginControlList::read(Xml& xml)
+{
+      QString name;
+      float val = 0.0;
+      int ctlnum = -1;
+      float min = 0.0, max = 1.0;
+      CtrlValueType valType = VAL_LINEAR;
+      CtrlList::Mode ctrlMode = CtrlList::INTERPOLATE;
+      int valUnit = -1;
+      PluginControlConfig::ValidMembers validMembers = PluginControlConfig::NoneValid;
+
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return true;
+                  case Xml::TagStart:
+                        xml.unknown("PluginControlList");
+                        break;
+                  case Xml::Attribut:
+                        if (tag == "name")
+                        {
+                              name = xml.s2();
+                              validMembers |= PluginControlConfig::NameValid;
+                        }
+                        else if (tag == "ctl")
+                        {
+                              ctlnum = xml.s2().toInt();
+                              validMembers |= PluginControlConfig::CtlNumValid;
+                        }
+                        else if (tag == "val")
+                        {
+                              // Accept either decimal or hex value strings.
+                              val = MusELib::museStringToFloat(xml.s2());
+                        }
+                        else if (tag == "min")
+                        {
+                              // Accept either decimal or hex value strings.
+                              min = MusELib::museStringToFloat(xml.s2());
+                              validMembers |= PluginControlConfig::MinValid;
+                        }
+                        else if (tag == "max")
+                        {
+                              // Accept either decimal or hex value strings.
+                              max = MusELib::museStringToFloat(xml.s2());
+                              validMembers |= PluginControlConfig::MaxValid;
+                        }
+                        else if (tag == "valType")
+                        {
+                              valType = CtrlValueType(xml.s2().toInt());
+                              validMembers |= PluginControlConfig::ValueTypeValid;
+                        }
+                        else if (tag == "ctlMode")
+                        {
+                              ctrlMode = CtrlList::Mode(xml.s2().toInt());
+                              validMembers |= PluginControlConfig::CtlModeValid;
+                        }
+                        else if (tag == "valUnit")
+                        {
+                              valUnit = xml.s2().toInt();
+                              validMembers |= PluginControlConfig::ValueUnitValid;
+                        }
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "control") {
+                              // No control number found? (Song file versions < 4).
+                              // Make it the current size, which increases.
+                              if(ctlnum == -1)
+                              {
+                                ctlnum = size();
+                                validMembers |= PluginControlConfig::CtlNumValid;
+                              }
+                              insert(std::pair(ctlnum, PluginControlConfig(
+                                  ctlnum, name, val, min, max, valType, ctrlMode, valUnit, validMembers)));
+                              return false;
+                          }
+                        return true;
+                  default:
+                        break;
+                  }
+            }
+      return true;
+}
+
+bool PluginControlList::write(int level, Xml& xml) const
+{
+  for(ciPluginControlList ipcl = cbegin(); ipcl != cend(); ++ipcl)
+  {
+    const PluginControlConfig &cc = ipcl->second;
+    cc.write(level, xml);
+  }
+  return false;
+}
+
+//---------------------------------------------------------
+//   END PluginControlList
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+//   BEGIN PluginConfiguration
+//---------------------------------------------------------
+
+PluginConfiguration::PluginConfiguration()
+{
+  _pluginType = MusEPlugin::PluginTypeNone;
+  _fileVerMaj = _fileVerMin = -1;
+  // Initialize with -1 = no id.
+  _id = -1;
+  // The visible flags are false by default. Song file versions before 4 optimized this out.
+  _guiVisible = false;
+  _nativeGuiVisible = false;
+  // On and active are true by default. Song file versions before 4 optimized this out.
+  _on = true;
+  _active = true;
+}
+
+PluginConfiguration::~PluginConfiguration() { }
+
+void PluginConfiguration::writeProperties(int level, Xml& xml, bool isCopy, bool isFakeName) const
+{
+  //==============================================
+  // Save file or uri, label, and name basic info
+  //==============================================
+
+  // Do not store the plugin type if it is None or Unknown.
+  // The type tag was added in song file version 4.
+  // It will be PluginTypeNone if not found.
+  switch(_pluginType)
+  {
+    case MusEPlugin::PluginTypeLADSPA:
+    case MusEPlugin::PluginTypeDSSI:
+    case MusEPlugin::PluginTypeVST:
+    case MusEPlugin::PluginTypeDSSIVST:
+    case MusEPlugin::PluginTypeLinuxVST:
+    case MusEPlugin::PluginTypeLV2:
+    case MusEPlugin::PluginTypeMESS:
+    case MusEPlugin::PluginTypeMETRONOME:
+      xml.strTag(level, "type", MusEPlugin::pluginTypeToString(_pluginType));
+    break;
+
+    case MusEPlugin::PluginTypeNone:
+    case MusEPlugin::PluginTypeUnknown:
+    break;
+  }
+
+  if(_uri.isEmpty())
+    xml.strTag(level, "file", _file);
+  else
+    xml.strTag(level, "uri", _uri);
+
+  // To support plugins like dssi-vst where all the baseNames are the same 'dssi-vst' and the
+  //  label is the name of the dll file.
+  xml.strTag(level, "label", _pluginLabel);
+
+
+  // The name tag was added in song file version 4.0. If a fake name was chosen because the
+  //  plugin was missing and no name was found, do not save the name so that upon next load,
+  //  if the plugin is found, the real name can be used. Otherwise the fake name would
+  //  become permanent. The fake name is not ideal. It is based upon the plugin label,
+  //  which is something different.
+  if(!isFakeName)
+    xml.strTag(level, "name", _name);
+
+  // Include the plugin id number if desired.
+  if(isCopy && _id >= 0)
+    xml.intTag(level, "id", _id);
+
+  _stringParamMap.write(level, xml, "stringParam");
+
+  //=============================================================
+  // Save lv2 or vst plugin state custom data before controls
+  //=============================================================
+
+  if(!_accumulatedCustomParams.empty())
+  {
+    const unsigned long sz = _accumulatedCustomParams.size();
+    for(unsigned long i = 0; i < sz; ++i)
+    {
+      // FIXME: For some reason this does not print the first newline of cps,
+      //  which should exist (all the others do).
+      if(!_accumulatedCustomParams[i].isEmpty())
+        xml.strTag(level, "customData", _accumulatedCustomParams.at(i));
+    }
+  }
+
+  //=====================
+  // Save control values
+  //=====================
+
+  _initParams.write(level, xml);
+
+  //=======================
+  // Save other basic info
+  //=======================
+
+  xml.intTag(level, "active", _active);
+
+  xml.intTag(level, "on", _on);
+
+  _quirks.write(level, xml);
+
+  xml.intTag(level, "guiVisible", _guiVisible);
+
+  xml.qrectTag(level, "geometry", _geometry);
+
+  xml.intTag(level, "nativeGuiVisible", _nativeGuiVisible);
+
+  xml.qrectTag(level, "nativeGeometry", _nativeGeometry);
+
+  // If these are valid we need to preserve them for persistence.
+  if(_fileVerMaj >= 0 && _fileVerMin >= 0)
+    xml.strTag(level, "origFileVer", QString("%1.%2").arg(_fileVerMaj).arg(_fileVerMin));
+}
+
+//---------------------------------------------------------
+//   readProperties
+//---------------------------------------------------------
+
+bool PluginConfiguration::readProperties(Xml& xml, const Xml::Token& token)
+{
+  const QString& tag(xml.s1());
+  switch (token)
+  {
+    case Xml::TagStart:
+      // Tag 'id' was added in song file version 4.0
+      if (tag == "id")
+            _id = xml.parseInt();
+      else if (tag == "control")
+            _initParams.read(xml);
+      else if (tag == "active") {
+            _active = xml.parseInt();
+            }
+      else if (tag == "on") {
+            _on = xml.parseInt();
+            }
+      else if (tag == "quirks") {
+            PluginQuirks q;
+            if(!q.read(xml))
+              _quirks = q;
+            }
+      // OBSOLETE: Rack plugin 'gui' changed to 'guiVisible' to match synth.
+      else if (tag == "gui" || tag == "guiVisible") {
+            _guiVisible = xml.parseInt();
+            }
+      // OBSOLETE: Rack plugin 'nativegui' changed to 'nativeGuiVisible' to match synth.
+      else if (tag == "nativegui" || tag == "nativeGuiVisible") {
+            _nativeGuiVisible = xml.parseInt();
+            }
+      else if (tag == "geometry") {
+            _geometry = readGeometry(xml, tag);
+            }
+      else if (tag == "nativeGeometry") {
+            _nativeGeometry = readGeometry(xml, tag);
+            }
+      else if (tag == "customData") {
+            //just place tag contents in accumulatedCustomParams
+            const QString customData = xml.parse1();
+            if(!customData.isEmpty()){
+              _accumulatedCustomParams.push_back(customData);
+            }
+      }
+      // Check if any automation controllers are included in the XML (copy, drag-copy etc.).
+      else if (tag == "controller") {
+            MusECore::CtrlList* l = new MusECore::CtrlList();
+            if(l->read(xml) && l->id() >= 0)
+            {
+              // The controller's rack position bits will have already been stripped away by the write.
+              if(!_ctrlListList.add(l))
+              {
+                delete l;
+                fprintf(stderr, "PluginConfiguration::readProperties: Error: Could not add controller #%d!\n", l->id());
+              }
+            }
+            else
+            {
+              delete l;
+            }
+      }
+      // Check if any midi controller assignments are included in the XML (copy, drag-copy etc.).
+      else if (tag == "midiAssign")
+      {
+            // Pass null for the track. It will be filled in later by the caller.
+            // The mapping's controller rack position bits will have already been stripped away by the write.
+            _midiAudioCtrlMap.read(xml, nullptr);
+      }
+      // This is only present and used if loading an older song file that was re-saved
+      //  with a newer version and format, and the plugin was missing.
+      // Upon saving the file again, for persistent settings we need this info to determine
+      //  what (not) to save in the file.
+      else if (tag == "origFileVer")
+      {
+        const QString ver = xml.parse1();
+        _fileVerMaj = ver.section('.', 0, 0).toInt();
+        _fileVerMin = ver.section('.', 1, 1).toInt();
+      }
+
+      // OBSOLETE. Keep for compatibility.
+      else if (tag == "synthType")
+        _pluginType = string2SynthType(xml.parse1());
+      else if (tag == "type")
+        _pluginType = MusEPlugin::pluginStringToType(xml.parse1().toUtf8().constData());
+      // OBSOLETE. Keep for compatibility.
+      else if (tag == "class")
+        _file = xml.parse1();
+      else if (tag == "file")
+        _file = xml.parse1();
+      else if (tag == "uri")
+        _uri = xml.parse1();
+      else if (tag == "label")
+        _pluginLabel  = xml.parse1();
+      else if (tag == "name")
+        _name = xml.parse1();
+
+      // OBSOLETE. Keep for pre-4.0 songfile versions. From synth section.
+      else if (tag == "param") {
+        const double val = xml.parseDouble();
+        // Tag 'param' never had a control number.
+        // Make it the current size, which increases.
+        // Name, min, max, type, mode, and value unit index are all are dummy values.
+        // They are discarded when saving.
+        // They don't really matter because upon loading such a pre-4.0 songfile
+        //  and the plugin or synth is missing, all the corresponding automation
+        //  controllers will be hidden. The user is forbidden from seeing or editing
+        //  them because those values were not saved, thus the controller graphs
+        //  can't be displayed/scaled properly. The data values will/should never be
+        //  altered even though this information might be wrong. Saving preserves them.
+        const int ctlnum = _initParams.size();
+        _initParams.insert(std::pair(ctlnum, PluginControlConfig(
+          ctlnum, QString("param %1").arg(ctlnum),
+          val, 0.0, 1.0, VAL_LINEAR, CtrlList::INTERPOLATE, -1,
+          PluginControlConfig::CtlNumValid)));
+      }
+      else if (tag == "control")
+        _initParams.read(xml);
+      else if (tag == "stringParam")
+        _stringParamMap.read(xml, tag);
+      else
+      {
+        // The tag was not handled. Return false.
+        return false;
+      }
+      break;
+
+    case Xml::Attribut:
+      // OBSOLETE: Following attributes obsolete as of song file version 4. Moved into tags.
+      if (tag == "type")
+            _pluginType = MusEPlugin::pluginStringToType(xml.s2().toUtf8().constData());
+      else if (tag == "file")
+            _file = xml.s2();
+      else if (tag == "uri")
+            _uri = xml.s2();
+      else if (tag == "label")
+            _pluginLabel = xml.s2();
+      else if (tag == "name")
+            _name = xml.s2();
+      else
+        // The attribute was not handled. Return false.
+        return false;
+      break;
+
+    default:
+        // The attribute was not handled. Return false.
+        return false;
+      break;
+  }
+
+  // The tag was handled. Return true.
+  return true;
+}
+
+//---------------------------------------------------------
+//   END PluginConfiguration
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+//   BEGIN MissingPluginStruct
+//---------------------------------------------------------
+MissingPluginStruct::MissingPluginStruct()
+{
+  _type = MusEPlugin::PluginTypeNone;
+  _effectInstCount = _synthInstCount = _effectInstNo = _synthInstNo = 0;
+}
+
+int MissingPluginStruct::effectInstNo() { return _effectInstNo++; }
+int MissingPluginStruct::synthInstNo() { return _synthInstNo++; }
+
+MissingPluginList::iterator MissingPluginList::find(
+  MusEPlugin::PluginTypes_t types, const QString& file, const QString& uri, const QString& label)
+{
+  const bool f_empty = file.isEmpty();
+  const bool u_empty = uri.isEmpty();
+  const bool l_empty = label.isEmpty();
+  for (iterator i = begin(); i != end(); ++i)
+  {
+    if ( (!u_empty || f_empty || file == (*i)._file) &&
+         (u_empty || uri == (*i)._uri) &&
+         (!u_empty || l_empty || label == (*i)._label) &&
+         (types & (*i)._type))
+          return i;
+  }
+  return end();
+}
+
+MissingPluginStruct& MissingPluginList::add(
+  MusEPlugin::PluginType type, const QString& file, const QString& uri, const QString& label, bool isSynth)
+{
+  iterator i = find(type, file, uri, label);
+  if(i == end())
+  {
+    MissingPluginStruct mps;
+    mps._type = type;
+    mps._file = file;
+    mps._uri = uri;
+    mps._label = label;
+    push_back(mps);
+    return back();
+  }
+  MissingPluginStruct& mps = *i;
+  if(isSynth)
+    ++mps._synthInstCount;
+  else
+    ++mps._effectInstCount;
+  return mps;
+}
+
+//---------------------------------------------------------
+//   END MissingPluginStruct
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+//   BEGIN PluginBase
+//---------------------------------------------------------
+
+PluginBase::PluginBase()
+{
+  _pluginType = MusEPlugin::PluginTypeNone;
+  _pluginClass = MusEPlugin::PluginClassNone;
+  _requiredFeatures = MusEPlugin::PluginNoFeatures;
+  _freewheelPortIndex = 0;
+  _latencyPortIndex = 0;
+  _enableOrBypassPortIndex = 0;
+  _pluginBypassType = MusEPlugin::PluginBypassTypeEmulatedEnableFunction;
+  _pluginLatencyReportingType = MusEPlugin::PluginLatencyTypeNone;
+  _pluginFreewheelType = MusEPlugin::PluginFreewheelTypeNone;
+  _usesTimePosition = false;
+  _uniqueID   = 0;
+  _references = 0;
+}
+
+PluginBase::PluginBase(const MusEPlugin::PluginScanInfoStruct& info)
+{
+  _pluginType = info._type;
+  _pluginClass = info._class;
+  _requiredFeatures = info._requiredFeatures;
+  _usesTimePosition = info._pluginFlags & MusEPlugin::PluginSupportsTimePosition;
+  _freewheelPortIndex = info._freewheelPortIdx;
+  _latencyPortIndex = info._latencyPortIdx;
+  _enableOrBypassPortIndex = info._enableOrBypassPortIdx;
+  _pluginBypassType = info._pluginBypassType;
+  _pluginLatencyReportingType = info._pluginLatencyReportingType;
+  _pluginFreewheelType = info._pluginFreewheelType;
+  _references = 0;
+  _fileInfo = QFileInfo(PLUGIN_GET_QSTRING(info.filePath()));
+  _uniqueID = info._uniqueID;
+  _uri = PLUGIN_GET_QSTRING(info._uri);
+  _name = PLUGIN_GET_QSTRING(info._name);
+  _label = PLUGIN_GET_QSTRING(info._label);
+  _maker = PLUGIN_GET_QSTRING(info._maker);
+  _description = PLUGIN_GET_QSTRING(info._description);
+  _version = PLUGIN_GET_QSTRING(info._version);
+  _copyright = PLUGIN_GET_QSTRING(info._copyright);
+
+  // Hack: Blacklist vst plugins in-place, configurable for now.
+  if(_pluginType == MusEPlugin::PluginTypeDSSIVST && !MusEGlobal::config.vstInPlace)
+    _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
+}
+
+PluginBase::~PluginBase() {}
+
+// Static.
+void PluginBase::dump(const MusEPlugin::PluginScanInfoStruct& info, const char* prefixMessage)
+{
+  fprintf(stderr, "%s plugin:%s type:%s class:%s name:%s label:%s required features:%d\n",
+          prefixMessage,
+          PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+          QString(MusEPlugin::pluginTypeToString(info._type)).toLocal8Bit().constData(),
+          QString(MusEPlugin::pluginClassToString(info._class)).toLocal8Bit().constData(),
+          PLUGIN_GET_QSTRING(info._name).toLocal8Bit().constData(),
+          PLUGIN_GET_QSTRING(info._label).toLocal8Bit().constData(),
+          info._requiredFeatures);
+}
+
+MusEPlugin::PluginType PluginBase::pluginType() const { return _pluginType; }
+MusEPlugin::PluginClass_t PluginBase::pluginClass() const { return _pluginClass; }
+MusEPlugin::PluginFeatures_t PluginBase::requiredFeatures() const { return _requiredFeatures; }
+QString PluginBase::uri() const                       { return _uri; }
+QString PluginBase::name() const                      { return _name; }
+QString PluginBase::maker() const                     { return _maker; }
+QString PluginBase::description() const               { return _description; }
+QString PluginBase::version() const                   { return _version; }
+QString PluginBase::label() const                     { return _label; }
+QString PluginBase::copyright() const                 { return _copyright; }
+QString PluginBase::completeBaseName() const          { return _fileInfo.completeBaseName(); }
+QString PluginBase::baseName() const                  { return _fileInfo.baseName(); }
+QString PluginBase::absolutePath() const              { return _fileInfo.absolutePath(); }
+QString PluginBase::path() const                      { return _fileInfo.path(); }
+QString PluginBase::filePath() const                  { return _fileInfo.filePath(); }
+QString PluginBase::fileName() const                  { return _fileInfo.fileName(); }
+
+unsigned long PluginBase::id() const                  { return _uniqueID; }
+int PluginBase::references() const                    { return _references; }
+
+bool PluginBase::usesTimePosition() const            { return _usesTimePosition; }
+unsigned long PluginBase::freewheelPortIndex() const { return _freewheelPortIndex; }
+unsigned long PluginBase::latencyPortIndex() const   { return _latencyPortIndex; }
+unsigned long PluginBase::enableOrBypassPortIndex() const    { return _enableOrBypassPortIndex; }
+MusEPlugin::PluginLatencyReportingType PluginBase::pluginLatencyReportingType() const { return _pluginLatencyReportingType; }
+MusEPlugin::PluginBypassType PluginBase::pluginBypassType() const { return _pluginBypassType; }
+MusEPlugin::PluginFreewheelType PluginBase::pluginFreewheelType() const { return _pluginFreewheelType; }
+float PluginBase::getPluginLatency(void* /*handle*/) { return 0.0; }
+
+//---------------------------------------------------------
+//   END PluginBase
+//---------------------------------------------------------
 
 //---------------------------------------------------------
 //   Plugin
 //---------------------------------------------------------
 
-Plugin::Plugin()
+Plugin::Plugin() : PluginBase()
 {
-  _isDssi = false;
-  _isDssiSynth = false;
-  _isDssiVst = false;
-  _isLV2Plugin = false;
-  _isLV2Synth = false;
-  _isVstNativePlugin = false;
-  _isVstNativeSynth = false;
-  _requiredFeatures = PluginNoFeatures;
-  _usesTimePosition = false;
-  _freewheelPortIndex = 0;
-  _latencyPortIndex = 0;
-  _enableOrBypassPortIndex = 0;
-  _pluginBypassType = PluginBypassTypeEmulatedEnableFunction;
-  _pluginLatencyReportingType = PluginLatencyTypeNone;
-  _pluginFreewheelType = PluginFreewheelTypeNone;
-
   #ifdef DSSI_SUPPORT
   dssi_descr = nullptr;
   #endif
 
   plugin = nullptr;
   ladspa = nullptr;
-  _handle = nullptr;
-  _references = 0;
   _instNo     = 0;
-  _uniqueID   = 0;
-
   _portCount  = 0;
   _inports = 0;
   _outports = 0;
@@ -760,50 +1428,15 @@ Plugin::Plugin()
 }
 
 Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
- : Plugin()
+ : PluginBase(info)
 {
-  _requiredFeatures = info._requiredFeatures;
-  
-  switch(info._type)
-  {
-    case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
-    break;
-    
-    case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
-    {
-      _isDssi = true;
-      if(info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
-        _isDssiSynth = true;
-    }
-    break;
-    
-    case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
-    {
-      _isDssi = true;
-      _isDssiVst = true;
-      if(info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
-        _isDssiSynth = true;
-    }
-    break;
-    
-    case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
-    case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
-    case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
-    case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
-    case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
-    case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
-    case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
-    break;
-  }
-  
-  fi = QFileInfo(PLUGIN_GET_QSTRING(info.filePath()));
-  _uri = PLUGIN_GET_QSTRING(info._uri);
+  #ifdef DSSI_SUPPORT
+  dssi_descr = nullptr;
+  #endif
 
-  _label = PLUGIN_GET_QSTRING(info._label);
-  _name = PLUGIN_GET_QSTRING(info._name);
-  _uniqueID = info._uniqueID;
-  _maker = PLUGIN_GET_QSTRING(info._maker);
-  _copyright = PLUGIN_GET_QSTRING(info._copyright);
+  plugin = nullptr;
+  ladspa = nullptr;
+  _instNo     = 0;
 
   _portCount = info._portCount;
 
@@ -811,136 +1444,96 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
   _outports = info._outports;
   _controlInPorts = info._controlInPorts;
   _controlOutPorts = info._controlOutPorts;
-
-  // Hack: Blacklist vst plugins in-place, configurable for now.
-  if(_isDssiVst && !MusEGlobal::config.vstInPlace)
-    _requiredFeatures |= PluginNoInPlaceProcessing;
-  
-  _usesTimePosition = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::SupportsTimePosition;
-
-  _freewheelPortIndex = info._freewheelPortIdx;
-  _pluginFreewheelType = info._pluginFreewheelType;
-
-  _latencyPortIndex = info._latencyPortIdx;
-  _pluginLatencyReportingType = info._pluginLatencyReportingType;
-
-    _enableOrBypassPortIndex = info._enableOrBypassPortIdx;
-  _pluginBypassType = info._pluginBypassType;
 }
 
 Plugin::~Plugin()
 {
-  if(plugin && !isLV2Plugin() && !isVstNativePlugin())
+  if(plugin &&
+     pluginType() != MusEPlugin::PluginTypeLV2 && pluginType() != MusEPlugin::PluginTypeLinuxVST)
   //  delete plugin;
     printf("Plugin::~Plugin Error: plugin is not NULL\n");
 }
 
-//---------------------------------------------------------
-//   incReferences
-//---------------------------------------------------------
-
-int Plugin::incReferences(int val)
+bool Plugin::reference()
 {
-  #ifdef PLUGIN_DEBUGIN
-  fprintf(stderr, "Plugin::incReferences _references:%d val:%d\n", _references, val);
-  #endif
-
-  int newref = _references + val;
-
-  if(newref <= 0)
+  if(_references == 0)
   {
-    _references = 0;
-    if(_handle)
+    _qlib.setFileName(filePath());
+    // Same as dlopen RTLD_NOW.
+    _qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    if(!_qlib.load())
     {
-      #ifdef PLUGIN_DEBUGIN
-      fprintf(stderr, "Plugin::incReferences no more instances, closing library\n");
-      #endif
-
-      dlclose(_handle);
+      fprintf(stderr, "Plugin::reference(): load (%s) failed: %s\n",
+        _qlib.fileName().toLocal8Bit().constData(), _qlib.errorString().toLocal8Bit().constData());
+      return false;
     }
 
-    _handle = nullptr;
-    ladspa = nullptr;
-    plugin = nullptr;
-    rpIdx.clear();
-
-    #ifdef DSSI_SUPPORT
-    dssi_descr = nullptr;
-    #endif
-
-    return 0;
-  }
-
-  if(_handle == nullptr)
-  {
-    _handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
-
-    if(_handle == 0)
+    switch(pluginType())
     {
-      fprintf(stderr, "Plugin::incReferences dlopen(%s) failed: %s\n",
-              fi.filePath().toLatin1().constData(), dlerror());
-      return 0;
-    }
-
-    #ifdef DSSI_SUPPORT
-    DSSI_Descriptor_Function dssi = (DSSI_Descriptor_Function)dlsym(_handle, "dssi_descriptor");
-    if(dssi)
-    {
-      const DSSI_Descriptor* descr;
-      for(unsigned long i = 0;; ++i)
+      case MusEPlugin::PluginTypeLADSPA:
       {
-        descr = dssi(i);
-        if(descr == nullptr)
-          break;
-
-        QString label(descr->LADSPA_Plugin->Label);
-        if(label == _label)
+        LADSPA_Descriptor_Function ladspadf = (LADSPA_Descriptor_Function)_qlib.resolve("ladspa_descriptor");
+        if(ladspadf)
         {
-          _isDssi = true;
-          ladspa = nullptr;
-          dssi_descr = descr;
-          plugin = descr->LADSPA_Plugin;
-          break;
-        }
-      }
-    }
-    else
-    #endif // DSSI_SUPPORT
-    {
-      LADSPA_Descriptor_Function ladspadf = (LADSPA_Descriptor_Function)dlsym(_handle, "ladspa_descriptor");
-      if(ladspadf)
-      {
-        const LADSPA_Descriptor* descr;
-        for(unsigned long i = 0;; ++i)
-        {
-          descr = ladspadf(i);
-          if(descr == nullptr)
-            break;
-
-          QString label(descr->Label);
-          if(label == _label)
+          const LADSPA_Descriptor* descr;
+          for(unsigned long i = 0;; ++i)
           {
-            _isDssi = false;
-            ladspa = ladspadf;
-            plugin = descr;
+            descr = ladspadf(i);
+            if(descr == nullptr)
+              break;
 
-            #ifdef DSSI_SUPPORT
-            dssi_descr = nullptr;
-            #endif
+            QString label(descr->Label);
+            if(label == _label)
+            {
+              ladspa = ladspadf;
+              plugin = descr;
 
-            break;
+              #ifdef DSSI_SUPPORT
+              dssi_descr = nullptr;
+              #endif
+
+              break;
+            }
           }
         }
       }
+      break;
+
+      case MusEPlugin::PluginTypeDSSI:
+      case MusEPlugin::PluginTypeDSSIVST:
+      {
+        #ifdef DSSI_SUPPORT
+        DSSI_Descriptor_Function dssi = (DSSI_Descriptor_Function)_qlib.resolve("dssi_descriptor");
+        if(dssi)
+        {
+          const DSSI_Descriptor* descr;
+          for(unsigned long i = 0;; ++i)
+          {
+            descr = dssi(i);
+            if(descr == nullptr)
+              break;
+
+            QString label(descr->LADSPA_Plugin->Label);
+            if(label == _label)
+            {
+              ladspa = nullptr;
+              dssi_descr = descr;
+              plugin = descr->LADSPA_Plugin;
+              break;
+            }
+          }
+        }
+        #endif
+      }
+      break;
+
+      default:
+        return false;
+      break;
     }
 
     if(plugin != nullptr)
     {
-      _name = QString(plugin->Name);
-      _uniqueID = plugin->UniqueID;
-      _maker = QString(plugin->Maker);
-      _copyright = QString(plugin->Copyright);
-
       _portCount = plugin->PortCount;
 
       _inports = 0;
@@ -978,24 +1571,126 @@ int Plugin::incReferences(int val)
       }
 
       // Hack: Blacklist vst plugins in-place, configurable for now.
-      if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-        _requiredFeatures |= PluginNoInPlaceProcessing;
+      if ((_inports != _outports) ||
+          (pluginType() == MusEPlugin::PluginTypeDSSIVST && !MusEGlobal::config.vstInPlace))
+        _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
     }
   }
 
+  ++_references;
+
   if(plugin == nullptr)
   {
-    dlclose(_handle);
-    _handle = 0;
-    _references = 0;
-    fprintf(stderr, "Plugin::incReferences Error: %s no plugin!\n", fi.filePath().toLatin1().constData());
-    return 0;
+    fprintf(stderr, "Plugin::reference(): Error: %s no plugin!\n", plugin->Label);
+    release();
+    return false;
   }
 
-  _references = newref;
+  return true;
+}
 
+//---------------------------------------------------------
+//   release
+//---------------------------------------------------------
+
+int Plugin::release()
+{
+  #ifdef PLUGIN_DEBUGIN
+  fprintf(stderr, "Plugin::release() references:%d\n", _references);
+  #endif
+
+  // Only LADSPA or DSSI or DSSIVST are handled here. Others override this function.
+  switch(pluginType())
+  {
+    case MusEPlugin::PluginTypeLADSPA:
+    case MusEPlugin::PluginTypeDSSI:
+    case MusEPlugin::PluginTypeDSSIVST:
+    break;
+
+    case MusEPlugin::PluginTypeLV2:
+    case MusEPlugin::PluginTypeLinuxVST:
+    case MusEPlugin::PluginTypeVST:
+    case MusEPlugin::PluginTypeMESS:
+    case MusEPlugin::PluginTypeMETRONOME:
+    case MusEPlugin::PluginTypeNone:
+    case MusEPlugin::PluginTypeUnknown:
+      fprintf(stderr, "Error: Plugin::release(): Plugin type:%d is not LADSPA or DSSI or DSSIVST. "
+             "_references:%d\n", pluginType(), _references);
+      return 0;
+    break;
+  }
+
+  if(_references == 1)
+  {
+    // Attempt to unload the library.
+    // It will remain loaded if the plugin has shell plugins still in use or there are other references.
+    const bool ulres = _qlib.unload();
+    // Dummy usage stops unused warnings.
+    (void)ulres;
+    #ifdef PLUGIN_DEBUGIN
+    fprintf(stderr, "Plugin::release(): No more instances. Result of unloading library %s: %d\n",
+      _qlib.fileName().toLocal8Bit().constData(), ulres);
+    #endif
+
+    ladspa = nullptr;
+    plugin = nullptr;
+    rpIdx.clear();
+
+    #ifdef DSSI_SUPPORT
+    dssi_descr = nullptr;
+    #endif
+  }
+  if(_references > 0)
+    --_references;
   return _references;
 }
+
+QString Plugin::lib(bool complete) const             { return complete ? _fileInfo.completeBaseName() : _fileInfo.baseName(); } // ddskrjo const
+QString Plugin::dirPath(bool complete) const         { return complete ? _fileInfo.absolutePath() : _fileInfo.path(); }
+int Plugin::instNo()                                 { return _instNo++;        }
+
+void Plugin::activate(LADSPA_Handle handle) {
+      if (plugin && plugin->activate)
+            plugin->activate(handle);
+      }
+void Plugin::deactivate(LADSPA_Handle handle) {
+      if (plugin && plugin->deactivate)
+            plugin->deactivate(handle);
+      }
+void Plugin::cleanup(LADSPA_Handle handle) {
+      if (plugin && plugin->cleanup)
+            plugin->cleanup(handle);
+      }
+void Plugin::connectPort(LADSPA_Handle handle, unsigned long port, float* value) {
+      if(plugin)
+        plugin->connect_port(handle, port, value);
+      }
+
+unsigned long Plugin::ports() { return _portCount; }
+
+LADSPA_PortDescriptor Plugin::portd(unsigned long k) const {
+      return plugin ? plugin->PortDescriptors[k] : 0;
+      }
+
+// This version of range does not apply any changes, such as sample rate, to the bounds.
+// The information returned is verbose. See the other range() which does apply changes.
+LADSPA_PortRangeHint Plugin::range(unsigned long i) const {
+      // FIXME:
+      //return plugin ? plugin->PortRangeHints[i] : 0; DELETETHIS
+      return plugin->PortRangeHints[i];
+      }
+
+const char* Plugin::portName(unsigned long i) const {
+      return plugin ? plugin->PortNames[i] : 0;
+      }
+
+unsigned long Plugin::inports() const         { return _inports; }
+unsigned long Plugin::outports() const        { return _outports; }
+unsigned long Plugin::controlInPorts() const  { return _controlInPorts; }
+unsigned long Plugin::controlOutPorts() const { return _controlOutPorts; }
+
+const std::vector<unsigned long>* Plugin::getRpIdx() { return &rpIdx; }
+
 
 //---------------------------------------------------------
 //   range
@@ -1043,19 +1738,10 @@ const CtrlVal::CtrlEnumValues* Plugin::ctrlEnumValues ( unsigned long ) const
 QString Plugin::unitSymbol ( unsigned long ) const { return QString(); }
 int Plugin::valueUnit ( unsigned long ) const { return -1; }
 
-bool Plugin::usesTimePosition() const            { return _usesTimePosition; }
-unsigned long Plugin::freewheelPortIndex() const { return _freewheelPortIndex; }
-unsigned long Plugin::latencyPortIndex() const   { return _latencyPortIndex; }
-unsigned long Plugin::enableOrBypassPortIndex() const    { return _enableOrBypassPortIndex; }
-PluginLatencyReportingType Plugin::pluginLatencyReportingType() const { return _pluginLatencyReportingType; }
-PluginBypassType Plugin::pluginBypassType() const { return _pluginBypassType; }
-PluginFreewheelType Plugin::pluginFreewheelType() const { return _pluginFreewheelType; }
-float Plugin::getPluginLatency(void* /*handle*/) { return 0.0; }
-
 void Plugin::apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/)
 {
 #ifdef DSSI_SUPPORT
-  if(isDssiPlugin() && dssi_descr)
+  if(dssi_descr && (pluginType() == MusEPlugin::PluginTypeDSSI || pluginType() == MusEPlugin::PluginTypeDSSIVST))
   {
     if(dssi_descr->run_synth)
     {
@@ -1073,6 +1759,10 @@ void Plugin::apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/
 //---------------------------------------------------------
 //   PluginGroups
 //---------------------------------------------------------
+
+QSet<int>& PluginGroups::get(QString a, QString b) { return (*this)[(QPair<QString,QString>(a,b))]; }
+QSet<int>& PluginGroups::get(const Plugin *p)
+  { return (*this)[(QPair<QString,QString>(p->uri().isEmpty() ? p->lib() : p->uri(), p->label()))]; }
 
 void PluginGroups::shift_left(int first, int last)
 {
@@ -1118,60 +1808,66 @@ void initPlugins()
   {
     const MusEPlugin::PluginScanInfoRef inforef = *isl;
     const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
+    const QString inf_cbname = PLUGIN_GET_QSTRING(info._completeBaseName);
+    const QString inf_uri = PLUGIN_GET_QSTRING(info._uri);
+    const QString inf_label = PLUGIN_GET_QSTRING(info._label);
+    const QString inf_filepath = PLUGIN_GET_QSTRING(info.filePath());
     switch(info._type)
     {
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
+      case MusEPlugin::PluginTypeLADSPA:
       {
         if(MusEGlobal::loadPlugins)
         {
           // Make sure it doesn't already exist.
           if(const Plugin* pl = MusEGlobal::plugins.find(
-            PLUGIN_GET_QSTRING(info._completeBaseName),
-            PLUGIN_GET_QSTRING(info._uri),
-            PLUGIN_GET_QSTRING(info._label)))
+            info._type,
+            inf_cbname,
+            inf_uri,
+            inf_label))
           {
             fprintf(stderr, "Ignoring LADSPA effect label:%s uri:%s path:%s duplicate of path:%s\n",
-                    PLUGIN_GET_CSTRING(info._label),
-                    PLUGIN_GET_CSTRING(info._uri),
-                    PLUGIN_GET_CSTRING(info.filePath()),
-                    pl->filePath().toLatin1().constData());
+                    inf_label.toLocal8Bit().constData(),
+                    inf_uri.toLocal8Bit().constData(),
+                    inf_filepath.toLocal8Bit().constData(),
+                    pl->filePath().toLocal8Bit().constData());
           }
           else
           {
             if(MusEGlobal::debugMsg)
-              info.dump(message);
+              PluginBase::dump(info, message);
             MusEGlobal::plugins.add(info);
           }
         }
       }
       break;
       
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
+      case MusEPlugin::PluginTypeDSSI:
+      case MusEPlugin::PluginTypeDSSIVST:
       {
 #ifdef DSSI_SUPPORT
         if(MusEGlobal::loadDSSI)
         {
           // Allow both effects and instruments for now.
-          if(info._class & MusEPlugin::PluginScanInfoStruct::PluginClassEffect ||
-             info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
+          if(info._class & MusEPlugin::PluginClassEffect ||
+             info._class & MusEPlugin::PluginClassInstrument)
           {
             // Make sure it doesn't already exist.
             if(const Plugin* pl = MusEGlobal::plugins.find(
-              PLUGIN_GET_QSTRING(info._completeBaseName),
-              PLUGIN_GET_QSTRING(info._uri),
-              PLUGIN_GET_QSTRING(info._label)))
+              info._type,
+              inf_cbname,
+              inf_uri,
+              inf_label))
             {
               fprintf(stderr, "Ignoring DSSI effect label:%s uri:%s path:%s duplicate of path:%s\n",
-                      PLUGIN_GET_CSTRING(info._label),
-                      PLUGIN_GET_CSTRING(info._uri),
-                      PLUGIN_GET_CSTRING(info.filePath()),
-                      pl->filePath().toLatin1().constData());
+                      inf_label.toLocal8Bit().constData(),
+                      inf_uri.toLocal8Bit().constData(),
+                      inf_filepath.toLocal8Bit().constData(),
+                      pl->filePath().toLocal8Bit().constData());
             }
             else
             {
               if(MusEGlobal::debugMsg)
-                info.dump(message);
+                PluginBase::dump(info, message);
               MusEGlobal::plugins.add(info);
             }
           }
@@ -1180,13 +1876,13 @@ void initPlugins()
       }
       break;
       
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
+      case MusEPlugin::PluginTypeVST:
+      case MusEPlugin::PluginTypeLV2:
+      case MusEPlugin::PluginTypeLinuxVST:
+      case MusEPlugin::PluginTypeMESS:
+      case MusEPlugin::PluginTypeMETRONOME:
+      case MusEPlugin::PluginTypeUnknown:
+      case MusEPlugin::PluginTypeNone:
       break;
     }
   }
@@ -1196,19 +1892,28 @@ void initPlugins()
 //   find
 //---------------------------------------------------------
 
-Plugin* PluginList::find(const QString& file, const QString& uri, const QString& label) const
+PluginList::PluginList() {}
+
+void PluginList::add(const MusEPlugin::PluginScanInfoStruct& scan_info)
+{ push_back(new Plugin(scan_info)); }
+
+Plugin* PluginList::find(
+  MusEPlugin::PluginTypes_t types, const QString& file,
+  const QString& uri, const QString& label) const
       {
       const bool f_empty = file.isEmpty();
       const bool u_empty = uri.isEmpty();
       const bool l_empty = label.isEmpty();
-      for (ciPlugin i = begin(); i != end(); ++i) {
-            if ( (!u_empty || f_empty || file  == (*i)->lib()) &&
-                 (u_empty  || uri   == (*i)->uri()) &&
-                 (!u_empty || l_empty || label == (*i)->label()))
+      for (ciPlugin i = cbegin(); i != cend(); ++i) {
+            const Plugin *pi = *i;
+            if ( (!u_empty || f_empty || file  == pi->lib()) &&
+                 (u_empty  || uri   == pi->uri()) &&
+                 (!u_empty || l_empty || label == pi->label()) &&
+                 (types & pi->pluginType()))
                   return *i;
             }
 
-      return 0;
+      return nullptr;
       }
 
 //---------------------------------------------------------
@@ -1242,22 +1947,57 @@ Pipeline::Pipeline(const Pipeline& p, AudioTrack* t)
         PluginI* pli = p[i];
         if(pli)
         {
+          // Get the existing plugin's configuration.
+          PluginConfiguration pc = pli->getConfiguration();
+          // Deliberately clear the existing plugin name so that initPluginInstance()
+          //  will choose a new unique name. (Otherwise it would copy the existing name.)
+          pc._name.clear();
+          // Create a PluginI to be a copy of the existing plugin.
+          PluginI* new_pl = new PluginI();
+          // Now set the new plugin's initial configuration from the existing one.
+          new_pl->setInitialConfiguration(pc);
+
+          // Get the underlying plugin, which can be null.
           Plugin* pl = pli->plugin();
-          if(pl)
+
+          // Initialize the plugin instance. If the underlying plugin in null (missing),
+          //  this will initialize using information from the plugin's persistent properties.
+          const bool res = new_pl->initPluginInstance(pl, t->channels());
+          // If the failure is NOT the result of the plugin being missing,
+          //  then it's an error, otherwise it's OK to continue loading.
+          if(res && new_pl->plugin())
           {
-            PluginI* new_pl = new PluginI();
-            if(new_pl->initPluginInstance(pl, t->channels())) {
-                  fprintf(stderr, "cannot instantiate plugin <%s>\n",
-                      pl->name().toLatin1().constData());
-                  delete new_pl;
-                  }
-            else
+              fprintf(stderr, "cannot instantiate plugin <%s>\n",
+                  (pl ? new_pl->pluginName() :
+                    new_pl->initialConfiguration()._name).toLocal8Bit().constData());
+              delete new_pl;
+              new_pl = nullptr;
+          }
+
+          if(new_pl)
+          {
+            if(new_pl->plugin())
             {
-              // Assigns valid ID and track to plugin, and creates controllers for plugin.
-              t->setupPlugin(new_pl, i);
-              push_back(new_pl);
-              continue;
+              // Configure everything EXCEPT opening the native gui - defer that until the later.
+              // Note that for DSSI (at least), the track must already have been added to the
+              //  song's track lists, so that OSC can find the track.
+              // Actually, let's not overwhelm the user by opening several UIs at once.
+              // Don't configure the UI or native UI.
+              new_pl->configure(
+                PluginI::ConfigActive |
+                PluginI::ConfigOn |
+                PluginI::ConfigQuirks |
+                PluginI::ConfigCustomData |
+                PluginI::ConfigParams |
+                PluginI::ConfigGeometry |
+                PluginI::ConfigNativeGeometry
+              );
             }
+
+            // Assigns valid ID and track to plugin, and creates controllers for plugin.
+            t->setupPlugin(new_pl, i);
+            push_back(new_pl);
+            continue;
           }
         }
         push_back(nullptr); // No plugin. Initialize with NULL.
@@ -1363,7 +2103,7 @@ bool Pipeline::addScheduledControlEvent(int track_ctrl_id, double val, unsigned 
   for (int i = 0; i < MusECore::PipelineDepth; ++i)
   {
     PluginI* p = (*this)[i];
-    if(p && p->id() == rack_idx)
+    if(p && p->plugin() && p->id() == rack_idx)
       return p->addScheduledControlEvent(track_ctrl_id & AC_PLUGIN_CTL_ID_MASK, val, frame);
   }
   return true;
@@ -1457,6 +2197,35 @@ void Pipeline::removeAll()
             remove(i);
       }
 
+// Returns the first plugin instance with the given name found in the rack.
+// TODO: Embellish these with more arguments.
+// Otherwise they are not very useful except for the one place calling them,
+//  and they should probably be called findFirstPluginByName.
+const PluginI* Pipeline::findPlugin(const QString &name) const
+{
+  const unsigned int sz = size();
+  for(unsigned int i = 0; i < sz; ++i)
+  {
+    const PluginI *pi = at(i);
+    if(pi && pi->name() == name)
+      return pi;
+  }
+  return nullptr;
+}
+
+// Returns the first plugin instance with the given name found in the rack.
+PluginI* Pipeline::findPlugin(const QString &name)
+{
+  const unsigned int sz = size();
+  for(unsigned int i = 0; i < sz; ++i)
+  {
+    PluginI *pi = at(i);
+    if(pi && pi->name() == name)
+      return pi;
+  }
+  return nullptr;
+}
+
 //---------------------------------------------------------
 //   isActive
 //---------------------------------------------------------
@@ -1517,7 +2286,7 @@ QString Pipeline::label(int idx) const
       {
       PluginI* p = (*this)[idx];
       if (p)
-            return p->label();
+            return p->pluginLabel();
       return QString("");
       }
 
@@ -1575,36 +2344,22 @@ void Pipeline::move(int idx1, int idx2)
     p1->setID(idx2);
 }
 
-//---------------------------------------------------------
-//   isDssiPlugin
-//---------------------------------------------------------
-
-bool Pipeline::isDssiPlugin(int idx) const
-{
-  PluginI* p = (*this)[idx];
-  if(p)
-    return p->isDssiPlugin();
-
-  return false;
-}
-
-bool Pipeline::isLV2Plugin(int idx) const
+MusEPlugin::PluginType Pipeline::pluginType(int idx) const
 {
    PluginI* p = (*this)[idx];
    if(p)
-     return p->isLV2Plugin();
+     return p->pluginType();
 
-   return false;
+   return MusEPlugin::PluginTypeNone;
 }
 
-bool Pipeline::isVstNativePlugin(int idx) const
+MusEPlugin::PluginClass_t Pipeline::pluginClass(int idx) const
 {
    PluginI* p = (*this)[idx];
    if(p)
-     return p->isVstNativePlugin();
+     return p->pluginClass();
 
-   return false;
-
+   return MusEPlugin::PluginClassNone;
 }
 
 //---------------------------------------------------------
@@ -1617,12 +2372,12 @@ bool Pipeline::hasNativeGui(int idx) const
   if(p)
   {
 #ifdef LV2_SUPPORT
-    if(p->plugin() && p->plugin()->isLV2Plugin())
+    if(p->pluginType() == MusEPlugin::PluginTypeLV2)
       return ((LV2PluginWrapper *)p->plugin())->hasNativeGui();
 #endif
 
 #ifdef VST_NATIVE_SUPPORT
-    if(p->plugin() && p->plugin()->isVstNativePlugin())
+    if(p->pluginType() == MusEPlugin::PluginTypeLinuxVST)
       return ((VstNativePluginWrapper *)p->plugin())->hasNativeGui();
 #endif
 
@@ -1632,6 +2387,7 @@ bool Pipeline::hasNativeGui(int idx) const
 
   return false;
 }
+
 //---------------------------------------------------------
 //   showGui
 //---------------------------------------------------------
@@ -1652,26 +2408,28 @@ void Pipeline::showNativeGui(int idx, bool flag)
       {
          PluginI* p = (*this)[idx];
 #ifdef LV2_SUPPORT
-         if(p && p->plugin()->isLV2Plugin())
+         if(p)
          {
-            ((LV2PluginWrapper *)p->plugin())->showNativeGui(p, flag);
-            return;
-         }
+           if(p->plugin() && p->pluginType() == MusEPlugin::PluginTypeLV2)
+           {
+              ((LV2PluginWrapper *)p->plugin())->showNativeGui(p, flag);
+              return;
+           }
 
 #endif
 
 #ifdef VST_NATIVE_SUPPORT
-         if(p && p->plugin()->isVstNativePlugin())
-         {
-            ((VstNativePluginWrapper *)p->plugin())->showNativeGui(p, flag);
-            return;
-         }
+           if(p->plugin() && p->pluginType() == MusEPlugin::PluginTypeLinuxVST)
+           {
+              ((VstNativePluginWrapper *)p->plugin())->showNativeGui(p, flag);
+              return;
+           }
 
 #endif
       #ifdef OSC_SUPPORT
-         if (p)
             p->oscIF().oscShowGui(flag);
       #endif
+         }
       }
 #else // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
 void Pipeline::showNativeGui(int /*idx*/, bool /*flag*/)
@@ -1689,9 +2447,10 @@ void Pipeline::deleteGui(int idx)
     return;
   PluginI* p = (*this)[idx];
   if(p)
+  {
     p->deleteGui();
 #ifdef LV2_SUPPORT
-         if(p && p->plugin()->isLV2Plugin())
+         if(p->plugin() && p->pluginType() == MusEPlugin::PluginTypeLV2)
          {
             ((LV2PluginWrapper *)p->plugin())->showNativeGui(p, false);
          }
@@ -1699,12 +2458,12 @@ void Pipeline::deleteGui(int idx)
 #endif
 
 #ifdef VST_NATIVE_SUPPORT
-         if(p && p->plugin()->isVstNativePlugin())
+         if(p->plugin() && p->pluginType() == MusEPlugin::PluginTypeLinuxVST)
          {
             ((VstNativePluginWrapper *)p->plugin())->showNativeGui(p, false);
          }
-
 #endif
+  }
 }
 
 //---------------------------------------------------------
@@ -1737,20 +2496,7 @@ bool Pipeline::nativeGuiVisible(int idx)
       {
       PluginI* p = (*this)[idx];
       if (p)
-      {
-#ifdef LV2_SUPPORT
-         if(p->plugin()->isLV2Plugin())
-            return ((LV2PluginWrapper *)p->plugin())->nativeGuiVisible(p);
-#endif
-
-#ifdef VST_NATIVE_SUPPORT
-         if(p->plugin()->isVstNativePlugin())
-            return ((VstNativePluginWrapper *)p->plugin())->nativeGuiVisible(p);
-#endif
-
             return p->nativeGuiVisible();
-
-      }
       return false;
       }
 
@@ -1781,7 +2527,8 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, b
       for(int i = sz - 1; i >= 0; --i)
       {
         const PluginI* p = (*this)[i];
-        if(!p)
+        // If plugin is not available just continue.
+        if(!p || !p->plugin())
           continue;
         const float lat = p->latency();
         // If the transport affects audio latency, it means we can completely correct
@@ -1798,7 +2545,8 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, b
 
       for (int i = 0; i < sz; ++i) {
             PluginI* p = (*this)[i];
-            if(!p)
+            // If plugin is not available just continue.
+            if(!p || !p->plugin())
               continue;
 
             const float corr_offset = latency_corr_offsets[i];
@@ -1818,14 +2566,14 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, b
             bool hasEnableOrBypass = false;
             switch(p->pluginBypassType())
             {
-              case PluginBypassTypeEmulatedEnableFunction:
-              case PluginBypassTypeEmulatedEnableController:
+              case MusEPlugin::PluginBypassTypeEmulatedEnableFunction:
+              case MusEPlugin::PluginBypassTypeEmulatedEnableController:
               break;
 
-              case PluginBypassTypeEnableFunction:
-              case PluginBypassTypeEnablePort:
-              case PluginBypassTypeBypassFunction:
-              case PluginBypassTypeBypassPort:
+              case MusEPlugin::PluginBypassTypeEnableFunction:
+              case MusEPlugin::PluginBypassTypeEnablePort:
+              case MusEPlugin::PluginBypassTypeBypassFunction:
+              case MusEPlugin::PluginBypassTypeBypassPort:
                 hasEnableOrBypass = true;
               break;
             }
@@ -1838,7 +2586,7 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, b
             // We manipulate the enable/bypass port/function in the plugin's apply method.
             if (wantActive && p->active() && (hasEnableOrBypass || p->on()))
             {
-              if (!(p->requiredFeatures() & PluginNoInPlaceProcessing))
+              if (!(p->requiredFeatures() & MusEPlugin::PluginNoInPlaceProcessing))
               {
                     if (swap)
                           p->apply(pos, nframes, ports, wantActive, buffer, buffer, corr_offset);
@@ -1876,6 +2624,8 @@ PluginIBase::PluginIBase()
 {
   _gui = 0;
   _curActiveState = false;
+  _showGuiPending = false;
+  _showNativeGuiPending = false;
 }
 
 PluginIBase::~PluginIBase()
@@ -1892,11 +2642,11 @@ void PluginIBase::showGui()
 {
   if(_gui == 0)
     makeGui();
-  _gui->updateWindowTitle();
   if(_gui->isVisible())
     _gui->hide();
   else
     _gui->show();
+  _showGuiPending = false;
 }
 
 void PluginIBase::showGui(bool flag)
@@ -1912,6 +2662,7 @@ void PluginIBase::showGui(bool flag)
     if(_gui)
       _gui->hide();
   }
+  _showGuiPending = false;
 }
 
 //---------------------------------------------------------
@@ -2054,6 +2805,22 @@ void PluginIBase::savedNativeGeometry(int *x, int *y, int *w, int *h) const
   if(h) *h = _nativeGuiGeometry.height();
 }
       
+const PluginQuirks& PluginIBase::cquirks() const { return _quirks; }
+PluginQuirks& PluginIBase::quirks() { return _quirks; }
+void PluginIBase::setQuirks(const PluginQuirks& q) { _quirks = q; }
+bool PluginIBase::setCustomData(const std::vector<QString> &) { return false; /* Do nothing by default */}
+MusEGui::PluginGui* PluginIBase::gui() const { return _gui; }
+void PluginIBase::showNativeGui() { _showNativeGuiPending = false; }
+void PluginIBase::showNativeGui(bool) { _showNativeGuiPending = false; }
+void PluginIBase::showGuiPending(bool v) { _showGuiPending = v; }
+bool PluginIBase::isShowGuiPending() const { return _showGuiPending; }
+void PluginIBase::showNativeGuiPending(bool v) { _showNativeGuiPending = v; }
+bool PluginIBase::isShowNativeGuiPending() const { return _showNativeGuiPending; }
+void PluginIBase::closeNativeGui() { }
+void PluginIBase::nativeGuiTitleAboutToChange() { }
+bool PluginIBase::nativeGuiVisible() const { return false; }
+void PluginIBase::updateNativeGuiWindowTitle() { }
+
 //---------------------------------------------------------
 //   addScheduledControlEvent
 //   i is the specific index of the control input port
@@ -2162,6 +2929,9 @@ QString PluginIBase::dssi_ui_filename() const
 
   QStringList list = guiDir.entryList();
 
+  // Note: Some ladspa plugins (lsp for ex.) put a full ip address like http://...
+  // This is not good for a directory name. It ends up getting split into multiple folders: http / ... / ... /
+  // FIXME: Should we extract the last piece of label text after the last '/' ?
   QString plug(pluginLabel());
   QString lib_qt_ui;
   QString lib_any_ui;
@@ -2173,7 +2943,7 @@ QString PluginIBase::dssi_ui_filename() const
     QFileInfo fi(guiPath + QString("/") + list[i]);
     QString gui(fi.filePath());
     struct stat buf;
-    if(stat(gui.toLatin1().constData(), &buf))
+    if(stat(gui.toLocal8Bit().constData(), &buf))
       continue;
     if(!((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
         (buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))))
@@ -2231,8 +3001,9 @@ void PluginI::init()
       _audioOutDummyBuf  = 0;
       _active           = true;
       _on               = true;
-      initControlValues = false;
+      _showGuiPending = false;
       _showNativeGuiPending = false;
+      _isFakeName = false;
       }
 
 PluginI::PluginI() : PluginIBase()
@@ -2255,7 +3026,7 @@ PluginI::~PluginI()
       if (_plugin) {
             deactivate();
             cleanup();
-            _plugin->incReferences(-1);
+            release();
             }
 
       if(_audioInSilenceBuf)
@@ -2273,6 +3044,15 @@ PluginI::~PluginI()
             delete[] handle;
       }
 
+Plugin* PluginI::plugin() const       { return _plugin; }
+bool PluginI::on() const              { return _on; }
+void PluginI::setOn(bool val)         { _on = val; }
+void PluginI::setTrack(AudioTrack* t) { _track = t; }
+AudioTrack* PluginI::track() const    { return _track; }
+int PluginI::id() const               { return _id; }
+void PluginI::enableController(unsigned long i, bool v) { if(controls) controls[i].enCtrl = v; }
+bool PluginI::controllerEnabled(unsigned long i) const  { return controls ? controls[i].enCtrl : true; }
+
 //---------------------------------------------------------
 //   setID
 //---------------------------------------------------------
@@ -2288,11 +3068,15 @@ void PluginI::setID(int i)
 
 void PluginI::updateControllers()
 {
+  // If plugin is not available just return.
+  if(!plugin() || !controls)
+    return;
+
   if(!_track)
     return;
 
   for(unsigned long i = 0; i < controlPorts; ++i)
-    _track->setPluginCtrlVal(genACnum(_id, i), controls[i].val);  // TODO A faster bulk message
+    _track->setPluginCtrlVal(genACnum(_id, i), param(i));  // TODO A faster bulk message
 }
 
 //---------------------------------------------------------
@@ -2301,7 +3085,9 @@ void PluginI::updateControllers()
 
 void PluginI::setChannels(int c)
 {
-      channel = c;
+      // If plugin is not available just return.
+      if(!plugin())
+        return;
 
       unsigned long ins = _plugin->inports();
       unsigned long outs = _plugin->outports();
@@ -2361,6 +3147,7 @@ void PluginI::setChannels(int c)
             //  previously the native GUI would close when changing channels. Now it doesn't, which is good.
             _plugin->deactivate(handle[i]);
             _plugin->cleanup(handle[i]);
+            _plugin->release();
           }
         }
       }
@@ -2380,19 +3167,27 @@ void PluginI::setChannels(int c)
         {
           if(pd & LADSPA_PORT_INPUT)
           {
-            for(int i = instances; i < ni; ++i)
-              _plugin->connectPort(handle[i], k, &controls[curPort].val);
+            // Special for VST: Port value is not used.
+            if(pluginType() != MusEPlugin::PluginTypeLinuxVST)
+            {
+              for(int i = instances; i < ni; ++i)
+                _plugin->connectPort(handle[i], k, &controls[curPort].val);
+            }
             controls[curPort].idx = k;
             ++curPort;
           }
           else if(pd & LADSPA_PORT_OUTPUT)
           {
-            // Connect only the first instance's output controls.
-            // We don't have a mechanism to display the other instances' outputs.
-            _plugin->connectPort(handle[0], k, &controlsOut[curOutPort].val);
-            // Connect the rest to dummy ports.
-            for(int i = 1; i < ni; ++i)
-              _plugin->connectPort(handle[i], k, &controlsOutDummy[curOutPort].val);
+            // Special for VST: Port value is not used.
+            if(pluginType() != MusEPlugin::PluginTypeLinuxVST)
+            {
+              // Connect only the first instance's output controls.
+              // We don't have a mechanism to display the other instances' outputs.
+              _plugin->connectPort(handle[0], k, &controlsOut[curOutPort].val);
+              // Connect the rest to dummy ports.
+              for(int i = 1; i < ni; ++i)
+                _plugin->connectPort(handle[i], k, &controlsOutDummy[curOutPort].val);
+            }
             controlsOut[curOutPort].idx = k;
             ++curOutPort;
           }
@@ -2404,10 +3199,11 @@ void PluginI::setChannels(int c)
       for(int i = instances; i < ni; ++i)
       {
         // Set current configuration values.
-        if(isDssiPlugin() && _plugin->dssi_descr->configure)
+        if(_plugin->dssi_descr && _plugin->dssi_descr->configure &&
+           (pluginType() == MusEPlugin::PluginTypeDSSI || pluginType() == MusEPlugin::PluginTypeDSSIVST))
         {
           char *rv = _plugin->dssi_descr->configure(handle[i], DSSI_PROJECT_DIRECTORY_KEY,
-              MusEGlobal::museProject.toLatin1().constData()); //MusEGlobal::song->projectPath()
+              MusEGlobal::museProject.toUtf8().constData()); //MusEGlobal::song->projectPath()
 
           if(rv)
           {
@@ -2417,19 +3213,6 @@ void PluginI::setChannels(int c)
         }
       }
 #endif
-
-      // Initialize control values.
-      if(initControlValues)
-      {
-        for(unsigned long i = 0; i < controlPorts; ++i)
-          controls[i].val = controls[i].tmpVal;
-      }
-      else
-      {
-        // get initial control values from plugin
-        for(unsigned long i = 0; i < controlPorts; ++i)
-          controls[i].tmpVal = controls[i].val;
-      }
 
       // Finally, set the new number of instances.
       instances = ni;
@@ -2441,6 +3224,10 @@ void PluginI::setChannels(int c)
 
 void PluginI::setParam(unsigned long i, double val)
 {
+  // If plugin is not available just return.
+  if(!plugin())
+    return;
+
   addScheduledControlEvent(i, val, MusEGlobal::audio->curFrame());
 }
 
@@ -2450,6 +3237,10 @@ void PluginI::setParam(unsigned long i, double val)
 
 double PluginI::defaultValue(unsigned long param) const
 {
+  // If plugin is not available just return.
+  if(!plugin() || !controls)
+    return 0.0;
+
   if(param >= controlPorts)
     return 0.0;
 
@@ -2458,52 +3249,101 @@ double PluginI::defaultValue(unsigned long param) const
 
 double PluginI::defaultOutValue(unsigned long param) const
 {
+  // If plugin is not available just return.
+  if(!plugin())
+    return 0.0;
+
   if(param >= controlOutPorts)
     return 0.0;
 
   return _plugin->defaultValue(controlsOut[param].idx);
 }
 
-void PluginI::setCustomData(const std::vector<QString>&
+//=========================================================
+// If plugin is available, ask it for the values.
+//=========================================================
+
+const char* PluginI::paramName(unsigned long i) const
+{ return _plugin ? _plugin->portName(controls[i].idx) : nullptr; }
+
+const char* PluginI::paramOutName(unsigned long i) const
+{ return _plugin ? _plugin->portName(controlsOut[i].idx) : nullptr; }
+
+LADSPA_PortDescriptor PluginI::portd(unsigned long i) const
+{ return _plugin ? _plugin->portd(controls[i].idx) : 0; }
+
+LADSPA_PortDescriptor PluginI::portdOut(unsigned long i) const
+{ return _plugin ? _plugin->portd(controlsOut[i].idx) : 0; }
+
+void PluginI::range(unsigned long i, float* min, float* max) const
+{ if(_plugin) _plugin->range(controls[i].idx, min, max); else {if(min) *min = 0.0f; if(max) *max = 1.0f;} }
+
+void PluginI::rangeOut(unsigned long i, float* min, float* max) const
+{ if(_plugin) _plugin->range(controlsOut[i].idx, min, max);  else {if(min) *min = 0.0f; if(max) *max = 1.0f;}}
+
+bool PluginI::isAudioIn(unsigned long k) const
+{ if(!_plugin) return false; return (_plugin->portd(k) & IS_AUDIO_IN) == IS_AUDIO_IN; }
+
+bool PluginI::isAudioOut(unsigned long k) const
+{ if(!_plugin) return false; return (_plugin->portd(k) & IS_AUDIO_OUT) == IS_AUDIO_OUT; }
+
+LADSPA_PortRangeHint PluginI::range(unsigned long i) const
+{ if(_plugin) return _plugin->range(controls[i].idx);
+  return LADSPA_PortRangeHint{ 0, 0.0f, 0.0f }; }
+
+LADSPA_PortRangeHint PluginI::rangeOut(unsigned long i) const
+{ if(_plugin) return _plugin->range(controlsOut[i].idx);
+  return LADSPA_PortRangeHint{ 0, 0.0f, 0.0f }; }
+
+
+bool PluginI::setCustomData(const std::vector<QString>&
 #if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT)
   customParams
 #endif
 )
 {
    if(_plugin == nullptr)
-      return;
+      return false;
 
+  bool hasCustomData = false;
 #ifdef LV2_SUPPORT
-   if(_plugin->isLV2Plugin()) //now only do it for lv2 plugs
+   if(pluginType() == MusEPlugin::PluginTypeLV2) //now only do it for lv2 plugs
    {
 
       LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
       for(int i = 0; i < instances; ++i)
       {
-         lv2Plug->setCustomData(handle [i], customParams);
+         if(lv2Plug->setCustomData(handle [i], customParams))
+           hasCustomData = true;
       }
    }
 #endif
 
 #ifdef VST_NATIVE_SUPPORT
-   if(_plugin->isVstNativePlugin()) //now only do it for lv2 plugs
+   if(pluginType() == MusEPlugin::PluginTypeLinuxVST) //now only do it for lv2 plugs
    {
 
       VstNativePluginWrapper *vstPlug = static_cast<VstNativePluginWrapper *>(_plugin);
       for(int i = 0; i < instances; ++i)
       {
-         vstPlug->setCustomData(handle [i], customParams);
+         if(vstPlug->setCustomData(handle [i], customParams))
+           hasCustomData = true;
       }
    }
 #endif
+   return hasCustomData;
 }
 
 LADSPA_Handle Plugin::instantiate(PluginI *)
 {
+  if(!reference())
+    return nullptr;
+
   LADSPA_Handle h = plugin->instantiate(plugin, MusEGlobal::sampleRate);
   if(h == nullptr)
   {
     fprintf(stderr, "Plugin::instantiate() Error: plugin:%s instantiate failed!\n", plugin->Label);
+    release();
     return nullptr;
   }
 
@@ -2511,45 +3351,162 @@ LADSPA_Handle Plugin::instantiate(PluginI *)
 }
 
 
+//---------------------------------------------------------
+//   createPluginI
+//---------------------------------------------------------
+
+// Static.
+PluginI* PluginI::createPluginI(const PluginConfiguration &config, int channels, ConfigureOptions_t opts)
+{
+  Plugin *plugin = MusEGlobal::plugins.find(config._pluginType, config._file, config._uri, config._pluginLabel);
+
+  if(!plugin)
+  {
+    fprintf(stderr, "createPluginI: Warning: Plugin not found (file:%s, uri:%s, label:%s)\n",
+        config._file.toLocal8Bit().constData(),
+        config._uri.toLocal8Bit().constData(),
+        config._pluginLabel.toLocal8Bit().constData());
+    // For persistence: Allow it to continue on. Initialization needs to do a few things.
+  }
+
+  PluginI *pi = new PluginI();
+
+  // Returns true on error.
+  if (pi->initPluginInstance(plugin, channels, config._name))
+  {
+    // For persistence: If the error was because there was no plugin available,
+    //  return no error to allow it to continue loading.
+    if(!plugin)
+      return pi;
+
+    fprintf(stderr, "createPluginI: Error initializing plugin instance (file:%s, uri:%s, label:%s)\n",
+      config._file.toLocal8Bit().constData(),
+      config._uri.toLocal8Bit().constData(),
+      config._pluginLabel.toLocal8Bit().constData());
+
+    // The error was for some other reason.
+    delete pi;
+    // Return an error.
+    return nullptr;
+  }
+
+  pi->configure(config, opts);
+
+  return pi;
+}
 
 //---------------------------------------------------------
 //   initPluginInstance
 //    return true on error
 //---------------------------------------------------------
 
-bool PluginI::initPluginInstance(Plugin* plug, int c)
+bool PluginI::initPluginInstance(Plugin* plug, int c, const QString& name)
       {
-      channel = c;
-      if(plug == nullptr)
-      {
-        printf("initPluginInstance: zero plugin\n");
-        return true;
-      }
       _plugin = plug;
 
-      if (_plugin->incReferences(1)==0)
+      // NOTE: _plugin or _initConfig must be valid at this point.
+      // We should never get here with both invalid.
+      if(_plugin)
+      {
+        // If a name was given.
+        if(!name.isEmpty())
+          _name = name;
+        else
+        {
+          //-------------------------------------------------------------------------------
+          // Here we use a combination of two techniques to find an unused plugin name.
+          // If we relied only on the plugin instance number counter, which is reset
+          //  to zero at program start, it would be unaware that a plugin with that
+          //  name might already exist. Similarly, if we relied only on searching
+          //  existing tracks' rack plugins for existing names, it would be unaware
+          //  that multiple plugins may have been created BEFORE being added to a track.
+          // For example when we copy an audio track, we copy the complete list of rack
+          //  plugins BEFORE the new track is even added to the track list. So that
+          //  technique alone would miss those new plugin names.
+          // Using a combination of the two techniques, we can be guaranteed that
+          //  here we will catch both scenarios. Bearing in mind that the name chosen
+          //  here will be permanent, this is not fully ideal because if a user creates
+          //  several plugins then deletes them then creates several more, the
+          //  instance number counter will go up and up, NOT re-using available
+          //  suffixes, and the permanent names may look odd with high suffix numbers.
+          //
+          // However, we could reset the instance number counter at key places to
+          //  make it start at zero and therefore find available lower suffix numbers.
+          // For example, before copying an audio track's rack plugins, reset the counter.
+          // Discretion would be needed as to where exactly to reset the counter.
+          //-------------------------------------------------------------------------------
+          const QString inst(_plugin->name() + "-");
+          QString tmp;
+          while(true)
+          {
+            tmp = inst + QString::number(_plugin->instNo());
+            if(!MusEGlobal::song->findRackPlugin(tmp))
+              break;
+          }
+          _name = tmp;
+        }
+      }
+      else
+      {
+        MissingPluginStruct& mps =
+          MusEGlobal::missingPlugins.add(
+            _initConfig._pluginType, _initConfig._file, _initConfig._uri, _initConfig._pluginLabel, false);
+
+        // If a name was given.
+        if(!name.isEmpty())
+        {
+          _name = name;
+        }
+        else
+        {
+          if(_initConfig._name.isEmpty())
+          {
+            // The config name is empty. This will happen if an old song without the new plugin 'name' tag is loaded.
+            // No choice but to compose a name from the label, which must always exist.
+            // NOTE: Some ladspa plugins put a web address as the label (lsp ladpsa plugins).
+            // Strip away any unusual characters and everything before them, like slashes etc.
+            const QString inst(stripPluginLabel(_initConfig._pluginLabel) + "-");
+            QString tmp;
+            while(true)
+            {
+              tmp = inst + QString::number(mps.effectInstNo());
+              if(!MusEGlobal::song->findRackPlugin(tmp))
+                break;
+            }
+            _name = tmp;
+            // Set the special internal flag indicating this is a fake name (and is not ideal).
+            _isFakeName = true;
+          }
+          else
+          {
+            // Persistence: The config name already contains the suffix.
+            _name = _initConfig._name;
+          }
+        }
+      }
+
+      if(!_plugin)
+      {
+        fprintf(stderr, "initPluginInstance: zero plugin\n");
         return true;
+      }
 
       #ifdef OSC_SUPPORT
       _oscif.oscSetPluginI(this);
       #endif
 
-      QString inst("-" + QString::number(_plugin->instNo()));
-      _name  = _plugin->name() + inst;
-      _label = _plugin->label() + inst;
-
       unsigned long ins = plug->inports();
       unsigned long outs = plug->outports();
       if(outs)
       {
-        instances = channel / outs;
+        instances = c / outs;
         if(instances < 1)
           instances = 1;
       }
       else
       if(ins)
       {
-        instances = channel / ins;
+        instances = c / ins;
         if(instances < 1)
           instances = 1;
       }
@@ -2603,27 +3560,32 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
           if(pd & LADSPA_PORT_INPUT)
           {
             controls[curPort].idx = k;
-            double val = _plugin->defaultValue(k);
-            controls[curPort].val    = val;
-            controls[curPort].tmpVal = val;
             controls[curPort].enCtrl  = true;
-            for(int i = 0; i < instances; ++i)
-              _plugin->connectPort(handle[i], k, &controls[curPort].val);
+            // Special for VST: Port value is not used.
+            if(pluginType() != MusEPlugin::PluginTypeLinuxVST)
+            {
+              controls[curPort].val = _plugin->defaultValue(k);
+              for(int i = 0; i < instances; ++i)
+                _plugin->connectPort(handle[i], k, &controls[curPort].val);
+            }
             ++curPort;
           }
           else
           if(pd & LADSPA_PORT_OUTPUT)
           {
             controlsOut[curOutPort].idx = k;
-            controlsOut[curOutPort].val     = 0.0;
-            controlsOut[curOutPort].tmpVal  = 0.0;
             controlsOut[curOutPort].enCtrl  = false;
-            // Connect only the first instance's output controls.
-            // We don't have a mechanism to display the other instances' outputs.
-            _plugin->connectPort(handle[0], k, &controlsOut[curOutPort].val);
-            // Connect the rest to dummy ports.
-            for(int i = 1; i < instances; ++i)
-              _plugin->connectPort(handle[i], k, &controlsOutDummy[curOutPort].val);
+            controlsOut[curOutPort].val     = 0.0;
+            // Special for VST: Port value is not used.
+            if(pluginType() != MusEPlugin::PluginTypeLinuxVST)
+            {
+              // Connect only the first instance's output controls.
+              // We don't have a mechanism to display the other instances' outputs.
+              _plugin->connectPort(handle[0], k, &controlsOut[curOutPort].val);
+              // Connect the rest to dummy ports.
+              for(int i = 1; i < instances; ++i)
+                _plugin->connectPort(handle[i], k, &controlsOutDummy[curOutPort].val);
+            }
             ++curOutPort;
           }
         }
@@ -2673,12 +3635,13 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 
 #ifdef DSSI_SUPPORT
         // Set current configuration values.
-        if(isDssiPlugin() && _plugin->dssi_descr->configure)
+        if((pluginType() == MusEPlugin::PluginTypeDSSI || pluginType() == MusEPlugin::PluginTypeDSSIVST) &&
+           _plugin->dssi_descr && _plugin->dssi_descr->configure)
         {
           for(int i = 0; i < instances; ++i)
           {
             char *rv = _plugin->dssi_descr->configure(handle[i], DSSI_PROJECT_DIRECTORY_KEY,
-                MusEGlobal::museProject.toLatin1().constData()); //MusEGlobal::song->projectPath()
+                MusEGlobal::museProject.toUtf8().constData()); //MusEGlobal::song->projectPath()
 
             if(rv)
             {
@@ -2693,11 +3656,38 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       }
 
 //---------------------------------------------------------
+//   initPluginInstance
+//    return true on error
+//---------------------------------------------------------
+
+bool PluginI::initPluginInstance(int channels, const QString& name)
+{
+  // If no plugin type was given, search all types. Type tag was added in song file version 4.
+  MusEPlugin::PluginTypes_t types = _initConfig._pluginType;
+  if(_initConfig._pluginType == MusEPlugin::PluginTypeNone)
+    types = MusEPlugin::PluginTypesAll;
+  Plugin *plugin = MusEGlobal::plugins.find(types,
+    _initConfig._file, _initConfig._uri, _initConfig._pluginLabel);
+
+  // True on error. For persistence: Plugin can be null.
+  if(initPluginInstance(plugin, channels, name))
+    // Return true for error. For persistence: Don't clear the initial configuration members.
+    return true;
+
+  // Return false for success.
+  return false;
+}
+
+//---------------------------------------------------------
 //   connect
 //---------------------------------------------------------
 
 void PluginI::connect(unsigned long ports, bool connectAllToDummyPorts, unsigned long offset, float** src, float** dst)
       {
+      // If plugin is not available just return.
+      if(!plugin())
+        return;
+
       unsigned long port = 0;
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
@@ -2728,6 +3718,10 @@ void PluginI::connect(unsigned long ports, bool connectAllToDummyPorts, unsigned
 
 void PluginI::cleanup()
 {
+  // If plugin is not available just return.
+  if(!plugin())
+    return;
+
   for (int i = 0; i < instances; ++i) {
         _plugin->cleanup(handle[i]);
         }
@@ -2742,6 +3736,9 @@ void PluginI::deactivate()
       if(_curActiveState)
       {
         _curActiveState = false;
+        // If plugin is not available just return.
+        if(!plugin())
+          return;
         for (int i = 0; i < instances; ++i) {
               _plugin->deactivate(handle[i]);
               }
@@ -2754,24 +3751,26 @@ void PluginI::deactivate()
 
 void PluginI::activate()
       {
-      if(_curActiveState)
+      if(!_plugin || _curActiveState)
         return;
 
       for (int i = 0; i < instances; ++i)
             _plugin->activate(handle[i]);
-      if (initControlValues) {
-            for (unsigned long i = 0; i < controlPorts; ++i) {
-                  controls[i].val = controls[i].tmpVal;
-                  }
-            }
-      else {
-            // get initial control values from plugin
-            for (unsigned long i = 0; i < controlPorts; ++i) {
-                  controls[i].tmpVal = controls[i].val;
-                  }
-            }
       _curActiveState = true;
       }
+
+void PluginI::release() const
+{
+  if(!_plugin)
+    return;
+  for(int i = 0; i < instances; ++i)
+  {
+    #ifdef PLUGIN_DEBUGIN
+    fprintf(stderr, "PluginI::release Releasing instance:%d\n", i);
+    #endif
+    _plugin->release();
+  }
+}
 
 //---------------------------------------------------------
 //   latency
@@ -2789,8 +3788,8 @@ float PluginI::latency() const
     //  we are emulating it, if the plugin is bypassed
     //  do not report any latency since our emulated
     //  pass-through does not introduce any latency.
-    case PluginBypassTypeEmulatedEnableFunction:
-    case PluginBypassTypeEmulatedEnableController:
+    case MusEPlugin::PluginBypassTypeEmulatedEnableFunction:
+    case MusEPlugin::PluginBypassTypeEmulatedEnableController:
       if(!on())
         return 0.0;
     break;
@@ -2798,10 +3797,10 @@ float PluginI::latency() const
     // Otherwise if the plugin has an enable/bypass feature,
     //  go ahead and allow the plugin to report its latency,
     //  regardless of whether it is bypassed or not.
-    case PluginBypassTypeEnableFunction:
-    case PluginBypassTypeEnablePort:
-    case PluginBypassTypeBypassFunction:
-    case PluginBypassTypeBypassPort:
+    case MusEPlugin::PluginBypassTypeEnableFunction:
+    case MusEPlugin::PluginBypassTypeEnablePort:
+    case MusEPlugin::PluginBypassTypeBypassFunction:
+    case MusEPlugin::PluginBypassTypeBypassPort:
     break;
   }
 
@@ -2810,30 +3809,130 @@ float PluginI::latency() const
 
   switch(pluginLatencyReportingType())
   {
-    case PluginLatencyTypeNone:
+    case MusEPlugin::PluginLatencyTypeNone:
     break;
 
-    case PluginLatencyTypeFunction:
+    case MusEPlugin::PluginLatencyTypeFunction:
       // FIXME We can only deal with one instance's output for now. Just take the first instance's.
-      if(handle[0])
+      if(_plugin && handle[0])
         return _plugin->getPluginLatency(handle[0]);
     break;
 
-    case PluginLatencyTypePort:
-      if(latencyOutPortIndex() < controlOutPorts)
+    case MusEPlugin::PluginLatencyTypePort:
+      if(controlsOut && latencyOutPortIndex() < controlOutPorts)
         return controlsOut[latencyOutPortIndex()].val;
     break;
   }
   return 0.0;
 }
 
-bool PluginI::usesTransportSource() const          { return _plugin->usesTimePosition(); };
-unsigned long PluginI::latencyOutPortIndex() const { return _plugin->latencyPortIndex(); }
-unsigned long PluginI::freewheelPortIndex() const  { return _plugin->freewheelPortIndex(); }
-unsigned long PluginI::enableOrBypassPortIndex() const     { return _plugin->enableOrBypassPortIndex(); }
-PluginLatencyReportingType PluginI::pluginLatencyReportingType() const { return _plugin->pluginLatencyReportingType(); }
-PluginBypassType PluginI::pluginBypassType() const { return _plugin->pluginBypassType(); }
-PluginFreewheelType PluginI::pluginFreewheelType() const { return _plugin->pluginFreewheelType(); }
+//=========================================================
+// If plugin is available, ask it for the values.
+// If plugin is not available, use the persistent settings.
+//=========================================================
+
+bool PluginI::usesTransportSource() const          { return _plugin ? _plugin->usesTimePosition() : false; };
+unsigned long PluginI::latencyOutPortIndex() const { return _plugin ? _plugin->latencyPortIndex() : 0; }
+unsigned long PluginI::freewheelPortIndex() const  { return _plugin ? _plugin->freewheelPortIndex() : 0; }
+unsigned long PluginI::enableOrBypassPortIndex() const  { return _plugin ? _plugin->enableOrBypassPortIndex() : 0; }
+MusEPlugin::PluginLatencyReportingType PluginI::pluginLatencyReportingType() const
+{ return _plugin ? _plugin->pluginLatencyReportingType() : MusEPlugin::PluginLatencyTypeNone; }
+MusEPlugin::PluginBypassType PluginI::pluginBypassType() const
+{ return _plugin ? _plugin->pluginBypassType() : MusEPlugin::PluginBypassTypeEmulatedEnableFunction; }
+MusEPlugin::PluginFreewheelType PluginI::pluginFreewheelType() const
+{ return _plugin ? _plugin->pluginFreewheelType() : MusEPlugin::PluginFreewheelTypeNone; }
+
+
+CtrlValueType PluginI::ctrlValueType(unsigned long i) const
+{ return _plugin ? _plugin->ctrlValueType(controls[i].idx) : VAL_LINEAR; }
+
+const CtrlVal::CtrlEnumValues* PluginI::ctrlEnumValues( unsigned long i) const
+{ return _plugin ? _plugin->ctrlEnumValues(controls[i].idx) : nullptr; }
+
+CtrlList::Mode PluginI::ctrlMode(unsigned long i) const
+{ return _plugin ? _plugin->ctrlMode(controls[i].idx) : CtrlList::INTERPOLATE; }
+
+CtrlValueType PluginI::ctrlOutValueType(unsigned long i) const
+{ return _plugin ? _plugin->ctrlValueType(controlsOut[i].idx) : VAL_LINEAR; }
+
+const CtrlVal::CtrlEnumValues* PluginI::ctrlOutEnumValues( unsigned long i) const
+{ return _plugin ? _plugin->ctrlEnumValues(controlsOut[i].idx) : nullptr; }
+
+CtrlList::Mode PluginI::ctrlOutMode(unsigned long i) const
+{ return _plugin ? _plugin->ctrlMode(controlsOut[i].idx) : CtrlList::INTERPOLATE; }
+
+// Returns a value unit string for displaying unit symbols.
+QString PluginI::unitSymbol(long unsigned int i) const
+{ return _plugin ? _plugin->unitSymbol(controls[i].idx) : QString(); }
+
+QString PluginI::unitSymbolOut(long unsigned int i) const
+{ return _plugin ? _plugin->unitSymbol(controlsOut[i].idx) : QString(); }
+
+// Returns index into the global value units for displaying unit symbols.
+// Can be -1 meaning no units.
+int PluginI::valueUnit ( unsigned long i) const
+{ return _plugin ? _plugin->valueUnit(controls[i].idx) : -1; }
+
+int PluginI::valueUnitOut ( unsigned long i) const
+{ return _plugin ? _plugin->valueUnit(controlsOut[i].idx) : -1; }
+
+bool PluginI::setupControllers(CtrlListList *cll) const
+{
+  if(!cll)
+    return false;
+  const int plugid = id();
+  if(plugid < 0)
+    return false;
+  if(plugin())
+  {
+    const unsigned long int j = parameters();
+    for(unsigned long i = 0; i < j; ++i)
+    {
+      const unsigned long ctrlid = genACnum(plugid, i);
+      iCtrlList icl = cll->find(ctrlid);
+      if(icl == cll->end())
+        continue;
+      CtrlList *cl = icl->second;
+      float min, max;
+      range(i, &min, &max);
+      cl->setRange(min, max);
+      cl->setName(QString(paramName(i)));
+      cl->setValueType(ctrlValueType(i));
+      cl->setMode(ctrlMode(i));
+      cl->setCurVal(param(i));
+      // Set the value units index.
+      cl->setValueUnit(valueUnit(i));
+    }
+  }
+  else
+  {
+    const PluginConfiguration &pc = initialConfiguration();
+    // The plugin is missing. If the file version is valid and less than 4 we need to
+    //  hide all the automation controllers because the range, type, mode
+    //  are not available so the graphs cannot be scaled properly.
+    const bool isPersistentPre4 = initialConfiguration()._fileVerMaj >= 0 && initialConfiguration()._fileVerMaj < 4;
+
+    for(ciPluginControlList ipcl = pc._initParams.cbegin(); ipcl != pc._initParams.cend(); ++ipcl)
+    {
+      const PluginControlConfig &cc = ipcl->second;
+      iCtrlList icl = cll->find(genACnum(plugid, cc._ctlnum));
+      if(icl == cll->end())
+        continue;
+      CtrlList *cl = icl->second;
+      cl->setRange(cc._min, cc._max);
+      cl->setName(cc._name);
+      cl->setValueType(cc._valueType);
+      cl->setMode(cc._ctlMode);
+      cl->setCurVal(cc._val);
+      // Set the value units index.
+      cl->setValueUnit(cc._valueUnit);
+
+      if(isPersistentPre4)
+        cl->setDontShow(true);
+    }
+  }
+  return true;
+}
 
 //---------------------------------------------------------
 //   setControl
@@ -2842,6 +3941,10 @@ PluginFreewheelType PluginI::pluginFreewheelType() const { return _plugin->plugi
 
 bool PluginI::setControl(const QString& s, double val)
       {
+      // If plugin is not available just return.
+      if(!plugin())
+        return true;
+
       for (unsigned long i = 0; i < controlPorts; ++i) {
             if (_plugin->portName(controls[i].idx) == s) {
                   setParam(i, val);
@@ -2849,161 +3952,235 @@ bool PluginI::setControl(const QString& s, double val)
                   }
             }
       printf("PluginI:setControl(%s, %f) controller not found\n",
-         s.toLatin1().constData(), val);
+         s.toLocal8Bit().constData(), val);
       return true;
       }
 
 //---------------------------------------------------------
-//   saveConfiguration
+//   getConfiguration
 //---------------------------------------------------------
 
-void PluginI::writeConfiguration(int level, Xml& xml)
-      {
-      if(_plugin->uri().isEmpty())
-      {
-        xml.tag(level++, "plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
-           Xml::xmlString(_plugin->lib()).toLatin1().constData(),
-           Xml::xmlString(_plugin->label()).toLatin1().constData(), channel);
-      }
-      else
-      {
-        xml.tag(level++, "plugin uri=\"%s\" label=\"%s\" channel=\"%d\"",
-           Xml::xmlString(_plugin->uri()).toLatin1().constData(),
-           Xml::xmlString(_plugin->label()).toLatin1().constData(), channel);
-      }
+PluginConfiguration PluginI::getConfiguration() const
+{
+  // If the plugin is not available, use the persistent values.
+  if(!_plugin)
+    return _initConfig;
+
+  // Plugin is available. Ask it for the values...
+  PluginConfiguration conf;
+
+  //=============
+  // Basic info
+  //=============
+
+  conf._pluginType = _plugin->pluginType();
+  conf._file = _plugin->lib();
+  conf._uri = _plugin->uri();
+  conf._pluginLabel = _plugin->label();
+  conf._name = name();
+  conf._id = id();
+  conf._quirks = cquirks();
+  conf._on = on();
+  conf._active = active();
+  conf._guiVisible = guiVisible();
+  conf._nativeGuiVisible = nativeGuiVisible();
+  // We won't need these. Reset them.
+  conf._fileVerMaj = conf._fileVerMin = -1;
+
+  int x, y, w, h;
+  getGeometry(&x, &y, &w, &h);
+  conf._geometry = QRect(x, y, w, h);
+
+  getNativeGeometry(&x, &y, &w, &h);
+  conf._nativeGeometry = QRect(x, y, w, h);
+
+  //=============
+  // Custom data
+  //=============
 
 #ifdef LV2_SUPPORT
-      if(_plugin != nullptr && _plugin->isLV2Plugin())//save lv2 plugin state custom data before controls
-      {
-         LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
-         //for multi-instance plugins write only first instance's state
-         if(instances > 0)
-         {
-            lv2Plug->writeConfiguration(handle [0], level, xml);
-         }
-      }
+  if(pluginType() == MusEPlugin::PluginTypeLV2)
+  {
+    //for multi-instance plugins write only first instance's state
+    if(instances > 0)
+    {
+        LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
+        conf._accumulatedCustomParams.push_back(lv2Plug->getCustomConfiguration(handle[0]));
+    }
+  }
 #endif
 
 #ifdef VST_NATIVE_SUPPORT
-      if(_plugin != nullptr && _plugin->isVstNativePlugin())//save vst plugin state custom data before controls
-      {
-         VstNativePluginWrapper *vstPlug = static_cast<VstNativePluginWrapper *>(_plugin);
-         //for multi-instance plugins write only first instance's state
-         if(instances > 0)
-         {
-            vstPlug->writeConfiguration(handle [0], level, xml);
-         }
-      }
+  if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
+  {
+    //for multi-instance plugins write only first instance's state
+    if(instances > 0)
+    {
+        VstNativePluginWrapper *vstPlug = static_cast<VstNativePluginWrapper *>(_plugin);
+        conf._accumulatedCustomParams.push_back(vstPlug->getCustomConfiguration(handle[0]));
+    }
+  }
 #endif
-      for (unsigned long i = 0; i < controlPorts; ++i) {
-            unsigned long idx = controls[i].idx;
-            const QString s("control name=\"%1\" val=\"%2\" /");
-            // Use hex value string when appropriate.
-            xml.tag(level,
-              s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).
-                arg(MusELib::museStringFromDouble(double(controls[i].tmpVal))).toLatin1().constData());
-            }
-      if (_active == false)
-            xml.intTag(level, "active", _active);
 
-      if (_on == false)
-            xml.intTag(level, "on", _on);
+  //==============================
+  // Plugin controls or parameters
+  //==============================
 
-      _quirks.write(level, xml);
+  for (unsigned long i = 0; i < controlPorts; ++i)
+  {
+    const unsigned long idx = controls[i].idx;
+    float min, max;
+    range(i, &min, &max);
+    conf._initParams.insert(std::pair(i, PluginControlConfig(
+      i,
+      QString(_plugin->portName(idx)),
+      param(i),
+      min, max, ctrlValueType(i), ctrlMode(i), valueUnit(i),
+      PluginControlConfig::AllValid)));
+  }
 
-      if(guiVisible())
-        xml.intTag(level, "gui", 1);
-      int x, y, w, h;
-      getGeometry(&x, &y, &w, &h);
-      QRect r(x, y, w, h);
-      xml.qrectTag(level, "geometry", r);
-      
-      if (nativeGuiVisible())
-            xml.intTag(level, "nativegui", 1);
-      getNativeGeometry(&x, &y, &w, &h);
-      QRect nr(x, y, w, h);
-      xml.qrectTag(level, "nativeGeometry", nr);
+  return conf;
+}
 
-      xml.etag(--level, "plugin");
-      }
+PluginConfiguration &PluginI::initialConfiguration() { return _initConfig; }
+const PluginConfiguration &PluginI::initialConfiguration() const { return _initConfig; }
 
 //---------------------------------------------------------
-//   loadControl
+//   setInitialConfiguration
 //---------------------------------------------------------
 
-bool PluginI::loadControl(Xml& xml)
-      {
-      QString file;
-      QString label;
-      QString name("mops");
-      double val = 0.0;
+void PluginI::setInitialConfiguration(const PluginConfiguration& config)
+{
+  _initConfig = config;
+}
 
-      for (;;) {
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
+//---------------------------------------------------------
+//   configure
+//---------------------------------------------------------
 
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return true;
-                  case Xml::TagStart:
-                        xml.unknown("PluginI-Control");
-                        break;
-                  case Xml::Attribut:
-                        if (tag == "name")
-                              name = xml.s2();
-                        else if (tag == "val")
-                              // Accept either decimal or hex value strings.
-                              val = MusELib::museStringToDouble(xml.s2());
-                        break;
-                  case Xml::TagEnd:
-                        if (tag == "control") {
-                              if(_plugin)
-                              {
-                                bool found = false;
-                                for(unsigned long i = 0; i < controlPorts; ++i)
-                                {
-                                  if(_plugin->portName(controls[i].idx) == name)
-                                  {
-                                    controls[i].val = controls[i].tmpVal = val;
-                                    found = true;
-                                  }
-                                }
-                                if(!found)
-                                {
-                                  printf("PluginI:loadControl(%s, %f) controller not found\n",
-                                    name.toLatin1().constData(), val);
-                                  return false;
-                                }
-                                initControlValues = true;
-                              }
-                              return false;
-                          }
-                        return true;
-                  default:
-                        break;
-                  }
-            }
-      return true;
-      }
+void PluginI::configure(const PluginConfiguration& config, ConfigureOptions_t opts)
+{
+  if(opts & ConfigActive)
+    setActive(config._active);
+  if(opts & ConfigOn)
+    setOn(config._on);
+  if(opts & ConfigQuirks)
+    setQuirks(config._quirks);
+
+  //now process custom data immediately
+  //because it MUST be processed before plugin controls
+  //writeConfiguration places custom data before plugin controls values
+  bool hasCustomData = false;
+  if(opts & ConfigCustomData)
+  {
+    if(setCustomData(config._accumulatedCustomParams))
+      hasCustomData = true;
+  }
+  // Done with initial custom data. Clear them.
+  //config._accumulatedCustomParams.clear();
+
+  // Ignore parameters if there is custom data.
+  // The assumption is that control or parameter values would be included in the custom data.
+  // We only manually set controls if there was NO state data for that.
+  // Otherwise a problem might be that the plugin thinks that the controls
+  //  were manually altered, and flags its current patch as 'modified'.
+  // See getCustomConfiguration() for more info.
+  if(!hasCustomData && (opts & ConfigParams))
+  {
+    unsigned long controlPorts = parameters();
+
+    for(ciPluginControlList ipcl = config._initParams.cbegin(); ipcl != config._initParams.cend(); ++ipcl)
+    {
+      const PluginControlConfig& cc = ipcl->second;
+        if((unsigned long)cc._ctlnum < controlPorts)
+        {
+          // TODO: Set vst params directly here, maybe even instead of controls array?
+          //       Maybe not. Process sets the vst params for us.
+          putParam(cc._ctlnum, cc._val);
+        }
+        else
+        {
+          fprintf(stderr, "PluginI::configure(%d %s, %f) controller number out of range\n",
+            cc._ctlnum, cc._name.toLocal8Bit().constData(), cc._val);
+          // Don't break. Let it continue.
+          //break;
+        }
+    }
+  }
+
+  if(opts & ConfigGeometry)
+    setGeometry(_initConfig._geometry.x(), _initConfig._geometry.y(),
+      _initConfig._geometry.width(), _initConfig._geometry.height());
+
+  if(opts & ConfigNativeGeometry)
+    setNativeGeometry(_initConfig._nativeGeometry.x(), _initConfig._nativeGeometry.y(),
+      _initConfig._nativeGeometry.width(), _initConfig._nativeGeometry.height());
+
+  if(opts & ConfigGui)
+    showGuiPending(config._guiVisible);
+
+  if(opts & ConfigNativeGui)
+    showNativeGuiPending(config._nativeGuiVisible);
+
+  if(gui())
+    gui()->updateValues();
+}
+
+void PluginI::configure(ConfigureOptions_t opts)
+{
+  return configure(_initConfig, opts);
+}
+
+//---------------------------------------------------------
+//   writeConfiguration
+//---------------------------------------------------------
+
+void PluginI::writeConfiguration(int level, Xml& xml, bool isCopy)
+{
+  // Get the plugin configuration. Include the automation controllers and midi mapping if desired.
+  PluginConfiguration pc = getConfiguration();
+  xml.tag(level++, "plugin");
+  // Write the plugin configuration.
+  pc.writeProperties(level, xml, isCopy, _isFakeName);
+
+  // If for example copying or drag-copying, include automation controllers and midi mappings
+  //  directly within the plugin XML so that the drop target can use them. Track is required.
+  const int idx = id();
+  if(isCopy && track() && idx >= 0)
+  {
+    //----------------------------------
+    // Write the automation controllers.
+    //----------------------------------
+    const unsigned long baseid = MusECore::genACnum(idx, 0);
+    const unsigned long nextid = MusECore::genACnum(idx + 1, 0);
+    // Write the controllers. Write only controllers for this plugin.
+    // Mask away the position bits from the controller IDs, storing just the controller numbers.
+    track()->controller()->write(level, xml, baseid, nextid, AC_PLUGIN_CTL_ID_MASK);
+
+    //-------------------------------------------------
+    // Write the midi to audio controller assignments.
+    //-------------------------------------------------
+    MusECore::MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+    if(macm)
+      // Write the mapping. Write only assignments to this track and plugin controllers.
+      // The track handles writing assignments to other controllers on this track.
+      // Mask away the position bits from the controller IDs, storing just the controller numbers.
+      macm->write(
+        level, xml, track(), baseid, nextid, MidiAudioCtrlStruct::AudioControl, false, AC_PLUGIN_CTL_ID_MASK);
+  }
+
+  xml.etag(--level, "plugin");
+}
 
 //---------------------------------------------------------
 //   readConfiguration
 //    return true on error
 //---------------------------------------------------------
 
-bool PluginI::readConfiguration(Xml& xml, bool readPreset)
+bool PluginI::readConfiguration(Xml& xml, bool readPreset, int channels)
       {
-      QString file;
-      QString label;
-      QString uri;
-
-      //custom params in xml song file , synth tag, that will be passed to new PluginI:setCustomData(Xml &) method
-      //now only lv2host uses them, others simply ignore
-      std::vector<QString> accumulatedCustomParams;
-
-      if (!readPreset)
-            channel = 1;
+      PluginConfiguration pc;
+      PluginConfiguration *ppc = readPreset ? &pc : &_initConfig;
 
       for (;;) {
             Xml::Token token(xml.parse());
@@ -3013,138 +4190,120 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                   case Xml::End:
                         return true;
                   case Xml::TagStart:
-                        if (!readPreset && _plugin == 0) {
-                              _plugin = MusEGlobal::plugins.find(file, uri, label);
-
-                              if (_plugin)
-                              {
-                                 if(initPluginInstance(_plugin, channel)) {
-                                    _plugin = 0;
-                                    xml.parse1();
-                                    printf("Error initializing plugin instance (%s, %s, %s)\n",
-                                       file.toLatin1().constData(),
-                                       uri.toLatin1().constData(),
-                                       label.toLatin1().constData());
-                                    //break;      // Don't break - let it read any control tags.
-                                    }
-                                 }
-                              }
-                        if (tag == "control")
-                              loadControl(xml);
-                        else if (tag == "active") {
-                              bool flag = xml.parseInt();
-                              if (!readPreset)
-                                    _active = flag;
-                              }
-                        else if (tag == "on") {
-                              bool flag = xml.parseInt();
-                              if (!readPreset)
-                                    _on = flag;
-                              }
-                        else if (tag == "quirks") {
-                              PluginQuirks q;
-                              q.read(xml);
-                              if (!readPreset)
-                                _quirks = q;
-                              }
-                        else if (tag == "gui") {
-                              const bool flag = xml.parseInt();
-                              if (_plugin)
-                                  showGui(flag);
-                              }
-                        else if (tag == "nativegui") {
-                              // We can't tell OSC to show the native plugin gui
-                              //  until the parent track is added to the lists.
-                              // OSC needs to find the plugin in the track lists.
-                              // Use this 'pending' flag so it gets done later.
-                              _showNativeGuiPending = xml.parseInt();
-                              }
-                        else if (tag == "geometry") {
-                              QRect r(readGeometry(xml, tag));
-                              setGeometry(r.x(), r.y(), r.width(), r.height());
-                              }
-                        else if (tag == "nativeGeometry") {
-                              QRect r(readGeometry(xml, tag));
-                              setNativeGeometry(r.x(), r.y(), r.width(), r.height());
-                              }
-                        else if (tag == "customData") { //just place tag contents in accumulatedCustomParams
-                              QString customData = xml.parse1();
-                              if(!customData.isEmpty()){
-                                 accumulatedCustomParams.push_back(customData);
-                                 //now process custom data immediately
-                                 //because it MUST be processed before plugin controls
-                                 //writeConfiguration places custom data before plugin controls values
-                                 setCustomData(accumulatedCustomParams);
-                                 accumulatedCustomParams.clear();
-                              }
+                        // Is it a tag that the configuration structure recognizes?
+                        if(!ppc->readProperties(xml, token))
+                        {
+                          xml.unknown("PluginI");
                         }
-                        else
-                              xml.unknown("PluginI");
                         break;
                   case Xml::Attribut:
-                        if (tag == "file") {
-                              QString s = xml.s2();
-                              if (readPreset) {
-                                    if (s != plugin()->lib()) {
-                                          printf("Error: Wrong preset type %s. Type must be a %s\n",
-                                             s.toLatin1().constData(), plugin()->lib().toLatin1().constData());
-                                          return true;
-                                          }
-                                    }
-                              else {
-                                    file = s;
-                                    }
-                              }
-                        else if (tag == "uri") {
-                              QString s = xml.s2();
-                              if (readPreset) {
-                                    if (s != plugin()->uri()) {
-                                          printf("Error: Wrong preset uri %s. Uri must be a %s\n",
-                                             s.toLatin1().constData(), plugin()->uri().toLatin1().constData());
-                                          return true;
-                                          }
-                                    }
-                              else {
-                                    uri = s;
-                                    }
-                              }
-                        else if (tag == "label") {
-                              if (!readPreset)
-                                    label = xml.s2();
-                              }
-                        else if (tag == "channel") {
-                              if (!readPreset)
-                                    channel = xml.s2().toInt();
-                              }
+                        // Is it an attribute that the configuration structure recognizes?
+                        if(!ppc->readProperties(xml, token))
+                        {
+
+                        }
                         break;
                   case Xml::TagEnd:
-                        if (tag == "plugin") {
-                              if (!readPreset && _plugin == 0) {
-                                    _plugin = MusEGlobal::plugins.find(file, uri, label);
-                                    if (_plugin == 0)
+                        if (tag == "plugin")
+                        {
+                              if (readPreset)
+                              {
+                                    // If the plugin is available, compare type with plugin type.
+                                    // If the plugin is not available, compare type with the persistent settings.
+                                    const MusEPlugin::PluginType ptype =
+                                      plugin() ? plugin()->pluginType() : _initConfig._pluginType;
+                                    if (ppc->_pluginType != ptype)
                                     {
-                                      QMessageBox::warning(0,"Plugin not found!",
-                                                  "Plugin: " + label + " not found, if the project is saved it will be removed from the project");
-                                      fprintf(stderr, "Warning: - Plugin not found (%s, %s, %s)\n",
-                                         file.toLatin1().constData(),
-                                         uri.toLatin1().constData(),
-                                         label.toLatin1().constData());
-                                      return true;
+                                          fprintf(stderr, "Error: Wrong plugin type %s. Type must be a %s\n",
+                                             MusEPlugin::pluginTypeToString(ppc->_pluginType),
+                                             MusEPlugin::pluginTypeToString(ptype));
+                                          return true;
                                     }
 
-                                    if (initPluginInstance(_plugin, channel))
+                                    // If the plugin is available, compare file with plugin file.
+                                    // If the plugin is not available, compare file with the persistent settings.
+                                    const QString plibfile = plugin() ? plugin()->lib() : _initConfig._file;
+                                    if (ppc->_file != plibfile)
                                     {
+                                          fprintf(stderr, "Error: Wrong preset type %s. Type must be a %s\n",
+                                             ppc->_file.toLocal8Bit().constData(), plibfile.toLocal8Bit().constData());
+                                          return true;
+                                    }
+
+                                    // If the plugin is available, compare uri with plugin uri.
+                                    // If the plugin is not available, compare uri with the persistent settings.
+                                    const QString puri = plugin() ? plugin()->uri() : _initConfig._uri;
+                                    if (ppc->_uri != puri)
+                                    {
+                                          fprintf(stderr, "Error: Wrong preset uri %s. Uri must be a %s\n",
+                                             ppc->_uri.toLocal8Bit().constData(), puri.toLocal8Bit().constData());
+                                          return true;
+                                    }
+
+                                    // Delete these allocated items if they were found. Presets don't use them so far.
+                                    ppc->_ctrlListList.clearDelete();
+
+                                    // Transfer specific ppc values to _initConfig.
+                                    // For presets we are only interested in the custom data and
+                                    //  the initial parameters.
+                                    _initConfig._accumulatedCustomParams = ppc->_accumulatedCustomParams;
+                                    _initConfig._initParams = ppc->_initParams;
+                              }
+
+                              if (!readPreset && _plugin == nullptr)
+                              {
+                                    // Returns true on error.
+                                    if (initPluginInstance(channels))
+                                    {
+                                      // For persistence: Keep the custom data and parameters (don't clear them).
+                                      // If the error was because there was no plugin available,
+                                      //  return no error to allow it to continue loading.
+                                      if(!_plugin)
+                                      {
+                                        // Plugin was not found. Remember the file version for later if re-saving,
+                                        //  if the version has not been stored yet.
+                                        if(_initConfig._fileVerMaj < 0 && _initConfig._fileVerMin < 0)
+                                        {
+                                          _initConfig._fileVerMaj = xml.majorVersion();
+                                          _initConfig._fileVerMin = xml.minorVersion();
+                                        }
+                                        return false;
+                                      }
+
                                       fprintf(stderr, "Error initializing plugin instance (%s, %s, %s)\n",
-                                        file.toLatin1().constData(),
-                                        uri.toLatin1().constData(),
-                                        label.toLatin1().constData());
+                                        _initConfig._file.toLocal8Bit().constData(),
+                                        _initConfig._uri.toLocal8Bit().constData(),
+                                        _initConfig._pluginLabel.toLocal8Bit().constData());
+
+                                      // The error was for some other reason.
+                                      // Hm, let's null that plugin pointer.
+                                      _plugin = nullptr;
+
+                                      // Return an error.
                                       return true;
                                     }
                               }
-                              if (_gui)
-                                    _gui->updateValues();
+
+                              // In case of reading a preset but there's no plugin,
+                              //  return OK to allow it to continue loading.
+                              // For persistence: Keep the custom data and parameters (don't clear them).
+                              if(readPreset && !_plugin)
+                                return false;
+
+                              // We have a plugin. There is no need for these anymore. Reset them.
+                              if(!readPreset)
+                                _initConfig._fileVerMaj = _initConfig._fileVerMin = -1;
+
+                              // Options for configuration.
+                              ConfigureOptions_t opts = readPreset ? ConfigPresetOnly : ConfigAll;
+                              configure(opts);
+
+                              // Done with initial params. Clear them.
+                              _initConfig._initParams.clear();
+                              // Done with initial custom data. Clear them.
+                              _initConfig._accumulatedCustomParams.clear();
                               return false;
-                              }
+                        }
                         return true;
                   default:
                         break;
@@ -3175,9 +4334,10 @@ void PluginI::showGui(bool flag)
 
 void PluginI::showNativeGui()
 {
+PluginIBase::showNativeGui();
 
 #ifdef LV2_SUPPORT
-  if(plugin() && plugin()->isLV2Plugin())
+  if(pluginType() == MusEPlugin::PluginTypeLV2)
   {
     if(((LV2PluginWrapper *)plugin())->nativeGuiVisible(this))
        ((LV2PluginWrapper *)plugin())->showNativeGui(this, false);
@@ -3188,7 +4348,7 @@ void PluginI::showNativeGui()
 #endif
 
 #ifdef VST_NATIVE_SUPPORT
-  if(plugin() && plugin()->isVstNativePlugin())
+  if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
   {
     if(((VstNativePluginWrapper *)plugin())->nativeGuiVisible(this))
        ((VstNativePluginWrapper *)plugin())->showNativeGui(this, false);
@@ -3206,18 +4366,14 @@ void PluginI::showNativeGui()
                 _oscif.oscShowGui(true);
   }
   #endif
-  _showNativeGuiPending = false;
 }
 
-void PluginI::showNativeGui(
-  bool
-#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
-  flag
-#endif
-)
+void PluginI::showNativeGui(bool flag)
 {
+  PluginIBase::showNativeGui(flag);
+
 #ifdef LV2_SUPPORT
-  if(plugin() && plugin()->isLV2Plugin())
+  if(pluginType() == MusEPlugin::PluginTypeLV2)
   {
     ((LV2PluginWrapper *)plugin())->showNativeGui(this, flag);
     return;
@@ -3225,7 +4381,7 @@ void PluginI::showNativeGui(
 #endif
 
 #ifdef VST_NATIVE_SUPPORT
-  if(plugin() && plugin()->isVstNativePlugin())
+  if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
   {
     ((VstNativePluginWrapper *)plugin())->showNativeGui(this, flag);
     return;
@@ -3237,7 +4393,6 @@ void PluginI::showNativeGui(
     _oscif.oscShowGui(flag);
   }
   #endif
-  _showNativeGuiPending = false;
 }
 
 //---------------------------------------------------------
@@ -3247,11 +4402,11 @@ void PluginI::showNativeGui(
 bool PluginI::nativeGuiVisible() const
 {
 #ifdef LV2_SUPPORT
-    if(plugin() && plugin()->isLV2Plugin())
+    if(pluginType() == MusEPlugin::PluginTypeLV2)
       return ((LV2PluginWrapper *)plugin())->nativeGuiVisible(this);
 #endif
 #ifdef VST_NATIVE_SUPPORT
-    if(plugin() && plugin()->isVstNativePlugin())
+    if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
       return ((VstNativePluginWrapper *)plugin())->nativeGuiVisible(this);
 #endif
   #ifdef OSC_SUPPORT
@@ -3261,12 +4416,122 @@ bool PluginI::nativeGuiVisible() const
   return false;
 }
 
+void PluginI::closeNativeGui()
+{
+  #ifdef OSC_SUPPORT
+  if (_plugin && (pluginType() == MusEPlugin::PluginTypeDSSI || pluginType() == MusEPlugin::PluginTypeDSSIVST))
+  {
+    if (_oscif.isRunning())
+      _oscif.oscQuitGui();
+  }
+  #endif
+}
+
+void PluginI::nativeGuiTitleAboutToChange()
+{
+  // Some UIs may need to close because their title bar text is not alterable after creation.
+  if (_plugin)
+  {
+#ifdef OSC_SUPPORT
+    if(pluginType() == MusEPlugin::PluginTypeDSSI || pluginType() == MusEPlugin::PluginTypeDSSIVST)
+    {
+      // DSSI UI title bar text cannot be altered after creation. We must close the UI.
+      // Close it even if it exists but is not visible (hidden).
+      const bool v = nativeGuiVisible();
+      closeNativeGui();
+      // If the UI was visible, schedule it to open again after the title changes.
+      showNativeGuiPending(v);
+    }
+#endif
+#ifdef LV2_SUPPORT
+    if(pluginType() == MusEPlugin::PluginTypeLV2)
+      ((LV2PluginWrapper *)plugin())->nativeGuiTitleAboutToChange(this);
+#endif
+  }
+}
+
+void PluginI::updateNativeGuiWindowTitle()
+{
+#ifdef LV2_SUPPORT
+    if(pluginType() == MusEPlugin::PluginTypeLV2)
+      ((LV2PluginWrapper *)plugin())->updateNativeGuiWindowTitle(this);
+#endif
+#ifdef VST_NATIVE_SUPPORT
+    if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
+      ((VstNativePluginWrapper *)plugin())->updateNativeGuiWindowTitle(this);
+#endif
+}
+
+unsigned long PluginI::parameters() const           { return controlPorts; }
+unsigned long PluginI::parametersOut() const           { return controlOutPorts; }
+
+void PluginI::putParam(unsigned long i, double val)
+{
+  if(plugin())
+  {
+// Special for VST: Port value is not used.
+#ifdef VST_NATIVE_SUPPORT
+    if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
+    {
+      // For multi-instance plugins use only first instance's state
+      if(instances > 0)
+      {
+        VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State*)handle[0];
+        state->plugin->setParameter(state->plugin, i, val);
+      }
+      return;
+    }
+#endif
+    if(controls)
+      controls[i].val = val;
+  }
+  else
+  {
+    // Plugin is not available. Use the value from the initial config.
+    iPluginControlList ipl = _initConfig._initParams.find(i);
+    if(ipl != _initConfig._initParams.end())
+      ipl->second._val = val;
+  }
+}
+
+double PluginI::param(unsigned long i) const
+{
+  if(plugin())
+  {
+// Special for VST: Port value is not used.
+#ifdef VST_NATIVE_SUPPORT
+    if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
+    {
+      // For multi-instance plugins use only first instance's state
+      if(instances > 0)
+      {
+        VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State*)handle[0];
+        return state->plugin->getParameter(state->plugin, i);
+      }
+      return 0.0;
+    }
+#endif
+    return controls ? controls[i].val : 0.0;
+  }
+  else
+  {
+    // Plugin is not available. Use the value from the initial config.
+    const ciPluginControlList ipl = _initConfig._initParams.find(i);
+    if(ipl != _initConfig._initParams.cend())
+      return ipl->second._val;
+    return 0.0;
+  }
+}
+
+double PluginI::paramOut(unsigned long i) const        { return controlsOut ? controlsOut[i].val : 0.0; }
+
+
 void PluginI::guiHeartBeat()
 {
   PluginIBase::guiHeartBeat();
 #ifdef OSC_SUPPORT
   // Update the DSSI UI's controls if needed, if it exists.
-  if(plugin() && isDssiPlugin())
+  if(plugin() && (pluginType() == MusEPlugin::PluginTypeDSSI || pluginType() == MusEPlugin::PluginTypeDSSIVST))
   {
     for(unsigned long i = 0; i < controlPorts; ++i)
       _oscif.oscSendControl(controls[i].idx, controls[i].val);
@@ -3281,6 +4546,7 @@ void PluginI::guiHeartBeat()
 void PluginIBase::makeGui()
       {
       _gui = new MusEGui::PluginGui(this);
+      updateGuiWindowTitle();
       }
 
 //---------------------------------------------------------
@@ -3293,6 +4559,12 @@ void PluginIBase::deleteGui()
     delete _gui;
     _gui = 0;
   }
+}
+
+void PluginIBase::updateGuiWindowTitle() const
+{
+  if(_gui)
+    _gui->updateWindowTitle(displayName());
 }
 
 void PluginIBase::guiHeartBeat()
@@ -3313,6 +4585,45 @@ void PluginI::enableAllControllers(bool v)
     controls[i].enCtrl = v;
 }
 
+//==========================================================
+// If plugin is available, ask it for the values.
+// If plugin is not available, use the persistent settings.
+//==========================================================
+
+// TODO: Store the features in the file and the persistent settings, to use here?
+MusEPlugin::PluginFeatures_t PluginI::requiredFeatures() const
+{ return _plugin ? _plugin->requiredFeatures() : MusEPlugin::PluginNoFeatures; }
+
+// TODO: Store the id in the file and the persistent settings, to use here?
+unsigned long PluginI::pluginID() const { return _plugin ? _plugin->id() : 0; }
+
+QString PluginI::pluginLabel() const    { return _plugin ? _plugin->label() : _initConfig._pluginLabel; }
+
+// TODO: Use persistent settings here?
+QString PluginI::name() const           { return _name; }
+
+QString PluginI::displayName() const
+{
+  QString s(titlePrefix());
+  if(id() >= 0 && id() < MAX_PLUGINS)
+    s += QString::number(id()) + QString(":");
+  s += name();
+  return s;
+}
+
+QString PluginI::pluginName() const     { return _plugin ? _plugin->name() : QString(); }
+
+QString PluginI::lib() const            { return _plugin ? _plugin->lib() : QString(); }
+QString PluginI::uri() const            { return _plugin ? _plugin->uri() : _initConfig._uri; }
+QString PluginI::dirPath() const        { return _plugin ? _plugin->dirPath() : QString(); }
+QString PluginI::fileName() const       { return _plugin ? _plugin->fileName() : _initConfig._file; }
+
+// TODO: Store these in the file and the persistent settings, to use here?
+MusEPlugin::PluginType PluginI::pluginType() const
+{ return _plugin ? _plugin->pluginType() : MusEPlugin::PluginTypeNone; }
+MusEPlugin::PluginClass_t PluginI::pluginClass() const
+{ return _plugin ? _plugin->pluginClass() : MusEPlugin::PluginClassNone; }
+
 //---------------------------------------------------------
 //   titlePrefix
 //---------------------------------------------------------
@@ -3320,8 +4631,8 @@ void PluginI::enableAllControllers(bool v)
 QString PluginI::titlePrefix() const
 {
   if (_track)
-    return _track->name() + QString(": ");
-  else return ":";
+    return _track->displayName() + QString(": ");
+  else return QString();
 }
 
 //---------------------------------------------------------
@@ -3331,12 +4642,16 @@ QString PluginI::titlePrefix() const
 void PluginI::apply(unsigned pos, unsigned long n,
                     unsigned long ports, bool wantActive, float** bufIn, float** bufOut, float latency_corr_offset)
 {
+  // If plugin is not available just return.
+  if(!plugin())
+    return;
+
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
   unsigned long sample = 0;
   const bool isOn = on();
   const bool isActive = active();
 
-  const PluginBypassType bypassType = pluginBypassType();
+  const MusEPlugin::PluginBypassType bypassType = pluginBypassType();
 
   // Activate or deactivate the plugin now, depending on the desired track and plugin active states.
   // The two calls will do nothing if already in the desired state.
@@ -3359,32 +4674,35 @@ void PluginI::apply(unsigned pos, unsigned long n,
   {
     switch(bypassType)
     {
-      case PluginBypassTypeEmulatedEnableController:
+      case MusEPlugin::PluginBypassTypeEmulatedEnableController:
       break;
 
-      case PluginBypassTypeEnablePort:
-      case PluginBypassTypeBypassPort:
+      case MusEPlugin::PluginBypassTypeEnablePort:
+      case MusEPlugin::PluginBypassTypeBypassPort:
           connectToDummyAudioPorts = false;
           usefixedrate = false;
       break;
 
-      case PluginBypassTypeEmulatedEnableFunction:
+      case MusEPlugin::PluginBypassTypeEmulatedEnableFunction:
       break;
 
-      case PluginBypassTypeEnableFunction:
-      case PluginBypassTypeBypassFunction:
+      case MusEPlugin::PluginBypassTypeEnableFunction:
+      case MusEPlugin::PluginBypassTypeBypassFunction:
           connectToDummyAudioPorts = false;
       break;
     }
   }
 
-  const PluginFreewheelType freewheelType = pluginFreewheelType();
+  const MusEPlugin::PluginFreewheelType freewheelType = pluginFreewheelType();
   const unsigned long int freewheelIdx = freewheelPortIndex();
 
   // See if the features require a fixed control period.
   // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
   //       For now we treat it like fixed control period.
-  if(requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize))
+  if(requiredFeatures() &
+     (MusEPlugin::PluginFixedBlockSize |
+      MusEPlugin::PluginPowerOf2BlockSize |
+      MusEPlugin::PluginCoarseBlockSize))
     usefixedrate = true;
 
   // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters),
@@ -3412,10 +4730,6 @@ void PluginI::apply(unsigned pos, unsigned long n,
   const bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
   const unsigned long in_ctrls = _plugin->controlInPorts();
 
-  // Special for plugins: Deal with tmpVal. TODO: Get rid of tmpVal, maybe by using the FIFO...
-  for(unsigned long k = 0; k < controlPorts; ++k)
-    controls[k].val = controls[k].tmpVal;
-
   int cur_slice = 0;
   while(sample < fin_nsamp)
   {
@@ -3433,7 +4747,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
       {
         // Don't process freewheel controller. Freewheel port is a bad candidate
         //  for automation or user control, and should be hidden.
-        if(freewheelType == PluginFreewheelTypePort && freewheelIdx == k)
+        if(freewheelType == MusEPlugin::PluginFreewheelTypePort && freewheelIdx == k)
           continue;
 
         CtrlList* cl = (cll && _id != -1 && icl != cll->end()) ? icl->second : nullptr;
@@ -3457,7 +4771,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
             ci.sFrame   = 0;
             ci.eFrame   = 0;
             ci.eFrameValid = false;
-            ci.sVal     = controls[k].val;
+            ci.sVal     = param(k);
             ci.eVal     = ci.sVal;
             ci.doInterp = false;
             ci.eStop    = false;
@@ -3500,12 +4814,12 @@ void PluginI::apply(unsigned pos, unsigned long n,
         }
 
         if(ci.doInterp && cl)
-          controls[k].val = cl->interpolate(MusEGlobal::audio->isPlaying() ? slice_frame : pos, ci);
+          putParam(k, cl->interpolate(MusEGlobal::audio->isPlaying() ? slice_frame : pos, ci));
         else
-          controls[k].val = ci.sVal;
+          putParam(k, ci.sVal);
 
 #ifdef LV2_SUPPORT
-        if(_plugin->isLV2Plugin())
+        if(pluginType() == MusEPlugin::PluginTypeLV2)
         {
            for(int i = 0; i < instances; ++i)
            {
@@ -3514,8 +4828,6 @@ void PluginI::apply(unsigned pos, unsigned long n,
            }
         }
 #endif
-
-        controls[k].tmpVal = controls[k].val;  // Special for plugins: Deal with tmpVal.
 
 #ifdef PLUGIN_DEBUGIN_PROCESS
         printf("PluginI::apply k:%lu sample:%lu frame:%lu nextFrame:%d slice_samps:%lu \n", k, sample, frame, ci.eFrame, slice_samps);
@@ -3582,7 +4894,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
 
       // Don't process items meant for a freewheel port. Freewheel port is a bad candidate
       //  for automation or user control, and should be hidden.
-      if(freewheelType == PluginFreewheelTypePort && freewheelIdx == index)
+      if(freewheelType == MusEPlugin::PluginFreewheelTypePort && freewheelIdx == index)
       {
         _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
         continue;
@@ -3604,7 +4916,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
 #ifdef LV2_SUPPORT
       if(v.fromGui)
       {
-         if(_plugin->isLV2Plugin())
+         if(pluginType() == MusEPlugin::PluginTypeLV2)
          {
             for(int i = 0; i < instances; ++i)
             {
@@ -3647,6 +4959,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
 //---------------------------------------------------------
 
 #ifdef OSC_SUPPORT
+
 int Plugin::oscConfigure(
 LADSPA_Handle
 #if defined(DSSI_SUPPORT)
@@ -3701,6 +5014,12 @@ value
 }
 
 //---------------------------------------------------------
+//   oscIF
+//---------------------------------------------------------
+
+OscEffectIF& PluginI::oscIF() { return _oscif; }
+
+//---------------------------------------------------------
 //   oscConfigure
 //---------------------------------------------------------
 
@@ -3727,7 +5046,8 @@ value
       //   host will probably want to do that."
 
       #ifdef PLUGIN_DEBUGIN
-      printf("PluginI::oscConfigure effect plugin name:%s label:%s key:%s value:%s\n", _name.toLatin1().constData(), _label.toLatin1().constData(), key, value);
+      printf("PluginI::oscConfigure effect plugin name:%s label:%s key:%s value:%s\n",
+             _name.toLocal8Bit().constData(), pluginLabel().toLocal8Bit().constData(), key, value);
       #endif
 
       #ifdef DSSI_SUPPORT
@@ -3745,9 +5065,13 @@ value
 
 int PluginI::oscUpdate()
 {
+      // If plugin is not available just return.
+      if(!plugin())
+        return 0;
+
       #ifdef DSSI_SUPPORT
       // Send project directory.
-      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
+      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.toUtf8().constData());  // MusEGlobal::song->projectPath()
 
       /* DELETETHIS 20
       // Send current string configuration parameters.
@@ -3791,6 +5115,10 @@ int PluginI::oscUpdate()
 
 int PluginI::oscControl(unsigned long port, float value)
 {
+  // If plugin is not available just return.
+  if(!plugin())
+    return 0;
+
   #ifdef PLUGIN_DEBUGIN
   printf("PluginI::oscControl received oscControl port:%lu val:%f\n", port, value);
   #endif
@@ -3840,7 +5168,8 @@ int PluginI::oscControl(unsigned long port, float value)
 
   // Schedules a timed control change:
   ControlEvent ce;
-  ce.unique = _plugin->_isDssiVst;   // Special for messages from vst gui to host - requires processing every message.
+  // Special for messages from vst gui to host - requires processing every message.
+  ce.unique = _plugin->pluginType() == MusEPlugin::PluginTypeDSSIVST;
   ce.fromGui = true;                 // It came from the plugin's own GUI.
   ce.idx = cport;
   ce.value = value;
@@ -3897,7 +5226,6 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       params = nullptr;
       paramsOut = nullptr;
       plugin = p;
-      updateWindowTitle();
       
       QToolBar* tools = addToolBar(tr("File Buttons"));
       tools->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
@@ -3990,7 +5318,7 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
     QList<QObject*>::iterator it;
     for (it = l.begin(); it != l.end(); ++it) {
           obj = *it;
-          QByteArray ba = obj->objectName().toLatin1();
+          QByteArray ba = obj->objectName().toUtf8();
           const char* name = ba.constData();
           if (*name !='P')
                 continue;
@@ -4015,7 +5343,7 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
 
     for (it = l.begin(); it != l.end(); ++it) {
           obj = *it;
-          QByteArray ba = obj->objectName().toLatin1();
+          QByteArray ba = obj->objectName().toUtf8();
           const char* name = ba.constData();
           if (*name !='P')
                 continue;
@@ -4423,11 +5751,9 @@ void PluginGui::constructGUIFromPluginMetadata() {
     mw->setLayout(vbox);
 }
 
-void PluginGui::updateWindowTitle()
+void PluginGui::updateWindowTitle(const QString& title)
 {
-  if(plugin)
-    setWindowTitle(plugin->titlePrefix() + plugin->name() +
-      (plugin->uri().isEmpty() ? QString() : QString(" : ") + plugin->uri()));
+  setWindowTitle(title);
 }
 
 void PluginGui::hideEvent(QHideEvent *e)
@@ -4899,19 +6225,23 @@ void PluginGui::comboChanged(unsigned long param)
 void PluginGui::load()
       {
       QString s("presets/plugins/");
-      s += plugin->pluginLabel();
+      // Note: Some ladspa plugins (lsp for ex.) put a full ip address like http://... for the label.
+      // This is not good for a directory name. It ends up getting split into multiple folders: http / ... / ... /
+      // (But still, the file gets saved OK.)
+      // Strip away any unusual characters and everything before them, like slashes etc.
+      s += MusECore::stripPluginLabel(plugin->pluginLabel());
       s += "/";
 
       QString fn = getOpenFileName(s, MusEGlobal::preset_file_pattern,
          this, tr("MusE: load preset"), nullptr);
       if (fn.isEmpty())
             return;
-      bool popenFlag;
-      FILE* f = fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
-      if (f == nullptr)
+      MusEFile::File f(fn, QString(".pre"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::ReadOnly, this, true);
+      if (res != MusEFile::File::NoError)
             return;
 
-      MusECore::Xml xml(f);
+      MusECore::Xml xml(f.iodevice());
       int mode = 0;
       for (;;) {
             MusECore::Xml::Token token = xml.parse();
@@ -4950,10 +6280,7 @@ void PluginGui::load()
                   }
             }
 ende:
-      if (popenFlag)
-            pclose(f);
-      else
-            fclose(f);
+      f.close();
       }
 
 //---------------------------------------------------------
@@ -4963,27 +6290,29 @@ ende:
 void PluginGui::save()
       {
       QString s("presets/plugins/");
-      s += plugin->pluginLabel();
+      // Note: Some ladspa plugins (lsp for ex.) put a full ip address like http://... for the label.
+      // This is not good for a directory name. It ends up getting split into multiple folders: http / ... / ... /
+      // (But still, the file gets saved OK.)
+      // Strip away any unusual characters and everything before them, like slashes etc.
+      s += MusECore::stripPluginLabel(plugin->pluginLabel());
       s += "/";
 
       QString fn = getSaveFileName(s, MusEGlobal::preset_file_save_pattern, this,
         tr("MusE: Save preset"));
       if (fn.isEmpty())
             return;
-      bool popenFlag;
-      FILE* f = fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, true);
-      if (f == nullptr)
+      MusEFile::File f(fn, QString(".pre"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, true);
+      if (res != MusEFile::File::NoError)
             return;
-      MusECore::Xml xml(f);
+
+      MusECore::Xml xml(f.iodevice());
       xml.header();
       xml.tag(0, "muse version=\"1.0\"");
       plugin->writeConfiguration(1, xml);
       xml.tag(1, "/muse");
 
-      if (popenFlag)
-            pclose(f);
-      else
-            fclose(f);
+      f.close();
       }
 
 //---------------------------------------------------------
@@ -4992,7 +6321,6 @@ void PluginGui::save()
 
 void PluginGui::activeToggled(bool val)
       {
-      updateWindowTitle();
       plugin->setActive(!val);
       MusEGlobal::song->update(SC_ROUTE);
       }
@@ -5003,7 +6331,6 @@ void PluginGui::activeToggled(bool val)
 
 void PluginGui::bypassToggled(bool val)
       {
-      updateWindowTitle();
       plugin->setOn(!val);
       MusEGlobal::song->update(SC_ROUTE);
       }
@@ -5021,7 +6348,6 @@ void PluginGui::showSettings()
 
 void PluginGui::setActive(bool val)
 {
-      updateWindowTitle();
       activeButton->blockSignals(true);
       activeButton->setChecked(!val);
       activeButton->blockSignals(false);
@@ -5033,7 +6359,6 @@ void PluginGui::setActive(bool val)
 
 void PluginGui::setOn(bool val)
       {
-      updateWindowTitle();
       onOff->blockSignals(true);
       onOff->setChecked(!val);
       onOff->blockSignals(false);
@@ -5464,17 +6789,20 @@ void PluginGui::guiContextMenuReq(unsigned long int idx)
 //---------------------------------------------------------
 //   PluginLoader
 //---------------------------------------------------------
+
+PluginLoader::PluginLoader(QObject * parent) : QUiLoader(parent) {}
+
 QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent, const QString & name)
 {
   if(className == QString("MusEGui::DoubleLabel"))
-    return new DoubleLabel(parent, name.toLatin1().constData());
+    return new DoubleLabel(parent, name.toUtf8().constData());
   if(className == QString("MusEGui::Slider"))
-    return new Slider(parent, name.toLatin1().constData(), Qt::Horizontal,
+    return new Slider(parent, name.toUtf8().constData(), Qt::Horizontal,
       Slider::ScaleRightOrBottom, 8, QColor(), ScaleDraw::TextHighlightNone);
   if(className == QString("MusEGui::CheckBox"))
-    return new CheckBox(parent, -1, name.toLatin1().constData());
+    return new CheckBox(parent, -1, name.toUtf8().constData());
   if(className == QString("MusEGui::Switch"))
-    return new Switch(-1, parent, name.toLatin1().constData());
+    return new Switch(-1, parent, name.toUtf8().constData());
 
   return QUiLoader::createWidget(className, parent, name);
 }

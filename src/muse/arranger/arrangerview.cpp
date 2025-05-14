@@ -469,7 +469,7 @@ void ArrangerView::writeStatus(int level, MusECore::Xml& xml) const
   TopWin::writeStatus(level, xml);
   xml.intTag(level, "tool", editTools->curTool());
   arranger->writeStatus(level,xml);
-  xml.tag(level, "/arrangerview");
+  xml.etag(--level, "arrangerview");
 }
 
 void ArrangerView::readStatus(MusECore::Xml& xml)
@@ -543,7 +543,7 @@ void ArrangerView::writeConfiguration(int level, MusECore::Xml& xml)
       xml.tag(level++, "arrangerview");
       TopWin::writeConfiguration(ARRANGER, level, xml);
       arranger->writeConfiguration(level,xml);
-      xml.tag(level, "/arrangerview");
+      xml.etag(--level, "arrangerview");
       }
 
 //---------------------------------------------------------
@@ -1164,7 +1164,7 @@ void ArrangerView::execDeliveredScript(int id)
         return;
     }
 
-    scripts.executeScript(this, scripts.getScriptPath(id, true).toLatin1().constData(),
+    scripts.executeScript(this, scripts.getScriptPath(id, true),
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
 
@@ -1178,7 +1178,7 @@ void ArrangerView::execUserScript(int id)
         return;
     }
 
-    scripts.executeScript(this, scripts.getScriptPath(id, false).toLatin1().constData(),
+    scripts.executeScript(this, scripts.getScriptPath(id, false),
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
 

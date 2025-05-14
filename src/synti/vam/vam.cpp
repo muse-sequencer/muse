@@ -209,6 +209,7 @@ class VAM : public MessMono {
       virtual bool hasNativeGui() const { return true; }
       virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
       virtual void setNativeGeometry(int x, int y, int w, int h);
+      virtual void setNativeGuiWindowTitle(const char*) const;
       virtual void processMessages();
       virtual void process(unsigned pos, float** ports, int numPorts, int offset, int sampleCount);
       virtual void note(int channel, int pitch, int velo);
@@ -1094,6 +1095,12 @@ void VAM::setNativeGeometry(int x, int y, int w, int h)
       gui->resize(QSize(w, h));
       gui->move(QPoint(x, y));
       }
+
+void VAM::setNativeGuiWindowTitle(const char* text) const
+{
+  if(gui)
+    gui->setWindowTitle(text);
+}
 
 //---------------------------------------------------------
 //   inst

@@ -27,6 +27,7 @@
 
 #include <QDir>
 #include <QFileDialog>
+#include <QFile>
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -869,8 +870,8 @@ void EditInstrument::fileSave()
         return;
       }
 
-      FILE* f = fopen(workingInstrument->filePath().toLatin1().constData(), "w");
-      if(f == 0)
+      QFile f(workingInstrument->filePath());
+      if(!f.open(QIODevice::WriteOnly | QIODevice::Text))
       {
         saveAs();
         return;
@@ -881,13 +882,7 @@ void EditInstrument::fileSave()
       patchNameReturn();
       ctrlNameReturn();
 
-      if(fclose(f) != 0)
-      {
-        QString s = QString("Creating file:\n") + workingInstrument->filePath() + QString("\nfailed: ")
-          + QString(strerror(errno) );
-        QMessageBox::critical(this, tr("MusE: Create file failed"), s);
-        return;
-      }
+      f.close();
 
       if(fileSave(workingInstrument, workingInstrument->filePath()))
         workingInstrument->setDirty(false);
@@ -899,8 +894,8 @@ void EditInstrument::fileSave()
 
 bool EditInstrument::fileSave(MusECore::MidiInstrument* instrument, const QString& name)
     {
-      FILE* f = fopen(name.toLatin1().constData(), "w");
-      if(f == 0)
+      QFile f(name);
+      if(!f.open(QIODevice::WriteOnly | QIODevice::Text))
       {
         QString s("Creating file failed: ");
         s += QString(strerror(errno));
@@ -909,7 +904,7 @@ bool EditInstrument::fileSave(MusECore::MidiInstrument* instrument, const QStrin
         return false;
       }
 
-      MusECore::Xml xml(f);
+      MusECore::Xml xml(&f);
 
       updateInstrument(instrument);
 
@@ -959,13 +954,7 @@ bool EditInstrument::fileSave(MusECore::MidiInstrument* instrument, const QStrin
         }
       }
 
-      if(fclose(f) != 0)
-      {
-            QString s = QString("Write File\n") + name + QString("\nfailed: ")
-               + QString(strerror(errno));
-            QMessageBox::critical(this, tr("MusE: Write File failed"), s);
-            return false;
-      }
+      f.close();
       return true;
     }
 
@@ -983,7 +972,7 @@ void EditInstrument::saveAs()
       QString path = MusEGlobal::museUserInstruments;
       if(!QDir(MusEGlobal::museUserInstruments).exists())
       {
-        printf("MusE Error! User instrument directory: %s does not exist. Should be created at startup!\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+        printf("MusE Error! User instrument directory: %s does not exist. Should be created at startup!\n", MusEGlobal::museUserInstruments.toLocal8Bit().constData());
 
         //path = MusEGlobal::museUser; DELETETHIS?
         //path = MusEGlobal::configPath;
@@ -1006,7 +995,7 @@ void EditInstrument::saveAs()
                   // This will still allow a user instrument to override a built-in instrument with the same name.
                   if(fi.absolutePath() != MusEGlobal::museInstruments)
                   {
-                    printf("EditInstrument::saveAs Error: Instrument name %s already used!\n", workingInstrument->iname().toLatin1().constData());
+                    printf("EditInstrument::saveAs Error: Instrument name %s already used!\n", workingInstrument->iname().toLocal8Bit().constData());
                     return;
                   }
                 }
@@ -1218,7 +1207,7 @@ void EditInstrument::fileSaveAs()
 
       if(!QDir(MusEGlobal::museUserInstruments).exists())
       {
-        printf("MusE Error! User instrument directory: %s does not exist. Should be created at startup!\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+        printf("MusE Error! User instrument directory: %s does not exist. Should be created at startup!\n", MusEGlobal::museUserInstruments.toLocal8Bit().constData());
 
         //path = MusEGlobal::museUser; DELETETHIS
         //path = MusEGlobal::configPath;
@@ -3525,13 +3514,11 @@ int EditInstrument::checkDirty(MusECore::MidiInstrument* i, bool isClose)
                   saveAs();
             }
             else {
-                  FILE* f = fopen(i->filePath().toLatin1().constData(), "w");
-                  if(f == 0)
+                  QFile f(i->filePath());
+                  if(!f.open(QIODevice::WriteOnly | QIODevice::Text))
                         saveAs();
                   else {
-                        if(fclose(f) != 0)
-                          printf("EditInstrument::checkDirty: Error closing file\n");
-
+                        f.close();
                         if(fileSave(i, i->filePath()))
                               i->setDirty(false);
                         }

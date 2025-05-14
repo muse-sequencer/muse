@@ -66,6 +66,7 @@
 #include "drumedit.h"
 #include "utils.h"
 #include "functions.h"
+#include "libs/file/file.h"
 
 
 #ifdef DSSI_SUPPORT
@@ -160,7 +161,8 @@ void TList::songChanged(MusECore::SongChangedStruct_t flags)
                  | SC_TRACK_MOVED
                  | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
                  | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED
-                 | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED ))
+                 | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
+                 | SC_RACK | SC_AUDIO_CONTROLLER_LIST))
         update();
     if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
         adjustScrollbar();
@@ -228,11 +230,11 @@ bool TList::event(QEvent *event)
                 if (type == MusECore::Track::AUDIO_SOFTSYNTH) {
                     MusECore::SynthI *s = (MusECore::SynthI*)track;
                     QToolTip::showText(helpEvent->globalPos(),track->name() + QString(" : ") +
-                                       (s->synth() ? s->synth()->description() : QString(tr("SYNTH IS UNAVAILABLE!"))) +
+                                       (s->synth() ? s->synth()->name() : QString(tr("SYNTH IS UNAVAILABLE!"))) +
                                        (s->synth() ? (s->synth()->uri().isEmpty() ? QString() :
                                                                                     QString(" \n") + s->synth()->uri()) :
-                                                     (s->initConfig()._uri.isEmpty() ? QString() :
-                                                                                       QString(" \n") + s->initConfig()._uri)));
+                                                     (s->initialConfiguration()._uri.isEmpty() ? QString() :
+                                                                                       QString(" \n") + s->initialConfiguration()._uri)));
                 }
                 else
                     QToolTip::showText(helpEvent->globalPos(),track->name());
@@ -515,8 +517,10 @@ void TList::paint(const QRect& r)
                         int y;
                         for(MusECore::CtrlListList::const_iterator icll =cll->cbegin();icll!=cll->cend();++icll) {
                             const MusECore::CtrlList *cl = icll->second;
-                            if (!cl->dontShow())
-                                countAll++;
+                            // Regardless of visible state, hidden controllers aren't considered at all.
+                            if (cl->dontShow())
+                              continue;
+                            countAll++;
                             if (cl->isVisible())
                             {
                                 countVisible++;
@@ -702,18 +706,23 @@ void TList::returnPressed()
                 MusECore::TrackList* tl = MusEGlobal::song->tracks();
                 for (MusECore::iTrack i = tl->begin(); i != tl->end(); ++i) {
                     if ((*i)->name() == editor->text()) {
-                        editTrack = nullptr;
                         editor->blockSignals(true);
                         editor->hide();
                         editor->blockSignals(false);
-                        QMessageBox::critical(this,
-                                              tr("MusE: bad trackname"),
-                                              tr("Please choose a unique track name"),
-                                              QMessageBox::Ok,
-                                              Qt::NoButton,
-                                              Qt::NoButton);
-                        setFocus();
-                        return;
+                        QMessageBox msg(MusEGlobal::muse);
+                        msg.setWindowTitle(tr("MusE: bad trackname"));
+                        msg.setText(tr("The track name is already used."));
+                        msg.setInformativeText(tr("Do you really want to use the name again?"));
+                        msg.setIcon(QMessageBox::Warning);
+                        msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+                        int ret = msg.exec();
+                        if(ret != QMessageBox::Yes)
+                        {
+                          editTrack = nullptr;
+                          setFocus();
+                          return;
+                        }
+                        break;
                     }
                 }
 
@@ -1301,7 +1310,7 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
 #ifdef LV2_SUPPORT
         PopupMenu *mSubPresets = nullptr;
         //show presets submenu for lv2 synths
-        if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
+        if(synth->synth() && synth->synth()->pluginType() == MusEPlugin::PluginTypeLV2)
         {
             mSubPresets = new PopupMenu(tr("Presets"));
             p->addMenu(mSubPresets);
@@ -1401,7 +1410,7 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
             {
                 MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
                 //show presets submenu for lv2 synths
-                if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
+                if(synth->synth() && synth->synth()->pluginType() == MusEPlugin::PluginTypeLV2)
                 {
                     mSubPresets = new PopupMenu(tr("Presets"));
                     p->addMenu(mSubPresets);
@@ -1651,7 +1660,8 @@ void TList::changeAutomation(QAction* act)
         MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
         for (auto& it : *cll) {
             MusECore::CtrlList *cl = it.second;
-            if (!cl->dontShow() && !cl->isVisible() && cl->size() > 0) {
+            if (!cl->dontShow() && !cl->isVisible() && !cl->empty())
+            {
                 cl->setVisible(true);
                 setRead = true;
             }
@@ -1691,7 +1701,6 @@ void TList::changeAutomation(QAction* act)
         MusECore::ciCtrlList icl = cll->find(id);
         if(icl != cll->cend())
           icl->second->setVisible(act->isChecked());
-
         setRead = true;
     }
 
@@ -1816,9 +1825,10 @@ void TList::changeAutomationColor(QAction* act)
             for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs_full.begin(); iamcs != amcs_full.end(); ++iamcs)
               macm->erase(*iamcs);
 
-                // Add will not replace if found.
+            // Add will not replace if found.
             macm->add_ctrl_struct(port, chan, ctrl,
-              MusECore::MidiAudioCtrlStruct(MusECore::MidiAudioCtrlStruct::AudioControl, id, editAutomation));
+              MusECore::MidiAudioCtrlStruct(
+                MusECore::MidiAudioCtrlStruct::AudioControl, id, isSongAssign ? nullptr : editAutomation));
 
             MusEGlobal::audio->msgIdle(false);
           }
@@ -2910,15 +2920,15 @@ void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff
           MusECore::UndoOp::SetTrackMute, t, state, double(0), double(0), double(0), double(0)));
 }
 
-void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
+void TList::loadTrackDrummap(MusECore::MidiTrack* t, const QString &fn_)
 {
     QString fn;
 
-    if (fn_==nullptr)
+    if (fn_.isEmpty())
         fn=MusEGui::getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
                                     this, tr("Muse: Load Track's Drum Map"), 0);
     else
-        fn=QString(fn_);
+        fn=fn_;
 
     if (fn.isEmpty())
     {
@@ -2926,21 +2936,18 @@ void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
         return;
     }
 
-    bool popenFlag;
-    FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
-    if (f == 0)
+    MusEFile::File f(fn, QString(".map"), this);
+    MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::ReadOnly, this, true);
+    if (res != MusEFile::File::NoError)
     {
-        printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toLatin1().data());
+        printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toLocal8Bit().data());
         return;
     }
 
-    MusECore::Xml xml(f);
+    MusECore::Xml xml(f.iodevice());
     loadTrackDrummapFromXML(t, xml);
 
-    if (popenFlag)
-        pclose(f);
-    else
-        fclose(f);
+    f.close();
 
     MusEGlobal::song->update(SC_DRUMMAP);
 }
@@ -3003,24 +3010,24 @@ ende:
     return;
 }
 
-void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const char* fn_)
+void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const QString &fn_)
 {
     QString fn;
-    if (fn_==nullptr)
+    if (fn_.isEmpty())
         fn = MusEGui::getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
                                       this, tr("MusE: Store Track's Drum Map"));
     else
-        fn = QString(fn_);
+        fn = fn_;
 
     if (fn.isEmpty())
         return;
 
-    bool popenFlag;
-    FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "w", popenFlag, false, true);
-    if (f == 0)
+    MusEFile::File f(fn, QString(".map"), this);
+    MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, true);
+    if (res != MusEFile::File::NoError)
         return;
 
-    MusECore::Xml xml(f);
+    MusECore::Xml xml(f.iodevice());
     xml.header();
     xml.tag(0, "muse version=\"1.0\"");
 
@@ -3028,10 +3035,7 @@ void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const char* 
 
     xml.tag(0, "/muse");
 
-    if (popenFlag)
-        pclose(f);
-    else
-        fclose(f);
+    f.close();
 }
 
 void TList::copyTrackDrummap(MusECore::MidiTrack* t, bool /*full*/)

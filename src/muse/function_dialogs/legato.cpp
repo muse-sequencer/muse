@@ -155,7 +155,7 @@ void Legato::write_configuration(int level, MusECore::Xml& xml)
   xml.intTag(level, "parts", _parts);
   xml.intTag(level, "min_len", min_len);
   xml.intTag(level, "allow_shortening", allow_shortening);
-  xml.tag(level, "/legato");
+  xml.etag(--level, "legato");
 }
 
 } // namespace MusEGui

@@ -677,7 +677,7 @@ void TempoList::write(int level, Xml& xml) const
             xml.intTag(level, "globalTempo", _globalTempo);
       for (ciTEvent i = begin(); i != end(); ++i)
             i->second->write(level, xml, i->first);
-      xml.tag(level, "/tempolist");
+      xml.etag(--level, "tempolist");
       }
 
 //---------------------------------------------------------
@@ -731,7 +731,7 @@ void TEvent::write(int level, Xml& xml, int at) const
       xml.tag(level++, "tempo at=\"%d\"", at);
       xml.intTag(level, "tick", tick);
       xml.intTag(level, "val", tempo);
-      xml.tag(level, "/tempo");
+      xml.etag(--level, "tempo");
       }
 
 //---------------------------------------------------------

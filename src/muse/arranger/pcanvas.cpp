@@ -79,6 +79,7 @@
 #include "song.h"
 #include "helper.h"
 #include "hex_float.h"
+#include "libs/file/file.h"
 
 // Forwards from header:
 #include <QDropEvent>
@@ -765,7 +766,7 @@ void PartCanvas::updateAudioAutomation()
     {
       const MusECore::CtrlList* cl = icll->second;
       // Do not include hidden controller lists.
-      if(!cl->isVisible())
+      if (cl->dontShow() || !cl->isVisible())
         continue;
       for(MusECore::ciCtrl ic = cl->cbegin(); ic != cl->cend(); ++ic)
       {
@@ -3843,16 +3844,17 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
    case OP_SAVEPARTTODISK: // Export to file
    {
       const MusECore::Part* part = item->part();
-      bool popenFlag = false;
       QString fn = getSaveFileName(QString(""), MusEGlobal::part_file_save_pattern, this, tr("MusE: Save part"));
       if (!fn.isEmpty()) {
-         FILE* fp = fileOpen(this, fn, ".mpt", "w", popenFlag, false, false);
-         if (fp) {
-            MusECore::Xml tmpXml = MusECore::Xml(fp);
+         MusEFile::File f(fn, QString(".mpt"), this);
+         MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, false);
+         if (res == MusEFile::File::NoError)
+         {
+            MusECore::Xml tmpXml = MusECore::Xml(f.iodevice());
             // Write the part. Indicate that it's a copy operation - to add special markers,
             //  and force full wave paths.
             part->write(0, tmpXml, true, true);
-            fclose(fp);
+            f.close();
          }
       }
       break;
@@ -4377,7 +4379,7 @@ bool PartCanvas::selectLasso(bool toggle, MusECore::Undo* undo)
         {
           MusECore::CtrlList* cl = icll->second;
           // Do not include hidden controller lists.
-          if(!cl->isVisible())
+          if (cl->dontShow() || !cl->isVisible())
             continue;
 
           if(lasso_SFrame >= lasso_EFrame)
@@ -7590,7 +7592,7 @@ bool PartCanvas::copyAudioAutomation(
     {
       MusECore::CtrlList* cl = icll->second;
       // Do not include hidden controller lists.
-      if(!cl->isVisible())
+      if (cl->dontShow() || !cl->isVisible())
         continue;
       int i = 0;
       bool itemFound = false;
@@ -7612,7 +7614,7 @@ bool PartCanvas::copyAudioAutomation(
           //  the paste side can have some kind of indexing and ordering to work with.
           // This way at least basic HORIZONTAL drag and drop or copy and paste should work.
           const QString s= QString("audioTrackAutomation trackUuid=\"%1\"").arg(track->uuid().toString());
-          xml.tag(level++, s.toLatin1().constData());
+          xml.tag(level++, s.toUtf8().constData());
           clFound = true;
         }
         if(!itemFound)
@@ -7638,7 +7640,7 @@ bool PartCanvas::copyAudioAutomation(
           const QString s= QString("controller id=\"%1\" valueType=\"%2\" min=\"%3\" max=\"%4\" samplerate=\"%5\"")
               .arg(cl->id()).arg(cl->valueType()).arg(MusELib::museStringFromDouble(cl->minVal())).
               arg(MusELib::museStringFromDouble(cl->maxVal())).arg(MusEGlobal::sampleRate);
-          xml.tag(level++, s.toLatin1().constData());
+          xml.tag(level++, s.toUtf8().constData());
 
           itemFound = true;
         }
@@ -7666,7 +7668,7 @@ bool PartCanvas::copyAudioAutomation(
 
         s += QString(", ");
 
-        xml.nput(level, s.toLatin1().constData());
+        xml.nput(level, s.toUtf8().constData());
         ++i;
         if (i >= 4) {
           xml.put(level, "");
@@ -7679,12 +7681,12 @@ bool PartCanvas::copyAudioAutomation(
       {
         if(i)
           xml.put(level, "");
-        xml.etag(level--, "controller");
+        xml.etag(--level, "controller");
       }
 
     }
     if(clFound)
-      xml.etag(level--, "audioTrackAutomation");
+      xml.etag(--level, "audioTrackAutomation");
   }
 
   return haveData;
@@ -7919,7 +7921,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       else
       {
         if(MusEGlobal::debugMsg && event->mimeData()->formats().size() != 0)
-          printf("Drop with unknown format. First format:<%s>\n", event->mimeData()->formats()[0].toLatin1().constData());
+          printf("Drop with unknown format. First format:<%s>\n", event->mimeData()->formats()[0].toLocal8Bit().constData());
         //event->ignore();                     // TODO CHECK Tim.
         return;
       }
@@ -9704,7 +9706,7 @@ void PartCanvas::controllerChanged(
     MusECore::ciCtrlList icl = at->controller()->find(ctrlId);
     if(icl != at->controller()->cend())
     {
-      if(icl->second->isVisible())
+      if (!icl->second->dontShow() && icl->second->isVisible())
         track_cl = icl->second;
     }
   }
@@ -10596,7 +10598,7 @@ void PartCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
     {
       MusECore::CtrlList* cl = icll->second;
       // Do not include hidden controller lists.
-      if(!cl->isVisible())
+      if (cl->dontShow() || !cl->isVisible())
         continue;
       for(MusECore::ciCtrl ic = cl->cbegin(); ic != cl->cend(); ++ ic)
       {

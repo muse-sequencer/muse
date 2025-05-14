@@ -169,7 +169,7 @@ void Remove::write_configuration(int level, MusECore::Xml& xml)
   xml.intTag(level, "len_threshold", len_threshold);
   xml.intTag(level, "len_thres_used", len_thres_used);
   
-  xml.tag(level, "/erase");
+  xml.etag(--level, "erase");
 }
 
 } // namespace MusEGui

@@ -38,7 +38,10 @@ class QEvent;
 
 namespace MusECore {
 class AudioTrack;
+class PluginI;
 class Xml;
+class CtrlListList;
+class MidiAudioCtrlMap;
 }
 
 namespace MusEGui {
@@ -68,10 +71,11 @@ class EffectRack : public QListWidget {
       virtual QSize sizeHint() const;
       
       void startDragItem(int idx);
-      void initPlugin(MusECore::Xml xml, int idx);
+      MusECore::PluginI* initPlugin(MusECore::Xml xml, int idx,
+                                    MusECore::CtrlListList *cll = nullptr, MusECore::MidiAudioCtrlMap *macm = nullptr);
       QPoint dragPos;
       void savePreset(int idx);
-      void choosePlugin(QListWidgetItem* item, bool replace = false);
+      void choosePlugin(QListWidgetItem* item);
 
    private slots:
       void menuRequested(QListWidgetItem*);

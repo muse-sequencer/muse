@@ -73,8 +73,12 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       
       enum InstanceRoles { DeviceRole = Qt::UserRole, DeviceTypeRole = Qt::UserRole + 1};
       enum DeviceColumns { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_INSTR, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS };
-      enum InstanceColumns { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_REC, INSTCOL_PLAY, INSTCOL_GUI, INSTCOL_INROUTES, INSTCOL_OUTROUTES, INSTCOL_STATE };
-      
+      enum InstanceColumns { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_REC, INSTCOL_PLAY,
+        INSTCOL_GUI, INSTCOL_INROUTES, INSTCOL_OUTROUTES, INSTCOL_STATE };
+      enum SynthRoles { SYNTH_ROLE_TYPE = Qt::UserRole };
+      enum SynthColumns { SYNTHCOL_FILE = 0, SYNTHCOL_TYPE, SYNTHCOL_REFS,
+        SYNTHCOL_NAME, SYNTHCOL_VERSION, SYNTHCOL_DESCRIPTION };
+
       PopupMenu* defpup;
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
       QTimer *guiTimer;

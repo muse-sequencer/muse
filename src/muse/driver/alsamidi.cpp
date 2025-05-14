@@ -360,26 +360,29 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
       // This prevents bogus routes from being saved and propagated in the med file.  Tim.
       if(midiPort() == -1)
         return;
-     
+
       QString s;
-      for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) 
+      for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r)
       {
         if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
         {
           s = "Route";
           if(r->channel != -1)
             s += QString(" channel=\"%1\"").arg(r->channel);
-          xml.tag(level++, s.toLatin1().constData());
-          xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, Xml::xmlString(name()).toLatin1().constData());
+          xml.tag(level++, s);
+
+          xml.emptyTag(level, QString("source devtype=\"%1\" name=\"%2\"").arg(MidiDevice::ALSA_MIDI).arg(Xml::xmlString(name())));
+
           s = "dest";
           if(r->type == Route::MIDI_DEVICE_ROUTE)
-            s += QString(" devtype=\"%1\" name=\"%2\"/").arg(r->device->deviceType()).arg(Xml::xmlString(r->name()));
+            s += QString(" devtype=\"%1\" name=\"%2\"").arg(r->device->deviceType()).arg(Xml::xmlString(r->name()));
           else if(r->type == Route::TRACK_ROUTE)
             s += QString(" track=\"%1\"").arg(MusEGlobal::song->tracks()->index(r->track));
           else
-            s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
-          xml.tag(level, s.toLatin1().constData());
-          xml.etag(level--, "Route");
+            s += QString(" type=\"%1\" name=\"%2\"").arg(r->type).arg(Xml::xmlString(r->name()));
+          xml.emptyTag(level, s);
+
+          xml.etag(--level, "Route");
         }
       }
 }
@@ -392,7 +395,7 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
 bool MidiAlsaDevice::putAlsaEvent(snd_seq_event_t* event)
       {
       if (MusEGlobal::midiOutputTrace) {
-            fprintf(stderr, "ALSA MidiOut driver: <%s>: ", name().toLatin1().constData());
+            fprintf(stderr, "ALSA MidiOut driver: <%s>: ", name().toLocal8Bit().constData());
             dump(event);
             }
             
@@ -438,7 +441,7 @@ bool MidiAlsaDevice::putAlsaEvent(snd_seq_event_t* event)
 bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
 {
       if (MusEGlobal::midiOutputTrace) {
-            fprintf(stderr, "ALSA MidiOut pre-driver: <%s>: ", name().toLatin1().constData());
+            fprintf(stderr, "ALSA MidiOut pre-driver: <%s>: ", name().toLocal8Bit().constData());
             dumpMPEvent(&ev);
             }
             
@@ -1454,7 +1457,7 @@ void alsaScanMidiPorts()
                 continue;
                 
           DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts stopped: disabling device:%p %s\n", 
-                  d, d->name().toLatin1().constData());
+                  d, d->name().toLocal8Bit().constData());
           if(!idling)
           {
             // Not much choice but to idle both the audio and midi threads since 
@@ -1537,7 +1540,7 @@ void alsaScanMidiPorts()
                         break;
                         }
                   // Search by name if either of the client or port are 0.
-                  if(strcmp(k->name, d->name().toLatin1().constData()) == 0 &&
+                  if(strcmp(k->name, d->name().toUtf8().constData()) == 0 &&
                      ((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) || 
                       (d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == k->adr.port) ||
                       (d->adr.port == SND_SEQ_ADDRESS_UNKNOWN && d->adr.client == k->adr.client)))
@@ -1545,7 +1548,7 @@ void alsaScanMidiPorts()
                   }
             if (k == portList.end()) {
                   DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts nulling adr op:ModifyMidiDeviceAddress device:%p %s\n", 
-                          d, d->name().toLatin1().constData());
+                          d, d->name().toLocal8Bit().constData());
                   if(!idling)
                   {
                     // Not much choice but to idle both the audio and midi threads since 
@@ -1579,11 +1582,11 @@ void alsaScanMidiPorts()
                   if (d == 0)
                         continue;
                   DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts add: checking port:%s client:%d port:%d device:%p %s client:%d port:%d\n", 
-                          k->name, k->adr.client, k->adr.port, d, d->name().toLatin1().constData(), d->adr.client, d->adr.port);
+                          k->name, k->adr.client, k->adr.port, d, d->name().toLocal8Bit().constData(), d->adr.client, d->adr.port);
                   if (k->adr.client == d->adr.client && k->adr.port == d->adr.port)
                         break;
                   
-                  if((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN || d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) && strcmp(k->name, d->name().toLatin1().constData()) == 0)
+                  if((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN || d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) && strcmp(k->name, d->name().toUtf8().constData()) == 0)
                   {
                     if(d->adr.client != SND_SEQ_ADDRESS_UNKNOWN && d->adr.client != k->adr.client)
                     {
@@ -1600,7 +1603,7 @@ void alsaScanMidiPorts()
                     //if(d->adr.port == SND_SEQ_ADDRESS_UNKNOWN)
 //                       d->adr.port = k->adr.port;
                     DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts modifying adr op:ModifyMidiDeviceAddress device:%p %s client:%d port:%d\n", 
-                            d, d->name().toLatin1().constData(), k->adr.client, k->adr.port);
+                            d, d->name().toLocal8Bit().constData(), k->adr.client, k->adr.port);
                     
                     if(!idling)
                     {
@@ -1650,7 +1653,7 @@ void alsaScanMidiPorts()
                   //MidiAlsaDevice* dev = new MidiAlsaDevice(k->adr, QString(k->name));
                   dev->setrwFlags(k->flags);
                   DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts op:AddMidiDevice adding:%p %s adr.client:%d adr.port:%d\n", 
-                          dev, dev->name().toLatin1().constData(), k->adr.client, k->adr.port);
+                          dev, dev->name().toLocal8Bit().constData(), k->adr.client, k->adr.port);
 
                   //operations.add(PendingOperationItem(MusEGlobal::midiDevices, dev, PendingOperationItem::AddMidiDevice));
                   //MusEGlobal::midiDevices.addOperation(dev, operations);

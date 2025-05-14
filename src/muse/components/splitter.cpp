@@ -56,13 +56,13 @@ void Splitter::writeStatus(int level, MusECore::Xml& xml)
       {
       QList<int> vl = sizes();
       //xml.nput(level++, "<%s>", name());
-      xml.nput(level++, "<%s>", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
+      xml.nput(level++, "<%s>", MusECore::Xml::xmlString(objectName()).toUtf8().constData());
       QList<int>::iterator ivl = vl.begin();
       for (; ivl != vl.end(); ++ivl) {
             xml.nput("%d ", *ivl);
             }
       //xml.nput("</%s>\n", name());
-      xml.nput("</%s>\n", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
+      xml.nput("</%s>\n", MusECore::Xml::xmlString(objectName()).toUtf8().constData());
       }
 
 //---------------------------------------------------------

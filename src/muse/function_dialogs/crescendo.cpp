@@ -166,7 +166,7 @@ void Crescendo::write_configuration(int level, MusECore::Xml& xml)
   xml.intTag(level, "start", start_val);
   xml.intTag(level, "end", end_val);
   xml.intTag(level, "absolute", absolute);
-  xml.tag(level, "/crescendo");
+  xml.etag(--level, "crescendo");
 }
 
 void Crescendo::absolute_changed(bool val)

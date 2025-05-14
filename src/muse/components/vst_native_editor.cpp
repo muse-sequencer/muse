@@ -27,7 +27,6 @@
 
 #include "vst_native_editor.h"
 #include "vst_native.h"
-//#include "gconfig.h"
 
 #include <QtGlobal>
 #if defined(Q_WS_X11)
@@ -95,7 +94,7 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
 {
   setAttribute(Qt::WA_DeleteOnClose);
   m_fixScaling = false;
-  
+
   // TODO TEST Test if these might be helpful, especially opaque event.
             //setBackgroundRole(QPalette::NoRole);
             //setAttribute(Qt::WA_NoSystemBackground);
@@ -108,7 +107,6 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
 
 VstNativeEditor::~VstNativeEditor()
 {
-   close();
    if(_sif)
    {
      _sif->editorDeleted();
@@ -119,6 +117,11 @@ VstNativeEditor::~VstNativeEditor()
       _pstate->editorDeleted();
       _pstate = nullptr;
    }
+}
+
+void VstNativeEditor::updateWindowTitle(const QString& title)
+{
+  setWindowTitle(title);
 }
 
 //---------------------------------------------------------------------
@@ -174,19 +177,6 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativeP
     _vstEventProc = getXEventProc(_display, _vstEditor);
 #endif
     
-  QString windowTitle = "VST plugin editor";
-  if(_sif && _sif->track())
-  {
-     windowTitle = _sif->track()->name() + ":" + _sif->pluginLabel();
-  }
-  else if(_pstate && _pstate->pluginI->track())
-  {
-     windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginWrapper->_synth->name();
-  }
-
-  setWindowTitle(windowTitle);
-
-  //_sif->editorOpened();
   if(!isVisible())
     show();
   raise();
@@ -257,11 +247,13 @@ void VstNativeEditor::closeEvent(QCloseEvent *pCloseEvent)
       resizeTimerId = 0;
    }*/
 
+   pCloseEvent->accept();
    QWidget::closeEvent(pCloseEvent);
 }
 
 void VstNativeEditor::close()
 {
+   // Note that we delete on close, but that will happen later.
    QWidget::close();
    if(_sif)
    {
@@ -269,7 +261,7 @@ void VstNativeEditor::close()
      _sif->editorClosed();
    }
 
-   if(_pstate)
+   if(_pstate && _pstate->plugin)
    {
       _pstate->plugin->dispatcher(_pstate->plugin, effEditClose, 0, 0, nullptr, 0.0f);
       _pstate->editorClosed();

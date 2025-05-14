@@ -149,7 +149,7 @@ void Transpose::write_configuration(int level, MusECore::Xml& xml)
   xml.intTag(level, "range", _range);
   xml.intTag(level, "parts", _parts);
   xml.intTag(level, "amount", amount);
-  xml.tag(level, "/transpose");
+  xml.etag(--level, "transpose");
 }
 
 } // namespace MusEGui

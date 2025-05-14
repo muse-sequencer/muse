@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="3.5">
+<muse version="4.0">
   <song>
     <info></info>
     <showinfo>1</showinfo>
@@ -22,200 +22,240 @@
     <follow>1</follow>
     <sampleRate>44100</sampleRate>
     <AudioOutput>
-      <name>Out 1</name>
-      <record>0</record>
-      <mute>0</mute>
-      <solo>0</solo>
-      <off>0</off>
-      <channels>2</channels>
-      <locked>1</locked>
-      <selected>1</selected>
-      <prefader>0</prefader>
-      <sendMetronome>1</sendMetronome>
-      <automation>0</automation>
-      <controller id="0" cur="1.02164" color="#ff0000" visible="0">
+      <AudioTrack>
+        <Track>
+          <name>Out 1</name>
+          <record>0</record>
+          <mute>0</mute>
+          <solo>0</solo>
+          <off>0</off>
+          <channels>2</channels>
+          <locked>1</locked>
+          <selected>1</selected>
+        </Track>
+        <prefader>0</prefader>
+        <sendMetronome>1</sendMetronome>
+        <automation>0</automation>
+        <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>
-      <controller id="1" cur="0" color="#ff0000" visible="0">
+        <controller id="1" cur="0" color="#ff0000" visible="0">
         </controller>
-      <controller id="2" cur="0" color="#0000ff" visible="0">
+        <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
-      </AudioOutput>
+      </AudioTrack>
+    </AudioOutput>
     <AudioInput>
-      <name>Input 1</name>
-      <record>0</record>
-      <mute>1</mute>
-      <solo>0</solo>
-      <off>0</off>
-      <channels>2</channels>
-      <locked>1</locked>
-      <prefader>0</prefader>
-      <sendMetronome>0</sendMetronome>
-      <automation>0</automation>
-      <auxSend idx="0">0</auxSend>
-      <auxSend idx="1">0</auxSend>
-      <controller id="0" cur="1.02164" color="#ff0000" visible="0">
+      <AudioTrack>
+        <Track>
+          <name>Input 1</name>
+          <record>0</record>
+          <mute>1</mute>
+          <solo>0</solo>
+          <off>0</off>
+          <channels>2</channels>
+          <locked>1</locked>
+        </Track>
+        <prefader>0</prefader>
+        <sendMetronome>0</sendMetronome>
+        <automation>0</automation>
+        <auxSend idx="0">0</auxSend>
+        <auxSend idx="1">0</auxSend>
+        <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>
-      <controller id="1" cur="0" color="#ff0000" visible="0">
+        <controller id="1" cur="0" color="#ff0000" visible="0">
         </controller>
-      <controller id="2" cur="0" color="#0000ff" visible="0">
+        <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
-      </AudioInput>
+      </AudioTrack>
+    </AudioInput>
     <wavetrack>
-      <name>Track 1</name>
-      <record>0</record>
-      <mute>0</mute>
-      <solo>0</solo>
-      <off>0</off>
-      <channels>1</channels>
-      <locked>0</locked>
-      <prefader>0</prefader>
-      <sendMetronome>0</sendMetronome>
-      <automation>0</automation>
-      <auxSend idx="0">0</auxSend>
-      <auxSend idx="1">0</auxSend>
-      <controller id="0" cur="1.02164" color="#ff0000" visible="0">
+      <AudioTrack>
+        <Track>
+          <name>Track 1</name>
+          <record>0</record>
+          <mute>0</mute>
+          <solo>0</solo>
+          <off>0</off>
+          <channels>1</channels>
+          <locked>0</locked>
+        </Track>
+        <prefader>0</prefader>
+        <sendMetronome>0</sendMetronome>
+        <automation>0</automation>
+        <auxSend idx="0">0</auxSend>
+        <auxSend idx="1">0</auxSend>
+        <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>
-      <controller id="1" cur="0" color="#ff0000" visible="0">
+        <controller id="1" cur="0" color="#ff0000" visible="0">
         </controller>
-      <controller id="2" cur="0" color="#0000ff" visible="0">
+        <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
-      </wavetrack>
+      </AudioTrack>
+    </wavetrack>
     <wavetrack>
-      <name>Track 2</name>
-      <record>0</record>
-      <mute>0</mute>
-      <solo>0</solo>
-      <off>0</off>
-      <channels>1</channels>
-      <locked>1</locked>
-      <prefader>0</prefader>
-      <sendMetronome>0</sendMetronome>
-      <automation>0</automation>
-      <auxSend idx="0">0</auxSend>
-      <auxSend idx="1">0</auxSend>
-      <controller id="0" cur="1.02164" color="#ff0000" visible="0">
+      <AudioTrack>
+        <Track>
+          <name>Track 2</name>
+          <record>0</record>
+          <mute>0</mute>
+          <solo>0</solo>
+          <off>0</off>
+          <channels>1</channels>
+          <locked>1</locked>
+        </Track>
+        <prefader>0</prefader>
+        <sendMetronome>0</sendMetronome>
+        <automation>0</automation>
+        <auxSend idx="0">0</auxSend>
+        <auxSend idx="1">0</auxSend>
+        <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>
-      <controller id="1" cur="0" color="#ff0000" visible="0">
+        <controller id="1" cur="0" color="#ff0000" visible="0">
         </controller>
-      <controller id="2" cur="0" color="#0000ff" visible="0">
+        <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
-      </wavetrack>
+      </AudioTrack>
+    </wavetrack>
     <wavetrack>
-      <name>Track 3</name>
-      <record>0</record>
-      <mute>0</mute>
-      <solo>0</solo>
-      <off>0</off>
-      <channels>1</channels>
-      <locked>0</locked>
-      <prefader>0</prefader>
-      <sendMetronome>0</sendMetronome>
-      <automation>0</automation>
-      <auxSend idx="0">0</auxSend>
-      <auxSend idx="1">0</auxSend>
-      <controller id="0" cur="1.02164" color="#ff0000" visible="0">
+      <AudioTrack>
+        <Track>
+          <name>Track 3</name>
+          <record>0</record>
+          <mute>0</mute>
+          <solo>0</solo>
+          <off>0</off>
+          <channels>1</channels>
+          <locked>0</locked>
+        </Track>
+        <prefader>0</prefader>
+        <sendMetronome>0</sendMetronome>
+        <automation>0</automation>
+        <auxSend idx="0">0</auxSend>
+        <auxSend idx="1">0</auxSend>
+        <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>
-      <controller id="1" cur="0" color="#ff0000" visible="0">
+        <controller id="1" cur="0" color="#ff0000" visible="0">
         </controller>
-      <controller id="2" cur="0" color="#0000ff" visible="0">
+        <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
-      </wavetrack>
+      </AudioTrack>
+    </wavetrack>
     <wavetrack>
-      <name>Track 4</name>
-      <record>0</record>
-      <mute>0</mute>
-      <solo>0</solo>
-      <off>0</off>
-      <channels>1</channels>
-      <locked>0</locked>
-      <prefader>0</prefader>
-      <sendMetronome>0</sendMetronome>
-      <automation>0</automation>
-      <auxSend idx="0">0</auxSend>
-      <auxSend idx="1">0</auxSend>
-      <controller id="0" cur="1.02164" color="#ff0000" visible="0">
+      <AudioTrack>
+        <Track>
+          <name>Track 4</name>
+          <record>0</record>
+          <mute>0</mute>
+          <solo>0</solo>
+          <off>0</off>
+          <channels>1</channels>
+          <locked>0</locked>
+        </Track>
+        <prefader>0</prefader>
+        <sendMetronome>0</sendMetronome>
+        <automation>0</automation>
+        <auxSend idx="0">0</auxSend>
+        <auxSend idx="1">0</auxSend>
+        <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>
-      <controller id="1" cur="0" color="#ff0000" visible="0">
+        <controller id="1" cur="0" color="#ff0000" visible="0">
         </controller>
-      <controller id="2" cur="0" color="#0000ff" visible="0">
+        <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
-      </wavetrack>
+      </AudioTrack>
+    </wavetrack>
     <AudioGroup>
-      <name>Group 1</name>
-      <record>0</record>
-      <mute>0</mute>
-      <solo>0</solo>
-      <off>0</off>
-      <channels>1</channels>
-      <locked>1</locked>
-      <prefader>0</prefader>
-      <sendMetronome>0</sendMetronome>
-      <automation>0</automation>
-      <auxSend idx="0">0</auxSend>
-      <auxSend idx="1">0</auxSend>
-      <controller id="0" cur="1.02164" color="#ff0000" visible="0">
+      <AudioTrack>
+        <Track>
+          <name>Group 1</name>
+          <record>0</record>
+          <mute>0</mute>
+          <solo>0</solo>
+          <off>0</off>
+          <channels>1</channels>
+          <locked>1</locked>
+        </Track>
+        <prefader>0</prefader>
+        <sendMetronome>0</sendMetronome>
+        <automation>0</automation>
+        <auxSend idx="0">0</auxSend>
+        <auxSend idx="1">0</auxSend>
+        <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>
-      <controller id="1" cur="0" color="#ff0000" visible="0">
+        <controller id="1" cur="0" color="#ff0000" visible="0">
         </controller>
-      <controller id="2" cur="0" color="#0000ff" visible="0">
+        <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
-      </AudioGroup>
+      </AudioTrack>
+    </AudioGroup>
     <AudioGroup>
-      <name>Group 2</name>
-      <record>0</record>
-      <mute>0</mute>
-      <solo>0</solo>
-      <off>0</off>
-      <channels>1</channels>
-      <locked>0</locked>
-      <prefader>0</prefader>
-      <sendMetronome>0</sendMetronome>
-      <automation>0</automation>
-      <auxSend idx="0">0</auxSend>
-      <auxSend idx="1">0</auxSend>
-      <controller id="0" cur="1.02164" color="#ff0000" visible="0">
+      <AudioTrack>
+        <Track>
+          <name>Group 2</name>
+          <record>0</record>
+          <mute>0</mute>
+          <solo>0</solo>
+          <off>0</off>
+          <channels>1</channels>
+          <locked>0</locked>
+        </Track>
+        <prefader>0</prefader>
+        <sendMetronome>0</sendMetronome>
+        <automation>0</automation>
+        <auxSend idx="0">0</auxSend>
+        <auxSend idx="1">0</auxSend>
+        <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>
-      <controller id="1" cur="0" color="#ff0000" visible="0">
+        <controller id="1" cur="0" color="#ff0000" visible="0">
         </controller>
-      <controller id="2" cur="0" color="#0000ff" visible="0">
+        <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
-      </AudioGroup>
+      </AudioTrack>
+    </AudioGroup>
     <AudioAux>
-      <name>Aux 1</name>
-      <record>0</record>
-      <mute>0</mute>
-      <solo>0</solo>
-      <off>0</off>
-      <channels>2</channels>
-      <locked>1</locked>
-      <prefader>0</prefader>
-      <sendMetronome>0</sendMetronome>
-      <automation>0</automation>
-      <controller id="0" cur="1.02164" color="#ff0000" visible="0">
+      <AudioTrack>
+        <Track>
+          <name>Aux 1</name>
+          <record>0</record>
+          <mute>0</mute>
+          <solo>0</solo>
+          <off>0</off>
+          <channels>2</channels>
+          <locked>1</locked>
+        </Track>
+        <prefader>0</prefader>
+        <sendMetronome>0</sendMetronome>
+        <automation>0</automation>
+        <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>
-      <controller id="1" cur="0" color="#ff0000" visible="0">
+        <controller id="1" cur="0" color="#ff0000" visible="0">
         </controller>
-      <controller id="2" cur="0" color="#0000ff" visible="0">
+        <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
-      </AudioAux>
+      </AudioTrack>
+    </AudioAux>
     <AudioAux>
-      <name>Aux 2</name>
-      <record>0</record>
-      <mute>0</mute>
-      <solo>0</solo>
-      <off>0</off>
-      <channels>2</channels>
-      <locked>1</locked>
-      <prefader>0</prefader>
-      <sendMetronome>0</sendMetronome>
-      <automation>0</automation>
-      <controller id="0" cur="1.02164" color="#ff0000" visible="0">
+      <AudioTrack>
+        <Track>
+          <name>Aux 2</name>
+          <record>0</record>
+          <mute>0</mute>
+          <solo>0</solo>
+          <off>0</off>
+          <channels>2</channels>
+          <locked>1</locked>
+        </Track>
+        <prefader>0</prefader>
+        <sendMetronome>0</sendMetronome>
+        <automation>0</automation>
+        <controller id="0" cur="1.02164" color="#ff0000" visible="0">
         </controller>
-      <controller id="1" cur="0" color="#ff0000" visible="0">
+        <controller id="1" cur="0" color="#ff0000" visible="0">
         </controller>
-      <controller id="2" cur="0" color="#0000ff" visible="0">
+        <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
-      </AudioAux>
+      </AudioTrack>
+    </AudioAux>
     <Route channel="0">
       <source name="Out 1"/>
       <dest type="1" name="system:playback_1"/>

@@ -71,6 +71,7 @@ class MidiPart;
 class Undo;
 struct UndoOp;
 class UndoList;
+class PluginI;
 
 //---------------------------------------------------------
 //    Song
@@ -198,6 +199,11 @@ class Song : public QObject {
       Event changeEventOperation(const Event& oldEvent, const Event& newEvent,
                                 Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       Event deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+      // These return false on error.
+      bool swapPluginsOperation(UndoOp *i);
+      bool changePluginOperation(UndoOp *i);
+      bool movePluginOperation(UndoOp *i);
+      bool revertMovePluginOperation(UndoOp *i);
 
       void checkSongSampleRate();
       
@@ -205,6 +211,53 @@ class Song : public QObject {
 
       // Fills operations if given, otherwise creates and executes its own operations list.
       void processTrackAutomationEvents(AudioTrack *atrack, Undo* operations = 0);
+
+      //-----------------------------------------------------
+      // Helpers for informing tracks and their rack plugins
+      //  plugins that title bars are about to change.
+      //-----------------------------------------------------
+      // Informs a track's plugin UI and all of its rack plugins that the title bars are about to change.
+      void PluginGuiTitlesAboutToChange(Track*) const;
+      // Informs an inclusive range of tracks' UIs and ALL of
+      //  each track's rack plugins that the title bars are about to change. ([0, 0] = first.)
+      // If trackNumTo less than 0, it means to the end of the list.
+      void PluginGuiTitlesAboutToChange(int trackNumFrom, int trackNumTo = -1) const;
+      // Informs an inclusive range of a track's effects rack plugin UIs
+      //  that the title bars are about to change. ([0, 0] = first.)
+      // This does NOT inform a track's plugin UI, only a track's effect rack plugins.
+      // If effRackPosTo is less than 0, it means to the end of the list.
+      void PluginGuiTitlesAboutToChange(Track*, int effRackPosFrom, int effRackPosTo = -1) const;
+      //--------------------------------------------------------
+
+      //--------------------------------------------------------
+      // Show pending plugin UIs.
+      //--------------------------------------------------------
+      // Shows pending UIs for a track's editor and all of its rack plugins.
+      void showPendingPluginGuis(Track*) const;
+      // Shows pending UIs for an inclusive range of tracks' editors and ALL of
+      //  each track's rack plugins. ([0, 0] = first.)
+      // If trackNumTo less than 0, it means to the end of the list.
+      void showPendingPluginGuis(int trackNumFrom, int trackNumTo = -1) const;
+      // Shows pending UIs for an inclusive range of a track's effects rack plugin editors. ([0, 0] = first.)
+      // This does NOT show a pending UI for track's editor, only a track's effect rack plugins.
+      // If effRackPosTo is less than 0, it means to the end of the list.
+      void showPendingPluginGuis(Track*, int effRackPosFrom, int effRackPosTo = -1) const;
+      //--------------------------------------------------------
+
+      //--------------------------------------------------------
+      // Update track and or plugin UI window titles.
+      //--------------------------------------------------------
+      // Updates a track's editor and all of its rack plugins.
+      void updateUiWindowTitles(Track*) const;
+      // Updates an inclusive range of tracks' editors and ALL of
+      //  each track's rack plugins. ([0, 0] = first.)
+      // If trackNumTo less than 0, it means to the end of the list.
+      void updateUiWindowTitles(int trackNumFrom, int trackNumTo = -1) const;
+      // Updates an inclusive range of a track's effects rack plugin editors. ([0, 0] = first.)
+      // This does NOT update a track's editor, only a track's effect rack plugins.
+      // If effRackPosTo is less than 0, it means to the end of the list.
+      void updateUiWindowTitles(Track*, int effRackPosFrom, int effRackPosTo = -1) const;
+      //--------------------------------------------------------
 
    protected:
       // Internal routine for preparing the operation that ends audio controller movement mode.
@@ -451,7 +504,15 @@ class Song : public QObject {
       GroupList* groups()       { return &_groups;  }
       AuxList* auxs()           { return &_auxs;    }
       SynthIList* syntis()      { return &_synthIs; }
-      
+      const TrackList* tracks() const       { return &_tracks;  }
+      const MidiTrackList* midis() const    { return &_midis;   }
+      const WaveTrackList* waves() const    { return &_waves;   }
+      const InputList* inputs() const       { return &_inputs;  }
+      const OutputList* outputs() const     { return &_outputs; }
+      const GroupList* groups() const       { return &_groups;  }
+      const AuxList* auxs() const           { return &_auxs;    }
+      const SynthIList* syntis() const      { return &_synthIs; }
+
       Track* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
       bool trackExists(const Track* t) const { return _tracks.find(t) != _tracks.cend(); }
@@ -471,6 +532,10 @@ class Song : public QObject {
         if(!select) // Not essential, but if unselecting ALL tracks, clear the static counter.
           Track::clearSelectionOrderCounter();
       }
+      // Returns the first rack plugin instance with the given name found in any track.
+      PluginI* findRackPlugin(const QString &);
+      // Returns the first rack plugin instance with the given name found in any track. Const version.
+      const PluginI* findRackPlugin(const QString &) const;
 
       void readRoute(Xml& xml);
       void recordEvent(MidiTrack*, Event&);
@@ -555,8 +620,9 @@ class Song : public QObject {
       //   Configuration
       //-----------------------------------------
 
-      SynthI* createSynthI(const QString& sclass, const QString& uri, const QString& label = QString(),
-                           Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
+      SynthI* createSynthI(MusEPlugin::PluginType type, const QString& file,
+                           const QString& uri, const QString& label = QString(),
+                           Track* insertAt = 0);
       MidiRemote* midiRemote();
 
       //-----------------------------------------

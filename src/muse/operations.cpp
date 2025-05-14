@@ -36,6 +36,7 @@
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 #include "midiremote.h"
+#include "plugin.h"
 
 // Enable for debugging:
 //#define _PENDING_OPS_DEBUG_
@@ -209,6 +210,10 @@ unsigned int PendingOperationItem::getIndex() const
     case UpdateAudioCtrlListGroups:
     case UpdateAudioCtrlGroups:
     case UpdateAudioCtrlPosGroups:
+    case SetRackEffectPlugin:
+    case SwapRackEffectPlugins:
+    case MoveRackEffectPlugin:
+    case ModifyMidiAudioCtrlMap:
 
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
@@ -1332,7 +1337,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
                        _aud_ctrl_list_list, _src_aud_ctrl_list_list);
       if(_aud_ctrl_list_list && _src_aud_ctrl_list_list)
       {
-        // Transfers the original list back to _aud_ctrl_list_list so it can be deleted in the non-RT stage.
+        // Transfers the original list back to _src_aud_ctrl_list_list so it can be deleted in the non-RT stage.
         _aud_ctrl_list_list->swap(*_src_aud_ctrl_list_list);
       }
       flags |= SC_AUDIO_CONTROLLER_LIST;
@@ -1678,6 +1683,112 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
 
+    case SetRackEffectPlugin:
+    {
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetRackEffectPlugin: track:%p pluginI:%p rackPos:%d\n",
+              _track, _pluginI, _rackEffectPos);
+      // NOTE: Caller is responsible for dealing with any existing plugin at the position, if desired.
+      //       Otherwise we delete it, below.
+      if(_track && !_track->isMidiTrack())
+      {
+        AudioTrack *at = static_cast<AudioTrack*>(_track);
+        Pipeline *pl = at->efxPipe();
+        if(pl && _rackEffectPos >= 0 && _rackEffectPos < (int)pl->size() && _rackEffectPos < MusECore::PipelineDepth)
+        {
+          // _pluginI can be null.
+          if(_pluginI)
+          {
+            // Enforce the plugin's track and index, even if they might have already been set.
+            _pluginI->setID(_rackEffectPos);
+            _pluginI->setTrack(at);
+          }
+
+          PluginI *ptmp = pl->at(_rackEffectPos);
+          pl->at(_rackEffectPos) = _pluginI;
+          // Transfer the original plugin pointer back to _pluginI so it can be deleted (if valid) in the non-RT stage.
+          _pluginI = ptmp;
+
+          flags |= SC_RACK;
+        }
+      }
+    }
+    break;
+
+    case SwapRackEffectPlugins:
+    {
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SwapRackEffectPlugins: track:%p rackPos:%d newRackPos:%d\n",
+              _track, _rackEffectPos, _newRackEffectPos);
+      if(_track && !_track->isMidiTrack())
+      {
+        AudioTrack *at = static_cast<AudioTrack*>(_track);
+        Pipeline *pl = at->efxPipe();
+        if(pl && _rackEffectPos >= 0 && _rackEffectPos < (int)pl->size() && _rackEffectPos < MusECore::PipelineDepth &&
+           _newRackEffectPos >= 0 && _newRackEffectPos < (int)pl->size() && _newRackEffectPos < MusECore::PipelineDepth)
+        {
+          PluginI *ptmp = pl->at(_rackEffectPos);
+          PluginI *newptmp = pl->at(_newRackEffectPos);
+          if(ptmp)
+            ptmp->setID(_newRackEffectPos);
+          if(newptmp)
+            newptmp->setID(_rackEffectPos);
+          pl->at(_rackEffectPos) = newptmp;
+          pl->at(_newRackEffectPos) = ptmp;
+          flags |= SC_RACK;
+        }
+      }
+    }
+    break;
+
+    case MoveRackEffectPlugin:
+    {
+      DEBUG_OPERATIONS(stderr,
+        "PendingOperationItem::executeRTStage MoveRackEffectPlugin: srcTrack:%p dstTrack:%p srcRackPos:%d dstRackPos:%d\n",
+        _srcTrack, _track, _rackEffectPos, _newRackEffectPos);
+      if(_srcTrack && _track && !_srcTrack->isMidiTrack() && !_track->isMidiTrack())
+      {
+        AudioTrack *sat = static_cast<AudioTrack*>(_srcTrack);
+        AudioTrack *dat = static_cast<AudioTrack*>(_track);
+        Pipeline *spl = sat->efxPipe();
+        Pipeline *dpl = dat->efxPipe();
+        if(spl && dpl && _rackEffectPos >= 0 && _rackEffectPos < (int)spl->size() && _rackEffectPos < MusECore::PipelineDepth &&
+           _newRackEffectPos >= 0 && _newRackEffectPos < (int)dpl->size() && _newRackEffectPos < MusECore::PipelineDepth)
+        {
+          PluginI *sp = spl->at(_rackEffectPos);
+          if(sp)
+          {
+            PluginI *dp = dpl->at(_newRackEffectPos);
+
+            // Enforce the plugin's new track and index, even if they might have already been set.
+            sp->setID(_newRackEffectPos);
+            sp->setTrack(dat);
+
+            // Fill the source slot with the given pluginI, which is null by default.
+            spl->at(_rackEffectPos) = _pluginI;
+            // Fill the destination slot with the original source pluginI.
+            dpl->at(_newRackEffectPos) = sp;
+
+            // Transfer the original destination plugin pointer back to _pluginI
+            //  so it can be deleted (if valid) in the non-RT stage.
+            _pluginI = dp;
+
+            flags |= SC_RACK;
+          }
+        }
+      }
+    }
+    break;
+
+    case ModifyMidiAudioCtrlMap:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyMidiAudioCtrlMap: old map:%p new map:%p\n",
+                       _midi_audio_ctrl_map, _src_midi_audio_ctrl_map);
+      if(_midi_audio_ctrl_map && _src_midi_audio_ctrl_map)
+      {
+        // Transfers the original list back to _src_midi_audio_ctrl_map so it can be deleted in the non-RT stage.
+        _midi_audio_ctrl_map->swap(*_src_midi_audio_ctrl_map);
+      }
+      flags |= SC_MIDI_AUDIO_CTRL_MAPPER;
+    break;
+
     case Uninitialized:
     break;
     
@@ -1887,6 +1998,27 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
       // Done with _newMidiRemote. Delete it now.
       if(_newMidiRemote)
         delete _newMidiRemote;
+    break;
+
+    case SetRackEffectPlugin:
+      // At this point _pluginI might contain an original plugin that was replaced.
+      // Delete it now.
+      if(_pluginI)
+        delete _pluginI;
+    break;
+
+    case MoveRackEffectPlugin:
+      // At this point _pluginI might contain an original plugin that was replaced.
+      // Delete it now.
+      if(_pluginI)
+        delete _pluginI;
+    break;
+
+    case ModifyMidiAudioCtrlMap:
+      // At this point _src_midi_audio_ctrl_map contains all the items that were in the original list, via swap().
+      // Delete it now.
+      if(_src_midi_audio_ctrl_map)
+        delete _src_midi_audio_ctrl_map;
     break;
 
     default:
@@ -2642,6 +2774,9 @@ bool PendingOperationList::add(PendingOperationItem op)
           else if (poi._aud_ctrl_list_list == op._aud_ctrl_list_list || poi._src_aud_ctrl_list_list == op._aud_ctrl_list_list)
           {
             // Simply replace the list.
+            // To avoid memory leaks, delete the original list.
+            if(poi._src_aud_ctrl_list_list)
+              delete poi._src_aud_ctrl_list_list;
             poi._src_aud_ctrl_list_list = op._src_aud_ctrl_list_list;
             // An operation will still take place.
             return true;
@@ -2691,7 +2826,10 @@ bool PendingOperationList::add(PendingOperationItem op)
           (poi._iCtrlList->second == op._iCtrlList->second || poi._aud_ctrl_list == op._iCtrlList->second))
         {
           // Simply replace the list.
-          poi._aud_ctrl_list = op._aud_ctrl_list; 
+          // To avoid memory leaks, delete the original list.
+          if(poi._aud_ctrl_list)
+            delete poi._aud_ctrl_list;
+          poi._aud_ctrl_list = op._aud_ctrl_list;
           // An operation will still take place.
           return true;
         }
@@ -3236,6 +3374,65 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
       
+      case PendingOperationItem::SetRackEffectPlugin:
+        if(poi._type == PendingOperationItem::SetRackEffectPlugin)
+        {
+          if(poi._track == op._track && poi._pluginI == op._pluginI && poi._rackEffectPos == op._rackEffectPos)
+          {
+              fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetRackEffectPlugin. Ignoring.\n");
+              // No operation will take place.
+              return false;
+          }
+          else if(poi._track == op._track && poi._rackEffectPos == op._rackEffectPos)
+          {
+            // Simply replace the plugin.
+            // To avoid memory leaks, delete the original plugin.
+            if(poi._pluginI)
+              delete poi._pluginI;
+            poi._pluginI = op._pluginI;
+            // An operation will still take place.
+            return true;
+          }
+          // It's OK to set null to more than one slot.
+          else if(op._pluginI && poi._pluginI == op._pluginI)
+          {
+            fprintf(stderr,
+              "MusE error: PendingOperationList::add(): SetRackEffectPlugin: Cannot set same plugin to more than one slot. Ignoring.\n");
+            return false;
+          }
+        }
+      break;
+
+      case PendingOperationItem::SwapRackEffectPlugins:
+        // TODO: Not much required here... It's OK if multiple swaps appear.
+      break;
+
+      case PendingOperationItem::MoveRackEffectPlugin:
+        // TODO:
+      break;
+
+      case PendingOperationItem::ModifyMidiAudioCtrlMap:
+        if(poi._type == PendingOperationItem::ModifyMidiAudioCtrlMap)
+        {
+          if(op._midi_audio_ctrl_map == op._src_midi_audio_ctrl_map)
+          {
+            ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): ModifyMidiAudioCtrlMap: Both lists the same. Ignoring.\n");
+            return false;
+          }
+          // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+          else if (poi._midi_audio_ctrl_map == op._midi_audio_ctrl_map || poi._src_midi_audio_ctrl_map == op._midi_audio_ctrl_map)
+          {
+            // Simply replace the list.
+            // To avoid memory leaks, delete the original plugin.
+            if(poi._src_midi_audio_ctrl_map)
+              delete poi._src_midi_audio_ctrl_map;
+            poi._src_midi_audio_ctrl_map = op._src_midi_audio_ctrl_map;
+            // An operation will still take place.
+            return true;
+          }
+        }
+      break;
+
       case PendingOperationItem::Uninitialized:
         ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Uninitialized item. Ignoring.\n");
         return false;  

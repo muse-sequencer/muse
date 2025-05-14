@@ -873,6 +873,8 @@ QPoint WaveCanvas::raster(const QPoint& p) const
 
 #define WHEEL_STEPSIZE 50
 #define WHEEL_DELTA   120
+#define WHEEL_ANGLE_DELTA   15
+
 //---------------------------------------------------------
 //   wheelEvent
 //---------------------------------------------------------
@@ -889,7 +891,7 @@ void WaveCanvas::wheelEvent(QWheelEvent* ev)
   if(!pixelDelta.isNull())
       delta = pixelDelta.y();
   else if(!angleDegrees.isNull())
-      delta = angleDegrees.y() / 15;
+      delta = angleDegrees.y() / WHEEL_ANGLE_DELTA;
   else
     return;
 
@@ -4864,7 +4866,7 @@ void WaveCanvas::cmd(int cmd)
 //                         tmp_sx < (int)event_startpos ? sx = event_startpos : sx = tmp_sx;
 //                         tmp_ex > (int)event_length   ? ex = event_length   : ex = tmp_ex;
 // 
-//                         //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLatin1().constData());
+//                         //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLocal8Bit().constData());
 //                         MusECore::WaveEventSelection s;
 //                         s.event = event;  
 //                         s.startframe = sx;
@@ -4936,7 +4938,7 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
                         tmp_sx < event_startpos ? sx = event_startpos : sx = tmp_sx;
                         tmp_ex > event_length   ? ex = event_length   : ex = tmp_ex;
 
-                        //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLatin1().constData());
+                        //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLocal8Bit().constData());
                         MusECore::WaveEventSelection s;
                         s.event = event;  
                         s.startframe = sx;
@@ -4996,7 +4998,7 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
                         tmp_sx < (int)event_startpos ? sx = event_startpos : sx = tmp_sx;
                         tmp_ex > (int)event_length   ? ex = event_length   : ex = tmp_ex;
 
-                        //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLatin1().constData());
+                        //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLocal8Bit().constData());
                         MusECore::WaveEventSelection s;
                         s.event = event;  
                         s.startframe = sx;
@@ -5101,7 +5103,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                 QFile qf(file.canonicalPath());
                 if(!qf.copy(newFilePath)) // Copy the file
                 {
-                  printf("MusE Error: Could not copy to new sound file (file exists?): %s\n", newFilePath.toLatin1().constData());
+                  printf("MusE Error: Could not copy to new sound file (file exists?): %s\n", newFilePath.toLocal8Bit().constData());
                   continue;  // Let's not overwrite an existing file
                 }
               }  
@@ -5113,7 +5115,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                 pm |= QFile::ReadOwner;
                 if(!nqf.setPermissions(pm))
                 {
-                  printf("MusE Error: Could not set read owner permissions on new sound file: %s\n", newFilePath.toLatin1().constData());
+                  printf("MusE Error: Could not set read owner permissions on new sound file: %s\n", newFilePath.toLocal8Bit().constData());
                   continue; 
                 }
               }
@@ -5122,7 +5124,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                 pm |= QFile::WriteOwner;
                 if(!nqf.setPermissions(pm))
                 {
-                  printf("MusE Error: Could not set write owner permissions on new sound file: %s\n", newFilePath.toLatin1().constData());
+                  printf("MusE Error: Could not set write owner permissions on new sound file: %s\n", newFilePath.toLocal8Bit().constData());
                   continue; 
                 }
               }
@@ -5131,7 +5133,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                 pm |= QFile::ReadUser;
                 if(!nqf.setPermissions(pm))
                 {
-                  printf("MusE Error: Could not set read user permissions on new sound file: %s\n", newFilePath.toLatin1().constData());
+                  printf("MusE Error: Could not set read user permissions on new sound file: %s\n", newFilePath.toLocal8Bit().constData());
                   continue; 
                 }
               }
@@ -5140,7 +5142,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                 pm |= QFile::WriteUser;
                 if(!nqf.setPermissions(pm))
                 {
-                  printf("MusE Error: Could not set write user permissions on new sound file: %s\n", newFilePath.toLatin1().constData());
+                  printf("MusE Error: Could not set write user permissions on new sound file: %s\n", newFilePath.toLocal8Bit().constData());
                   continue; 
                 }
               }
@@ -5148,7 +5150,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
               MusECore::SndFileR newSFR(newSF);  // Create a sndFileR for the new file
               if(newSFR.openRead())  
               {
-                printf("MusE Error: Could not open new sound file: %s\n", newSFR.canonicalPath().toLatin1().constData());
+                printf("MusE Error: Could not open new sound file: %s\n", newSFR.canonicalPath().toLocal8Bit().constData());
                 continue; // newSF will be deleted when newSFR goes out of scope and is deleted
               }
               MusEGlobal::audio->msgIdle(true); 
@@ -5439,13 +5441,13 @@ void WaveCanvas::editExternal(unsigned file_format, unsigned file_samplerate, un
       if(proc.exitStatus() != QProcess::NormalExit)
       {
         std::fprintf(stderr, "\nError: Launch external wave editor: Exit status: %d File: %s\n", 
-                      proc.exitStatus(), MusEGlobal::config.externalWavEditor.toLatin1().constData());
+                      proc.exitStatus(), MusEGlobal::config.externalWavEditor.toLocal8Bit().constData());
       }
 
       if(proc.exitCode() != 0)
       {
         std::fprintf(stderr, "\nError: Launch external wave editor: Exit code: %d File: %s\n", 
-                      proc.exitCode(), MusEGlobal::config.externalWavEditor.toLatin1().constData());
+                      proc.exitCode(), MusEGlobal::config.externalWavEditor.toLocal8Bit().constData());
       }
 
       if (exttmpFile.openRead()) {

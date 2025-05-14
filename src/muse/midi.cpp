@@ -610,7 +610,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                     break;
                               default:
                                     fprintf(stderr, "buildMidiEventList: unknown Meta 0x%x %d unabsorbed, adding instead to track:%s\n",
-                                            ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
+                                            ev.dataA(), ev.dataA(), track->name().toLocal8Bit().constData());
                                     e.setType(Meta);
                                     e.setA(ev.dataA());
                                     e.setData(ev.constData(), ev.len());
@@ -2056,7 +2056,7 @@ void Audio::processMidi(unsigned int frames)
                       if(MusEGlobal::config.enableLatencyCorrection && !extsync)
                       {
                           const TrackLatencyInfo& li = track->getLatencyInfo(false);
-                          //li.dump(track->name().toLatin1().constData(), "midi track output");
+                          //li.dump(track->name().toLocal8Bit().constData(), "midi track output");
 
                           // This value is negative for correction.
                           const float mlat = li._sourceCorrectionValue;
@@ -2089,7 +2089,7 @@ void Audio::processMidi(unsigned int frames)
 // //                 if((int)li._inputLatency > 0)
 // //                   input_worstcase_latency = li._inputLatency;
 //
-//                 //li.dump(track->name().toLatin1().constData(), "track input");
+//                 //li.dump(track->name().toLocal8Bit().constData(), "track input");
 //             }
 
             //
@@ -2240,7 +2240,7 @@ void Audio::processMidi(unsigned int frames)
 //                                     in_dev_out_latency = li._outputLatency;
 //
 //                                   //fprintf(stderr, "midi track input: input_worstcase_latency:%d\n", input_worstcase_latency);
-//                                   //li_midi.dump(in_dev->name().toLatin1().constData(), "midi info: capture device output");
+//                                   //li_midi.dump(in_dev->name().toLocal8Bit().constData(), "midi info: capture device output");
 //                                 }
 
                                 //--------------------------------------------------------------------
@@ -2259,9 +2259,9 @@ void Audio::processMidi(unsigned int frames)
                                     const TrackLatencyInfo& li = ts.getLatencyInfo(false);
 
                                     //const TrackLatencyInfo& li_synth = si->getLatencyInfo(false /*output*/);
-                                    //li_synth.dump(si->name().toLatin1().constData(), "in synth audio output");
-                                    //ts.dump(at->name().toLatin1().constData(), "synth track transport source info");
-                                    //li.dump(in_dev->name().toLatin1().constData(), "synth track transport source output");
+                                    //li_synth.dump(si->name().toLocal8Bit().constData(), "in synth audio output");
+                                    //ts.dump(at->name().toLocal8Bit().constData(), "synth track transport source info");
+                                    //li.dump(in_dev->name().toLocal8Bit().constData(), "synth track transport source output");
 
                                     if(li._canCorrectOutputLatency)
                                     {

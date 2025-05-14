@@ -481,7 +481,7 @@ void writeShortCuts(int level, MusECore::Xml& xml)
             if (shortcuts[i].xml != nullptr && shortcuts[i].type != INVIS_SHRT) //Avoid nullptr & hardcoded shortcuts
                   xml.intTag(level, shortcuts[i].xml, shortcuts[i].key);
             }
-      xml.etag(level, "shortcuts");
+      xml.etag(--level, "shortcuts");
       }
 
 void readShortCuts(MusECore::Xml& xml)
@@ -495,9 +495,9 @@ void readShortCuts(MusECore::Xml& xml)
             switch (token) {
                   case MusECore::Xml::TagStart: {
                         if (tag.length()) {
-                              int index = getShrtByTag(tag.toLatin1().constData());
+                              int index = getShrtByTag(tag.toUtf8().constData());
                               if (index == -1) //No such tag found
-                                    printf("Config file might be corrupted. Unknown shortcut: %s\n",tag.toLatin1().constData());
+                                    printf("Config file might be corrupted. Unknown shortcut: %s\n",tag.toLocal8Bit().constData());
                               else {
                                     //printf("Index: %d\n",index);
                                     shortcuts[index].key = xml.parseInt();

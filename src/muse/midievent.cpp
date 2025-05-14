@@ -171,7 +171,7 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
                   xml.nput("%02x ", edata.constData()[i] & 0xff);
                   }
             xml.nput("\n");
-            xml.tag(level, "/event");
+            xml.etag(--level, "event");
             }
       else {
             xml.nput(" />\n");

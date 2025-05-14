@@ -43,6 +43,7 @@
 #include "marker/marker.h"
 #include "drummap.h"
 #include "gconfig.h"
+#include "libs/file/file.h"
 #include "muse_time.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
@@ -58,7 +59,7 @@ static void addMarkerList(MPEventList* l, unsigned int startOffset = 0, int port
 {
   const MusECore::MarkerList* ml = MusEGlobal::song->marker();
   for (MusECore::ciMarker m = ml->cbegin(); m != ml->cend(); ++m) {
-        const QByteArray ba = m->second.name().toLatin1();
+        const QByteArray ba = m->second.name().toUtf8();
         const char* name = ba.constData();
         const int len = ba.length();
         unsigned int tk = m->second.tick();
@@ -77,7 +78,7 @@ static void addMarkerList(MPEventList* l, unsigned int startOffset = 0, int port
 
 static void addCopyright(MPEventList* l, int port = 0)
 {
-  const QByteArray ba = MusEGlobal::config.copyright.toLatin1();
+  const QByteArray ba = MusEGlobal::config.copyright.toUtf8();
   const char* copyright = ba.constData();
   if (copyright && *copyright) {
         const int len = ba.length();
@@ -94,7 +95,7 @@ static void addCopyright(MPEventList* l, int port = 0)
 static void addComment(MPEventList* l, const Track* track, int port = 0)
 {
     if (!track->comment().isEmpty()) {
-          const QByteArray ba = track->comment().toLatin1();
+          const QByteArray ba = track->comment().toUtf8();
           const char* comment = ba.constData();
           const int len = ba.length();
           MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)comment, len);
@@ -807,9 +808,9 @@ static void writeDeviceOrPortMeta(int port, MPEventList* mpel)
       int len;
       QByteArray ba;
       if(dev && !dev->name().isEmpty())
-        ba = dev->name().toLatin1();
+        ba = dev->name().toUtf8();
       else
-        ba = QString::number(port).toLatin1();
+        ba = QString::number(port).toUtf8();
       str = ba.constData();
       len = ba.length();
       MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)str, len);
@@ -842,7 +843,7 @@ static void writeInitSeqOrInstrNameMeta(int port, int channel, MPEventList* mpel
     {
       const char* str;
       int len;
-      QByteArray ba = instr->iname().toLatin1();
+      QByteArray ba = instr->iname().toUtf8();
       str = ba.constData();
       len = ba.length();
       MidiPlayEvent ev(0, port, ME_META, (const unsigned char*)str, len);
@@ -857,7 +858,7 @@ static void writeTrackNameMeta(int port, Track* track, MPEventList* mpel)
 {
   if (!track->name().isEmpty())
   {
-    QByteArray ba = track->name().toLatin1();
+    QByteArray ba = track->name().toUtf8();
     const char* name = ba.constData();
     int len = ba.length();
     MidiPlayEvent ev(0, port, ME_META, (const unsigned char*)name, len);
@@ -989,11 +990,14 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly, bool selectedPartsOnly, bo
       
       MusEGui::MFile file(QString("midis"), QString(".mid"));
 
-      FILE* fp = file.open("w", MusEGlobal::midi_file_save_pattern, this, false, true,
-         tr("MusE: Export Midi"));
-      if (fp == 0)
+      // File will close when MFile goes out of scope at the end of this function.
+      MusEFile::File f;
+      MusEFile::File::ErrorCode res =
+        file.open(f, QIODevice::WriteOnly, MusEGlobal::midi_file_save_pattern, this, false, true, tr("MusE: Export Midi"));
+      if (res != MusEFile::File::NoError)
             return;
-      MusECore::MidiFile mf(fp);
+
+      MusECore::MidiFile mf(&f);
 
       MusECore::TrackList* tl = MusEGlobal::song->tracks();       // Changed to full track list so user can rearrange tracks.
       MusECore::MidiFileTrackList* mtl = new MusECore::MidiFileTrackList;

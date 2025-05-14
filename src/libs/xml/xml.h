@@ -133,7 +133,11 @@ class Xml {
       void nput(int level, const char* format, ...);
       void nput(const char* format, ...);
       void tag(int level, const char* format, ...);
+      // Starting tag of the form <name>. Name contains any attributes. Must be closed with etag().
+      void tag(int level, const QString& name);
       void etag(int level, const char* format, ...);
+      // An empty, self-closing tag of the form <name />. Name contains any attributes.
+      void emptyTag(int level, const QString& name);
       void intTag(int level, const char* const name, int val);
       void longIntTag(int level, const char* const name, long int val);
       void uintTag(int level, const char* const name, unsigned int val);

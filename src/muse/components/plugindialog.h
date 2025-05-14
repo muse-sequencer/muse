@@ -38,6 +38,7 @@ class PluginDialog : public QDialog {
              COL_ID, COL_MAKER, COL_LABEL, COL_URI, COL_COPYRIGHT,
              COL_COUNT
            };
+      enum PluginRoles { PLUGIN_ROLE_TYPE = Qt::UserRole };
 
    public:
       explicit PluginDialog(QWidget* parent=0);

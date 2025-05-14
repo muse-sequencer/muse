@@ -50,6 +50,7 @@
 #include "gconfig.h"
 #include "undo.h"
 #include "xml_statistics.h"
+#include "libs/file/file.h"
 
 using std::set;
 using std::pair;
@@ -123,13 +124,14 @@ void MusE::importMidi(const QString &file)
 
 bool MusE::importMidi(const QString name, bool merge)
       {
-      bool popenFlag;
-      FILE* fp = MusEGui::fileOpen(this, name, QString(".mid"), "r", popenFlag);
-      if (fp == 0)
+      MusEFile::File f(name, QString(".mid"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::ReadOnly, this);
+      if (res != MusEFile::File::NoError)
             return true;
-      MusECore::MidiFile mf(fp);
+      MusECore::MidiFile mf(&f);
       bool rv = mf.read();
-      popenFlag ? pclose(fp) : fclose(fp);
+      f.close();
+
       if (rv) {
             QString s(tr("Reading midifile\n  "));
             s += name;
@@ -207,7 +209,7 @@ bool MusE::importMidi(const QString name, bool merge)
               dev_changed = true;
             }
             else
-              printf("importMidi error: assign to empty port: device not found: %s\n", dev_name.toLatin1().constData());
+              printf("importMidi error: assign to empty port: device not found: %s\n", dev_name.toLocal8Bit().constData());
           }
         }
 
@@ -220,28 +222,28 @@ bool MusE::importMidi(const QString name, bool merge)
           instr = named_instr;
           if(MusEGlobal::debugMsg)
             printf("port:%d named instrument found:%s\n",
-                    port, instr->iname().toLatin1().constData());
+                    port, instr->iname().toLocal8Bit().constData());
         }
         else if(typed_instr)
         {
         instr = typed_instr;
         if(MusEGlobal::debugMsg)
           printf("port:%d typed instrument found:%s\n",
-                  port, instr->iname().toLatin1().constData());
+                  port, instr->iname().toLocal8Bit().constData());
         }
         else if(def_instr)
         {
           instr = def_instr;
           if(MusEGlobal::debugMsg)
             printf("port:%d no named or typed instrument found. Using default:%s\n",
-                    port, instr->iname().toLatin1().constData());
+                    port, instr->iname().toLocal8Bit().constData());
         }
         else
         {
           instr = MusECore::genericMidiInstrument;
           if(MusEGlobal::debugMsg)
             printf("port:%d no named, typed, or default instrument found! Using:%s\n",
-                    port, instr->iname().toLatin1().constData());
+                    port, instr->iname().toLocal8Bit().constData());
         }
         
         // If the instrument is one of the three standard GM, GS, or XG, mark the usedPort as "ch 10 is drums".
@@ -587,7 +589,7 @@ void MusE::importController(int channel, MusECore::MidiPort* mport, int n)
 
       if (ctrl == 0) {
             printf("controller 0x%x not defined for instrument %s, channel %d, patch:%d\n",
-               n, instr->iname().toLatin1().constData(), channel, patch);
+               n, instr->iname().toLocal8Bit().constData(), channel, patch);
             }
 
       MusECore::MidiCtrlValList* newValList = new MusECore::MidiCtrlValList(n);
@@ -634,14 +636,15 @@ void MusE::importPart()
 //---------------------------------------------------------
 //   importPartToTrack
 //---------------------------------------------------------
+
 void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track)
 {
-      bool popenFlag = false;
-      FILE* fp = MusEGui::fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
-
-      if(fp) 
+      MusEFile::File f(filename, QString(".mpt"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::ReadOnly, this, false, false);
+      if (res == MusEFile::File::NoError)
       {
-        MusECore::Xml xml = MusECore::Xml(fp);
+        MusECore::Xml xml = MusECore::Xml(f.iodevice());
+
         bool firstPart = true;
         int posOffset = 0;
         int  notDone = 0;
@@ -650,11 +653,11 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
 
         bool end = false;
         MusEGlobal::song->startUndo();
-        for (;;) 
+        for (;;)
         {
           MusECore::Xml::Token token = xml.parse();
           const QString& tag = xml.s1();
-          switch (token) 
+          switch (token)
           {
             case MusECore::Xml::Error:
             case MusECore::Xml::End:
@@ -671,12 +674,12 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
                           // Increment the number of parts not done and break.
                           ++notDone;
                           break;
-                        } 
-                        
+                        }
+
                         // Increment the number of parts done.
                         ++done;
-                        
-                        if(firstPart) 
+
+                        if(firstPart)
                         {
                           firstPart=false;
                           posOffset = tick - p->tick();
@@ -701,9 +704,9 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
           if(end)
             break;
         }
-        fclose(fp);
+        f.close();
         MusEGlobal::song->endUndo(SC_PART_INSERTED);
-        
+
         if(notDone)
         {
           int tot = notDone + done;
@@ -711,7 +714,7 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
             (tot > 1  ?  tr("%n part(s) out of %1 could not be imported.\nLikely the selected track is the wrong type.","",notDone).arg(tot)
                       :  tr("%n part(s) could not be imported.\nLikely the selected track is the wrong type.","",notDone)));
         }
-        
+
         return;
       }
 }

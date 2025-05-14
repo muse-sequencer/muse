@@ -46,10 +46,12 @@ namespace MusECore {
 class MEvent;
 class Track;
 class MidiTrack;
+class AudioTrack;
 class Part;
 class PartList;
 struct DrumMap;
 class Xml;
+class CtrlList;
 
 void enumerateJackMidiDevices();
 void populateMidiPorts();

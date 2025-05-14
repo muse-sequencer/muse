@@ -175,9 +175,9 @@ PluginDialog::PluginDialog(QWidget* parent)
       }
       ui.sortBox->addItems(sortItems);
 
+      // "In order to avoid performance issues, it is recommended that sorting is enabled after inserting the items into the tree."
+      ui.pList->setSortingEnabled(false);
       fillPlugs();
-
-      ui.pList->header()->setCascadingSectionResizes(true);
       ui.pList->setSortingEnabled(true);
       ui.pList->sortByColumn(COL_NAME, Qt::AscendingOrder);
 
@@ -224,7 +224,7 @@ void PluginDialog::plistContextMenu(const QPoint& point)
   QTreeWidgetItem* item = ui.pList->currentItem();
   if (item)
   {
-    group_info = &MusEGlobal::plugin_groups.get(item->text(1), item->text(2));
+    group_info = &MusEGlobal::plugin_groups.get(item->text(COL_URI), item->text(COL_LABEL));
     QMenu* menu = new MusEGui::PopupMenu(this, true);
     menu->addAction(new MusEGui::MenuTitleItem(tr("Associated categories"), menu));
 
@@ -326,11 +326,12 @@ MusECore::Plugin* PluginDialog::value()
       if (item)
       {
         return MusEGlobal::plugins.find(
+          MusEPlugin::PluginType(item->data(COL_TYPE, PLUGIN_ROLE_TYPE).toInt()),
           !item->hasUri() ? item->text(COL_URI) : QString(),
           item->hasUri()  ? item->text(COL_URI) : QString(),
           item->text(COL_LABEL));
       }
-      printf("plugin not found\n");
+      fprintf(stderr, "plugin not found\n");
       return nullptr;
 }
 
@@ -425,12 +426,12 @@ void PluginDialog::tabMoved(int from, int to)
 
 void PluginDialog::fillPlugs()
 {
-   QString type_name;
    ui.pList->clear();
    ui.okB->setEnabled(false);
    for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
       if (selectedGroup==0 || MusEGlobal::plugin_groups.get(*i).contains(selectedGroup))
       {
+         QString type_name;
          unsigned long ai = (*i)->inports();
          unsigned long ao = (*i)->outports();
          unsigned long ci = (*i)->controlInPorts();
@@ -463,37 +464,47 @@ void PluginDialog::fillPlugs()
          }
          if (found && addFlag) {
             int plugInstanceType;
-            if((*i)->isDssiSynth() || (*i)->isDssiPlugin()) {
-               if ((*i)->lib() == "dssi-vst") {
-                  type_name = tr("Wine VST");
-                  plugInstanceType = SEL_TYPE_WINE_VST;
-               } else {
-                  if ((*i)->isDssiSynth())
-                     type_name = tr("dssi synth");
-                  else
-                     type_name = tr("dssi effect");
-                  plugInstanceType = SEL_TYPE_DSSI;
-               }
-            }
-            else if((*i)->isLV2Synth()) {
-               type_name = tr("LV2 synth");
-               plugInstanceType = SEL_TYPE_LV2;
-            }
-            else if((*i)->isLV2Plugin()) {
-               type_name = tr("LV2 effect");
-               plugInstanceType = SEL_TYPE_LV2;
-            }
-            else if((*i)->isVstNativeSynth()) {
-               type_name = tr("VST synth");
-               plugInstanceType = SEL_TYPE_VST;
-            }
-            else if((*i)->isVstNativePlugin()) {
-               type_name = tr("VST effect");
-               plugInstanceType = SEL_TYPE_VST;
-            }
-            else {
-               type_name = tr("ladspa");
-               plugInstanceType = SEL_TYPE_LADSPA;
+            const MusEPlugin::PluginType ptype = (*i)->pluginType();
+            const MusEPlugin::PluginClass_t pclass = (*i)->pluginClass();
+
+            // TODO: Decide: Do we really want separate synth and effect text?
+            //       How to do it right since the plugin can be both at the same time?
+            //       Text like "xxxx synth + effect"? Instead, maybe redesign the dialog slightly.
+            //       Someone already put just "Wine VST", I left it alone for now.
+
+            type_name =
+              QApplication::translate("MusEPlugin", MusEPlugin::pluginTypeToString(ptype)) + QString(" ") +
+              QApplication::translate("MusEPlugin", MusEPlugin::pluginClassToString(pclass));
+
+            switch(ptype)
+            {
+              case MusEPlugin::PluginTypeLADSPA:
+                plugInstanceType = SEL_TYPE_LADSPA;
+              break;
+
+              case MusEPlugin::PluginTypeDSSI:
+                plugInstanceType = SEL_TYPE_DSSI;
+              break;
+
+              case MusEPlugin::PluginTypeDSSIVST:
+                plugInstanceType = SEL_TYPE_WINE_VST;
+              break;
+
+              case MusEPlugin::PluginTypeLV2:
+                plugInstanceType = SEL_TYPE_LV2;
+              break;
+
+              case MusEPlugin::PluginTypeLinuxVST:
+                plugInstanceType = SEL_TYPE_VST;
+              break;
+
+              case MusEPlugin::PluginTypeMESS:
+              case MusEPlugin::PluginTypeMETRONOME:
+              case MusEPlugin::PluginTypeVST:
+              case MusEPlugin::PluginTypeNone:
+              case MusEPlugin::PluginTypeUnknown:
+                continue;
+              break;
             }
 
             // last check
@@ -503,6 +514,8 @@ void PluginDialog::fillPlugs()
 
             PluginItem* item = new PluginItem(!(*i)->uri().isEmpty());
             item->setText(COL_TYPE,  type_name);
+            item->setData(COL_TYPE, PLUGIN_ROLE_TYPE, (*i)->pluginType());
+
             if(!(*i)->uri().isEmpty())
               item->setText(COL_URI,  (*i)->uri());
             else
@@ -514,11 +527,11 @@ void PluginDialog::fillPlugs()
             item->setText(COL_AUDIO_OUT,  QString().setNum(ao));
             item->setText(COL_CTRL_IN,  QString().setNum(ci));
             item->setText(COL_CTRL_OUT,  QString().setNum(co));
-            bool flag = !((*i)->requiredFeatures() & MusECore::PluginNoInPlaceProcessing);
+            bool flag = !((*i)->requiredFeatures() & MusEPlugin::PluginNoInPlaceProcessing);
             item->setText(COL_INPLACE,  flag ? tr("Yes") : tr("No"));
-            flag =(*i)->requiredFeatures() & MusECore::PluginFixedBlockSize;
+            flag =(*i)->requiredFeatures() & MusEPlugin::PluginFixedBlockSize;
             item->setText(COL_FIXED_BLOCK,  flag ? tr("Yes") : tr("No"));
-            flag = (*i)->requiredFeatures() & MusECore::PluginPowerOf2BlockSize;
+            flag = (*i)->requiredFeatures() & MusEPlugin::PluginPowerOf2BlockSize;
             item->setText(COL_POWER_2,  flag ? tr("Yes") : tr("No"));
             item->setText(COL_ID,  QString().setNum((*i)->id()));
             item->setText(COL_MAKER,  (*i)->maker());
