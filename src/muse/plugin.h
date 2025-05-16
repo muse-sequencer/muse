@@ -56,7 +56,10 @@
 #endif
 
 #ifdef DSSI_SUPPORT
-#include <dssi.h>
+// Recent ALSA changes cause error inside dssi.h
+// Use our local version with corrections instead.
+//#include <dssi.h>
+#include "dssi/dssi.h"
 #endif
 
 // BUG I have filed a Qt bug report 64773. If we do NOT

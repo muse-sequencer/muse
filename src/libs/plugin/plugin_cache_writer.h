@@ -35,7 +35,10 @@
 #include <ladspa.h>
 
 #ifdef DSSI_SUPPORT
-#include <dssi.h>
+// Recent ALSA changes cause error inside dssi.h
+// Use our local version with corrections instead.
+//#include <dssi.h>
+#include "dssi/dssi.h"
 #endif // DSSI_SUPPORT
 
 #ifdef LV2_USE_PLUGIN_CACHE

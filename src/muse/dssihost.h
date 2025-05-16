@@ -48,7 +48,10 @@
 #endif
 
 #include <ladspa.h>
-#include <dssi.h>
+// Recent ALSA changes cause error inside dssi.h
+// Use our local version with corrections instead.
+//#include <dssi.h>
+#include "dssi/dssi.h"
 
 #include <alsa/asoundlib.h>
 
