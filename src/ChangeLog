@@ -1,3 +1,5 @@
+17.05.2025
+    - Replaced QRegExp with QRegularExpression in savenewrevisiondialog.cpp (Tim)
 16.05.2025
     - DSSI: Fixed: Recent ALSA changes give error inside system header dssi.h (Tim)
       #warning "use #include <alsa/asoundlib.h>, <alsa/seq_event.h> should not be used directly"
