@@ -49,9 +49,10 @@
 
 #include <ladspa.h>
 // Recent ALSA changes cause error inside dssi.h
-// Use our local version with corrections instead.
-//#include <dssi.h>
-#include "dssi/dssi.h"
+// #warning "use #include <alsa/asoundlib.h>, <alsa/seq_event.h> should not be used directly"
+// Include the asoundlib.h before dssi.h
+#include <alsa/asoundlib.h>
+#include <dssi.h>
 
 #include <alsa/asoundlib.h>
 
