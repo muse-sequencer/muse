@@ -174,7 +174,7 @@ details.
 
     1. Install build tools:
 
-       sudo apt-get install git build-essential cmake
+       sudo apt-get install git build-essential cmake extra-cmake-modules
 
     2 Get muse source (unless you already have it).
 
