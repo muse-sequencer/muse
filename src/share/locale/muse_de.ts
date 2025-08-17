@@ -8503,7 +8503,7 @@ bis zum Senden des ersten Clocks.</translation>
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="+5031"/>
+        <location filename="../../muse/song.cpp" line="+5030"/>
         <source>Jack shutdown!</source>
         <translation>Jack heruntergefahren!</translation>
     </message>
@@ -8574,12 +8574,12 @@ Knopf.</translation>
         <translation type="vanished">lösche Automatisierung</translation>
     </message>
     <message>
-        <location line="-1649"/>
+        <location line="-1648"/>
         <source>Record: At least one track must be armed for recording first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1650"/>
+        <location line="+1649"/>
         <source>Jack has detected a performance problem which has led to
 MusE being disconnected.
 This could happen due to a number of reasons:
@@ -8696,7 +8696,7 @@ click on the Restart button.</source>
         <translation>Übergehen</translation>
     </message>
     <message>
-        <location line="+801"/>
+        <location line="+841"/>
         <source>Copies of some automation points could not be made because points already exist at those time positions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14972,7 +14972,7 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation type="vanished">Part importieren</translation>
     </message>
     <message>
-        <location line="+1109"/>
+        <location line="+1111"/>
         <source>Import Audio File</source>
         <translation>Audiodatei importieren</translation>
     </message>
@@ -14981,7 +14981,7 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation type="vanished">Finde ungenutzte Wave-Dateien</translation>
     </message>
     <message>
-        <location line="-4866"/>
+        <location line="-4868"/>
         <source>&amp;Quit</source>
         <translation>&amp;Beenden</translation>
     </message>
@@ -15867,7 +15867,7 @@ Aktuelles Projekt sichern?</translation>
         <translation>&amp;Abbrechen</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+487"/>
+        <location filename="../../muse/app.cpp" line="+489"/>
         <source>This will clear all automation data on
  all audio tracks!
 Proceed?</source>
@@ -16074,7 +16074,7 @@ Can not continue.</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location line="-5445"/>
+        <location line="-5447"/>
         <source>Failed to start audio disk prefetch!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16192,7 +16192,7 @@ Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1005"/>
+        <location line="+1007"/>
         <source>MusE Project: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -16210,7 +16210,7 @@ Save current project before continuing?</source>
         <translation type="vanished">Datei-Schaltflächen</translation>
     </message>
     <message>
-        <location line="-4623"/>
+        <location line="-4625"/>
         <source>Timeline</source>
         <translation>Timeline</translation>
     </message>
@@ -16253,7 +16253,7 @@ Save current project?</source>
         <translation>Keine gültigen Parts ausgewählt</translation>
     </message>
     <message>
-        <location line="+2411"/>
+        <location line="+2413"/>
         <source>This wave file has a samplerate of %1 Hz,
  as opposed to current setting %2 Hz.
 A live, real-time samplerate converter can be used on this file.
@@ -17467,7 +17467,7 @@ Right-click on plugins to add/remove from a category.</source>
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+5230"/>
+        <location filename="../../muse/plugin.cpp" line="+5476"/>
         <source>File Buttons</source>
         <translation>Datei-Knöpfe</translation>
     </message>
@@ -20829,7 +20829,7 @@ sometimes requires write access to the file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="-3958"/>
+        <location filename="../../muse/plugin.cpp" line="-4190"/>
         <source>FX slot</source>
         <translation type="unfinished"></translation>
     </message>

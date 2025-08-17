@@ -48,6 +48,10 @@
 #endif
 
 #include <ladspa.h>
+// Recent ALSA changes cause error inside dssi.h
+// #warning "use #include <alsa/asoundlib.h>, <alsa/seq_event.h> should not be used directly"
+// Include the asoundlib.h before dssi.h
+#include <alsa/asoundlib.h>
 #include <dssi.h>
 
 #include <alsa/asoundlib.h>
@@ -200,7 +204,6 @@ class DssiSynthIF : public SynthIF
       void enableController(unsigned long i, bool v = true);
       bool controllerEnabled(unsigned long i) const;          
       void enableAllControllers(bool v = true);
-      void updateControllers();
       unsigned long parameters() const;                            
       unsigned long parametersOut() const;
       void setParam(unsigned long i, double val); 

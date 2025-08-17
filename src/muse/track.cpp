@@ -557,15 +557,12 @@ QString Track::displayName() const
 //   clearRecAutomation
 //---------------------------------------------------------
 
-void Track::clearRecAutomation(bool clearList)
+void Track::clearRecAutomation()
 {
     if(isMidiTrack())
       return;
     AudioTrack *t = static_cast<AudioTrack*>(this);
-    // Re-enable all track and plugin controllers, and synth controllers if applicable.
-    t->enableAllControllers();
-    if(clearList)
-      t->recEvents()->clear();
+    t->recEvents()->clear();
 }
 
 //---------------------------------------------------------

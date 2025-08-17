@@ -2,6 +2,8 @@
 #include "ui_savenewrevisiondialog.h"
 #include "helper.h"
 
+#include <QRegularExpression>
+
 namespace MusEGui {
 
 SaveNewRevisionDialog::SaveNewRevisionDialog(QWidget *parent, QFileInfo projectFileInfo) :
@@ -47,11 +49,12 @@ void SaveNewRevisionDialog::reject()
 QString SaveNewRevisionDialog::getNewRevision()
 {
   QString baseName = _projectFileInfo.baseName();
-  QRegExp xRegExp("_\\d\\d\\d$");
-  int index = xRegExp.indexIn(baseName);
+  QRegularExpression xRegExp("_\\d\\d\\d$");
+  QRegularExpressionMatch match = xRegExp.match(baseName);
 
-  if(index > 0)
+  if(match.hasMatch())
   {
+    int index = match.capturedStart();
     QString newNumberString = baseName.mid(index+1, baseName.size() - index);
     int newNumber = newNumberString.toInt();
     newNumber++;

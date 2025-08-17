@@ -148,6 +148,7 @@ class VstNativeSynth : public Synth {
       bool usesTransportSource() const { return _usesTransportSource; }
 
       static VstIntPtr pluginHostCallback(VstNativeSynthOrPlugin *userData, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt);
+      static void guiAudioMasterUpdateDisplay(VstNativeSynthOrPlugin *userData);
       static int guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned long param_idx, float value);
       static void guiAutomationBegin(VstNativeSynthOrPlugin *userData, unsigned long param_idx);
       static void guiAutomationEnd(VstNativeSynthOrPlugin *userData, unsigned long param_idx);
@@ -191,6 +192,10 @@ class VstNativeSynthIF : public SynthIF
       friend class VstNativeSynth;
       friend class MusEGui::VstNativeEditor;
 
+   public:
+      typedef std::vector<VST_Program> VstPrograms_t;
+
+   private:
       VstNativeSynth* _synth;
       AEffect* _plugin;
       MusEGui::VstNativeEditor* _editor;
@@ -209,7 +214,7 @@ class VstNativeSynthIF : public SynthIF
       // Temporary variable holds value to be passed to the callback routine.
       float _transportLatencyCorr;
 
-      std::vector<VST_Program> programs;
+      VstPrograms_t programs;
       void queryPrograms();
       void doSelectProgram(int bankH, int bankL, int prog);
       bool processEvent(const MidiPlayEvent&, VstMidiEvent*);
@@ -264,6 +269,7 @@ class VstNativeSynthIF : public SynthIF
       void enableController(unsigned long i, bool v = true) override;
       bool controllerEnabled(unsigned long i) const override;
       void enableAllControllers(bool v = true) override;
+      void updateController(unsigned long i) override;
       void updateControllers() override;
       unsigned long parameters() const override;
       unsigned long parametersOut() const override;
@@ -291,6 +297,9 @@ class VstNativeSynthIF : public SynthIF
       bool usesTransportSource() const override;
       // Temporary variable holds value to be passed to the callback routine.
       float transportLatencyCorr() const;
+      void *getPrograms() const override;
+      bool swapPrograms(void *data) override;
+      bool deleteProgramData(void *data) const override;
       };
 
 class VstNativePluginWrapper_State : public QObject

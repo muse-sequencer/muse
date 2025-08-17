@@ -50,12 +50,17 @@
 #include "type_defs.h"
 #include "xml.h"
 #include "plugin_scan.h"
+#include "lock_free_buffer.h"
 
 #ifdef OSC_SUPPORT
 #include "osc.h"
 #endif
 
 #ifdef DSSI_SUPPORT
+// Recent ALSA changes cause error inside dssi.h
+// #warning "use #include <alsa/asoundlib.h>, <alsa/seq_event.h> should not be used directly"
+// Include the asoundlib.h before dssi.h
+#include <alsa/asoundlib.h>
 #include <dssi.h>
 #endif
 
@@ -506,6 +511,16 @@ class MissingPluginList : public std::vector<MissingPluginStruct>
 //typedef std::vector<MissingPluginStruct>::iterator iMissingPluginList;
 //typedef std::vector<MissingPluginStruct>::const_iterator ciMissingPluginList;
 
+struct PluginCallbackEventStruct
+{
+  enum EventType { NoType, AutomationBeginType, AutomationEditType, AutomationEndType, UpdateDisplayType };
+
+  EventType _type;
+  unsigned long _id;
+  float _value;
+
+  PluginCallbackEventStruct(EventType type = NoType, unsigned long id = 0, float value = 0.0);
+};
 
 //---------------------------------------------------------
 //   PluginIBase
@@ -517,9 +532,6 @@ class PluginIBase
       // Options when calling configure(). Can be OR'd together.
       // Determines what exactly to configure from the configuration structure.
       // Note that ConfigParams is ignored if ConfigCustomData is set and there is custom data.
-      // If ConfigNativeGui is set, then ConfigDeferNativeGui determines whether
-      //  the native gui attempts to open immediately or opening is deferred by setting
-      //  the _showNativeGuiPending flag so that the native gui is opened later.
       enum ConfigureOption {
         ConfigNone = 0x0,
         ConfigActive = 0x1,
@@ -540,6 +552,9 @@ class PluginIBase
 
    protected:
       ControlFifo _controlFifo;
+      // Ring buffer for sending messages from plugin callback or event threads to the audio thread.
+      // Some plugin types use this. Otherwise null.
+      LockFreeMPSCRingBuffer<PluginCallbackEventStruct> *_ipcCallbackEvents;
       MusEGui::PluginGui* _gui;
       QRect _guiGeometry;
       QRect _nativeGuiGeometry;
@@ -587,6 +602,9 @@ class PluginIBase
       virtual void enableController(unsigned long i, bool v = true) = 0;
       virtual bool controllerEnabled(unsigned long i) const = 0;
       virtual void enableAllControllers(bool v = true) = 0;
+      // Updates our own automation controller with a new value from the plugin.
+      virtual void updateController(unsigned long i) = 0;
+      // For convenience. Calls updateController() for each control.
       virtual void updateControllers() = 0;
 
       // If isCopy is true, writes additional info including automation controllers and midi assignments.
@@ -595,6 +613,8 @@ class PluginIBase
       // If not reading a preset (reading and creating a plugin), the number of channels to create is required.
       virtual bool readConfiguration(Xml& xml, bool readPreset=false, int channels=0) = 0;
 
+      // Returns false if event cannot be delivered.
+      virtual bool addIpcCallbackEvent(const PluginCallbackEventStruct &ev);
       virtual bool addScheduledControlEvent(unsigned long i, double val, unsigned frame);    // returns true if event cannot be delivered
       virtual unsigned long parameters() const = 0;
       virtual unsigned long parametersOut() const = 0;
@@ -612,6 +632,18 @@ class PluginIBase
       // The information returned is not verbose. See the other range() which does not apply changes.
       virtual void range(unsigned long i, float*, float*) const = 0;
       virtual void rangeOut(unsigned long i, float*, float*) const = 0;
+      // Returns an allocated pointer containing the complete list of the plugin's programs.
+      // Each plugin handles this differently, so we use a void pointer.
+      // Caller is responsible for deleting the pointer with deletePrograms().
+      virtual void *getPrograms() const;
+      // Quickly and safely swaps the list of the plugin's programs with a new list obtained with getPrograms().
+      // This is safe for the real time thread. It is called by the operations system.
+      // Returns true on success.
+      virtual bool swapPrograms(void *data);
+      // Deletes program data obtained with getPrograms().
+      // This is required since the data is a void pointer, which cannot be deleted by itself.
+      virtual bool deleteProgramData(void *data) const;
+
 
       virtual bool usesTransportSource() const = 0;
       virtual unsigned long latencyOutPortIndex() const = 0;
@@ -780,6 +812,7 @@ class PluginI : public PluginIBase {
       unsigned long pluginID() const;
       void setID(int i);
       int id() const;
+      void updateController(unsigned long i);
       void updateControllers();
 
       // This version takes a given Plugin to initialize this PluginI. The Plugin can be null.

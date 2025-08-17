@@ -7181,7 +7181,7 @@ None: Use only if high accuracy is needed for
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="5031"/>
+        <location filename="../../muse/song.cpp" line="5030"/>
         <source>Jack shutdown!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7191,7 +7191,7 @@ None: Use only if high accuracy is needed for
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5032"/>
+        <location filename="../../muse/song.cpp" line="5031"/>
         <source>Jack has detected a performance problem which has led to
 MusE being disconnected.
 This could happen due to a number of reasons:
@@ -7210,111 +7210,111 @@ click on the Restart button.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5271"/>
-        <location filename="../../muse/song.cpp" line="5588"/>
+        <location filename="../../muse/song.cpp" line="5270"/>
+        <location filename="../../muse/song.cpp" line="5587"/>
         <source>Automation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5273"/>
+        <location filename="../../muse/song.cpp" line="5272"/>
         <source>Previous event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5277"/>
+        <location filename="../../muse/song.cpp" line="5276"/>
         <source>Next event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5287"/>
-        <location filename="../../muse/song.cpp" line="5593"/>
+        <location filename="../../muse/song.cpp" line="5286"/>
+        <location filename="../../muse/song.cpp" line="5592"/>
         <source>Set event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5292"/>
-        <location filename="../../muse/song.cpp" line="5595"/>
+        <location filename="../../muse/song.cpp" line="5291"/>
+        <location filename="../../muse/song.cpp" line="5594"/>
         <source>Add event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5298"/>
-        <location filename="../../muse/song.cpp" line="5599"/>
+        <location filename="../../muse/song.cpp" line="5297"/>
+        <location filename="../../muse/song.cpp" line="5598"/>
         <source>Erase event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5302"/>
+        <location filename="../../muse/song.cpp" line="5301"/>
         <source>Erase range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5306"/>
+        <location filename="../../muse/song.cpp" line="5305"/>
         <source>Clear automation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5313"/>
+        <location filename="../../muse/song.cpp" line="5312"/>
         <source>Midi control</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5315"/>
+        <location filename="../../muse/song.cpp" line="5314"/>
         <source>Assign</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5327"/>
+        <location filename="../../muse/song.cpp" line="5326"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5337"/>
+        <location filename="../../muse/song.cpp" line="5336"/>
         <source>Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5337"/>
+        <location filename="../../muse/song.cpp" line="5336"/>
         <source>Song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5389"/>
+        <location filename="../../muse/song.cpp" line="5388"/>
         <source>Clear all controller events?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5389"/>
+        <location filename="../../muse/song.cpp" line="5388"/>
         <source>&amp;Ok</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5389"/>
+        <location filename="../../muse/song.cpp" line="5388"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5579"/>
+        <location filename="../../muse/song.cpp" line="5578"/>
         <source>Controller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="5582"/>
+        <location filename="../../muse/song.cpp" line="5581"/>
         <source>Bypass</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="6383"/>
+        <location filename="../../muse/song.cpp" line="6422"/>
         <source>Copies of some automation points could not be made because points already exist at those time positions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="6414"/>
+        <location filename="../../muse/song.cpp" line="6453"/>
         <source>MusE: Tempo list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="6415"/>
+        <location filename="../../muse/song.cpp" line="6454"/>
         <source>External tempo changes were recorded.
 Transfer them to master tempo list?</source>
         <translation type="unfinished"></translation>
@@ -11711,7 +11711,7 @@ Save current project?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5650"/>
+        <location filename="../../muse/app.cpp" line="5652"/>
         <source>Import Audio File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12289,14 +12289,14 @@ and one audio output track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4777"/>
+        <location filename="../../muse/app.cpp" line="4779"/>
         <source>This will clear all automation data on
  all audio tracks!
 Proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4803"/>
+        <location filename="../../muse/app.cpp" line="4805"/>
         <source>This takes an automation snapshot of
  all controllers on all audio tracks,
  at the current position.
@@ -12407,38 +12407,38 @@ Likely the selected track is the wrong type.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5692"/>
+        <location filename="../../muse/app.cpp" line="5694"/>
         <source>Import Wavefile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5751"/>
-        <location filename="../../muse/app.cpp" line="5769"/>
-        <location filename="../../muse/app.cpp" line="5778"/>
+        <location filename="../../muse/app.cpp" line="5753"/>
+        <location filename="../../muse/app.cpp" line="5771"/>
+        <location filename="../../muse/app.cpp" line="5780"/>
         <source>Wave import error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5752"/>
+        <location filename="../../muse/app.cpp" line="5754"/>
         <source>There are too many wave files
 of the same base name as imported wave file
 Can not continue.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5770"/>
+        <location filename="../../muse/app.cpp" line="5772"/>
         <source>Can&apos;t create new wav file in project folder!
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5779"/>
+        <location filename="../../muse/app.cpp" line="5781"/>
         <source>Failed to initialize sample rate converter!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5702"/>
-        <location filename="../../muse/app.cpp" line="5797"/>
+        <location filename="../../muse/app.cpp" line="5704"/>
+        <location filename="../../muse/app.cpp" line="5799"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12491,17 +12491,17 @@ Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5544"/>
+        <location filename="../../muse/app.cpp" line="5546"/>
         <source>MusE Project: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5642"/>
+        <location filename="../../muse/app.cpp" line="5644"/>
         <source>Failed to import wave track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5693"/>
+        <location filename="../../muse/app.cpp" line="5695"/>
         <source>This wave file has a samplerate of %1 Hz,
  as opposed to current setting %2 Hz.
 A live, real-time samplerate converter can be used on this file.
@@ -12509,29 +12509,29 @@ Or, a copy of the file can be resampled now from %1 Hz to %2 Hz.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5698"/>
+        <location filename="../../muse/app.cpp" line="5700"/>
         <source>Do you want to use a converter or resample the file now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5700"/>
+        <location filename="../../muse/app.cpp" line="5702"/>
         <source>Use live converter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5701"/>
+        <location filename="../../muse/app.cpp" line="5703"/>
         <source>Resample now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5800"/>
+        <location filename="../../muse/app.cpp" line="5802"/>
         <source>Resampling wave file
 &quot;%1&quot;
 from %2 to %3 Hz...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5807"/>
+        <location filename="../../muse/app.cpp" line="5809"/>
         <source>Output has clipped
 Resampling again and normalizing wave file
 &quot;%1&quot;
@@ -13422,59 +13422,59 @@ Right-click on plugins to add/remove from a category.</source>
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="5230"/>
+        <location filename="../../muse/plugin.cpp" line="5476"/>
         <source>File Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="5233"/>
+        <location filename="../../muse/plugin.cpp" line="5479"/>
         <source>Load Preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="5237"/>
+        <location filename="../../muse/plugin.cpp" line="5483"/>
         <source>Save Preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="5247"/>
-        <location filename="../../muse/plugin.cpp" line="5251"/>
+        <location filename="../../muse/plugin.cpp" line="5493"/>
+        <location filename="../../muse/plugin.cpp" line="5497"/>
         <source>Deactivate plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="5255"/>
-        <location filename="../../muse/plugin.cpp" line="5259"/>
+        <location filename="../../muse/plugin.cpp" line="5501"/>
+        <location filename="../../muse/plugin.cpp" line="5505"/>
         <source>Bypass plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="5265"/>
+        <location filename="../../muse/plugin.cpp" line="5511"/>
         <source>Plugin settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="5680"/>
+        <location filename="../../muse/plugin.cpp" line="5926"/>
         <source>Output controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="6301"/>
+        <location filename="../../muse/plugin.cpp" line="6547"/>
         <source>MusE: Save preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="6341"/>
+        <location filename="../../muse/plugin.cpp" line="6587"/>
         <source>Plugin Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="6236"/>
+        <location filename="../../muse/plugin.cpp" line="6482"/>
         <source>MusE: load preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="6261"/>
+        <location filename="../../muse/plugin.cpp" line="6507"/>
         <source>Error reading preset. Might not be right type for this plugin</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16160,7 +16160,7 @@ sometimes requires write access to the file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2303"/>
+        <location filename="../../muse/plugin.cpp" line="2317"/>
         <source>FX slot</source>
         <translation type="unfinished"></translation>
     </message>

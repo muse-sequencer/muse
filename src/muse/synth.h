@@ -191,6 +191,7 @@ class SynthIF : public PluginIBase {
       virtual void enableController(unsigned long i, bool v = true);
       virtual bool controllerEnabled(unsigned long i) const;
       virtual void enableAllControllers(bool v = true);
+      virtual void updateController(unsigned long i);
       virtual void updateControllers();
       virtual void activate();
       virtual void deactivate();

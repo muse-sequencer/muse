@@ -52,6 +52,7 @@
 #include "sig.h"
 #include "minstrument.h"
 #include "hex_float.h"
+#include "song.h"
 
 #include "vst_native.h"
 #include "pluglist.h"
@@ -62,6 +63,8 @@
 // Enable debugging messages
 //#define VST_NATIVE_DEBUG
 //#define VST_NATIVE_DEBUG_PROCESS
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_PARAMS(dev, format, args...) // fprintf(dev, format, ##args);
 
 #ifdef VST_VESTIGE_SUPPORT
 #ifndef effGetProgramNameIndexed
@@ -645,6 +648,9 @@ VstNativeSynthIF::VstNativeSynthIF(SynthI* s) : SynthIF(s)
       userData.pstate = 0;
       userData.sif = this;
       _transportLatencyCorr = 0.0f;
+      // For now we are not expecting a lot of traffic here. Try 256.
+      // (An exception might be if the plugin sends us automation begin or end for all of its parameters at once.)
+      _ipcCallbackEvents = new LockFreeMPSCRingBuffer<PluginCallbackEventStruct>(256);
 }
 
 VstNativeSynthIF::~VstNativeSynthIF()
@@ -683,6 +689,9 @@ VstNativeSynthIF::~VstNativeSynthIF()
 
   if(_gw)
     delete[] _gw;
+
+  if(_ipcCallbackEvents)
+    delete _ipcCallbackEvents;
 }
 
 //---------------------------------------------------------
@@ -800,10 +809,7 @@ bool VstNativeSynthIF::init(VstNativeSynth* s)
         _gw[i].pressed = false;
         
         _controls[i].idx = i;
-        //float val;  // TODO
-        //ladspaDefaultValue(ld, k, &val);   // FIXME TODO
-        // Port value is not used with VST.
-        _controls[i].val    = 0.0;
+        _controls[i].val    = _plugin->getParameter(_plugin, i);
         _controls[i].enCtrl  = true;
 
         // Support a special block for synth ladspa controllers.
@@ -821,9 +827,11 @@ bool VstNativeSynthIF::init(VstNativeSynth* s)
         else
         {
           cl = icl->second;
+          const double v = cl->curVal();
+          _controls[i].val = v;
+
           if(dispatch(effCanBeAutomated, i, 0, nullptr, 0.0f) == 1)
           {
-            double v = cl->curVal();
             if(v != _plugin->getParameter(_plugin, i))
               _plugin->setParameter(_plugin, i, v);
           }
@@ -971,8 +979,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
 
    switch (opcode) {
    case audioMasterAutomate:
-      // index, value, returns 0
-      ///_plugin->setParameter (_plugin, index, opt);
+      DEBUG_PARAMS(stderr, "VstNativeSynth::pluginHostCallback audioMasterAutomate index:%d\n", index);
       VstNativeSynth::guiControlChanged(userData, index, opt);
       return 0;
 
@@ -1216,6 +1223,8 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
    }
 
    case audioMasterGetAutomationState:
+      DEBUG_PARAMS(stderr, "VstNativeSynth::pluginHostCallback audioMasterGetAutomationState\n");
+
       // returns 0: not supported, 1: off, 2:read, 3:write, 4:read/write
       // offline
       return 1;   // TODO:
@@ -1258,8 +1267,8 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
             !strcmp((char*)ptr, "sendVstMidiEvent") ||
             !strcmp((char*)ptr, "sendVstTimeInfo") ||
             !strcmp((char*)ptr, "sizeWindow") ||
-            // What's this? Can't find it anywhere in the 2.4 SDK.
-            !strcmp((char*)ptr, "supplyIdle"))
+            !strcmp((char*)ptr, "midiProgramNames")
+         )
          return 1;
 
 #if 0 //ifndef VST_VESTIGE_SUPPORT
@@ -1281,20 +1290,19 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
 
    case audioMasterUpdateDisplay:
    {
-      // something has changed, update 'multi-fx' display
-
-      //_plugin->updateParamValues(false);
-      //QApplication::processEvents();     // REMOVE Tim. Or keep. Commented in QTractor.
-      return 0;
+      DEBUG_PARAMS(stderr, "VstNativeSynth::pluginHostCallback audioMasterUpdateDisplay\n");
+      VstNativeSynth::guiAudioMasterUpdateDisplay(userData);
+	    // Return 1 if supported, 0 if not supported.
+      return 1;
    }
 
    case audioMasterBeginEdit:
-      // begin of automation session (when mouse down), parameter index in <index>
+      DEBUG_PARAMS(stderr, "VstNativeSynth::pluginHostCallback audioMasterBeginEdit index:%d\n", index);
       VstNativeSynth::guiAutomationBegin(userData, index);
       return 1;
 
    case audioMasterEndEdit:
-      // end of automation session (when mouse up),     parameter index in <index>
+      DEBUG_PARAMS(stderr, "VstNativeSynth::pluginHostCallback audioMasterEndEdit index:%d\n", index);
       VstNativeSynth::guiAutomationEnd(userData, index);
       return 1;
 
@@ -1383,6 +1391,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
 
 
    default:
+      DEBUG_PARAMS(stderr, "VstNativeSynth::pluginHostCallback unknown callback opcode:%d\n", opcode);
       break;
    }
    return 0;
@@ -1766,38 +1775,12 @@ void VstNativeSynthIF::deactivate3()
 
 void VstNativeSynthIF::queryPrograms()
 {
-      char buf[256];
-      programs.clear();
-      int num_progs = _plugin->numPrograms;
-      int iOldIndex = dispatch(effGetProgram, 0, 0, nullptr, 0.0f);
-      bool need_restore = false;
-      for(int prog = 0; prog < num_progs; ++prog)
-      {
-        buf[0] = 0;
-
-        // value = category. -1 = regular linear.
-        if(dispatch(effGetProgramNameIndexed, prog, -1, buf, 0.0f) == 0)  
-        {
-          dispatch(effSetProgram, 0, prog, nullptr, 0.0f);
-          dispatch(effGetProgramName, 0, 0, buf, 0.0f);
-          need_restore = true;
-        }
-
-        int bankH = (prog >> 14) & 0x7f;
-        int bankL = (prog >> 7) & 0x7f;
-        int patch = prog & 0x7f;
-        VST_Program p;
-        p.name    = QString(buf);
-        p.program = (bankH << 16) | (bankL << 8) | patch;
-        programs.push_back(p);
-      }
-
-      // Restore current program.
-      if(need_restore) // && num_progs > 0)
-      { 
-        dispatch(effSetProgram, 0, iOldIndex, nullptr, 0.0f);
-        fprintf(stderr, "FIXME: VstNativeSynthIF::queryPrograms(): effGetProgramNameIndexed returned 0. Used ugly effSetProgram/effGetProgramName instead\n");
-      }
+  void *data = getPrograms();
+  if(data)
+  {
+    swapPrograms(data);
+    deleteProgramData(data);
+  }
 }
 
 //---------------------------------------------------------
@@ -1850,37 +1833,6 @@ void VstNativeSynthIF::doSelectProgram(int bankH, int bankL, int prog)
     //  fprintf(stderr, "VstNativeSynthIF::doSelectProgram bankH:%d bankL:%d prog:%d Effect did not acknowledge effBeginSetProgram\n", bankH, bankL, prog);
 #endif
   //}
-    
-  // TODO: Is this true of VSTs? See the similar section in dssihost.cpp  // REMOVE Tim.
-  //   "A plugin is permitted to re-write the values of its input control ports when select_program is called.
-  //    The host should re-read the input control port values and update its own records appropriately.
-  //    (This is the only circumstance in which a DSSI plugin is allowed to modify its own input ports.)"   From dssi.h
-  // Need to update the automation value, otherwise it overwrites later with the last automation value.
-  if(id() != -1)
-  {
-    const unsigned long sic = _synth->inControls();
-    for(unsigned long k = 0; k < sic; ++k)
-    {
-      // We're in the audio thread context: no need to send a message, just modify directly.
-      //synti->setPluginCtrlVal(genACnum(id(), k), _controls[k].val);
-      //synti->setPluginCtrlVal(genACnum(id(), k), _plugin->getParameter(_plugin, k));
-      synti->setPluginCtrlVal(genACnum(id(), k), _plugin->getParameter(_plugin, k));
-    }
-  }
-
-//   // Reset parameters default value...   // TODO ? 
-//   AEffect *pVstEffect = vst_effect(0);
-//   if (pVstEffect) {
-//           const qtractorPlugin::Params& params = qtractorPlugin::params();
-//           qtractorPlugin::Params::ConstIterator param = params.constBegin();
-//           for ( ; param != params.constEnd(); ++param) {
-//                   qtractorPluginParam *pParam = param.value();
-//                   float *pfValue = pParam->subject()->data();
-//                   *pfValue = pVstEffect->getParameter(pVstEffect, pParam->index());
-//                   pParam->setDefaultValue(*pfValue);
-//           }
-//   }
-  
 }
 
 //---------------------------------------------------------
@@ -1918,9 +1870,18 @@ QString VstNativeSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/) co
 void VstNativeSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/, bool /*drum*/)
 {
   // The plugin can change the programs, patches etc.
-  // So make sure we're up to date by calling queryPrograms.
-  queryPrograms();
-  
+  // So make sure we're up to date.
+  // This should be somewhat redundant since we already do this is response to audioMasterUpdateDisplay,
+  //  but it does no harm to do it again, and just in case something changed without notifying us.
+  // Get allocated data representing the list of programs.
+  // The operation will take ownership of the data and delete it when done.
+  void *data = getPrograms();
+  if(data)
+  {
+    PendingOperationList operations;
+    operations.add(PendingOperationItem(this, data, PendingOperationItem::ModifyPluginPrograms));
+  }
+
   menu->clear();
 
   for (std::vector<VST_Program>::const_iterator i = programs.begin(); i != programs.end(); ++i)
@@ -1977,24 +1938,63 @@ void VstNativeSynthIF::setParameter(unsigned long idx, double value)
       }
 
 //---------------------------------------------------------
+//   guiAudioMasterUpdateDisplay
+//---------------------------------------------------------
+
+void VstNativeSynth::guiAudioMasterUpdateDisplay(VstNativeSynthOrPlugin *userData)
+{
+#ifdef VST_NATIVE_DEBUG
+   fprintf(stderr, "VstNativeSynth::guiAudioMasterUpdateDisplay\n");
+#endif
+
+   // Some plugins only call audioMasterAutomate (which we treat like automation recording),
+   //  some only call audioMasterUpdateDisplay, and some call BOTH !
+   //
+   // NOTE: Tested:
+   // This callback may be called by different actions:
+   // By our call to dispatch a chunk to the plugin, or when the user chooses a different 'program' in the native UI
+   //  or via a midi track driving this plugin.
+   // When sending a chunk to the plugins, some plugins (uhe version 131-8256) were observed returning the wrong
+   //  parameter values here. That is, they returned the parameter values that existed BEFORE the chunk was sent.
+   // Also, the uhe plugins were observed calling this callback TWICE in a row, each with the incorrect values.
+   // The same results were seen in QTractor.
+   // So... Here we will use a ring buffer to inform the audio thread of changes.
+
+   if(userData->sif)
+   {
+     Song::IpcEventItem ipci;
+     ipci._type = Song::IpcEventItem::QueryPrograms;
+     ipci._sif = userData->sif;
+     // Tell the gui thread to reload the list of programs.
+     MusEGlobal::song->putIpcInEvent(ipci);
+   }
+
+   const PluginCallbackEventStruct ev(PluginCallbackEventStruct::UpdateDisplayType);
+   userData->sif ? userData->sif->addIpcCallbackEvent(ev) :
+                   userData->pstate->pluginI->addIpcCallbackEvent(ev);
+}
+
+//---------------------------------------------------------
 //   guiAutomationBegin
 //---------------------------------------------------------
 
 void VstNativeSynth::guiAutomationBegin(VstNativeSynthOrPlugin *userData, unsigned long param_idx)
 {
+   const float val = userData->sif ? userData->sif->param(param_idx) : userData->pstate->pluginI->param(param_idx);
    AudioTrack* t = userData->sif ? userData->sif->track() : userData->pstate->pluginI->track();
    int plug_id = userData->sif ? userData->sif->id() : userData->pstate->pluginI->id();
+
+   // Record automation:
+   // Take care of this immediately rather than in the fifo processing.
    if(t && plug_id != -1)
    {
       plug_id = genACnum(plug_id, param_idx);
-      float val = userData->sif ? userData->sif->param(param_idx) : userData->pstate->pluginI->param(param_idx);
       t->startAutoRecord(plug_id, val);
-      t->setPluginCtrlVal(plug_id, val);
    }
-   if(userData->sif)
-      userData->sif->enableController(param_idx, false);
-   else
-      userData->pstate->pluginI->enableController(param_idx, false);
+
+   const PluginCallbackEventStruct ev(PluginCallbackEventStruct::AutomationBeginType, param_idx, val);
+   userData->sif ? userData->sif->addIpcCallbackEvent(ev) :
+                   userData->pstate->pluginI->addIpcCallbackEvent(ev);
 }
 
 //---------------------------------------------------------
@@ -2003,26 +2003,27 @@ void VstNativeSynth::guiAutomationBegin(VstNativeSynthOrPlugin *userData, unsign
 
 void VstNativeSynth::guiAutomationEnd(VstNativeSynthOrPlugin *userData, unsigned long param_idx)
 {
+   const float val = userData->sif ? userData->sif->param(param_idx) : userData->pstate->pluginI->param(param_idx);
    AutomationType at = AUTO_OFF;
    AudioTrack* t = userData->sif ? userData->sif->track() : userData->pstate->pluginI->track();
    int plug_id = userData->sif ? userData->sif->id() : userData->pstate->pluginI->id();
    if(t)
       at = t->automationType();
 
+   // Record automation:
+   // Take care of this immediately rather than in the fifo processing.
    if(t && plug_id != -1)
    {
       plug_id = genACnum(plug_id, param_idx);
-      float val = userData->sif ? userData->sif->param(param_idx) : userData->pstate->pluginI->param(param_idx);
       t->stopAutoRecord(plug_id, val);
    }
 
    if ((at == AUTO_OFF) || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||
        (at == AUTO_TOUCH))
    {
-      if(userData->sif)
-         userData->sif->enableController(param_idx, true);
-      else
-         userData->pstate->pluginI->enableController(param_idx, true);
+      const PluginCallbackEventStruct ev(PluginCallbackEventStruct::AutomationEndType, param_idx, val);
+      userData->sif ? userData->sif->addIpcCallbackEvent(ev) :
+                      userData->pstate->pluginI->addIpcCallbackEvent(ev);
    }
 }
 
@@ -2060,29 +2061,9 @@ int VstNativeSynth::guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned
       }
    }
 
-   // Schedules a timed control change:
-   ControlEvent ce;
-   ce.unique = false; // Not used for native vst.
-   ce.fromGui = true; // It came from the plugin's own GUI.
-   ce.idx = param_idx;
-   ce.value = value;
-   // Don't use timestamp(), because it's circular, which is making it impossible to deal
-   // with 'modulo' events which slip in 'under the wire' before processing the ring buffers.
-   ce.frame = MusEGlobal::audio->curFrame();
-
-   ControlFifo &cfifo = userData->sif ? userData->sif->_controlFifo : userData->pstate->pluginI->_controlFifo;
-
-   if(cfifo.put(ce))
-      fprintf(stderr, "VstNativeSynthIF::guiControlChanged: fifo overflow: in control number:%lu\n", param_idx);
-
-   if(userData->sif)
-   {
-      userData->sif->enableController(param_idx, false);
-   }
-   else
-   {
-      userData->pstate->pluginI->enableController(param_idx, false);
-   }
+   const PluginCallbackEventStruct ev(PluginCallbackEventStruct::AutomationEditType, param_idx, value);
+   userData->sif ? userData->sif->addIpcCallbackEvent(ev) :
+                   userData->pstate->pluginI->addIpcCallbackEvent(ev);
 
    return 0;
 }
@@ -2111,6 +2092,58 @@ bool VstNativeSynthIF::usesTransportSource() const { return _synth->usesTranspor
 
 // Temporary variable holds value to be passed to the callback routine.
 float VstNativeSynthIF::transportLatencyCorr() const { return _transportLatencyCorr; }
+
+void* VstNativeSynthIF::getPrograms() const
+{
+  VstPrograms_t *prgs = new VstPrograms_t();
+  char buf[256];
+  int num_progs = _plugin->numPrograms;
+  int iOldIndex = dispatch(effGetProgram, 0, 0, nullptr, 0.0f);
+  bool need_restore = false;
+  for(int prog = 0; prog < num_progs; ++prog)
+  {
+    buf[0] = 0;
+
+    // value = category. -1 = regular linear.
+    if(dispatch(effGetProgramNameIndexed, prog, -1, buf, 0.0f) == 0)
+    {
+      dispatch(effSetProgram, 0, prog, nullptr, 0.0f);
+      dispatch(effGetProgramName, 0, 0, buf, 0.0f);
+      need_restore = true;
+    }
+
+    int bankH = (prog >> 14) & 0x7f;
+    int bankL = (prog >> 7) & 0x7f;
+    int patch = prog & 0x7f;
+    VST_Program p;
+    p.name    = QString(buf);
+    p.program = (bankH << 16) | (bankL << 8) | patch;
+    prgs->push_back(p);
+  }
+
+  // Restore current program.
+  if(need_restore) // && num_progs > 0)
+  {
+    dispatch(effSetProgram, 0, iOldIndex, nullptr, 0.0f);
+    fprintf(stderr, "FIXME: VstNativeSynthIF::getPrograms(): effGetProgramNameIndexed returned 0. Used ugly effSetProgram/effGetProgramName instead\n");
+  }
+
+  return prgs;
+}
+
+bool VstNativeSynthIF::swapPrograms(void* data)
+{
+  VstPrograms_t *prgs = (VstPrograms_t*)data;
+  programs.swap(*prgs);
+  return true;
+}
+
+bool VstNativeSynthIF::deleteProgramData(void* data) const
+{
+  VstPrograms_t *prgs = (VstPrograms_t*)data;
+  delete prgs;
+  return true;
+}
 
 //---------------------------------------------------------
 //   getData
@@ -2570,7 +2603,7 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       _transportLatencyCorr = li._sourceCorrectionValue;
   }
 
-  const AutomationType at = atrack->automationType();
+  const AutomationType at = atrack ? atrack->automationType() : AUTO_OFF;
   const bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
   const unsigned long in_ctrls = _synth->inControls();
   CtrlListList* cll = atrack->controller();
@@ -2627,6 +2660,208 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
         for(int ch = dst_ch; ch < nxt_ch; ++ch)
           used_in_chan_array[ch] = true;
       }
+    }
+  }
+
+  // Diagnostics.
+  //static long unsigned int prevcycle = 0;
+  //static long unsigned int cycle = 0;
+  //bool messprinted = false;
+
+  // This is an attempt to synchronize what is shown on a midi track's patch display with the plugin's
+  //  actual current program, especially when selecting a program through the plugin's native UI.
+  // NOTE: TESTED:
+  // This did not go so well. Various plugins behave differently.
+  // Some don't seem to report a program at all or fix it at 0 even when it has programs.
+  // So to avoid such plugins forcing the midi track patch display to 0,
+  //  we'll leave this for another day.
+#if 0
+  if(mp)
+  {
+    bool midiprogsupported = false;
+
+#ifndef VST_VESTIGE_SUPPORT
+    const int chans = dispatch(effGetNumMidiInputChannels, 0, 0, nullptr, 0.0f);
+    MidiProgramName pname;
+    for(int i = 0; i < chans; ++i)
+    {
+      const int curprg = dispatch(effGetCurrentMidiProgram, i, 0, &pname, 0.0f);
+      // Result is -1 if unsupported.
+      if(curprg == -1)
+        break;
+
+      midiprogsupported = true;
+      // Time value does not matter here.
+      const MidiPlayEvent ev(0, mp->portno(), i, ME_CONTROLLER, CTRL_PROGRAM, curprg);
+
+      // Does the CTRL_PROGRAM controller exist?
+      iMidiCtrlValList imcvl = mp->controller()->find(i, CTRL_PROGRAM);
+      if(imcvl != mp->controller()->end())
+      {
+        MidiCtrlValList *mpvl = imcvl->second;
+        const int hwval = mpvl->hwVal();
+        if(hwval != curprg)
+          // Tell the gui to set the value.
+          mp->handleGui2AudioEvent(ev, true);
+      }
+      else
+      {
+        // Tell the gui to create the controller and add the value.
+        mp->handleGui2AudioEvent(ev, true);
+      }
+    }
+#endif
+    // Unsupported or plugin reported zero midi programs? Try the normal effGetProgram instead.
+    if(!midiprogsupported)
+    {
+      const int curprg = dispatch(effGetProgram, 0, 0, nullptr, 0.0f);
+      // Since the plugin does not seem to support per-channel programs, we have no choice
+      //  but to set all channels' program controllers to the current program.
+      for(int i = 0; i < MIDI_CHANNELS; ++i)
+      {
+        // Time value does not matter here.
+        const MidiPlayEvent ev(0, mp->portno(), i, ME_CONTROLLER, CTRL_PROGRAM, curprg);
+
+        // Does the CTRL_PROGRAM controller exist?
+        iMidiCtrlValList imcvl = mp->controller()->find(i, CTRL_PROGRAM);
+        if(imcvl != mp->controller()->end())
+        {
+          MidiCtrlValList *mpvl = imcvl->second;
+          const int hwval = mpvl->hwVal();
+          if(hwval != curprg)
+            // Tell the gui to set the value.
+            mp->handleGui2AudioEvent(ev, true);
+        }
+        else
+        {
+          // Tell the gui to create the controller and add the value.
+          mp->handleGui2AudioEvent(ev, true);
+        }
+      }
+    }
+  }
+#endif
+
+  // Process events sent to us by the plugin's callback now before other controller stuff.
+  if(_ipcCallbackEvents)
+  {
+    const unsigned sz = _ipcCallbackEvents->getSize();
+    for(unsigned i = 0; i < sz; ++i)
+    {
+      PluginCallbackEventStruct ev;
+      if(!_ipcCallbackEvents->get(ev))
+        continue;
+      switch(ev._type)
+      {
+        case PluginCallbackEventStruct::AutomationBeginType:
+          // Update the automation controller's current value and tell the graphics to redraw etc.
+          if(plug_id != -1)
+            synti->setPluginCtrlVal(genACnum(plug_id, ev._id), ev._value);
+          // Disable the automation controller stream while a control is being manipulated.
+          enableController(ev._id, false);
+          DEBUG_PARAMS(stderr, "VstNativeSynthIF::getData: Got AutomationBeginType: cycle dif:%lu\n", cycle - prevcycle);
+          //messprinted = true;
+        break;
+
+        case PluginCallbackEventStruct::AutomationEditType:
+          // Update the automation controller's current value and tell the graphics to redraw etc.
+          if(plug_id != -1)
+            synti->setPluginCtrlVal(genACnum(plug_id, ev._id), ev._value);
+          // Disable the automation controller stream while a control is being manipulated.
+          // No! We cannot disable controllers here.
+          //enableController(ev._id, false);
+          DEBUG_PARAMS(stderr, "VstNativeSynthIF::getData: Got AutomationEditType: cycle dif:%lu\n", cycle - prevcycle);
+          //messprinted = true;
+        break;
+
+        case PluginCallbackEventStruct::AutomationEndType:
+          // Update the automation controller's current value and tell the graphics to redraw etc.
+          if(plug_id != -1)
+            synti->setPluginCtrlVal(genACnum(plug_id, ev._id), ev._value);
+          // Re-enable the automation controller stream now that a control is no longer being manipulated.
+          enableController(ev._id, true);
+          DEBUG_PARAMS(stderr, "VstNativeSynthIF::getData: Got AutomationEndType: cycle dif:%lu\n", cycle - prevcycle);
+          //messprinted = true;
+        break;
+
+        case PluginCallbackEventStruct::UpdateDisplayType:
+          DEBUG_PARAMS(stderr, "VstNativeSynthIF::getData: Got UpdateDisplayType: cycle dif:%lu\n", cycle - prevcycle);
+          //messprinted = true;
+          // If we receive an UpdateDisplay notification from the plugin, we use it as an indicator
+          //  that the program changed. We disable all controller streams to be consistent because
+          //  otherwise that job is left to the polling and automation handlers here, and they ONLY
+          //  disable controller streams for which a control actually changed, which is imperfect.
+          // For plugins that do not send UpdateDisplay, there is nothing more we can do than that.
+          // No! We cannot disable controllers here.
+          //for(unsigned long k = 0; k < in_ctrls; ++k)
+          //  enableController(k, false);
+        break;
+
+        case PluginCallbackEventStruct::NoType:
+        break;
+      }
+    }
+  }
+
+  // This section handles a few different scenarios:
+  // 1) Catch parameters that change without notification, such as the plugin's own midi-to-control assignments.
+  //    There seems to be a convention that such assignments do not notify the host on changes.
+  // 2) Catch parameters that change upon program changes. Some plugins notify via audioMasterUpdateDisplay,
+  //     some only notify via audioMasterAutomate, some do both, and some do nothing.
+  //
+  // FIXME NOTE: Unfixable?
+  // Some plugins do not update their parameters immediately after setting them. It happens later.
+  // So what happens is that this thinks there was a change and disables the controller stream.
+  // A solution was to provide a timeout timer. We are expecting the parameter to change so we wait for some time,
+  //  and if it changed, great, and if not we stop the timer and just carry on.
+  // Unfortunately the continuous stream of automation controllers would constantly activate the timer,
+  //  preventing anything else from activating this code, such as a plugin's own midi-to-control mapping which
+  //  as mentioned does not inform us in any other way.
+  // So, we CANNOT disable controller streams here.
+  for(unsigned long k = 0; k < in_ctrls; ++k)
+  {
+    const float curval = getParameter(k);
+    // Has the plugin's parameter changed, compared to our cached value?
+    // NOTE:
+    // Many plugins manipulate the parameters, for example Tonespace has a very long
+    //  update time ~50 cycles! And most of them smooth parameter changes, ramping them up or down.
+    // So the parameters are NOT changed to the requested value immediately, if at all.
+    // Also, for things like switches the plugin may round requested values to 0 or 1.
+    // This means the automation controllers, if enabled, in some cases will be constantly
+    //  fighting with the cached value. It was observed that even static linear values returned
+    //  from a plugin did not match what value our cache recorded was sent.
+    // This suggests the plugin was applying granularity to the values.
+    // The match even depended on the value itself. Some values sent matched, others did not.
+    // So, during those cases this code will be CONSTANTLY called.
+    // We have no choice but to just let it be called. Setting the cached value HERE or in the
+    //  automation reading code below makes does not help and actually makes things worse.
+    // Therefore make sure to check whether the value really needs changing below.
+    // Then we should be OK.
+    if(curval != _controls[k].val)
+    {
+      DEBUG_PARAMS(stderr, "VstNativeSynthIF::getData: Got param change k:%lu "
+                   "plugin curval:%.15f controls[k].val:%.15f cycle dif:%lu\n",
+                   k, curval, _controls[k].val, cycle - prevcycle);
+      //messprinted = true;
+
+      // Update the automation controller's current value and tell the graphics to redraw etc.
+      if(plug_id != -1)
+      {
+        const long unsigned acnum = genACnum(plug_id, k);
+        // Is the automation controller's static 'current value' different than the plugin's current value?
+        const double accurval = cll->value(acnum, 0, true);
+        if(accurval != curval)
+        {
+          DEBUG_PARAMS(stderr, "  accurval:%.15f != plugin curval. Updating.\n", accurval);
+
+          // Update the automation controller's current value and tell the graphics to redraw etc.
+          synti->setPluginCtrlVal(acnum, curval);
+        }
+      }
+      // Whatever caused the change, we must treat this condition as a user-manipulated native control.
+      // Disable the automation controller stream while a control is being manipulated.
+      // No! We cannot disable controllers here.
+      //enableController(k, false);
     }
   }
 
@@ -2723,17 +2958,35 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
           new_val = cl->interpolate(MusEGlobal::audio->isPlaying() ? slice_frame : pos, ci);
         else
           new_val = ci.sVal;
-        if(dispatch(effCanBeAutomated, k, 0, nullptr, 0.0f) == 1)
+
+        // Is the new desired value different than our cached value?
+        if(_controls[k].val != new_val)
         {
-          if(_plugin->getParameter(_plugin, k) != new_val)
-            _plugin->setParameter(_plugin, k, new_val);
+          DEBUG_PARAMS(stderr, "VstNativeSynthIF::getData _controls[%lu].val:%.15f != new_val:%.15f "
+            "cur_slice:%d sample:%lu fin_nsamp:%d slice_samps:%lu, slice_frame:%lu cycle dif:%lu\n",
+            k, _controls[k].val, new_val, cur_slice, sample, fin_nsamp, slice_samps, slice_frame, cycle - prevcycle);
+          //messprinted = true;
+
+          _controls[k].val = new_val;
+
+          // Hm, AMSynth said this was false and yet removing it works fine. I guess it doesn't support this call?
+          //if(dispatch(effCanBeAutomated, k, 0, nullptr, 0.0f) == 1)
+          {
+            const float curval = _plugin->getParameter(_plugin, k);
+            if(new_val != curval)
+            {
+              DEBUG_PARAMS(stderr, "  plugin curval:%.15f != new_val. Updating plugin.\n", curval);
+
+              _plugin->setParameter(_plugin, k, new_val);
+            }
+          }
+
+    #ifdef VST_NATIVE_DEBUG
+          else
+            fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n",
+                    name().toLocal8Bit().constData(), k);
+    #endif
         }
-  #ifdef VST_NATIVE_DEBUG
-        else
-          fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n",
-                  name().toLocal8Bit().constData(), k);
-  #endif
-//         }
 
 #ifdef VST_NATIVE_DEBUG_PROCESS
         fprintf(stderr, "VstNativeSynthIF::getData k:%lu sample:%lu frame:%lu ci.eFrame:%d slice_samps:%lu \n",
@@ -2792,6 +3045,8 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
         break;
       }
 
+      DEBUG_PARAMS(stderr, "VstNativeSynthIF::getData got controlFifo item index:%lu value:%f\n", v.idx, v.value);
+
       found = true;
       frame = evframe;
       index = v.idx;
@@ -2809,7 +3064,6 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       if(plug_id != -1)
         synti->setPluginCtrlVal(genACnum(plug_id, v.idx), v.value);
 
-      // TODO: Possible FIXME: Where is setParameter? Shouldn't it be called?
       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
     }
 
@@ -3002,6 +3256,11 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
     ++cur_slice; // Slice is done. Moving on to any next slice now...
   }
   
+  // Diagnostics.
+  //if(messprinted)
+  //  prevcycle = cycle;
+  //++cycle;
+
   // Inform the host callback we will be no longer in the audio thread.
   _inProcess = false;
 
@@ -3025,7 +3284,26 @@ void VstNativeSynthIF::enableAllControllers(bool v)
   for(unsigned long i = 0; i < sic; ++i)
     _controls[i].enCtrl = v;
 }
-void VstNativeSynthIF::updateControllers() { }
+
+void VstNativeSynthIF::updateController(unsigned long i)
+{
+  // If plugin is not available just return.
+  if(!_synth || !_controls || !synti || id() < 0)
+    return;
+
+  const float v = param(i);
+  // Make sure to update this cached value.
+  _controls[i].val = v;
+  synti->setPluginCtrlVal(genACnum(id(), i), v);
+}
+
+void VstNativeSynthIF::updateControllers()
+{
+  const unsigned long sic = _synth->inControls();
+  for(unsigned long i = 0; i < sic; ++i)
+    updateController(i);
+}
+
 void VstNativeSynthIF::activate()
 {
   if(_curActiveState)

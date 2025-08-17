@@ -2242,13 +2242,13 @@ void JackAudioDevice::startTransport()
 void JackAudioDevice::stopTransport()
     {
       DEBUG_JACK(stderr, "JackAudioDevice::stopTransport()\n");
-      
+
       if(!MusEGlobal::config.useJackTransport)
       {
         AudioDevice::stopTransport();
         return;
       }
-      
+
       if(!checkJackClient(_client)) return;
       if (transportState != JackTransportStopped) {
         //      fprintf(stderr, "JACK: stopTransport\n");

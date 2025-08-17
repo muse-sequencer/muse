@@ -26,6 +26,7 @@
 #define __AUDIO_H__
 
 #include <stdint.h>
+#include <atomic>
 
 #include "type_defs.h"
 #include "thread.h"
@@ -194,6 +195,10 @@ class Audio {
       unsigned endExternalRecTick;
 
       long m_Xruns;
+
+      // If set, tells the next call to seek() to NOT re-enable all controller streams.
+      // The flag is reset in seek().
+      std::atomic<bool> _ignoreNextEnableAllControllers;
       
       // Can be called by any thread.
       void sendLocalOff();
