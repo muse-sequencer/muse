@@ -175,7 +175,7 @@ void Slider::mouseMoveEvent(QMouseEvent* ev)
       {
       if (!dragMode)
             return;
-      int delta = startDrag.y() - ev->y();
+      int delta = startDrag.y() - ev->position().toPoint().y();
 
 //      if (_invert)
 //            delta = -delta;

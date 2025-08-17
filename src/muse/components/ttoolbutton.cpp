@@ -77,13 +77,7 @@ QSize CompactToolButton::sizeHint() const
   }
   else
   {
-    // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-    #if QT_VERSION >= 0x050b00
     rw = fontMetrics().horizontalAdvance(text());
-    #else
-    rw = fontMetrics().width(text());
-    #endif
-
     rh = fontMetrics().lineSpacing() + 5;
   }
 

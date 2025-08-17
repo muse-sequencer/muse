@@ -39,7 +39,10 @@
 
 
 // Forward declarations:
+class QEvent;
+class QEnterEvent;
 class QMouseEvent;
+class QPaintEvent;
 class QResizeEvent;
 class QGridLayout;
 class QLayout;
@@ -630,7 +633,7 @@ class TrackNameLabel : public QLabel
     virtual void mouseReleaseEvent(QMouseEvent*);
     virtual void mouseMoveEvent(QMouseEvent*);
     virtual void leaveEvent(QEvent*);
-    virtual void enterEvent(QEvent*);
+    virtual void enterEvent(QEnterEvent*);
 
   signals:
     void doubleClicked();
@@ -825,14 +828,8 @@ class Strip : public QFrame {
       void setHighLight(bool highlight);
       QString getLabelText();
 
-// Setting to zero is deprecated. Use default constructor, new in Qt 5.15.
-#if QT_VERSION >= 0x050f00
       void addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment = Qt::Alignment());
       void addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment alignment = Qt::Alignment());
-#else
-      void addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment = 0);
-      void addGridLayout(QLayout* l, const GridPosStruct& pos, Qt::Alignment alignment = 0);
-#endif
       
       int userWidth() const { return _userWidth; }
       void setUserWidth(int w);

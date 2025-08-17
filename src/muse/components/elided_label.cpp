@@ -326,12 +326,7 @@ void ElidedLabel::setFontPointMin(int point)
 
 QSize ElidedLabel::sizeHint() const
 {
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
   QSize sz(fontMetrics().horizontalAdvance(_text) + 8, fontMetrics().height() + 4);
-#else
-  QSize sz(fontMetrics().width(_text) + 8, fontMetrics().height() + 4);
-#endif
   return sz;
 }
 
@@ -516,12 +511,7 @@ QSize ElidedLabel::sizeHint() const
 
 //QSize ElidedTextLabel::sizeHint() const
 //{
-//// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-//#if QT_VERSION >= 0x050b00
 //  QSize sz(fontMetrics().horizontalAdvance(_text) + 8, fontMetrics().height() + 4);
-//#else
-//  QSize sz(fontMetrics().width(_text) + 8, fontMetrics().height() + 4);
-//#endif
 //  return sz;
 //}
 

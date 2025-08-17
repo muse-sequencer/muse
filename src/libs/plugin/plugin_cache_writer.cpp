@@ -1656,14 +1656,20 @@ static bool pluginScan(
     if(!out_array.isEmpty() && out_array.at(0) != 0)
     {
       // Terminate just to be sure.
-      out_array.append(char(0));
+      // No! Not in Qt6. Both Qt5 and Qt6 QByteArray always maintain a terminating null, but in Qt6:
+      // "Note: Any null ('\0') bytes in the byte array will be included in this string,
+      //   converted to Unicode null characters (U+0000). This behavior is different from Qt 5.x.
+      //out_array.append(char(0));
       std::fprintf(stderr, "\npluginScan: Standard output from scan:\n%s\n", out_array.constData());
     }
     QByteArray err_array = process.readAllStandardError();
     if(!err_array.isEmpty() && err_array.at(0) != 0)
     {
       // Terminate just to be sure.
-      err_array.append(char(0));
+      // No! Not in Qt6. Both Qt5 and Qt6 QByteArray always maintain a terminating null, but in Qt6:
+      // "Note: Any null ('\0') bytes in the byte array will be included in this string,
+      //   converted to Unicode null characters (U+0000). This behavior is different from Qt 5.x.
+      //err_array.append(char(0));
       std::fprintf(stderr, "\npluginScan: Standard error output from scan:\n%s\n", err_array.constData());
     }
   }

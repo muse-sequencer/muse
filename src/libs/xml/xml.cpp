@@ -167,7 +167,10 @@ void Xml::token(int cc)
             i++;
             next();
             }
-      buffer.append(char(0));
+      // No! Not in Qt6. Both Qt5 and Qt6 QByteArray always maintain a terminating null, but in Qt6:
+      // "Note: Any null ('\0') bytes in the byte array will be included in this string,
+      //   converted to Unicode null characters (U+0000). This behavior is different from Qt 5.x.
+      //buffer.append(char(0));
       _s2 = buffer;     // deep copy !?
       }
 
@@ -239,7 +242,10 @@ void Xml::stoken()
                   break;
             next();
             }
-      buffer.append(char(0));
+      // No! Not in Qt6. Both Qt5 and Qt6 QByteArray always maintain a terminating null, but in Qt6:
+      // "Note: Any null ('\0') bytes in the byte array will be included in this string,
+      //   converted to Unicode null characters (U+0000). This behavior is different from Qt 5.x.
+      //buffer.append(char(0));
       _s2 = buffer;
       }
 
@@ -340,7 +346,10 @@ Xml::Token Xml::parse()
                         next();
                         }
                   
-                  buffer.append(char(0));
+                  // No! Not in Qt6. Both Qt5 and Qt6 QByteArray always maintain a terminating null, but in Qt6:
+                  // "Note: Any null ('\0') bytes in the byte array will be included in this string,
+                  //   converted to Unicode null characters (U+0000). This behavior is different from Qt 5.x.
+                  //buffer.append(char(0));
                   _s1 = QString(buffer);
 
                   if (c == EOF) {
@@ -421,7 +430,10 @@ Xml::Token Xml::parse()
                   next();
                   }
             
-            buffer.append(char(0));
+            // No! Not in Qt6. Both Qt5 and Qt6 QByteArray always maintain a terminating null, but in Qt6:
+            // "Note: Any null ('\0') bytes in the byte array will be included in this string,
+            //   converted to Unicode null characters (U+0000). This behavior is different from Qt 5.x.
+            //buffer.append(char(0));
             _s1 = QString(buffer);
 
             // skip white space:
@@ -497,7 +509,10 @@ Xml::Token Xml::parse()
                               name_idx++;
                               }
                               
-                        name.append(char(0));
+                        // No! Not in Qt6. Both Qt5 and Qt6 QByteArray always maintain a terminating null, but in Qt6:
+                        // "Note: Any null ('\0') bytes in the byte array will be included in this string,
+                        //   converted to Unicode null characters (U+0000). This behavior is different from Qt 5.x.
+                        //name.append(char(0));
 
                         if (strcmp(name, "lt") == 0)
                               c = '<';
@@ -520,7 +535,10 @@ Xml::Token Xml::parse()
                   next();
                   }
                   
-            buffer.append(char(0));
+            // No! Not in Qt6. Both Qt5 and Qt6 QByteArray always maintain a terminating null, but in Qt6:
+            // "Note: Any null ('\0') bytes in the byte array will be included in this string,
+            //   converted to Unicode null characters (U+0000). This behavior is different from Qt 5.x.
+            //buffer.append(char(0));
             _s1 = QString(buffer);
 
             if (c == '<')

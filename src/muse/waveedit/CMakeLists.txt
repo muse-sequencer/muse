@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP ( waveedit_mocs
+QT6_WRAP_CPP ( waveedit_mocs
       editgain.h
       waveedit.h
       wavecanvas.h
@@ -36,7 +36,7 @@ QT5_WRAP_CPP ( waveedit_mocs
 file (GLOB waveedit_ui_files
       editgainbase.ui
       )
-QT5_WRAP_UI (waveedit_ui_headers ${waveedit_ui_files} )
+QT6_WRAP_UI (waveedit_ui_headers ${waveedit_ui_files} )
 
 ##
 ## List of source files to compile

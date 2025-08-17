@@ -48,7 +48,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP (widget_mocs
+QT6_WRAP_CPP (widget_mocs
 #       aboutbox_impl.h 
 #       arrangercolumns.h 
 #       action.h
@@ -190,7 +190,7 @@ QT5_WRAP_CPP (widget_mocs
 #       unusedwavefiles.ui
 #       warn_bad_timing.ui
 #       )
-# QT5_WRAP_UI (widget_ui_headers ${widgets_ui_files})
+# QT6_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 
 ##
 ## List of source files to compile

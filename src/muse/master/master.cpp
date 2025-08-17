@@ -396,7 +396,7 @@ void Master::viewMouseMoveEvent(QMouseEvent* event)
       // Operation is undoable but do not start/end undo.
       MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoable);
 
-      emit tempoChanged(280000 - event->y());
+      emit tempoChanged(280000 - event->position().toPoint().y());
       int x = pos.x();
       if (x < 0)
             x = 0;

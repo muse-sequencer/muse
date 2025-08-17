@@ -35,6 +35,7 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QMouseEvent;
 class QEvent;
+class QEnterEvent;
 
 namespace MusECore {
 class AudioTrack;
@@ -88,7 +89,7 @@ class EffectRack : public QListWidget {
       void dragEnterEvent(QDragEnterEvent *event);
       void mousePressEvent(QMouseEvent *event);
       void mouseMoveEvent(QMouseEvent *event);
-      void enterEvent(QEvent *event);
+      void enterEvent(QEnterEvent *event);
       void leaveEvent(QEvent *event);
 
       QStringList mimeTypes() const;

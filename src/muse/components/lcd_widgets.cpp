@@ -797,7 +797,7 @@ void LCDPatchEdit::mousePressEvent(QMouseEvent* e)
   emit pressed(e->pos(), _id, buttons, e->modifiers());
 
   if(buttons == Qt::RightButton)
-    emit rightClicked(e->globalPos(), _id);
+    emit rightClicked(e->globalPosition().toPoint(), _id);
 }
 
 void LCDPatchEdit::mouseReleaseEvent(QMouseEvent* e)
@@ -806,7 +806,7 @@ void LCDPatchEdit::mouseReleaseEvent(QMouseEvent* e)
   emit released(e->pos(), _id, e->buttons(), e->modifiers());
 }
 
-void LCDPatchEdit::enterEvent(QEvent *e)
+void LCDPatchEdit::enterEvent(QEnterEvent *e)
 {
   //fprintf(stderr, "LCDPatchEdit::enterEvent\n");
   QPoint p = mapFromGlobal(cursor().pos());
@@ -1042,11 +1042,7 @@ bool LCDPatchEdit::event(QEvent* e)
 
 void LCDPatchEdit::wheelEvent(QWheelEvent* e)
 {
-#if QT_VERSION >= 0x050e00
   QPoint p = e->position().toPoint();
-#else
-  QPoint p = e->pos();
-#endif
 
   bool doupd = false;
 
@@ -1217,11 +1213,7 @@ void LCDPatchEdit::wheelEvent(QWheelEvent* e)
     setValue(new_val);
     // Show a handy tooltip value box.
     if(_enableValueToolTips)
-#if QT_VERSION >= 0x050e00
       showValueToolTip(e->globalPosition().toPoint(), section);
-#else
-      showValueToolTip(e->globalPos(), section);
-#endif
     emit valueChanged(value(), _id);
   }
   //fprintf(stderr, "LCDPatchEdit::wheelEvent _HBankHovered:%d _LBankHovered:%d _ProgHovered:%d\n", _HBankHovered, _LBankHovered, _ProgHovered);

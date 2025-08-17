@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP ( zita_resampler_converter_mocs
+QT6_WRAP_CPP ( zita_resampler_converter_mocs
       zita_resampler_converter.h
       )
 
@@ -34,7 +34,7 @@ QT5_WRAP_CPP ( zita_resampler_converter_mocs
 file (GLOB zita_resampler_converter_ui_files
       zita_resampler_settings_base.ui
       ) 
-QT5_WRAP_UI ( zita_resampler_converter_uis ${zita_resampler_converter_ui_files} )
+QT6_WRAP_UI ( zita_resampler_converter_uis ${zita_resampler_converter_ui_files} )
 
 ##
 ## List of source files to compile

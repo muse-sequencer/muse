@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP ( liste_mocs
+QT6_WRAP_CPP ( liste_mocs
       listedit.h 
       )
 

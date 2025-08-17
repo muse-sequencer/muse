@@ -30,7 +30,6 @@
 #include <QTimerEvent>
 #include <QFocusEvent>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QCursor>
 //#include <QToolTip>
 #include <QScreen>
@@ -81,7 +80,7 @@ SliderBase::SliderBase(QWidget *parent, const char *name)
 // //     val:0.03000000000000002665 calling enableController(false)
 // //     
 // // SliderBase::mouseMoveEvent firstMouseMoveAfterPress
-// //    e->globalPos() x:1042 y:602 _lastGlobalMousePos x:1041 y:602 calling setPosition(delta x:1, y:0)
+// //    e->globalPosition().toPoint() x:1042 y:602 _lastGlobalMousePos x:1041 y:602 calling setPosition(delta x:1, y:0)
 // // SliderBase::setPosition calling fitValue(delta x:1, y:0) d_mouseOffset:0.00000000000000000000
 // // CompactSlider::getValue value:0.03000000000000002665 p x:1 y:0 step:0.01000000000000000021 x change:0.01000000000000000021
 // // DoubleRange::setNewValue TOP val:0.04000000000000002859 d_prevValue:0.02000000000000001776 d_value:0.03000000000000002665
@@ -101,7 +100,7 @@ SliderBase::SliderBase(QWidget *parent, const char *name)
 // // --------------------------------------------------------------------------------------
 // // 
 // // SliderBase::mouseMoveEvent not firstMouseMoveAfterPress
-// //    e->globalPos() x:1044 y:601 scrn_cntr x:683 y:384 calling setPosition(delta x:361, y:217)
+// //    e->globalPosition().toPoint() x:1044 y:601 scrn_cntr x:683 y:384 calling setPosition(delta x:361, y:217)
 // // SliderBase::setPosition calling fitValue(delta x:361, y:217) d_mouseOffset:0.00000000000000000000
 // // CompactSlider::getValue value:0.04000000000000003553 p x:361 y:217 step:0.01000000000000000021 x change:3.60999999999999987566
 // // DoubleRange::setNewValue TOP val:3.64999999999999991118 d_prevValue:0.03000000000000002665 d_value:0.04000000000000003553
@@ -113,7 +112,7 @@ SliderBase::SliderBase(QWidget *parent, const char *name)
 // // SliderBase::mouseMoveEvent ignoring mouse move
 // // 
 // // SliderBase::mouseMoveEvent not firstMouseMoveAfterPress
-// //    e->globalPos() x:683 y:384 scrn_cntr x:683 y:384 calling setPosition(delta x:0, y:0)
+// //    e->globalPosition().toPoint() x:683 y:384 scrn_cntr x:683 y:384 calling setPosition(delta x:0, y:0)
 // // SliderBase::setPosition calling fitValue(delta x:0, y:0) d_mouseOffset:0.00000000000000000000
 // // CompactSlider::getValue value:1.00000000000000000000 p x:0 y:0 step:0.01000000000000000021 x change:0.00000000000000000000
 // // DoubleRange::setNewValue TOP val:1.00000000000000000000 d_prevValue:0.04000000000000003553 d_value:1.00000000000000000000
@@ -237,11 +236,7 @@ void SliderBase::wheelEvent(QWheelEvent *e)
 
       // Show a handy tooltip value box.
       if(d_enableValueToolTips)
-#if QT_VERSION >= 0x050e00
         showValueToolTip(e->globalPosition().toPoint());
-#else
-        showValueToolTip(e->globalPos());
-#endif
 
      emit sliderMoved(value(), _id);
      emit sliderMoved(value(), _id, (bool)(e->modifiers() & Qt::ShiftModifier));
@@ -313,7 +308,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
       _pressed = true;
 
       _mouseDeltaAccum = QPoint(); // Reset.
-      _lastGlobalMousePos = e->globalPos();
+      _lastGlobalMousePos = e->globalPosition().toPoint();
       d_valueAtPress = internalValue(ConvertNone);
       d_valAccum = d_valueAtPress; // Reset.
       
@@ -345,7 +340,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                   
                   // Show a handy tooltip value box.
                   if(d_enableValueToolTips)
-                    showValueToolTip(e->globalPos());
+                    showValueToolTip(e->globalPosition().toPoint());
                   
                   emit sliderMoved(value(), _id);
                   emit sliderMoved(value(), _id, shift);
@@ -364,7 +359,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                     d_direction = 0;
                     _pressed = false;
                     DEBUG_SLIDER_BASE(stderr, "SliderBase::mousePressEvent _pressed:%d\n", _pressed);
-                    emit sliderRightClicked(e->globalPos(), _id);
+                    emit sliderRightClicked(e->globalPosition().toPoint(), _id);
                     break;
                   }  
                   
@@ -379,7 +374,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                   else if(_borderlessMouse && clicked)
                   {
                     d_mouseOffset = 0.0;
-//                     _lastGlobalMousePos = e->globalPos();
+//                     _lastGlobalMousePos = e->globalPosition().toPoint();
 
                     //  "It is almost never necessary to grab the mouse when using Qt, as Qt grabs 
                     //   and releases it sensibly. In particular, Qt grabs the mouse when a mouse 
@@ -402,7 +397,8 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                     // The problem with this approach of moving the cursor on click is that 
                     //  we can't get a double click signal (ex. to open an editor).
                     //_ignoreMouseMove = true; // Avoid recursion.
-                    //const QRect r = QApplication::desktop()->screenGeometry();
+                    // //const QRect r = QApplication::desktop()->screenGeometry();
+                    //const QRect r = qApp->primaryScreen()->geometry();
                     //const QPoint pt(r.width()/2, r.height()/2);
                     //QCursor::setPos(pt);
 
@@ -434,7 +430,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                   
                   // Show a handy tooltip value box.
                   if(d_enableValueToolTips)
-                    showValueToolTip(e->globalPos());
+                    showValueToolTip(e->globalPosition().toPoint());
 
                   // If direct mode, now set the mode to a regular mouse mode.
                   if(d_scrollMode == ScrDirect)
@@ -706,17 +702,17 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
       if(_firstMouseMoveAfterPress)
       {
         _firstMouseMoveAfterPress = false;
-        delta = e->globalPos() - _lastGlobalMousePos;
+        delta = e->globalPosition().toPoint() - _lastGlobalMousePos;
         DEBUG_SLIDER_BASE(stderr, 
-          "SliderBase::mouseMoveEvent firstMouseMoveAfterPress\n   e->globalPos() x:%d y:%d _lastGlobalMousePos x:%d y:%d calling setPosition(delta x:%d, y:%d)\n", 
-          e->globalPos().x(), e->globalPos().y(), _lastGlobalMousePos.x(), _lastGlobalMousePos.y(), delta.x(), delta.y());
+          "SliderBase::mouseMoveEvent firstMouseMoveAfterPress\n   e->globalPosition().toPoint() x:%d y:%d _lastGlobalMousePos x:%d y:%d calling setPosition(delta x:%d, y:%d)\n",
+          e->globalPosition().toPoint().x(), e->globalPosition().toPoint().y(), _lastGlobalMousePos.x(), _lastGlobalMousePos.y(), delta.x(), delta.y());
       }
       else
       {
-        delta = e->globalPos() - scrn_cntr;
+        delta = e->globalPosition().toPoint() - scrn_cntr;
         DEBUG_SLIDER_BASE(stderr, 
-          "SliderBase::mouseMoveEvent not firstMouseMoveAfterPress\n   e->globalPos() x:%d y:%d scrn_cntr x:%d y:%d calling setPosition(delta x:%d, y:%d)\n", 
-          e->globalPos().x(), e->globalPos().y(), scrn_cntr.x(), scrn_cntr.y(), delta.x(), delta.y());
+          "SliderBase::mouseMoveEvent not firstMouseMoveAfterPress\n   e->globalPosition().toPoint() x:%d y:%d scrn_cntr x:%d y:%d calling setPosition(delta x:%d, y:%d)\n",
+          e->globalPosition().toPoint().x(), e->globalPosition().toPoint().y(), scrn_cntr.x(), scrn_cntr.y(), delta.x(), delta.y());
       }
       setPosition(delta);
       _ignoreMouseMove = true;
@@ -734,7 +730,7 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
 
     _mouseDeltaAccum += (e->pos() - _lastMousePos);
     _lastMousePos = e->pos();
-    _lastGlobalMousePos = e->globalPos();
+    _lastGlobalMousePos = e->globalPosition().toPoint();
     
     if (d_mass > 0.0)
     {
@@ -750,7 +746,7 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
     // Show a handy tooltip value box.
     if(d_enableValueToolTips && valch)
       //showValueToolTip(mapToGlobal(pos()));
-      showValueToolTip(e->globalPos());
+      showValueToolTip(e->globalPosition().toPoint());
 
     if(valch)
     {
@@ -763,7 +759,7 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
     // Show a handy tooltip value box.
     if(d_enableValueToolTips && d_showValueToolTipsOnHover)
       //showValueToolTip(mapToGlobal(pos()));
-      showValueToolTip(e->globalPos());
+      showValueToolTip(e->globalPosition().toPoint());
   }
 }
 
@@ -817,7 +813,7 @@ void SliderBase::keyPressEvent(QKeyEvent* e)
 
   // Show a handy tooltip value box.
   //if(d_enableValueToolTips)
-  //  showValueToolTip(e->globalPos());
+  //  showValueToolTip(e->globalPosition().toPoint());
 
   emit sliderMoved(value(), _id);
   emit sliderMoved(value(), _id, (bool)(e->modifiers() & Qt::ShiftModifier));

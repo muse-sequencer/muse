@@ -416,7 +416,8 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
             // if the soundfont is located under the projectPath we extract this from the filename
             int fileLen = it->file_name.size();
             if (it->file_name.startsWith(projPathPtr)) {
-                printf("project path found in filename, len %d shortened with %d\n",fileLen, projPathPtr.length()+1);
+                printf("project path found in filename, len %d shortened with %" PRIiQSIZETYPE "\n",
+                       fileLen, projPathPtr.length()+1);
                 fileLen = fileLen - projPathPtr.length()-1;
                 }
             len+=fileLen + 2;

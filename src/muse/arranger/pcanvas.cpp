@@ -322,7 +322,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
             MusECore::TrackList* tl = MusEGlobal::song->tracks();
             MusECore::ciTrack it;
             int yy = 0;
-            int y = event->y();
+            int y = event->position().toPoint().y();
             for (it = tl->begin(); it != tl->end(); ++it) {
                   int h = (*it)->height();
                   if (y >= yy && y < (yy + h) && (*it)->isVisible())
@@ -1370,7 +1370,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
          str.append(QString("\n@") + QString().setNum(event.tick()) + QString(" len:") +
                     QString().setNum(event.lenTick()) + QString(" ") + f.path());
       }
-      QMessageBox::information(this, "File info", str, "Ok", 0);
+      QMessageBox::information(this, "File info", str, QMessageBox::Ok);
       break;
    }
    case OP_SELECT_CLONES: // Select clones
@@ -1485,7 +1485,7 @@ bool PartCanvas::mousePress(QMouseEvent* event)
 
         QAction* act;
 
-        act = menu->exec(event->globalPos());
+        act = menu->exec(event->globalPosition().toPoint());
         if(act)
         {
           // Do not respond to the action if it does not have an integer data.
@@ -4493,11 +4493,11 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
           printf("type1\n");
             text = QString(event->mimeData()->data("text/partlist"));
 
-            int x = event->pos().x();
+            int x = event->position().toPoint().x();
             if (x < 0)
                   x = 0;
             x = MusEGlobal::sigmap.raster(x, *_raster);
-            unsigned trackNo = y2pitch(event->pos().y());
+            unsigned trackNo = y2pitch(event->position().toPoint().y());
             MusECore::Track* track = 0;
             if (trackNo < tracks->size())
                   track = tracks->index(trackNo);
@@ -4511,12 +4511,12 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       }
       else if (type == 2)
       {
-          unsigned trackNo = y2pitch(event->pos().y());
+          unsigned trackNo = y2pitch(event->position().toPoint().y());
           MusECore::Track* track = 0;
           if (trackNo < tracks->size())
                 track = tracks->index(trackNo);
 
-          int x = event->pos().x();
+          int x = event->position().toPoint().x();
           if (x < 0)
                 x = 0;
           x = MusEGlobal::sigmap.raster(x, *_raster);

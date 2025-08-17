@@ -22,7 +22,7 @@
 
 #include <QBitArray>
 #include <QByteArray>
-#include <qtextcodec.h>
+//#include <qtextcodec.h>
 #include <QActionGroup>
 #include <QLayout>
 #include <QApplication>
@@ -1064,13 +1064,13 @@ bool RoutePopupMenu::event(QEvent* event)
 //     case QEvent::MouseMove:
     {
       QMouseEvent* mev = static_cast<QMouseEvent*>(event);
-      DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::event type:%d x:%d y:%d gx:%d gy:%d sx:%f sy:%f wx:%f wy:%f lx:%f ly:%f\n", 
+      DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::event type:%d x:%f y:%f gx:%f gy:%f sx:%f sy:%f wx:%f wy:%f lx:%f ly:%f\n",
               mev->type(),
-              mev->pos().x(), mev->pos().y(), 
-              mev->globalPos().x(), mev->globalPos().y(), 
-              mev->screenPos().x(), mev->screenPos().y(), 
-              mev->windowPos().x(), mev->windowPos().y(), 
-              mev->localPos().x(), mev->localPos().y());
+              mev->position().x(), mev->position().y(),
+              mev->globalPosition().x(), mev->globalPosition().y(),
+              mev->globalPosition().x(), mev->globalPosition().y(),
+              mev->scenePosition().x(), mev->scenePosition().y(),
+              mev->position().x(), mev->position().y());
       
       QMenu* target_menu = nullptr;
       const int sz = QApplication::topLevelWidgets().size();
@@ -1083,7 +1083,7 @@ bool RoutePopupMenu::event(QEvent* event)
           if(menu->windowType() != Qt::Popup)
             continue;
           DEBUG_PRST_ROUTES(stderr, "   checking hit in menu:%p visible:%d modal:%d\n", menu, menu->isVisible(), menu->isModal());
-          if(!menu->isVisible() || !menu->geometry().contains(mev->globalPos()))
+          if(!menu->isVisible() || !menu->geometry().contains(mev->globalPosition().toPoint()))
             continue;
           DEBUG_PRST_ROUTES(stderr, "   hit\n");
           // If we hit the submenu it means the submenu is partially or wholly obscuring the other menu.
@@ -1104,9 +1104,9 @@ bool RoutePopupMenu::event(QEvent* event)
       {
         DEBUG_PRST_ROUTES(stderr, "   target_menu:%p\n", target_menu);
         QMouseEvent new_mev(mev->type(), 
-                            //mev->windowPos(), // Relative to the widget the mouse is actually over (menu variable).
-                            QPointF(target_menu->mapFromGlobal(mev->globalPos())),
-                            mev->screenPos(),
+                            //mev->scenePosition(), // Relative to the widget the mouse is actually over (menu variable).
+                            QPointF(target_menu->mapFromGlobal(mev->globalPosition().toPoint())),
+                            mev->globalPosition(),
                             mev->button(),
                             mev->buttons(),
                             mev->modifiers());

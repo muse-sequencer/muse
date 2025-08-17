@@ -452,11 +452,7 @@ QStringList pluginGetLadspaDirectories(const QString& museGlobalLib)
   // Add our own LADSPA plugin directory...
   sl.append(museGlobalLib + QString("/plugins"));
   // Now add other directories...
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
   QString ladspaPath = qEnvironmentVariable("LADSPA_PATH");
-#else
-  QString ladspaPath = QString::fromLocal8Bit(qgetenv("LADSPA_PATH"));
-#endif
   if(ladspaPath.isEmpty())
   {
     QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
@@ -465,12 +461,7 @@ QStringList pluginGetLadspaDirectories(const QString& museGlobalLib)
     ladspaPath = homePath + QString("/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa");
   }
   if(!ladspaPath.isEmpty())
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
     sl.append(ladspaPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
-#else
-    sl.append(ladspaPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
-#endif
   return sl;
 }
 
@@ -484,11 +475,7 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
   // Add our own MESS plugin directory...
   sl.append(museGlobalLib + QString("/synthi"));
   // Now add other directories...
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
   QString messPath = qEnvironmentVariable("MESS_PATH");
-#else
-  QString messPath = QString::fromLocal8Bit(qgetenv("MESS_PATH"));
-#endif
   if(messPath.isEmpty())
   {
     QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
@@ -497,12 +484,7 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
     messPath = homePath + QString("/usr/local/lib64/MESS:/usr/lib64/MESS:/usr/local/lib/MESS:/usr/lib/MESS");
   }
   if(!messPath.isEmpty())
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
     sl.append(messPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
-#else
-    sl.append(messPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
-#endif
   return sl;
 }
 
@@ -513,11 +495,7 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
 QStringList pluginGetDssiDirectories()
 {
   QStringList sl;
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
   QString dssiPath = qEnvironmentVariable("DSSI_PATH");
-#else
-  QString dssiPath = QString::fromLocal8Bit(qgetenv("DSSI_PATH"));
-#endif
   if(dssiPath.isEmpty())
   {
     QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
@@ -526,12 +504,7 @@ QStringList pluginGetDssiDirectories()
     dssiPath = homePath + QString("/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi");
   }
   if(!dssiPath.isEmpty())
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
     sl.append(dssiPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
-#else
-    sl.append(dssiPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
-#endif
   return sl;
 }
 
@@ -542,18 +515,10 @@ QStringList pluginGetDssiDirectories()
 QStringList pluginGetLinuxVstDirectories()
 {
   QStringList sl;
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
   QString vstPath = qEnvironmentVariable("LXVST_PATH");
-#else
-  QString vstPath = QString::fromLocal8Bit(qgetenv("LXVST_PATH"));
-#endif
   if(vstPath.isEmpty())
   {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
     QString vstPath = qEnvironmentVariable("VST_PATH");
-#else
-    QString vstPath = QString::fromLocal8Bit(qgetenv("VST_PATH"));
-#endif
     if(vstPath.isEmpty())
     {
       QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
@@ -600,12 +565,7 @@ QStringList pluginGetLinuxVstDirectories()
     }
   }
   if(!vstPath.isEmpty())
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
     sl.append(vstPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
-#else
-    sl.append(vstPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
-#endif
   return sl;
 }
 
@@ -616,11 +576,7 @@ QStringList pluginGetLinuxVstDirectories()
 QStringList pluginGetVstDirectories()
 {
   QStringList sl;
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
   QString vstPath = qEnvironmentVariable("VST_PATH");
-#else
-  QString vstPath = QString::fromLocal8Bit(qgetenv("VST_PATH"));
-#endif
   if(vstPath.isEmpty())
   {
     // TODO: Refine this, and below, for Q_OS_WIN. Where exactly do we look though?
@@ -638,12 +594,7 @@ QStringList pluginGetVstDirectories()
     vstPath = homePath;
   }
   if(!vstPath.isEmpty())
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
     sl.append(vstPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
-#else
-    sl.append(vstPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
-#endif
   return sl;
 }
 
@@ -654,11 +605,7 @@ QStringList pluginGetVstDirectories()
 QStringList pluginGetLv2Directories()
 {
   QStringList sl;
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
   QString lv2Path = qEnvironmentVariable("LV2_PATH");
-#else
-  QString lv2Path = QString::fromLocal8Bit(qgetenv("LV2_PATH"));
-#endif
   if(lv2Path.isEmpty())
   {
     QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
@@ -667,12 +614,7 @@ QStringList pluginGetLv2Directories()
     lv2Path = homePath + QString("/usr/local/lib64/lv2:/usr/lib64/lv2:/usr/local/lib/lv2:/usr/lib/lv2");
   }
   if(!lv2Path.isEmpty())
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
     sl.append(lv2Path.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
-#else
-    sl.append(lv2Path.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
-#endif
   return sl;
 }
 

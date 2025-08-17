@@ -383,7 +383,7 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                         //
                         // xmag
                         //
-                        int oldx = e->x() - rCanvasA.x();
+                        int oldx = e->position().toPoint().x() - rCanvasA.x();
                         AL::Pos pos(pix2pos(oldx));
                         int step = e->delta() / 120;
                         if (step > 0) {

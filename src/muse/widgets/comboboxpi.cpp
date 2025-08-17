@@ -21,7 +21,7 @@ void ComboBoxPI::mousePressEvent(QMouseEvent *e)
 {
     if (e->button() == Qt::RightButton) {
         e->accept();
-        emit rightClicked(e->globalPos(), pid);
+        emit rightClicked(e->globalPosition().toPoint(), pid);
         return;
     }
 

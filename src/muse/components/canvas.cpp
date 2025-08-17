@@ -27,7 +27,6 @@
 #include "canvas.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QCursor>
 #include <QScreen>
 
@@ -615,11 +614,7 @@ void Canvas::wheelEvent(QWheelEvent* ev)
       else if(delta.y() != 0)
         d = delta.y();
       if(d != 0)
-#if QT_VERSION >= 0x050e00
         emit horizontalZoom(d > 0, ev->globalPosition().toPoint());
-#else
-        emit horizontalZoom(d > 0, ev->globalPos());
-#endif
       return;
     }
 
@@ -877,7 +872,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       
       start           = event->pos();
       ev_pos          = start;
-      global_start    = event->globalPos();
+      global_start    = event->globalPosition().toPoint();
       ev_global_pos   = global_start;
       
       curItem = findCurrentItem(start);
@@ -1343,7 +1338,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       }
 // For testing...
       //fprintf(stderr, "ypos=%d yorg=%d ymag=%d event->y=%d ->gy:%d mapy(yorg)=%d rmapy0=%d yOffset=%d rmapy(yOffset()=%d\n",
-      //                 ypos,   yorg,   ymag,   event->y(), event->globalY(), mapy(yorg), rmapy(0), yOffset(), rmapy(yOffset()));
+      //                 ypos,   yorg,   ymag,   event->position().toPoint().y(), event->globalPosition().toPoint().y(), mapy(yorg), rmapy(0), yOffset(), rmapy(yOffset()));
 
       // Drag not off and left mouse button not pressed? It's an error.
       // Meaning likely mouseRelease was not called (which CAN happen).
@@ -1358,8 +1353,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       
       QRect  screen_rect    = QApplication::primaryScreen()->geometry();
       QPoint screen_center  = QPoint(screen_rect.width()/2, screen_rect.height()/2);
-      QPoint glob_dist      = event->globalPos() - ev_global_pos;
-      QPoint glob_zoom_dist = MusEGlobal::config.borderlessMouse ? (event->globalPos() - screen_center) : glob_dist;
+      QPoint glob_dist      = event->globalPosition().toPoint() - ev_global_pos;
+      QPoint glob_zoom_dist = MusEGlobal::config.borderlessMouse ? (event->globalPosition().toPoint() - screen_center) : glob_dist;
       QPoint last_dist      = event->pos() - ev_pos;
       
       ev_pos     = event->pos();
@@ -1377,7 +1372,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       // set scrolling variables: doScroll, scrollRight
       // No auto scroll in zoom mode or normal pan mode.
       if (drag != DRAG_OFF && drag != DRAG_ZOOM && (drag != DRAG_PAN || !MusEGlobal::config.borderlessMouse)) {  
-            int ex = rmapx(event->x())+mapx(0);
+            int ex = rmapx(event->position().toPoint().x())+mapx(0);
             if(ex < 15 && (canScrollLeft || drag == DRAG_PAN))
               hscrollDir = (drag == DRAG_PAN ? HSCROLL_RIGHT : HSCROLL_LEFT);
             else  
@@ -1408,7 +1403,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             else  
               hscrollDir = HSCROLL_NONE;
             
-            int ey = rmapy(event->y())+mapy(0);
+            int ey = rmapy(event->position().toPoint().y())+mapy(0);
             if(ey < 15 && (canScrollUp || drag == DRAG_PAN))
               vscrollDir = (drag == DRAG_PAN ? VSCROLL_DOWN : VSCROLL_UP);
             else  
@@ -1460,7 +1455,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   setLasso(QRect(start.x(), start.y(), dist.x(), dist.y()));
 
                   // printf("xorg=%d xmag=%d event->x=%d, mapx(xorg)=%d rmapx0=%d xOffset=%d rmapx(xOffset()=%d\n",
-                  //         xorg, xmag, event->x(),mapx(xorg), rmapx(0), xOffset(),rmapx(xOffset()));
+                  //         xorg, xmag, event->position().toPoint().x(),mapx(xorg), rmapx(0), xOffset(),rmapx(xOffset()));
 
                   // Update the new lasso region.
                   redraw(lassoRegion);
@@ -1666,7 +1661,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             }
 
 
-      ev_global_pos = event->globalPos();
+      ev_global_pos = event->globalPosition().toPoint();
 
       if(drag != DRAG_ZOOM && (drag != DRAG_PAN || !MusEGlobal::config.borderlessMouse))
         mouseMove(event);
@@ -1853,7 +1848,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
 
       // HACK
       QMouseEvent e(event->type(), pos,
-         event->globalPos(), event->button(), event->buttons(), event->modifiers());
+         event->globalPosition().toPoint(), event->button(), event->buttons(), event->modifiers());
       mouseRelease(&e);
       
       // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.

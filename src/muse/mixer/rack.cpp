@@ -27,7 +27,6 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QMouseEvent>
 #include <QPainter>
 #include <QStyledItemDelegate>
 #include <QUrl>
@@ -37,27 +36,33 @@
 #include <QMessageBox>
 
 #include "popupmenu.h"
-
-#include "xml.h"
 #include "rack.h"
 #include "song.h"
 #include "audio.h"
 #include "icons.h"
 #include "gconfig.h"
 #include "globaldefs.h"
-#include "plugin.h"
 #include "plugindialog.h"
 #include "filedialog.h"
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
 #endif
 #include "undo.h"
-#include "ctrl.h"
 #include "libs/file/file.h"
-
-#include <QEvent>
-#include "track.h"
 #include "background_painter.h"
+
+// Forwards from header:
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
+#include <QMouseEvent>
+#include <QEvent>
+#include <QEnterEvent>
+
+#include "track.h"
+#include "plugin.h"
+#include "xml.h"
+#include "ctrl.h"
 
 namespace MusEGui {
 
@@ -425,7 +430,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       }      
 #ifdef LV2_SUPPORT
       if (mSubPresets != nullptr) {
-         QWidget *mwidget = act->parentWidget();
+         QWidget *mwidget = qobject_cast<QWidget*>(act->parent());
          if (mwidget != nullptr) {
             if(mSubPresets == dynamic_cast<QMenu*>(mwidget)) {
                MusECore::PluginI *plugI = pipe->at(idx);
@@ -633,7 +638,7 @@ void EffectRack::startDragItem(int idx)
       const QByteArray data = xmlconf.toUtf8();
 
       if (MusEGlobal::debugMsg)
-          printf("Sending %d [%s]\n", data.length(), xmlconf.toLocal8Bit().constData());
+          printf("Sending %" PRIiQSIZETYPE " [%s]\n", data.length(), xmlconf.toLocal8Bit().constData());
 
       // FIXME: Drag to desktop? Tried, but no luck. Nothing happens.
       //        Tried application/xml, text/xml. text/plain works but just
@@ -668,7 +673,7 @@ void EffectRack::dropEvent(QDropEvent *event)
 {
       if(!event || !track)
         return;
-      const QListWidgetItem *i = itemAt( event->pos() );
+      const QListWidgetItem *i = itemAt( event->position().toPoint() );
       if (!i)
             return;
       const int idx = row(i);
@@ -722,7 +727,7 @@ void EffectRack::dropEvent(QDropEvent *event)
               const QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE);
               MusECore::Xml xml(mimeData.constData());
               if (MusEGlobal::debugMsg)
-                  printf("received %d [%s]\n", mimeData.size(), mimeData.constData());
+                  printf("received %" PRIiQSIZETYPE " [%s]\n", mimeData.size(), mimeData.constData());
 
               if(act == Qt::MoveAction)
               {
@@ -892,7 +897,7 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
       QListWidget::mouseMoveEvent(event);
 }
 
-void EffectRack::enterEvent(QEvent *event)
+void EffectRack::enterEvent(QEnterEvent *event)
 {
   setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   QListWidget::enterEvent(event);

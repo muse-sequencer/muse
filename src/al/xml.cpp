@@ -25,7 +25,10 @@
 
 #include <QtXml/QDomElement>
 #include <QMetaProperty>
+#include <QMetaType>
 #include <QWidget>
+#include <QColor>
+#include <QRect>
 
 namespace AL {
 
@@ -41,7 +44,8 @@ Xml::Xml()
 Xml::Xml(QIODevice* device)
    : QTextStream(device)
       {
-      setCodec("utf8");
+      //setCodec("utf8");
+      setEncoding(QStringConverter::Utf8);
       level = 0;
       }
 
@@ -62,11 +66,7 @@ void Xml::putLevel()
 void Xml::header()
       {
       *this << "<?xml version=\"1.0\" encoding=\"utf8\"?>" <<
-#if QT_VERSION >= 0x050e00
       Qt::endl;
-#else
-      endl;
-#endif
       }
 
 //---------------------------------------------------------
@@ -77,11 +77,7 @@ void Xml::put(const QString& s)
       {
       putLevel();
     	*this << xmlString(s) <<
-#if QT_VERSION >= 0x050e00
     	Qt::endl;
-#else
-      endl;
-#endif
       }
 
 //---------------------------------------------------------
@@ -93,11 +89,7 @@ void Xml::stag(const QString& s)
       {
       putLevel();
       *this << '<' << s << '>' <<
-#if QT_VERSION >= 0x050e00
       Qt::endl;
-#else
-      endl;
-#endif
       ++level;
       }
 
@@ -109,11 +101,7 @@ void Xml::etag(const char* s)
       {
       putLevel();
       *this << "</" << s << '>' <<
-#if QT_VERSION >= 0x050e00
       Qt::endl;
-#else
-      endl;
-#endif
       --level;
       }
 
@@ -126,66 +114,42 @@ void Xml::tagE(const QString& s)
       {
       putLevel();
       *this << '<' << s << "/>" <<
-#if QT_VERSION >= 0x050e00
       Qt::endl;
-#else
-      endl;
-#endif
       }
 
 void Xml::tag(const char* name, int val)
       {
       putLevel();
       *this << '<' << name << '>' << val << "</" << name << '>' <<
-#if QT_VERSION >= 0x050e00
       Qt::endl;
-#else
-      endl;
-#endif
       }
 
 void Xml::tag(const char* name, unsigned val)
       {
       putLevel();
       *this << '<' << name << '>' << val << "</" << name << '>' <<
-#if QT_VERSION >= 0x050e00
       Qt::endl;
-#else
-      endl;
-#endif
       }
 
 void Xml::tag(const char* name, float val)
       {
       putLevel();
       *this << '<' << name << '>' << val << "</" << name << '>' <<
-#if QT_VERSION >= 0x050e00
       Qt::endl;
-#else
-      endl;
-#endif
       }
 
 void Xml::tag(const char* name, const double& val)
       {
       putLevel();
       *this << '<' << name << '>' << val << "</" << name << '>' <<
-#if QT_VERSION >= 0x050e00
       Qt::endl;
-#else
-      endl;
-#endif
       }
 
 void Xml::tag(const char* name, const QString& val)
       {
       putLevel();
       *this << "<" << name << ">" << xmlString(val) << "</" << name << '>' <<
-#if QT_VERSION >= 0x050e00
       Qt::endl;
-#else
-      endl;
-#endif
       }
 
 void Xml::tag(const char* name, const QColor& color)
@@ -193,11 +157,7 @@ void Xml::tag(const char* name, const QColor& color)
       putLevel();
     	*this << QString("<%1 r=\"%2\" g=\"%3\" b=\"%4\"/>")
          .arg(name).arg(color.red()).arg(color.green()).arg(color.blue()) <<
-#if QT_VERSION >= 0x050e00
          Qt::endl;
-#else
-         endl;
-#endif
       }
 
 void Xml::tag(const char* name, const QWidget* g)
@@ -211,11 +171,7 @@ void Xml::tag(const char* name, const QRect& r)
    	*this << "<" << name;
       *this << QString(" x=\"%1\" y=\"%2\" w=\"%3\" h=\"%4\"/>")
          .arg(r.x()).arg(r.y()).arg(r.width()).arg(r.height()) <<
-#if QT_VERSION >= 0x050e00
          Qt::endl;
-#else
-         endl;
-#endif
       }
 
 //---------------------------------------------------------
@@ -267,37 +223,33 @@ void Xml::writeProperties(const QObject* o)
             	continue;
             const char* name = p.name();
             QVariant v       = p.read(o);
-            switch(v.type()) {
-            	case QVariant::Bool:
-            	case QVariant::Int:
+            switch(v.typeId()) {
+            	case QMetaType::Bool:
+            	case QMetaType::Int:
                   	tag(name, v.toInt());
                         break;
-                  case QVariant::Double:
+                  case QMetaType::Double:
                   	tag(name, v.toDouble());
                         break;
-                  case QVariant::String:
+                  case QMetaType::QString:
                         tag(name, v.toString());
                         break;
-                  case QVariant::Rect:
+                  case QMetaType::QRect:
              		tag(name, v.toRect());
                         break;
-                  case QVariant::Point:
+                  case QMetaType::QPoint:
                         {
                     	QPoint p = v.toPoint();
       			putLevel();
    				*this << "<" << name << QString(" x=\"%1\" y=\"%2\" />")
          			   .arg(p.x()).arg(p.y()) <<
-#if QT_VERSION >= 0x050e00
          			   Qt::endl;
-#else
-                 endl;
-#endif
                         }
                         break;
 
                   default:
                         printf("MusE:%s type %d not implemented\n",
-                           meta->className(), v.type());
+                           meta->className(), v.typeId());
                         break;
                	}
             }
@@ -321,21 +273,21 @@ void readProperties(QObject* o, QDomNode node)
             }
       QMetaProperty p = meta->property(idx);
       QVariant v;
-      switch(p.type()) {
-            case QVariant::Int:
-            case QVariant::Bool:
+      switch(p.typeId()) {
+            case QMetaType::Int:
+            case QMetaType::Bool:
                   v.setValue(e.text().toInt());
                   break;
-            case QVariant::Double:
+            case QMetaType::Double:
                   v.setValue(e.text().toDouble());
                   break;
-            case QVariant::String:
+            case QMetaType::QString:
                   v.setValue(e.text());
                   break;
-            case QVariant::Rect:
+            case QMetaType::QRect:
                   v.setValue(AL::readGeometry(node));
                   break;
-            case QVariant::Point:
+            case QMetaType::QPoint:
                   {
 			int x = e.attribute("x","0").toInt();
 			int y = e.attribute("y","0").toInt();
@@ -344,7 +296,7 @@ void readProperties(QObject* o, QDomNode node)
                   break;
             default:
                   printf("MusE:%s type %d not implemented\n",
-                     meta->className(), p.type());
+                     meta->className(), p.typeId());
                   return;
             }
       if (p.isWritable())
@@ -365,11 +317,7 @@ void Xml::dump(int len, const unsigned char* p)
       for (int i = 0; i < len; ++i, ++col) {
             if (col >= 16) {
                   setFieldWidth(0);
-#if QT_VERSION >= 0x050e00
                   *this << Qt::endl;
-#else
-                  *this << endl;
-#endif
                   col = 0;
                   putLevel();
                   setFieldWidth(5);
@@ -377,11 +325,7 @@ void Xml::dump(int len, const unsigned char* p)
             *this << (p[i] & 0xff);
             }
       if (col)
-#if QT_VERSION >= 0x050e00
             *this << Qt::endl << Qt::dec;
-#else
-            *this << endl << dec;
-#endif
       setFieldWidth(0);
       setIntegerBase(10);
       }

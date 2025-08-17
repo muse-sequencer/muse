@@ -1983,7 +1983,7 @@ void DrumCanvas::showNoteTooltip(QMouseEvent* event) {
         hoverItem = nullptr;
     }
 
-    QToolTip::showText(QPoint(event->globalX(), event->globalY() + 10), str);
+    QToolTip::showText(QPoint(event->globalPosition().toPoint().x(), event->globalPosition().toPoint().y() + 10), str);
 }
 
 void DrumCanvas::showStatusTip(QMouseEvent* event) {

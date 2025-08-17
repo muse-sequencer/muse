@@ -29,6 +29,7 @@
 #include <QDir>
 #include <QFile>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QPoint>
 #include <QString>
 #include <QTextStream>
@@ -5024,27 +5025,36 @@ void Song::seqSignal(int fd)
                         MusEGlobal::muse->seqStop();
 
                         {
-                        // give the user a sensible explanation
-                        int btn = QMessageBox::critical( MusEGlobal::muse, tr("Jack shutdown!"),
-                            tr("Jack has detected a performance problem which has led to\n"
-                            "MusE being disconnected.\n"
-                            "This could happen due to a number of reasons:\n"
-                            "- a performance issue with your particular setup\n"
-                            "- a bug in MusE (or possibly in another connected software)\n"
-                            "- a random hiccup which might never occur again\n"
-                            "- Jack was voluntarily stopped by you or someone else\n"
-                            "- Jack crashed\n"
-                            "If there is a persisting problem you are much welcome to discuss it\n"
-                            "on the MusE forum\n"
-                            "(there is information about the forum on the MusE\n"
-                            " homepage which is available through the help menu).\n"
-                            "\n"
-                            "To proceed check the status of Jack and try to restart it and then\n"
-                            "click on the Restart button."), "Restart", "Cancel");
-                        if (btn == 0) {
-                              fprintf(stderr, "Restarting!\n");
-                              MusEGlobal::muse->seqRestart();
-                              }
+                          // give the user a sensible explanation
+                          QMessageBox msg(MusEGlobal::muse);
+                          QPushButton *rb = msg.addButton(tr("Restart"), QMessageBox::AcceptRole);
+                          QPushButton *cb = msg.addButton(QMessageBox::Cancel);
+                          msg.setDefaultButton(rb);
+                          msg.setEscapeButton(cb);
+                          msg.setIcon(QMessageBox::Critical);
+                          msg.setText(tr("Jack has detected a performance problem which has led to\n"
+                              "MusE being disconnected.\n"
+                              "This could happen due to a number of reasons:\n"
+                              "- a performance issue with your particular setup\n"
+                              "- a bug in MusE (or possibly in another connected software)\n"
+                              "- a random hiccup which might never occur again\n"
+                              "- Jack was voluntarily stopped by you or someone else\n"
+                              "- Jack crashed\n"
+                              "If there is a persisting problem you are much welcome to discuss it\n"
+                              "on the MusE forum\n"
+                              "(there is information about the forum on the MusE\n"
+                              " homepage which is available through the help menu).\n"
+                              "\n"
+                              "To proceed check the status of Jack and try to restart it and then\n"
+                              "click on the Restart button."));
+                          msg.setWindowTitle(tr("Jack shutdown!"));
+                          msg.exec();
+
+                          if(msg.clickedButton() == rb)
+                          {
+                            fprintf(stderr, "Restarting!\n");
+                            MusEGlobal::muse->seqRestart();
+                          }
                         }
 
                         break;
@@ -5383,8 +5393,9 @@ int Song::execAutomationCtlPopup(Track* track, const QPoint& menupos, MidiAudioC
           if(atrack)
           {
             if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
-                tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-                QString(), 0, 1 ) == 0)
+                tr("Clear all controller events?"),
+                QMessageBox::Ok | QMessageBox::Cancel,
+                QMessageBox::Ok) == QMessageBox::Ok)
               MusEGlobal::audio->msgClearControllerEvents(atrack, id);
           }
     break;

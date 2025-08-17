@@ -84,7 +84,7 @@ void scanLrdfDir(const QString& dirname,
         int i = 0;
         for( ; i < rdfs_sz; ++i)
         {
-          const QFileInfo s_fi = (rdfs->at(i));
+          const QFileInfo s_fi(rdfs->at(i));
           if(s_fi.completeBaseName() == fi_bn)
           {
             if(debugStdErr)
@@ -133,12 +133,7 @@ void scanLrdfPlugins(QStringList* rdfs, bool debugStdErr)
     }
     if(!lrdfPath.isEmpty())
     {
-        // QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
         QStringList sl = lrdfPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive);
-#else
-        QStringList sl = lrdfPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive);
-#endif
         for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
             scanLrdfDir(*it, rdfs, debugStdErr);
     }

@@ -347,8 +347,8 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   QMenu* menuSettings = menuBar()->addMenu(tr("&Display"));
   menuSettings->menuAction()->setStatusTip(tr("Display menu: Display options specific to current editor."));
-  menuSettings->addAction(*mixerSVGIcon, tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
-                          MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
+  menuSettings->addAction(*mixerSVGIcon, tr("Toggle &Mixer Strip"),
+                          MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key, this, SLOT(toggleMixerStrip()));
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
 
   QAction *trackHeightAction = new QAction(tr("&Toggle Track Heights"), this);

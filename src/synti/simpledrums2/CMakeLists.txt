@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP ( simpledrums_mocs
+QT6_WRAP_CPP ( simpledrums_mocs
       simpledrumsgui.h
       ssplugingui.h
       )
@@ -35,7 +35,7 @@ QT5_WRAP_CPP ( simpledrums_mocs
 file (GLOB simpledrums_ui_files 
       simpledrumsguibase.ui
       )
-QT5_WRAP_UI ( simpledrums_uis ${simpledrums_ui_files} )
+QT6_WRAP_UI ( simpledrums_uis ${simpledrums_ui_files} )
 
 ##
 ## List of source files to compile

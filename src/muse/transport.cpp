@@ -105,7 +105,7 @@ Handle::Handle(QWidget* r, QWidget* parent)
 
 void Handle::mouseMoveEvent(QMouseEvent* ev)
       {
-      rootWin->move(ev->globalX()-dx, ev->globalY() - dy);
+      rootWin->move(ev->globalPosition().toPoint().x()-dx, ev->globalPosition().toPoint().y() - dy);
       }
 
 //---------------------------------------------------------
@@ -115,8 +115,8 @@ void Handle::mouseMoveEvent(QMouseEvent* ev)
 void Handle::mousePressEvent(QMouseEvent* ev)
       {
       rootWin->raise();
-      dx = ev->globalX() - rootWin->x();
-      dy = ev->globalY() - rootWin->y();
+      dx = ev->globalPosition().toPoint().x() - rootWin->x();
+      dy = ev->globalPosition().toPoint().y() - rootWin->y();
       }
 
 //---------------------------------------------------------

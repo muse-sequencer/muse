@@ -32,6 +32,7 @@ class QColor;
 class QRect;
 class QString;
 class QEvent;
+class QEnterEvent;
 class QMouseEvent;
 class QWheelEvent;
 class QKeyEvent;
@@ -135,7 +136,7 @@ class LCDPatchEdit : public QFrame
     virtual void resizeEvent(QResizeEvent*);
     virtual void mousePressEvent(QMouseEvent*);
     virtual void mouseReleaseEvent(QMouseEvent*);
-    virtual void enterEvent(QEvent*);
+    virtual void enterEvent(QEnterEvent*);
     virtual void leaveEvent(QEvent*);
     virtual void keyPressEvent(QKeyEvent*);
     virtual bool event(QEvent*);

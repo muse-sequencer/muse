@@ -25,10 +25,7 @@
 #include <QWidget>
 #include <QKeyEvent>
 #include <QLocale>
-
-#if QT_VERSION >= 0x050a00
 #include <QStringView>
-#endif
 
 #include "doublelabel.h"
 
@@ -143,7 +140,7 @@ QChar SuperDoubleValidator::findAndStripMultiplier(QString &t, bool doStrip, int
 
 QString SuperDoubleValidator::stripped(const QString &t, int *pos) const
 {
-    QStringRef text(&t);
+    QStringView text(t);
     if ((_dl->specialText().isEmpty() || text != _dl->specialText()) &&
         (_dl->logZeroSpecialText().isEmpty() || text != _dl->logZeroSpecialText())) {
         int from = 0;
@@ -241,21 +238,10 @@ QVariant SuperDoubleValidator::validateAndInterpret(QString &input, int &pos, QV
                 }
             }
         } else {
-// Qt >= 5.10 use back().
-#if QT_VERSION >= 0x050a00
             const QChar last = copy.back();
-#else
-            const QChar last = copy.at(copy.size() - 1);
-#endif
             const bool groupEnd = copy.endsWith(group);
-// Qt >= 5.10 use QStringView and back().
-#if QT_VERSION >= 0x050a00
             const QStringView head(copy.constData(), groupEnd ? len - group.size() : len - 1);
             const QChar secondLast = head.back();
-#else
-            const QString head(copy.constData(), groupEnd ? len - group.size() : len - 1);
-            const QChar secondLast = head.at(head.size() - 1);
-#endif
             if ((groupEnd || last.isSpace()) && (head.endsWith(group) || secondLast.isSpace())) {
                 state = QValidator::Invalid;
                 goto end;
@@ -285,8 +271,6 @@ QVariant SuperDoubleValidator::validateAndInterpret(QString &input, int &pos, QV
                 }
                 const int len = copy.size();
                 for (int i = 0; i < len - 1;) {
-// Qt >= 5.10 use QStringView.
-#if QT_VERSION >= 0x050a00
                     if (QStringView(copy).mid(i).startsWith(group)) {
                         if (QStringView(copy).mid(i + group.size()).startsWith(group)) {
                             state = QValidator::Invalid;
@@ -294,15 +278,6 @@ QVariant SuperDoubleValidator::validateAndInterpret(QString &input, int &pos, QV
                         }
                         i += group.size();
                     }
-#else
-                    if (QString(copy).mid(i).startsWith(group)) {
-                        if (QString(copy).mid(i + group.size()).startsWith(group)) {
-                            state = QValidator::Invalid;
-                            goto end;
-                        }
-                        i += group.size();
-                    }
-#endif
                     else {
                         i++;
                     }
@@ -955,12 +930,7 @@ void DoubleLabel::keyPressEvent(QKeyEvent* e)
       const int ssz = _suffix.size();
       const int tsz = text().size();
       const int selstart = selectionStart();
-// Qt >= 5.10 use selectionEnd().
-#if QT_VERSION >= 0x050a00
       const int selend = selectionEnd();
-#else
-      const int selend = selectionStart() + selectedText().size();
-#endif
       const int suffs = tsz - ssz;
       // Adjust any selection so that any suffix is not erased.
       if(selend >= suffs)
@@ -1004,21 +974,10 @@ QSize DoubleLabel::sizeHint() const
       if (aval >= 100000.0)
             ++n;
 
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
       int w = fm.horizontalAdvance(QString("-0.")) + fm.horizontalAdvance('0') * n + 6;
-#else
-      int w = fm.width(QString("-0.")) + fm.width('0') * n + 6;
-#endif
       if(!_suffix.isEmpty())
-      {
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
         w += fm.horizontalAdvance(QString(" ")) + fm.horizontalAdvance(_suffix);
-#else
-        w += fm.width(QString(" ")) + fm.width(_suffix);
-#endif
-      }
+
       return QSize(w, h);
       }
 
@@ -1374,21 +1333,10 @@ QSize DoubleText::sizeHint() const
       if (aval >= 100000.0)
             ++n;
 
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
       int w = fm.horizontalAdvance(QString("-0.")) + fm.horizontalAdvance('0') * n + 6;
-#else
-      int w = fm.width(QString("-0.")) + fm.width('0') * n + 6;
-#endif
       if(!_suffix.isEmpty())
-      {
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
         w += fm.horizontalAdvance(QString(" ")) + fm.horizontalAdvance(_suffix);
-#else
-        w += fm.width(QString(" ")) + fm.width(_suffix);
-#endif
-      }
+
       return QSize(w, h);
       }
 

@@ -95,7 +95,7 @@ void SigScale::viewMouseReleaseEvent(QMouseEvent*)
 
 void SigScale::viewMouseMoveEvent(QMouseEvent* event)
       {
-      int x = event->x();
+      int x = event->position().toPoint().x();
       if(x < 0)
         x = 0;
       x = MusEGlobal::sigmap.raster(x, *raster);
@@ -141,7 +141,7 @@ void SigScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       {
     // seems the only way to draw the correct background...
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 
       int x = r.x();

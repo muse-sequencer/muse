@@ -587,19 +587,9 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
 
     liste = new QTreeWidget(this);
     QFontMetrics fm(liste->font());
-    // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
     int n = fm.horizontalAdvance('9');
-#else
-    int n = fm.width('9');
-#endif
     int b = 24;
-    // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
     int c = fm.horizontalAdvance(QString("Val B"));
-#else
-    int c = fm.width(QString("Val B"));
-#endif
     int sortIndW = n * 3;
     liste->setAllColumnsShowFocus(true);
     liste->sortByColumn(0, Qt::AscendingOrder);
@@ -621,25 +611,14 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
     liste->setHeaderLabels(columnnames);
 
     liste->setColumnWidth(0, n * 6 + b);
-    // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
     liste->setColumnWidth(1, fm.horizontalAdvance(QString("9999.99.999")) + b);
     liste->setColumnWidth(2, fm.horizontalAdvance(QString("Program")) + b);
-#else
-    liste->setColumnWidth(1, fm.width(QString("9999.99.999")) + b);
-    liste->setColumnWidth(2, fm.width(QString("Program")) + b);
-#endif
     liste->setColumnWidth(3, n * 2 + b + sortIndW);
     liste->setColumnWidth(4, c + b + sortIndW);
     liste->setColumnWidth(5, c + b + sortIndW);
     liste->setColumnWidth(6, c + b + sortIndW);
     liste->setColumnWidth(7, n * 4 + b + sortIndW);
-    // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
     liste->setColumnWidth(8, fm.horizontalAdvance(QString("MainVolume")) + 70);
-#else
-    liste->setColumnWidth(8, fm.width(QString("MainVolume")) + 70);
-#endif
 
     connect(liste, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
     connect(liste, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(doubleClicked(QTreeWidgetItem*)));

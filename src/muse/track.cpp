@@ -2424,8 +2424,8 @@ bool Track::readProperties(Xml& xml, const QString& tag)
             _selectionOrder = xml.parseInt();
       else if (tag == "color") {
           QString c = xml.parse1();
-          if (QColor::isValidColor(c))
-              m_color.setNamedColor(c);
+          if (QColor::isValidColorName(c))
+              m_color.fromString(c);
       }
       // Added in song file version 4.
       else if (tag == "midiAssign")

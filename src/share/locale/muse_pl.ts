@@ -1397,41 +1397,41 @@ Jeżeli żaden projekt nie został jeszcze utworzony, pojawi się prośba o jego
         <location line="+7"/>
         <location line="+1189"/>
         <location line="+7"/>
-        <location line="+218"/>
+        <location line="+217"/>
         <location line="+7"/>
-        <location line="+160"/>
+        <location line="+164"/>
         <location line="+7"/>
-        <location line="+165"/>
+        <location line="+170"/>
         <location line="+7"/>
         <source>Critical Error</source>
         <translation>Błąd krytyczny</translation>
     </message>
     <message>
-        <location line="-1766"/>
+        <location line="-1774"/>
         <location line="+1196"/>
-        <location line="+225"/>
-        <location line="+167"/>
-        <location line="+172"/>
+        <location line="+224"/>
+        <location line="+171"/>
+        <location line="+177"/>
         <source>Cannot open file %1</source>
         <translation>Nie można otworzyć pliku %1</translation>
     </message>
     <message>
-        <location line="-1753"/>
+        <location line="-1761"/>
         <location line="+1196"/>
-        <location line="+225"/>
-        <location line="+167"/>
-        <location line="+172"/>
+        <location line="+224"/>
+        <location line="+171"/>
+        <location line="+177"/>
         <source>Parsing error for file %1</source>
         <translation>Błąd parsowania pliku %1</translation>
     </message>
     <message>
-        <location line="-1726"/>
-        <location line="+1368"/>
+        <location line="-1734"/>
+        <location line="+1367"/>
         <source>Load category dialog</source>
         <translation>Ładuj kategorię</translation>
     </message>
     <message>
-        <location line="-226"/>
+        <location line="-225"/>
         <source>Load set dialog</source>
         <translation>Ładuj zestaw</translation>
     </message>
@@ -1483,12 +1483,12 @@ Jeżeli żaden projekt nie został jeszcze utworzony, pojawi się prośba o jego
     </message>
     <message>
         <location line="+3"/>
-        <location line="+243"/>
+        <location line="+247"/>
         <source>Delete subcategory</source>
         <translation>Kasuj podkategorię</translation>
     </message>
     <message>
-        <location line="-240"/>
+        <location line="-244"/>
         <source>Load subcategory</source>
         <translation>Ładuj podkategorię</translation>
     </message>
@@ -1504,12 +1504,12 @@ Jeżeli żaden projekt nie został jeszcze utworzony, pojawi się prośba o jego
     </message>
     <message>
         <location line="+2"/>
-        <location line="+389"/>
+        <location line="+398"/>
         <source>Delete preset</source>
         <translation>Kasuj ustawienie</translation>
     </message>
     <message>
-        <location line="-387"/>
+        <location line="-396"/>
         <source>Load preset</source>
         <translation>Ładuj ustawienie</translation>
     </message>
@@ -1530,74 +1530,74 @@ Jeżeli żaden projekt nie został jeszcze utworzony, pojawi się prośba o jego
     </message>
     <message>
         <location line="+23"/>
-        <location line="+169"/>
-        <location line="+171"/>
+        <location line="+173"/>
+        <location line="+176"/>
         <source>Do you really want to delete %1 ?</source>
         <translation>Na pewno chcesz skasować %1?</translation>
     </message>
     <message>
-        <location line="-338"/>
-        <location line="+170"/>
-        <location line="+170"/>
+        <location line="+71"/>
+        <source>%1 is supposed to be affected to the prog number %2, but there is already one on this slot.
+Do you want to replace it or to add it in the next free slot ?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>&amp;Yes</source>
-        <translation>&amp;Tak</translation>
+        <translation type="vanished">&amp;Tak</translation>
     </message>
     <message>
-        <location line="-340"/>
-        <location line="+170"/>
-        <location line="+170"/>
         <source>&amp;No</source>
-        <translation>&amp;Nie</translation>
+        <translation type="vanished">&amp;Nie</translation>
     </message>
     <message>
-        <location line="-323"/>
-        <location line="+110"/>
+        <location line="-402"/>
+        <location line="+115"/>
         <source>No category selected</source>
         <translation>Nie wybrano żadnej kategorii</translation>
     </message>
     <message>
-        <location line="-109"/>
-        <location line="+110"/>
+        <location line="-114"/>
+        <location line="+115"/>
         <source>You must first select a category.</source>
         <translation>Musisz najpierw wybrać kategorię.</translation>
     </message>
     <message>
-        <location line="-61"/>
-        <location line="+167"/>
-        <location line="+172"/>
+        <location line="-58"/>
+        <location line="+171"/>
+        <location line="+177"/>
         <source>Replace or add</source>
         <translation>Zamień lub dodaj</translation>
     </message>
     <message>
-        <location line="-338"/>
+        <location line="-352"/>
         <source>%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.
  Do you want to replace it or to add it in the next free slot ?</source>
         <translation>Kategoria %1 ma zostać przyporządkowana do banku (HBank) nr %2, jednak jest on zajęty.
  Nadpisać, czy dodać do kolejnego wolnego slotu?</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+168"/>
+        <location line="-5"/>
         <location line="+171"/>
+        <location line="+177"/>
         <source>&amp;Replace</source>
         <translation>&amp;Zastąp</translation>
     </message>
     <message>
-        <location line="-339"/>
-        <location line="+168"/>
+        <location line="-347"/>
         <location line="+171"/>
+        <location line="+177"/>
         <source>&amp;Add</source>
         <translation>&amp;Dodaj</translation>
     </message>
     <message>
-        <location line="-329"/>
-        <location line="+167"/>
+        <location line="-328"/>
         <location line="+171"/>
+        <location line="+177"/>
         <source>Download error</source>
         <translation>Błąd pobierania</translation>
     </message>
     <message>
-        <location line="-337"/>
+        <location line="-348"/>
         <source>There is no more free category slot.</source>
         <translation>Brak wolnych miejsc na kategorię.</translation>
     </message>
@@ -1617,36 +1617,36 @@ Jeżeli żaden projekt nie został jeszcze utworzony, pojawi się prośba o jego
         <translation>Nie można dodać większej liczby podkategorii</translation>
     </message>
     <message>
-        <location line="+42"/>
-        <location line="+113"/>
+        <location line="+41"/>
+        <location line="+119"/>
         <source>No subcategory selected</source>
         <translation>Nie wybrano żadnej podkategorii</translation>
     </message>
     <message>
-        <location line="-112"/>
-        <location line="+113"/>
+        <location line="-118"/>
+        <location line="+119"/>
         <source>You must first select a subcategory.</source>
         <translation>Musisz najpierw wybrać podkategorię.</translation>
     </message>
     <message>
-        <location line="-101"/>
+        <location line="-107"/>
         <source>Load subcategory dialog</source>
         <translation>Ładuj podkategorię</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+42"/>
         <source>%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.
  Do you want to replace it or to add it in the next free slot ?</source>
         <translation>Podkategoria %1 ma zostać przyporządkowana do banku (LBank) nr %2, jednak jest on zajęty.
  Nadpisać, czy dodać do kolejnego wolnego slotu?</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+16"/>
         <source>There is no more free subcategory slot.</source>
         <translation>Brak wolnych miejsc na podkategorię.</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+30"/>
         <source>Save subcategory dialog</source>
         <translation>Zapisz podkategorię</translation>
     </message>
@@ -1661,38 +1661,37 @@ Jeżeli żaden projekt nie został jeszcze utworzony, pojawi się prośba o jego
         <translation>Nie można dodać większej liczby ustawień</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+38"/>
         <location line="+3"/>
-        <location line="+111"/>
+        <location line="+118"/>
         <source>No preset selected</source>
         <translation>Nie wybrano żadnego ustawienia</translation>
     </message>
     <message>
-        <location line="-113"/>
+        <location line="-120"/>
         <location line="+3"/>
-        <location line="+111"/>
+        <location line="+118"/>
         <source>You must first select a preset.</source>
         <translation>Musisz najpierw wybrać ustawienie.</translation>
     </message>
     <message>
-        <location line="-98"/>
+        <location line="-105"/>
         <source>Load preset dialog</source>
         <translation>Ładuj ustawienie</translation>
     </message>
     <message>
-        <location line="+39"/>
         <source>%1 is supposed to be affected to the prog number %2, but there is already one on this slot.
  Do you want to replace it or to add it in the next free slot ?</source>
-        <translation>Ustawienie %1 ma zostać przyporządkowane do programu (Prog) nr %2, jednak jest on zajęty.
+        <translation type="vanished">Ustawienie %1 ma zostać przyporządkowane do programu (Prog) nr %2, jednak jest on zajęty.
  Nadpisać, czy dodać do kolejnego wolnego slotu?</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+58"/>
         <source>There is no more free preset slot.</source>
         <translation>Brak wolnych miejsc na ustawienia.</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+30"/>
         <source>Save preset dialog</source>
         <translation>Zapisz ustawienie</translation>
     </message>
@@ -8328,7 +8327,7 @@ Brak: używane jedynie w przypadku konieczności
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="+5028"/>
+        <location filename="../../muse/song.cpp" line="+5050"/>
         <source>Jack shutdown!</source>
         <translation>Wyłączenie serwera Jack!</translation>
     </message>
@@ -8397,12 +8396,17 @@ przycisk Restart.</translation>
         <translation type="vanished">wyczyść automatykę</translation>
     </message>
     <message>
-        <location line="-1649"/>
+        <location line="-1670"/>
         <source>Record: At least one track must be armed for recording first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1650"/>
+        <source>Restart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Jack has detected a performance problem which has led to
 MusE being disconnected.
 This could happen due to a number of reasons:
@@ -8421,13 +8425,13 @@ click on the Restart button.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+239"/>
-        <location line="+317"/>
+        <location line="+243"/>
+        <location line="+318"/>
         <source>Automation</source>
         <translation type="unfinished">Automatyka</translation>
     </message>
     <message>
-        <location line="-315"/>
+        <location line="-316"/>
         <source>Previous event</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8438,24 +8442,24 @@ click on the Restart button.</source>
     </message>
     <message>
         <location line="+10"/>
-        <location line="+306"/>
+        <location line="+307"/>
         <source>Set event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-301"/>
-        <location line="+303"/>
+        <location line="-302"/>
+        <location line="+304"/>
         <source>Add event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-297"/>
-        <location line="+301"/>
+        <location line="-298"/>
+        <location line="+302"/>
         <source>Erase event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-297"/>
+        <location line="-298"/>
         <source>Erase range</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8495,17 +8499,15 @@ click on the Restart button.</source>
         <translation>Wyczyścić wszystkie zdarzenia kontrolerów?</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;Ok</source>
-        <translation>&amp;Akceptuj</translation>
+        <translation type="vanished">&amp;Akceptuj</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;Cancel</source>
-        <translation>A&amp;nuluj</translation>
+        <translation type="vanished">A&amp;nuluj</translation>
     </message>
     <message>
-        <location line="+190"/>
+        <location line="+191"/>
         <source>Controller</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10146,7 +10148,7 @@ Wymagany jest restart MusE. Przepraszamy.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+114"/>
+        <location line="+115"/>
         <source>Volume/Gain</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10156,7 +10158,7 @@ Wymagany jest restart MusE. Przepraszamy.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-307"/>
+        <location line="-308"/>
         <source>Input routing. Hold CTRL to keep menu open. Press F1 for help.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10166,7 +10168,7 @@ Wymagany jest restart MusE. Przepraszamy.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+311"/>
+        <location line="+312"/>
         <source>Record downmix to a file...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10382,7 +10384,7 @@ Wymagany jest restart MusE. Przepraszamy.
         <translation type="vanished">Narzędzia:</translation>
     </message>
     <message>
-        <location filename="../../muse/components/canvas.cpp" line="+2264"/>
+        <location filename="../../muse/components/canvas.cpp" line="+2263"/>
         <source>Tools</source>
         <translation type="unfinished">Narzędzia</translation>
     </message>
@@ -10457,7 +10459,7 @@ Wymagany jest restart MusE. Przepraszamy.
 <context>
     <name>MusEGui::CompactSlider</name>
     <message>
-        <location filename="../../muse/components/compact_slider.cpp" line="+137"/>
+        <location filename="../../muse/components/compact_slider.cpp" line="+138"/>
         <source>off</source>
         <translation>wył.</translation>
     </message>
@@ -10524,12 +10526,12 @@ Number of xruns
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1577"/>
+        <location line="+1579"/>
         <source>Value: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1779"/>
+        <location line="+1780"/>
         <source>Merge Options</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11830,7 +11832,7 @@ Wyświetlam jedynie perkusję starego typu, pomijając resztę.</translation>
         <translation>Dane</translation>
     </message>
     <message>
-        <location line="+106"/>
+        <location line="+113"/>
         <location line="+22"/>
         <source>Hide instrument</source>
         <translation type="unfinished"></translation>
@@ -11932,18 +11934,18 @@ Wyświetlam jedynie perkusję starego typu, pomijając resztę.</translation>
     </message>
     <message>
         <location line="+104"/>
-        <location line="+216"/>
+        <location line="+214"/>
         <source>MusE: Save Instrument Definition</source>
         <translation>MusE: zapis definicji instrumentu</translation>
     </message>
     <message>
-        <location line="-215"/>
-        <location line="+216"/>
+        <location line="-213"/>
+        <location line="+214"/>
         <source>Instrument Definition (*.idf)</source>
         <translation>Definicja instrumentu (*.idf)</translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-120"/>
         <location line="+29"/>
         <source>MusE: Save instrument as</source>
         <translation>MusE: zapisz instrument jako</translation>
@@ -11961,7 +11963,7 @@ Are you sure?</source>
 Jesteś pewien?</translation>
     </message>
     <message>
-        <location line="+375"/>
+        <location line="+373"/>
         <source>MusE: Bad instrument name</source>
         <translation>MusE: niewłaściwa nazwa instrumentu</translation>
     </message>
@@ -11973,7 +11975,7 @@ Jesteś pewien?</translation>
 (Nazwa może być używana przez ukryty instrument.)</translation>
     </message>
     <message>
-        <location line="+143"/>
+        <location line="+140"/>
         <source>MusE: Bad patch name</source>
         <translation>MusE: niewłaściwa nazwa brzmienia</translation>
     </message>
@@ -11983,7 +11985,7 @@ Jesteś pewien?</translation>
         <translation>Proszę wybrać unikalną nazwę brzmienia</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+18"/>
         <source>MusE: Bad patchgroup name</source>
         <translation>MusE: zła nazwa grupy brzmień</translation>
     </message>
@@ -11993,7 +11995,7 @@ Jesteś pewien?</translation>
         <translation>Proszę wybrać unikalną nazwę grupy brzmień</translation>
     </message>
     <message>
-        <location line="+460"/>
+        <location line="+457"/>
         <source>MusE: Bad controller name</source>
         <translation>MusE: niewłaściwa nazwa kontrolera</translation>
     </message>
@@ -12003,7 +12005,7 @@ Jesteś pewien?</translation>
         <translation>Proszę wybrać unikalną nazwę kontrolera</translation>
     </message>
     <message>
-        <location line="+1200"/>
+        <location line="+1197"/>
         <source>New controller: Error</source>
         <translation>Nowy kontroler: błąd</translation>
     </message>
@@ -12015,28 +12017,24 @@ Clean up the instrument!</source>
 Proszę wyczyścić definicję instrumentu!</translation>
     </message>
     <message>
-        <location line="+167"/>
-        <location line="+5"/>
+        <location line="+170"/>
         <source>MusE</source>
         <translation>MusE</translation>
     </message>
     <message>
-        <location line="-4"/>
-        <location line="+5"/>
+        <location line="+1"/>
         <source>The current Instrument contains unsaved data
 Save Current Instrument?</source>
         <translation>Bieżący instrument zawiera niezapisane dane.
 Zapisać bieżący instrument?</translation>
     </message>
     <message>
-        <location line="-3"/>
-        <location line="+5"/>
+        <location line="-4"/>
         <source>&amp;Save</source>
         <translation>&amp;Zapisz</translation>
     </message>
     <message>
-        <location line="-5"/>
-        <location line="+5"/>
+        <location line="+1"/>
         <source>&amp;Don&apos;t save</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12045,9 +12043,8 @@ Zapisać bieżący instrument?</translation>
         <translation type="vanished">&amp;Nie zapisuj</translation>
     </message>
     <message>
-        <location line="-5"/>
         <source>&amp;Abort</source>
-        <translation>&amp;Anuluj</translation>
+        <translation type="vanished">&amp;Anuluj</translation>
     </message>
 </context>
 <context>
@@ -12447,7 +12444,7 @@ Z narzędziem kursora możesz:
         <translation type="vanished">zapisz ustawienie</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="+186"/>
+        <location filename="../../muse/mixer/rack.cpp" line="+191"/>
         <source>Effect rack: Double-click a slot to insert/edit effect. RMB to open context menu. Press F1 for help.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12750,7 +12747,7 @@ Double-click a slot to insert FX</source>
         <translation>Błąd wprowadzanej wartości: niewłaściwy format bądź wartość poza zakresem</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+18"/>
         <source>Reposition of tempo and signature events to start position is not allowed!</source>
         <translation>Zmiana tempa i metrum do pozycji początkowej jest niedozwolona!</translation>
     </message>
@@ -13003,7 +13000,7 @@ Double-click a slot to insert FX</source>
         <translation type="vanished">wyj.</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+61"/>
         <location line="+42"/>
         <source>Toggle all</source>
         <translation>Przełącz wszystkie</translation>
@@ -13183,12 +13180,12 @@ Double-click a slot to insert FX</source>
         <translation>Nazwa urządzenia</translation>
     </message>
     <message>
-        <location line="-620"/>
+        <location line="-617"/>
         <source>Please choose a unique device name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+456"/>
+        <location line="+453"/>
         <source>Port number</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13648,7 +13645,7 @@ Proceed?</source>
 <context>
     <name>MusEGui::MidiComponentRack</name>
     <message>
-        <location filename="../../muse/mixer/mstrip.cpp" line="+203"/>
+        <location filename="../../muse/mixer/mstrip.cpp" line="+204"/>
         <source>Pro</source>
         <translation type="unfinished">Prg.</translation>
     </message>
@@ -13791,7 +13788,7 @@ Proceed?</source>
         <translation type="obsolete">B</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/mstrip.cpp" line="+872"/>
+        <location filename="../../muse/mixer/mstrip.cpp" line="+873"/>
         <source>Input routing. Hold CTRL to keep menu open. Press F1 for help.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13802,7 +13799,7 @@ Proceed?</source>
     </message>
     <message>
         <location line="+49"/>
-        <location line="+48"/>
+        <location line="+49"/>
         <source>off</source>
         <translation>wył.</translation>
     </message>
@@ -13847,7 +13844,7 @@ Proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-186"/>
+        <location line="-187"/>
         <source>Inst</source>
         <translation type="unfinished">Instr.</translation>
     </message>
@@ -13867,7 +13864,7 @@ Proceed?</source>
         <translation type="unfinished">Właściwości</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+71"/>
         <source>Volume/Gain
 (Ctrl-double-click on/off)</source>
         <translation type="unfinished"></translation>
@@ -14448,22 +14445,19 @@ Użyć nowych ustawień
 synchronizacji?</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>&amp;Apply</source>
-        <translation>&amp;Zastosuj</translation>
+        <translation type="vanished">&amp;Zastosuj</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;No</source>
-        <translation>&amp;Nie</translation>
+        <translation type="vanished">&amp;Nie</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;Abort</source>
-        <translation>&amp;Anuluj</translation>
+        <translation type="vanished">&amp;Anuluj</translation>
     </message>
     <message>
-        <location line="+117"/>
+        <location line="+120"/>
         <source>&lt;none&gt;</source>
         <translation>&lt;brak&gt;</translation>
     </message>
@@ -14495,7 +14489,7 @@ synchronizacji?</translation>
 <context>
     <name>MusEGui::MusE</name>
     <message>
-        <location filename="../../muse/app.cpp" line="+387"/>
+        <location filename="../../muse/app.cpp" line="+388"/>
         <location line="+6"/>
         <source>Failed to start audio!</source>
         <translation>Nie można uruchomić dźwięku!</translation>
@@ -14651,9 +14645,7 @@ synchronizacji?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+2011"/>
-        <location line="+1643"/>
-        <location line="+119"/>
+        <location line="+3654"/>
         <source>&amp;Save</source>
         <translation>&amp;Zapisz</translation>
     </message>
@@ -14681,7 +14673,7 @@ Można też wybrać opcję Zapisz w menu Plik lub użyć kombinacji Ctrl-S.
         <translation type="vanished">Import klocka</translation>
     </message>
     <message>
-        <location line="+1109"/>
+        <location line="+1228"/>
         <source>Import Audio File</source>
         <translation>Import pliku audio</translation>
     </message>
@@ -15236,13 +15228,13 @@ Można też wybrać opcję Zapisz w menu Plik lub użyć kombinacji Ctrl-S.
     </message>
     <message>
         <location line="+88"/>
-        <location line="+119"/>
+        <location line="+118"/>
         <source>The current project contains unsaved data.
 Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1005"/>
+        <location line="+1006"/>
         <source>MusE Project: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -15385,31 +15377,23 @@ Zapisać otwarty utwór?</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location filename="../../muse/app.cpp" line="+43"/>
-        <location line="+1643"/>
-        <location line="+119"/>
+        <location filename="../../muse/app.cpp" line="+1686"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Anuluj</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location filename="../../muse/conf.cpp" line="+6"/>
         <source>Color settings will immediately be replaced with any found in the file.
 Are you sure you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>&amp;Ok</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
+        <location line="+22"/>
         <source>Save configuration colors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="-1470"/>
+        <location filename="../../muse/app.cpp" line="-1351"/>
         <location line="+49"/>
         <source>MusE: Save As</source>
         <translation>MusE: zapisz Jako</translation>
@@ -15482,12 +15466,11 @@ Wybrane działanie spowoduje jego nadpisanie.
 Zapisać bieżący projekt?</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="+92"/>
         <source>&amp;Abort</source>
-        <translation>&amp;Anuluj</translation>
+        <translation type="vanished">&amp;Anuluj</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+487"/>
+        <location line="+487"/>
         <source>This will clear all automation data on
  all audio tracks!
 Proceed?</source>
@@ -15563,18 +15546,17 @@ browser on your machine.</source>
 na Twoim komputerze.</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="-12"/>
+        <location filename="../../muse/importmidi.cpp" line="+81"/>
         <source>MusE: Import Midi</source>
         <translation>MusE: importuj plik MIDI</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Add midi file to current project?
 </source>
-        <translation>Dodać plik MIDI do bieżącego projektu?</translation>
+        <translation type="vanished">Dodać plik MIDI do bieżącego projektu?</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+9"/>
         <source>&amp;Add to Project</source>
         <translation>&amp;Dodaj do projektu</translation>
     </message>
@@ -15589,7 +15571,12 @@ na Twoim komputerze.</translation>
         <translation type="vanished">czytanie pliku MIDI</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+5"/>
+        <source>Add midi file to current project?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+44"/>
         <source>Reading midifile
   </source>
         <translation type="unfinished"></translation>
@@ -15646,7 +15633,7 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
         <translation type="vanished">aby zaimportować plik dźwiękowy musisz najpierw wybrać ślad audio</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+889"/>
+        <location filename="../../muse/app.cpp" line="+890"/>
         <source>Import Wavefile</source>
         <translation>Import pliku audio</translation>
     </message>
@@ -15690,13 +15677,12 @@ Nie można kontynuować.</translation>
         <translation>Błąd inicjalizacji konwertera częstotliwości próbkowania!</translation>
     </message>
     <message>
-        <location line="-77"/>
-        <location line="+95"/>
+        <location line="+18"/>
         <source>Cancel</source>
         <translation>Anuluj</translation>
     </message>
     <message>
-        <location line="-5441"/>
+        <location line="-5442"/>
         <source>Failed to start audio disk prefetch!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15832,25 +15818,23 @@ Nie można kontynuować.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+29"/>
         <source>The current project contains unsaved data.
 Save current project?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location line="+1643"/>
-        <location line="+119"/>
+        <location line="+1646"/>
         <source>&amp;Discard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1256"/>
+        <location line="-1137"/>
         <source>No valid parts selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2408"/>
+        <location line="+2409"/>
         <source>This wave file has a samplerate of %1 Hz,
  as opposed to current setting %2 Hz.
 A live, real-time samplerate converter can be used on this file.
@@ -17135,7 +17119,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
 <context>
     <name>MusEGui::PopupMenu</name>
     <message>
-        <location filename="../../muse/components/popupmenu.cpp" line="+433"/>
+        <location filename="../../muse/components/popupmenu.cpp" line="+440"/>
         <source>&lt;More...&gt; %1</source>
         <translation>&lt;Więcej...&gt; %1</translation>
     </message>
@@ -18093,7 +18077,7 @@ podany tytuł nie jest unikalny</translation>
         <translation type="obsolete">Nazwa</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/strip.cpp" line="+1033"/>
+        <location filename="../../muse/mixer/strip.cpp" line="+1036"/>
         <source>Enter track name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18307,18 +18291,16 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation>Ustawienia</translation>
     </message>
     <message>
-        <location line="+325"/>
+        <location line="+326"/>
         <source>Clear all controller events?</source>
         <translation>Wyczyścić wszystkie zdarzenia kontrolerów?</translation>
     </message>
     <message>
-        <location line="-60"/>
-        <location line="+60"/>
         <source>&amp;Ok</source>
-        <translation>&amp;Akceptuj</translation>
+        <translation type="vanished">&amp;Akceptuj</translation>
     </message>
     <message>
-        <location line="-1617"/>
+        <location line="-1618"/>
         <source>Track list: LMB to select track, CTRL+LMB to add to selection, SHIFT+LMB for range select. Insert or RMB to create tracks. Press F1 for help.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18370,18 +18352,16 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+207"/>
-        <location line="+60"/>
         <source>&amp;Cancel</source>
-        <translation>&amp;Anuluj</translation>
+        <translation type="vanished">&amp;Anuluj</translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="+207"/>
         <source>Reset all controller colors to defaults?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+223"/>
+        <location line="+225"/>
         <source>Change color</source>
         <translation>Zmień kolor</translation>
     </message>
@@ -18515,13 +18495,13 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="vanished">wyczyść automatykę</translation>
     </message>
     <message>
-        <location line="-3005"/>
+        <location line="-3007"/>
         <location line="+1065"/>
         <source>SYNTH IS UNAVAILABLE!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+694"/>
+        <location line="+696"/>
         <source>Clear automation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20163,7 +20143,7 @@ Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="-3315"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="-3306"/>
         <source>Controller !</source>
         <translation>Kontroler !</translation>
     </message>
@@ -20361,7 +20341,7 @@ sometimes requires write access to the file.</source>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="+2604"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="+2597"/>
         <location filename="../../muse/components/editevent.cpp" line="-271"/>
         <source>Cannot convert sysex string</source>
         <translation>Nie można przekonwertować łańcucha SysEx</translation>
@@ -20784,13 +20764,6 @@ p, li { white-space: pre-wrap; }
         <location line="+13"/>
         <source>Cancel</source>
         <translation>Anuluj</translation>
-    </message>
-</context>
-<context>
-    <name>RhythmGenerator</name>
-    <message>
-        <source></source>
-        <translation></translation>
     </message>
 </context>
 <context>
@@ -21265,7 +21238,7 @@ Opcja ta włącza także zawijanie tekstu, co
 <context>
     <name>SS_PluginFront</name>
     <message>
-        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="+140"/>
+        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="+141"/>
         <source>Clear and unload effect</source>
         <translation>Wyczyść i usuń efekt</translation>
     </message>
@@ -21591,7 +21564,7 @@ Opcja ta włącza także zawijanie tekstu, co
 <context>
     <name>SimpleSynthGui</name>
     <message>
-        <location filename="../../synti/simpledrums2/simpledrumsgui.cpp" line="+371"/>
+        <location filename="../../synti/simpledrums2/simpledrumsgui.cpp" line="+372"/>
         <source>Mix</source>
         <translation>Miks</translation>
     </message>
@@ -21606,7 +21579,7 @@ Opcja ta włącza także zawijanie tekstu, co
         <translation>Połączenia kanałów</translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+66"/>
         <source>&amp;Load setup</source>
         <translation>&amp;Załaduj konfigurację</translation>
     </message>
@@ -22918,7 +22891,7 @@ pomieszczenia</translation>
 <context>
     <name>main</name>
     <message>
-        <location filename="../../muse/main.cpp" line="+327"/>
+        <location filename="../../muse/main.cpp" line="+320"/>
         <source>File to open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -23124,7 +23097,7 @@ Kontynuować?</translation>
 <context>
     <name>shortcuts</name>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="+57"/>
+        <location filename="../../muse/shortcuts.cpp" line="+58"/>
         <source>Transport: Start playback from current location</source>
         <translation>Transport: odtwarzaj od bieżącej pozycji</translation>
     </message>

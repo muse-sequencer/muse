@@ -86,12 +86,7 @@ class BgPreviewWidget : public QWidget {
            //p.fillRect(QRect(w/2 - text_w/2,6,text_w + 20,text_h+4), dark);
 
            QFontMetrics fm = p.fontMetrics();
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
            text_w = fm.horizontalAdvance(imagefile);
-#else
-           text_w = fm.width(imagefile);
-#endif
            text_h = fm.height();
 
            // Do the text shadow first
@@ -362,13 +357,13 @@ Appearance::Appearance(QWidget* parent)
       QStringList fileTypes;
       fileTypes.append("*.qss");
       QFileInfoList list = themeDir.entryInfoList(fileTypes);
-      for (const auto& item : qAsConst(list))
+      for (const auto& item : list)
           themeComboBox->addItem(item.baseName());
 
       themeDir.setPath(MusEGlobal::configPath + QString("/themes"));
       if (themeDir.exists()) {
           list = themeDir.entryInfoList(fileTypes);
-          for (const auto& item : qAsConst(list)) {
+          for (const auto& item : list) {
               if (themeComboBox->findText(item.baseName()) == -1)
               themeComboBox->addItem(item.baseName());
           }

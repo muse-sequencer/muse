@@ -68,7 +68,8 @@ SS_PluginFront::SS_PluginFront(QWidget* parent, int in_fxid)
       bigLayout->setContentsMargins(SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN);
       bigLayout->setAlignment(Qt::AlignTop);
       bigLayout->setSpacing(1);
-      bigLayout->setMargin(1);
+      //bigLayout->setMargin(1);
+      bigLayout->setContentsMargins(1, 1, 1, 1);
 //TODO      bigLayout->setResizeMode(QLayout::SetNoConstraint);
 
       layout = new QHBoxLayout;

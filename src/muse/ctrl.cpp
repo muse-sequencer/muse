@@ -1590,9 +1590,9 @@ bool CtrlList::read(Xml& xml)
                         }
                         else if (tag == "color")
                         {
-                              ok = _displayColor.isValidColor(xml.s2());
+                              ok = _displayColor.isValidColorName(xml.s2());
                               if (ok)
-                                _displayColor.setNamedColor(xml.s2());
+                                _displayColor.fromString(xml.s2());
                               else
                               {
                                 fprintf(stderr, "CtrlList::read failed reading color string: %s\n", xml.s2().toLocal8Bit().constData());

@@ -137,8 +137,11 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   connect(nbrVoicesSpinBox, SIGNAL(valueChanged(int)), 
 	  this, SLOT(setNbrVoices(int)));
   //quality
-  connect(qualityComboBox, SIGNAL(activated(const QString&)),
-	  this, SLOT(setQuality(const QString&)));
+// REMOVE Tim. qt6. Changed. The QString version is obsolete in Qt 5.15
+//   connect(qualityComboBox, SIGNAL(activated(const QString&)),
+// 	  this, SLOT(setQuality(const QString&)));
+  connect(qualityComboBox, QOverload<int>::of(&QComboBox::activated), [=](int index)
+  { setQuality(qualityComboBox->itemText(index)); } );
   connect(filterCheckBox, SIGNAL(toggled(bool)),
 	  this, SLOT(setFilter(bool)));
   //change font size
@@ -1090,20 +1093,20 @@ void QFramePitchEnvelope::paintEvent(QPaintEvent* /*e*/) {
 }
 void QFramePitchEnvelope::mousePressEvent(QMouseEvent * e) {
     //startlinkP1
-    if(e->x()<startlinkP1.x()+DRAGWIDTH && e->x()>startlinkP1.x()-DRAGWIDTH
-       && e->y()<startlinkP1.y()+DRAGWIDTH && e->y()>startlinkP1.y()-DRAGWIDTH)
+    if(e->position().toPoint().x()<startlinkP1.x()+DRAGWIDTH && e->position().toPoint().x()>startlinkP1.x()-DRAGWIDTH
+       && e->position().toPoint().y()<startlinkP1.y()+DRAGWIDTH && e->position().toPoint().y()>startlinkP1.y()-DRAGWIDTH)
 	isStartlinkP1Edit=true;
     //P1linkP2
-    if(e->x()<P1linkP2.x()+DRAGWIDTH && e->x()>P1linkP2.x()-DRAGWIDTH
-       && e->y()<P1linkP2.y()+DRAGWIDTH && e->y()>P1linkP2.y()-DRAGWIDTH)
+    if(e->position().toPoint().x()<P1linkP2.x()+DRAGWIDTH && e->position().toPoint().x()>P1linkP2.x()-DRAGWIDTH
+       && e->position().toPoint().y()<P1linkP2.y()+DRAGWIDTH && e->position().toPoint().y()>P1linkP2.y()-DRAGWIDTH)
 	isP1linkP2Edit=true;
     //P2linkP3
-    if(e->x()<P2linkP3.x()+DRAGWIDTH && e->x()>P2linkP3.x()-DRAGWIDTH
-       && e->y()<P2linkP3.y()+DRAGWIDTH && e->y()>P2linkP3.y()-DRAGWIDTH)
+    if(e->position().toPoint().x()<P2linkP3.x()+DRAGWIDTH && e->position().toPoint().x()>P2linkP3.x()-DRAGWIDTH
+       && e->position().toPoint().y()<P2linkP3.y()+DRAGWIDTH && e->position().toPoint().y()>P2linkP3.y()-DRAGWIDTH)
 	isP2linkP3Edit=true;
     //P3linkEnd
-    if(e->x()<P3linkEnd.x()+DRAGWIDTH && e->x()>P3linkEnd.x()-DRAGWIDTH
-       && e->y()<P3linkEnd.y()+DRAGWIDTH && e->y()>P3linkEnd.y()-DRAGWIDTH)
+    if(e->position().toPoint().x()<P3linkEnd.x()+DRAGWIDTH && e->position().toPoint().x()>P3linkEnd.x()-DRAGWIDTH
+       && e->position().toPoint().y()<P3linkEnd.y()+DRAGWIDTH && e->position().toPoint().y()>P3linkEnd.y()-DRAGWIDTH)
 	isP3linkEndEdit=true;
 }
 void QFramePitchEnvelope::mouseReleaseEvent(QMouseEvent* /*e*/) {
@@ -1114,26 +1117,26 @@ void QFramePitchEnvelope::mouseReleaseEvent(QMouseEvent* /*e*/) {
 }
 void QFramePitchEnvelope::mouseMoveEvent(QMouseEvent* e) {
   if(isStartlinkP1Edit) {
-    if(e->y()>startlinkP1.y()) _deicsOnzeGui->PL1SpinBox->stepDown();
-    if(e->y()<startlinkP1.y()) _deicsOnzeGui->PL1SpinBox->stepUp();
+    if(e->position().toPoint().y()>startlinkP1.y()) _deicsOnzeGui->PL1SpinBox->stepDown();
+    if(e->position().toPoint().y()<startlinkP1.y()) _deicsOnzeGui->PL1SpinBox->stepUp();
   }
   if(isP1linkP2Edit) {
-    if(e->x()>P1linkP2.x()) _deicsOnzeGui->PR1SpinBox->stepDown();
-    if(e->x()<P1linkP2.x()) _deicsOnzeGui->PR1SpinBox->stepUp();
-    if(e->y()>P1linkP2.y()) _deicsOnzeGui->PL2SpinBox->stepDown();
-    if(e->y()<P1linkP2.y()) _deicsOnzeGui->PL2SpinBox->stepUp();
+    if(e->position().toPoint().x()>P1linkP2.x()) _deicsOnzeGui->PR1SpinBox->stepDown();
+    if(e->position().toPoint().x()<P1linkP2.x()) _deicsOnzeGui->PR1SpinBox->stepUp();
+    if(e->position().toPoint().y()>P1linkP2.y()) _deicsOnzeGui->PL2SpinBox->stepDown();
+    if(e->position().toPoint().y()<P1linkP2.y()) _deicsOnzeGui->PL2SpinBox->stepUp();
   }
   if(isP2linkP3Edit) {
-    if(e->x()>P2linkP3.x()) _deicsOnzeGui->PR2SpinBox->stepDown();
-    if(e->x()<P2linkP3.x()) _deicsOnzeGui->PR2SpinBox->stepUp();
-    if(e->y()>P2linkP3.y()) _deicsOnzeGui->PL3SpinBox->stepDown();
-    if(e->y()<P2linkP3.y()) _deicsOnzeGui->PL3SpinBox->stepUp();
+    if(e->position().toPoint().x()>P2linkP3.x()) _deicsOnzeGui->PR2SpinBox->stepDown();
+    if(e->position().toPoint().x()<P2linkP3.x()) _deicsOnzeGui->PR2SpinBox->stepUp();
+    if(e->position().toPoint().y()>P2linkP3.y()) _deicsOnzeGui->PL3SpinBox->stepDown();
+    if(e->position().toPoint().y()<P2linkP3.y()) _deicsOnzeGui->PL3SpinBox->stepUp();
   }
   if(isP3linkEndEdit) {
-    if(e->x()>P3linkEnd.x()) _deicsOnzeGui->PR3SpinBox->stepDown();
-    if(e->x()<P3linkEnd.x()) _deicsOnzeGui->PR3SpinBox->stepUp();
-    if(e->y()>P3linkEnd.y()) _deicsOnzeGui->PL1SpinBox->stepDown();
-    if(e->y()<P3linkEnd.y()) _deicsOnzeGui->PL1SpinBox->stepUp();
+    if(e->position().toPoint().x()>P3linkEnd.x()) _deicsOnzeGui->PR3SpinBox->stepDown();
+    if(e->position().toPoint().x()<P3linkEnd.x()) _deicsOnzeGui->PR3SpinBox->stepUp();
+    if(e->position().toPoint().y()>P3linkEnd.y()) _deicsOnzeGui->PL1SpinBox->stepDown();
+    if(e->position().toPoint().y()<P3linkEnd.y()) _deicsOnzeGui->PL1SpinBox->stepUp();
   }
 }
 //-----------------------------------------------------------
@@ -1233,20 +1236,20 @@ void QFrameEnvelope::paintEvent(QPaintEvent* /*e*/) {
 }
 void QFrameEnvelope::mousePressEvent(QMouseEvent * e) {
     //ARlinkD1
-    if(e->x()<ARlinkD1.x()+DRAGWIDTH && e->x()>ARlinkD1.x()-DRAGWIDTH
-       && e->y()<ARlinkD1.y()+DRAGWIDTH && e->y()>ARlinkD1.y()-DRAGWIDTH)
+    if(e->position().toPoint().x()<ARlinkD1.x()+DRAGWIDTH && e->position().toPoint().x()>ARlinkD1.x()-DRAGWIDTH
+       && e->position().toPoint().y()<ARlinkD1.y()+DRAGWIDTH && e->position().toPoint().y()>ARlinkD1.y()-DRAGWIDTH)
 	isARlinkD1Edit=true;
     //D1linkD2
-    if(e->x()<D1linkD2.x()+DRAGWIDTH && e->x()>D1linkD2.x()-DRAGWIDTH
-       && e->y()<D1linkD2.y()+DRAGWIDTH && e->y()>D1linkD2.y()-DRAGWIDTH)
+    if(e->position().toPoint().x()<D1linkD2.x()+DRAGWIDTH && e->position().toPoint().x()>D1linkD2.x()-DRAGWIDTH
+       && e->position().toPoint().y()<D1linkD2.y()+DRAGWIDTH && e->position().toPoint().y()>D1linkD2.y()-DRAGWIDTH)
 	isD1linkD2Edit=true;
     //D2linkRR
-    if(e->x()<D2linkRR.x()+DRAGWIDTH && e->x()>D2linkRR.x()-DRAGWIDTH
-       && e->y()<D2linkRR.y()+DRAGWIDTH && e->y()>D2linkRR.y()-DRAGWIDTH)
+    if(e->position().toPoint().x()<D2linkRR.x()+DRAGWIDTH && e->position().toPoint().x()>D2linkRR.x()-DRAGWIDTH
+       && e->position().toPoint().y()<D2linkRR.y()+DRAGWIDTH && e->position().toPoint().y()>D2linkRR.y()-DRAGWIDTH)
 	isD2linkRREdit=true;
     //RRlinkEnd
-    if(e->x()<RRlinkEnd.x()+DRAGWIDTH && e->x()>RRlinkEnd.x()-DRAGWIDTH
-       && e->y()<RRlinkEnd.y()+DRAGWIDTH && e->y()>RRlinkEnd.y()-DRAGWIDTH)
+    if(e->position().toPoint().x()<RRlinkEnd.x()+DRAGWIDTH && e->position().toPoint().x()>RRlinkEnd.x()-DRAGWIDTH
+       && e->position().toPoint().y()<RRlinkEnd.y()+DRAGWIDTH && e->position().toPoint().y()>RRlinkEnd.y()-DRAGWIDTH)
 	isRRlinkEndEdit=true;
 }
 void QFrameEnvelope::mouseReleaseEvent(QMouseEvent* /*e*/) {
@@ -1260,20 +1263,20 @@ void QFrameEnvelope::mouseMoveEvent(QMouseEvent* e) {
     {
 	switch(op) {
 	    case 0 :
-		if(e->x()>ARlinkD1.x()) _deicsOnzeGui->AR1SpinBox->stepDown();
-		if(e->x()<ARlinkD1.x()) _deicsOnzeGui->AR1SpinBox->stepUp();
+		if(e->position().toPoint().x()>ARlinkD1.x()) _deicsOnzeGui->AR1SpinBox->stepDown();
+		if(e->position().toPoint().x()<ARlinkD1.x()) _deicsOnzeGui->AR1SpinBox->stepUp();
 		break;
 	    case 1 :
-		if(e->x()>ARlinkD1.x()) _deicsOnzeGui->AR2SpinBox->stepDown();
-		if(e->x()<ARlinkD1.x()) _deicsOnzeGui->AR2SpinBox->stepUp();
+		if(e->position().toPoint().x()>ARlinkD1.x()) _deicsOnzeGui->AR2SpinBox->stepDown();
+		if(e->position().toPoint().x()<ARlinkD1.x()) _deicsOnzeGui->AR2SpinBox->stepUp();
 		break;
 	    case 2 :
-		if(e->x()>ARlinkD1.x()) _deicsOnzeGui->AR3SpinBox->stepDown();
-		if(e->x()<ARlinkD1.x()) _deicsOnzeGui->AR3SpinBox->stepUp();
+		if(e->position().toPoint().x()>ARlinkD1.x()) _deicsOnzeGui->AR3SpinBox->stepDown();
+		if(e->position().toPoint().x()<ARlinkD1.x()) _deicsOnzeGui->AR3SpinBox->stepUp();
 		break;
 	    case 3 :
-		if(e->x()>ARlinkD1.x()) _deicsOnzeGui->AR4SpinBox->stepDown();
-		if(e->x()<ARlinkD1.x()) _deicsOnzeGui->AR4SpinBox->stepUp();
+		if(e->position().toPoint().x()>ARlinkD1.x()) _deicsOnzeGui->AR4SpinBox->stepDown();
+		if(e->position().toPoint().x()<ARlinkD1.x()) _deicsOnzeGui->AR4SpinBox->stepUp();
 		break;
 	    default :
 		break;
@@ -1283,28 +1286,28 @@ void QFrameEnvelope::mouseMoveEvent(QMouseEvent* e) {
     {
 	switch(op) {
 	    case 0 :
-		if(e->x()>D1linkD2.x()) _deicsOnzeGui->D1R1SpinBox->stepDown();
-		if(e->x()<D1linkD2.x()) _deicsOnzeGui->D1R1SpinBox->stepUp();
-		if(e->y()>D1linkD2.y()) _deicsOnzeGui->D1L1SpinBox->stepDown();
-		if(e->y()<D1linkD2.y()) _deicsOnzeGui->D1L1SpinBox->stepUp();
+		if(e->position().toPoint().x()>D1linkD2.x()) _deicsOnzeGui->D1R1SpinBox->stepDown();
+		if(e->position().toPoint().x()<D1linkD2.x()) _deicsOnzeGui->D1R1SpinBox->stepUp();
+		if(e->position().toPoint().y()>D1linkD2.y()) _deicsOnzeGui->D1L1SpinBox->stepDown();
+		if(e->position().toPoint().y()<D1linkD2.y()) _deicsOnzeGui->D1L1SpinBox->stepUp();
 		break;
 	    case 1 :
-		if(e->x()>D1linkD2.x()) _deicsOnzeGui->D1R2SpinBox->stepDown();
-		if(e->x()<D1linkD2.x()) _deicsOnzeGui->D1R2SpinBox->stepUp();
-		if(e->y()>D1linkD2.y()) _deicsOnzeGui->D1L2SpinBox->stepDown();
-		if(e->y()<D1linkD2.y()) _deicsOnzeGui->D1L2SpinBox->stepUp();
+		if(e->position().toPoint().x()>D1linkD2.x()) _deicsOnzeGui->D1R2SpinBox->stepDown();
+		if(e->position().toPoint().x()<D1linkD2.x()) _deicsOnzeGui->D1R2SpinBox->stepUp();
+		if(e->position().toPoint().y()>D1linkD2.y()) _deicsOnzeGui->D1L2SpinBox->stepDown();
+		if(e->position().toPoint().y()<D1linkD2.y()) _deicsOnzeGui->D1L2SpinBox->stepUp();
 		break;
 	    case 2 :
-		if(e->x()>D1linkD2.x()) _deicsOnzeGui->D1R3SpinBox->stepDown();
-		if(e->x()<D1linkD2.x()) _deicsOnzeGui->D1R3SpinBox->stepUp();
-		if(e->y()>D1linkD2.y()) _deicsOnzeGui->D1L3SpinBox->stepDown();
-		if(e->y()<D1linkD2.y()) _deicsOnzeGui->D1L3SpinBox->stepUp();
+		if(e->position().toPoint().x()>D1linkD2.x()) _deicsOnzeGui->D1R3SpinBox->stepDown();
+		if(e->position().toPoint().x()<D1linkD2.x()) _deicsOnzeGui->D1R3SpinBox->stepUp();
+		if(e->position().toPoint().y()>D1linkD2.y()) _deicsOnzeGui->D1L3SpinBox->stepDown();
+		if(e->position().toPoint().y()<D1linkD2.y()) _deicsOnzeGui->D1L3SpinBox->stepUp();
 		break;
 	    case 3 :
-		if(e->x()>D1linkD2.x()) _deicsOnzeGui->D1R4SpinBox->stepDown();
-		if(e->x()<D1linkD2.x()) _deicsOnzeGui->D1R4SpinBox->stepUp();
-		if(e->y()>D1linkD2.y()) _deicsOnzeGui->D1L4SpinBox->stepDown();
-		if(e->y()<D1linkD2.y()) _deicsOnzeGui->D1L4SpinBox->stepUp();
+		if(e->position().toPoint().x()>D1linkD2.x()) _deicsOnzeGui->D1R4SpinBox->stepDown();
+		if(e->position().toPoint().x()<D1linkD2.x()) _deicsOnzeGui->D1R4SpinBox->stepUp();
+		if(e->position().toPoint().y()>D1linkD2.y()) _deicsOnzeGui->D1L4SpinBox->stepDown();
+		if(e->position().toPoint().y()<D1linkD2.y()) _deicsOnzeGui->D1L4SpinBox->stepUp();
 		break;
 	    default :
 		break;
@@ -1314,27 +1317,27 @@ void QFrameEnvelope::mouseMoveEvent(QMouseEvent* e) {
     {
 	switch(op) {
 	    case 0 :
-		if(e->x()>D2linkRR.x() /*&& e->y()<D2linkRR.y()*/)
+		if(e->position().toPoint().x()>D2linkRR.x() /*&& e->position().toPoint().y()<D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R1SpinBox->stepDown();
-		if(e->x()<D2linkRR.x() /*&& e->y()>D2linkRR.y()*/)
+		if(e->position().toPoint().x()<D2linkRR.x() /*&& e->position().toPoint().y()>D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R1SpinBox->stepUp();
 		break;
 	    case 1 :
-		if(e->x()>D2linkRR.x() /*&& e->y()<D2linkRR.y()*/)
+		if(e->position().toPoint().x()>D2linkRR.x() /*&& e->position().toPoint().y()<D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R2SpinBox->stepDown();
-		if(e->x()<D2linkRR.x() /*&& e->y()>D2linkRR.y()*/)
+		if(e->position().toPoint().x()<D2linkRR.x() /*&& e->position().toPoint().y()>D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R2SpinBox->stepUp();
 		break;
 	    case 2 :
-		if(e->x()>D2linkRR.x() /*&& e->y()<D2linkRR.y()*/)
+		if(e->position().toPoint().x()>D2linkRR.x() /*&& e->position().toPoint().y()<D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R3SpinBox->stepDown();
-		if(e->x()<D2linkRR.x() /*&& e->y()>D2linkRR.y()*/)
+		if(e->position().toPoint().x()<D2linkRR.x() /*&& e->position().toPoint().y()>D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R3SpinBox->stepUp();
 		break;
 	    case 3 :
-		if(e->x()>D2linkRR.x() /*&& e->y()<D2linkRR.y()*/)
+		if(e->position().toPoint().x()>D2linkRR.x() /*&& e->position().toPoint().y()<D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R4SpinBox->stepDown();
-		if(e->x()<D2linkRR.x() /*&& e->y()>D2linkRR.y()*/)
+		if(e->position().toPoint().x()<D2linkRR.x() /*&& e->position().toPoint().y()>D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R4SpinBox->stepUp();
 		break;
 	    default :
@@ -1345,20 +1348,20 @@ void QFrameEnvelope::mouseMoveEvent(QMouseEvent* e) {
     {
 	switch(op) {
 	    case 0 :
-		if(e->x()>RRlinkEnd.x()) _deicsOnzeGui->RR1SpinBox->stepDown();
-		if(e->x()<RRlinkEnd.x()) _deicsOnzeGui->RR1SpinBox->stepUp();
+		if(e->position().toPoint().x()>RRlinkEnd.x()) _deicsOnzeGui->RR1SpinBox->stepDown();
+		if(e->position().toPoint().x()<RRlinkEnd.x()) _deicsOnzeGui->RR1SpinBox->stepUp();
 		break;
 	    case 1 :
-		if(e->x()>RRlinkEnd.x()) _deicsOnzeGui->RR2SpinBox->stepDown();
-		if(e->x()<RRlinkEnd.x()) _deicsOnzeGui->RR2SpinBox->stepUp();
+		if(e->position().toPoint().x()>RRlinkEnd.x()) _deicsOnzeGui->RR2SpinBox->stepDown();
+		if(e->position().toPoint().x()<RRlinkEnd.x()) _deicsOnzeGui->RR2SpinBox->stepUp();
 		break;
 	    case 2 :
-		if(e->x()>RRlinkEnd.x()) _deicsOnzeGui->RR3SpinBox->stepDown();
-		if(e->x()<RRlinkEnd.x()) _deicsOnzeGui->RR3SpinBox->stepUp();
+		if(e->position().toPoint().x()>RRlinkEnd.x()) _deicsOnzeGui->RR3SpinBox->stepDown();
+		if(e->position().toPoint().x()<RRlinkEnd.x()) _deicsOnzeGui->RR3SpinBox->stepUp();
 		break;
 	    case 3 :
-		if(e->x()>RRlinkEnd.x()) _deicsOnzeGui->RR4SpinBox->stepDown();
-		if(e->x()<RRlinkEnd.x()) _deicsOnzeGui->RR4SpinBox->stepUp();
+		if(e->position().toPoint().x()>RRlinkEnd.x()) _deicsOnzeGui->RR4SpinBox->stepDown();
+		if(e->position().toPoint().x()<RRlinkEnd.x()) _deicsOnzeGui->RR4SpinBox->stepUp();
 		break;
 	    default :
 		break;
@@ -1948,13 +1951,12 @@ void DeicsOnzeGui::newCategoryDialog() {
 void DeicsOnzeGui::deleteCategoryDialog() {
   QTreeCategory* cat = (QTreeCategory*) categoryListView->currentItem();
   if(cat && cat->isSelected()) {
-    if(!QMessageBox::question(
+    if(QMessageBox::question(
 			      this,
 			      tr("Delete category"),
-			      tr("Do you really want to delete %1 ?")
-			      .arg(cat->_category->_categoryName.c_str()),
-			      tr("&Yes"), tr("&No"),
-			      QString(), 0, 1 ))
+			      tr("Do you really want to delete %1 ?").arg(cat->_category->_categoryName),
+			      QMessageBox::Yes | QMessageBox::No,
+			      QMessageBox::Yes) == QMessageBox::Yes)
       {
 	for(int c = 0; c < NBRCHANNELS; c++)
 	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
@@ -2017,28 +2019,33 @@ void DeicsOnzeGui::loadCategoryDialog() {
 	if (version == "1.0") {
 	  Category* lCategory = new Category();
 	  lCategory->readCategory(node.firstChild());
-	  if (!_deicsOnze->_set->isFreeHBank(lCategory->_hbank)) {
-	    if(!QMessageBox::question(
-				      this,
-				      tr("Replace or add"),
-				      tr("%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.\n Do you want to replace it or to add it in the next free slot ?")
-				      .arg((lCategory->_categoryName).c_str())
-				      .arg(buffstr.setNum(lCategory->_hbank+1)),
-				      tr("&Replace"), tr("&Add"),
-				      QString(), 0, 1 )) {
-	      delete(_deicsOnze->_set
-		     ->findCategory(lCategory->_hbank));
-	      lCategory->linkSet(_deicsOnze->_set);
-	    }
-	    else {
-	      int ffhb=_deicsOnze->_set->firstFreeHBank();
-	      if(ffhb==-1)
-		QMessageBox::warning
-		  (this, tr("Download error"),
-		   tr("There is no more free category slot."));
-	      else lCategory->_hbank=ffhb;
-	      lCategory->linkSet(_deicsOnze->_set);
-	    }
+    if (!_deicsOnze->_set->isFreeHBank(lCategory->_hbank)) {
+      QMessageBox msg(this);
+      QPushButton *rb = msg.addButton(tr("&Replace"), QMessageBox::AcceptRole);
+      QPushButton *ab = msg.addButton(tr("&Add"), QMessageBox::AcceptRole);
+      msg.setDefaultButton(rb);
+      msg.setEscapeButton(ab);
+      msg.setIcon(QMessageBox::Question);
+      msg.setText(tr("%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.\n"
+        " Do you want to replace it or to add it in the next free slot ?")
+          .arg(lCategory->_categoryName)
+          .arg(buffstr.setNum(lCategory->_hbank+1)));
+      msg.setWindowTitle(tr("Replace or add"));
+      msg.exec();
+
+      if(msg.clickedButton() == rb)
+      {
+        delete(_deicsOnze->_set->findCategory(lCategory->_hbank));
+        lCategory->linkSet(_deicsOnze->_set);
+      }
+      else
+      {
+        int ffhb=_deicsOnze->_set->firstFreeHBank();
+        if(ffhb==-1)
+          QMessageBox::warning(this, tr("Download error"), tr("There is no more free category slot."));
+        else lCategory->_hbank=ffhb;
+          lCategory->linkSet(_deicsOnze->_set);
+      }
 	  }
 	  else lCategory->linkSet(_deicsOnze->_set);
 	  //display category
@@ -2117,14 +2124,13 @@ void DeicsOnzeGui::deleteSubcategoryDialog() {
   QTreeSubcategory* sub =
     (QTreeSubcategory*) subcategoryListView->currentItem();
   if(sub && sub->isSelected()) {
-    if(!QMessageBox::question(
+    if(QMessageBox::question(
 			      this,
 			      tr("Delete subcategory"),
 			      tr("Do you really want to delete %1 ?")
-			      .arg(sub->_subcategory
-				   ->_subcategoryName.c_str()),
-			      tr("&Yes"), tr("&No"),
-			      QString(), 0, 1 )) {
+			      .arg(sub->_subcategory->_subcategoryName),
+			      QMessageBox::Yes | QMessageBox::No,
+			      QMessageBox::Yes) == QMessageBox::Yes) {
       	for(int c = 0; c < NBRCHANNELS; c++)
 	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
       delete(sub->_subcategory);
@@ -2185,27 +2191,33 @@ void DeicsOnzeGui::loadSubcategoryDialog() {
 	  Subcategory* lSubcategory = new Subcategory();
 	  lSubcategory->readSubcategory(node.firstChild());
 	  if (!cat->_category->isFreeLBank(lSubcategory->_lbank)) {
-	    if(!QMessageBox::question(
-				      this,
-				      tr("Replace or add"),
-				      tr("%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.\n Do you want to replace it or to add it in the next free slot ?")
-				      .arg((lSubcategory->_subcategoryName)
-					   .c_str())
-				      .arg(buffstr.setNum(lSubcategory->_lbank+1)),
-				      tr("&Replace"), tr("&Add"),
-				      QString(), 0, 1 )) {
-	      delete(cat->_category->findSubcategory(lSubcategory->_lbank));
-	      lSubcategory->linkCategory(cat->_category);
-	    }
-	    else {
-	      int fflb=cat->_category->firstFreeLBank();
-	      if(fflb==-1)
-		QMessageBox::warning
-		  (this, tr("Download error"),
-		   tr("There is no more free subcategory slot."));
-	      else lSubcategory->_lbank=fflb;
-	      lSubcategory->linkCategory(cat->_category);
-	    }
+      QMessageBox msg(this);
+      QPushButton *rb = msg.addButton(tr("&Replace"), QMessageBox::AcceptRole);
+      QPushButton *ab = msg.addButton(tr("&Add"), QMessageBox::AcceptRole);
+      msg.setDefaultButton(rb);
+      msg.setEscapeButton(ab);
+      msg.setIcon(QMessageBox::Question);
+      msg.setText(tr("%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.\n"
+        " Do you want to replace it or to add it in the next free slot ?")
+          .arg(lSubcategory->_subcategoryName)
+          .arg(buffstr.setNum(lSubcategory->_lbank+1)));
+      msg.setWindowTitle(tr("Replace or add"));
+      msg.exec();
+
+      if(msg.clickedButton() == rb)
+      {
+        delete(cat->_category->findSubcategory(lSubcategory->_lbank));
+        lSubcategory->linkCategory(cat->_category);
+      }
+      else
+      {
+        int fflb=cat->_category->firstFreeLBank();
+        if(fflb==-1)
+          QMessageBox::warning(this, tr("Download error"), tr("There is no more free subcategory slot."));
+        else
+          lSubcategory->_lbank=fflb;
+        lSubcategory->linkCategory(cat->_category);
+      }
 	  }
 	  else lSubcategory->linkCategory(cat->_category);
 	  //display subcategory
@@ -2288,13 +2300,12 @@ void DeicsOnzeGui::deletePresetDialog() {
   QTreePreset* pre = (QTreePreset*) presetListView->currentItem();
   if(pre) {
     if(pre->isSelected()) {
-      if(!QMessageBox::question(
+      if(QMessageBox::question(
 				this,
 				tr("Delete preset"),
-				tr("Do you really want to delete %1 ?")
-				.arg(pre->_preset->name.c_str()),
-				tr("&Yes"), tr("&No"),
-				QString(), 0, 1 )) {
+				tr("Do you really want to delete %1 ?").arg(pre->_preset->name),
+				QMessageBox::Yes | QMessageBox::No,
+				QMessageBox::Yes) == QMessageBox::Yes) {
 	for(int c = 0; c < NBRCHANNELS; c++)
 	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
 	delete(pre->_preset);
@@ -2357,26 +2368,33 @@ void DeicsOnzeGui::loadPresetDialog() {
 	  Preset* lPreset = new Preset();
 	  lPreset->readPreset(node.firstChild());
 	  if(!sub->_subcategory->isFreeProg(lPreset->prog)) {
-	    if(!QMessageBox::question(
-				      this,
-				      tr("Replace or add"),
-				      tr("%1 is supposed to be affected to the prog number %2, but there is already one on this slot.\n Do you want to replace it or to add it in the next free slot ?")
-				      .arg((lPreset->name).c_str())
-				      .arg(buffstr.setNum(lPreset->prog+1)),
-				      tr("&Replace"), tr("&Add"),
-				      QString(), 0, 1 )) {
-	      delete(sub->_subcategory->findPreset(lPreset->prog));
-	      lPreset->linkSubcategory(sub->_subcategory);
-	    }
-	    else {
-	      int ffp=sub->_subcategory->firstFreeProg();
-	      if(ffp==-1)
-		QMessageBox::warning
-		  (this, tr("Download error"),
-		   tr("There is no more free preset slot."));
-	      else lPreset->prog=ffp;
-	      lPreset->linkSubcategory(sub->_subcategory);
-	    }
+      QMessageBox msg(this);
+      QPushButton *rb = msg.addButton(tr("&Replace"), QMessageBox::AcceptRole);
+      QPushButton *ab = msg.addButton(tr("&Add"), QMessageBox::AcceptRole);
+      msg.setDefaultButton(rb);
+      msg.setEscapeButton(ab);
+      msg.setIcon(QMessageBox::Question);
+      msg.setText(tr("%1 is supposed to be affected to the prog number %2, but there is already one on this slot.\n"
+        "Do you want to replace it or to add it in the next free slot ?")
+          .arg(lPreset->name)
+          .arg(buffstr.setNum(lPreset->prog+1)));
+      msg.setWindowTitle(tr("Replace or add"));
+      msg.exec();
+
+      if(msg.clickedButton() == rb)
+      {
+        delete(sub->_subcategory->findPreset(lPreset->prog));
+        lPreset->linkSubcategory(sub->_subcategory);
+      }
+      else
+      {
+        int ffp=sub->_subcategory->firstFreeProg();
+        if(ffp==-1)
+          QMessageBox::warning(this, tr("Download error"), tr("There is no more free preset slot."));
+        else
+          lPreset->prog=ffp;
+        lPreset->linkSubcategory(sub->_subcategory);
+      }
 	  }
 	  else lPreset->linkSubcategory(sub->_subcategory);
 	  //display preset

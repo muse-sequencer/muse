@@ -1845,12 +1845,7 @@ void Meter::adjustScale()
   const QFontMetrics fm = fontMetrics();
   if(_orient == Qt::Horizontal)
   {
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
     int unit_w = fm.horizontalAdvance("888.8888");
-#else
-    int unit_w = fm.width("888.8888");
-#endif
     if(unit_w == 0)
       unit_w = 20;
 

@@ -39,6 +39,7 @@
 #include <QMessageBox>
 #include <QDirIterator>
 #include <QInputDialog>
+#include <QMetaType>
 
 #include <QDir>
 #include <QFileInfo>
@@ -2353,7 +2354,7 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
     it = state->iStateValues.find(strKey);
     if(it != state->iStateValues.end())
     {
-        if(it.value().second.type() == QVariant::ByteArray)
+        if(it.value().second.typeId() == QMetaType::QByteArray)
         {
             // fprintf(stderr, "lv2state_stateRetreive: Is QVariant::ByteArray\n");
 
@@ -2606,7 +2607,7 @@ bool LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
         QVariant qVal = it.value().second;
         if(!name.isEmpty() && qVal.isValid())
         {
-            if(qVal.type() == QVariant::String) // plugin ui uri
+            if(qVal.typeId() == QMetaType::QString) // plugin ui uri
             {
                 QString sUiUri = qVal.toString();
                 for(const auto &iter : state->synth->_pluginUiTypes)

@@ -111,14 +111,22 @@ Q_OBJECT
     static QAction* contextMenuFocusAction();
 
     // Need to catch these to auto-breakup a too-big menu.
-    QAction* addAction(const QString& text);
-    QAction* addAction(const QIcon& icon, const QString& text);
-    QAction* addAction(const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut = 0);
-    QAction* addAction(const QIcon& icon, const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut = 0);
+    QAction *addAction(const QString& text);
+    QAction *addAction(const QIcon& icon, const QString& text);
+    QAction *addAction(const QString &text, const QKeySequence &shortcut);
+    QAction *addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut);
+    QAction *addAction(const QString &text, const QObject *receiver,
+                      const char *member, Qt::ConnectionType type = Qt::AutoConnection);
+    QAction *addAction(const QIcon &icon, const QString &text, const QObject *receiver,
+                      const char *member, Qt::ConnectionType type = Qt::AutoConnection);
+    QAction *addAction(const QString &text, const QKeySequence &shortcut, const QObject *receiver,
+                      const char *member, Qt::ConnectionType type = Qt::AutoConnection);
+    QAction *addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut, const QObject *receiver,
+                      const char *member, Qt::ConnectionType type = Qt::AutoConnection);
     void     addAction(QAction* action);
-    QAction* addMenu(QMenu* menu);
-    QMenu*   addMenu(const QString &title);
-    QMenu*   addMenu(const QIcon &icon, const QString &title);
+    QAction *addMenu(QMenu* menu);
+    QMenu   *addMenu(const QString &title);
+    QMenu   *addMenu(const QIcon &icon, const QString &title);
 };
 
 // A handy structure for use with PopupMenu context menu action data.

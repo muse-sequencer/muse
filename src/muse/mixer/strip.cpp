@@ -56,7 +56,10 @@
 #include "shortcuts.h"
 
 // Forwards from header:
+#include <QEvent>
+#include <QEnterEvent>
 #include <QMouseEvent>
+#include <QPaintEvent>
 #include <QResizeEvent>
 #include <QGridLayout>
 #include <QLayout>
@@ -942,7 +945,7 @@ void TrackNameLabel::leaveEvent(QEvent *e)
     QLabel::leaveEvent(e);
 }
 
-void TrackNameLabel::enterEvent(QEvent *e)
+void TrackNameLabel::enterEvent(QEnterEvent *e)
 {
     if (!_hovered) {
         _hovered = true;
@@ -1836,7 +1839,7 @@ void ExpanderHandle::mousePressEvent(QMouseEvent* e)
   {
     case ResizeModeNone:
     case ResizeModeHovering:
-      _dragLastGlobPos = e->globalPos();
+      _dragLastGlobPos = e->globalPosition().toPoint();
       _resizeMode = ResizeModeDragging;
       e->accept();
       return;
@@ -1883,7 +1886,7 @@ void ExpanderHandle::mouseMoveEvent(QMouseEvent* e)
     
     case ResizeModeDragging:
     {
-      const QPoint gp = e->globalPos();
+      const QPoint gp = e->globalPosition().toPoint();
       const QPoint delta = gp -_dragLastGlobPos;
       _dragLastGlobPos = gp;
       emit moved(delta.x());
@@ -2116,7 +2119,7 @@ struct MidiIncListStruct
   int _port;
   int _chan;
   MidiIncListStruct(int port, int chan) : _port(port), _chan(chan) { }
-  bool operator==(const MidiIncListStruct& other) { return other._port == _port && other._chan == _chan; }
+  bool operator==(const MidiIncListStruct& other) const { return other._port == _port && other._chan == _chan; }
 };
 
 void Strip::componentChanged(int type, double val, bool off, int id, int scrollMode)

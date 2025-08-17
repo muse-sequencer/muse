@@ -56,6 +56,10 @@
 #endif
 
 #ifdef DSSI_SUPPORT
+// Recent ALSA changes cause error inside dssi.h
+// #warning "use #include <alsa/asoundlib.h>, <alsa/seq_event.h> should not be used directly"
+// Include the asoundlib.h before dssi.h
+#include <alsa/asoundlib.h>
 #include <dssi.h>
 #endif
 

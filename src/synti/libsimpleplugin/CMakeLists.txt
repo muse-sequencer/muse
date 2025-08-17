@@ -21,7 +21,7 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-QT5_WRAP_CPP ( simpler_plugingui_mocs
+QT6_WRAP_CPP ( simpler_plugingui_mocs
       simpler_plugingui.h
       )
 
@@ -31,7 +31,7 @@ QT5_WRAP_CPP ( simpler_plugingui_mocs
 file (GLOB simpler_plugingui_ui_files
       simplepluginchooserbase.ui
       )
-QT5_WRAP_UI ( simpler_plugingui_uis ${simpler_plugingui_ui_files} )
+QT6_WRAP_UI ( simpler_plugingui_uis ${simpler_plugingui_ui_files} )
 
 ##
 ## List of source files to compile

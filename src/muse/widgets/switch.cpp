@@ -99,7 +99,7 @@ SelectionControl::~SelectionControl() {
 
 }
 
-void SelectionControl::enterEvent(QEvent* e) {
+void SelectionControl::enterEvent(QEnterEvent* e) {
     setCursor(Qt::PointingHandCursor);
     QAbstractButton::enterEvent(e);
 }
@@ -191,12 +191,7 @@ Switch::~Switch() {
 
 // QSize Switch::sizeHint() const {
 //     auto h = style.height;
-// // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-// #if QT_VERSION >= 0x050b00
-//       auto w = style.indicatorMargin.left() + style.height + style.indicatorMargin.right() + fontMetrics().horizontalAdvance(text());
-// #else
-//       auto w = style.indicatorMargin.left() + style.height + style.indicatorMargin.right() + fontMetrics().width(text());
-// #endif
+//     auto w = style.indicatorMargin.left() + style.height + style.indicatorMargin.right() + fontMetrics().horizontalAdvance(text());
 //
 //     return QSize(w, h);
 // }
@@ -205,13 +200,7 @@ QSize Switch::sizeHint() const {
     const double th = fontMetrics().height() + /*style.indicatorMargin.top() + style.indicatorMargin.bottom()*/
       style.textMargin.top() + style.textMargin.bottom();
     auto h = qMax(th, THUMB_RADIUS * 2) + contentsMargins().top() + contentsMargins().bottom();
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
       auto w = style.indicatorMargin.left() + h + style.indicatorMargin.right() + fontMetrics().horizontalAdvance(text());
-#else
-      auto w = style.indicatorMargin.left() + h + style.indicatorMargin.right() + fontMetrics().width(text());
-#endif
-
     return QSize(w, h);
 }
 
@@ -341,7 +330,7 @@ void Switch::toggle(Qt::CheckState state) {
 void Switch::mousePressEvent(QMouseEvent *e)
 {
   if(e->button() == Qt::RightButton)
-    emit switchRightClicked(e->globalPos(), _id);
+    emit switchRightClicked(e->globalPosition().toPoint(), _id);
   else
   {
     const QRect r = indicatorRect();

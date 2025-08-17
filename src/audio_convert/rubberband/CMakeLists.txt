@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP ( rubberband_converter_mocs
+QT6_WRAP_CPP ( rubberband_converter_mocs
       rubberband_converter.h
       )
 
@@ -34,7 +34,7 @@ QT5_WRAP_CPP ( rubberband_converter_mocs
 file (GLOB rubberband_converter_ui_files
       rubberband_settings_base.ui
       ) 
-QT5_WRAP_UI ( rubberband_converter_uis ${rubberband_converter_ui_files} )
+QT6_WRAP_UI ( rubberband_converter_uis ${rubberband_converter_ui_files} )
 
 ##
 ## List of source files to compile

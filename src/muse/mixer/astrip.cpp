@@ -1654,7 +1654,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 //       slider->setValue(track_vol);
 
       _meterLayout = new MeterLayout();
-      _meterLayout->setMargin(0);
+      //_meterLayout->setMargin(0);
+      _meterLayout->setContentsMargins(0, 0, 0, 0);
       _meterLayout->setSpacing(props.meterSpacing());
 
       for (int i = 0; i < channel; ++i) {

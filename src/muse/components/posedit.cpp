@@ -70,22 +70,12 @@ QSize PosEdit::sizeHint() const
       int h  = fm.height() + fw * 2;
       int w = fw * 2 + b_rect.width() + 2; // adding 2 pixels so the string is not cut off
       if (_smpte)
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
             w  += fm.horizontalAdvance(QString("000:00:00:00"));
-#else
-            w  += fm.width(QString("000:00:00:00"));
-#endif
       else
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
             w  += fm.horizontalAdvance(QString("0000.00.000"));
-#else
-            w  += fm.width(QString("0000.00.000"));
-#endif
-      return QSize(w, h).expandedTo(QApplication::globalStrut());
+      return QSize(w, h)/*.expandedTo(QApplication::globalStrut())*/;
     }
-    return QSize(20, 20).expandedTo(QApplication::globalStrut());      
+    return QSize(20, 20)/*.expandedTo(QApplication::globalStrut())*/;
 	}
 
 //---------------------------------------------------------
@@ -405,7 +395,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
       {
         if(sl.size() != 4)
         {
-          printf("validate smpte string:%s sections:%d != 4\n", s.toLocal8Bit().data(), sl.size());
+          printf("validate smpte string:%s sections:%" PRIiQSIZETYPE " != 4\n", s.toLocal8Bit().data(), sl.size());
           return QValidator::Invalid;
         }  
         
@@ -456,7 +446,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
       {
         if(sl.size() != 3)
         {
-          printf("validate bbt string:%s sections:%d != 3\n", s.toLocal8Bit().data(), sl.size());
+          printf("validate bbt string:%s sections:%" PRIiQSIZETYPE " != 3\n", s.toLocal8Bit().data(), sl.size());
           return QValidator::Invalid;
         }
           
@@ -689,7 +679,7 @@ bool PosEdit::finishEdit()
       {
         if(sl.size() != 4)
         {
-          printf("finishEdit smpte string:%s sections:%d != 4\n", text().toLocal8Bit().data(), sl.size());
+          printf("finishEdit smpte string:%s sections:%" PRIiQSIZETYPE " != 4\n", text().toLocal8Bit().data(), sl.size());
           return false;
         }  
         
@@ -704,7 +694,7 @@ bool PosEdit::finishEdit()
       {
         if(sl.size() != 3)
         {
-          printf("finishEdit bbt string:%s sections:%d != 3\n", text().toLocal8Bit().data(), sl.size());
+          printf("finishEdit bbt string:%s sections:%" PRIiQSIZETYPE " != 3\n", text().toLocal8Bit().data(), sl.size());
           return false;
         }
           

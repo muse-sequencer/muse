@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP ( fluidsynth_mocs
+QT6_WRAP_CPP ( fluidsynth_mocs
       fluidsynthgui.h
       fluidsynti.h
       )
@@ -35,12 +35,12 @@ QT5_WRAP_CPP ( fluidsynth_mocs
 file (GLOB fluidsynth_ui_files
       fluidsynthguibase.ui
       )
-QT5_WRAP_UI ( fluidsynth_uis ${fluidsynth_ui_files} )
+QT6_WRAP_UI ( fluidsynth_uis ${fluidsynth_ui_files} )
 
 ##
 ## Resource files
 ##
-QT5_ADD_RESOURCES (fluidsynth_qrc_files
+QT6_ADD_RESOURCES (fluidsynth_qrc_files
       fluidsynth.qrc
       )
 

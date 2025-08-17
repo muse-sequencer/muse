@@ -286,12 +286,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       setHeaderWhatsThis();
 
       QFontMetrics fm(initEventList->font());
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
       int n = fm.horizontalAdvance('9');
-#else
-      int n = fm.width('9');
-#endif
       int b = 24;
       initEventList->setAllColumnsShowFocus(true);
       initEventList->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -391,6 +386,13 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
          SLOT(sysexChanged(QListWidgetItem*, QListWidgetItem*)));
       connect(deleteSysex, SIGNAL(clicked()), SLOT(deleteSysexClicked()));
       connect(newSysex, SIGNAL(clicked()), SLOT(newSysexClicked()));
+
+      connect(fileNewAction, &QAction::triggered, [this]() {EditInstrument::fileNew();});
+      connect(fileOpenAction, &QAction::triggered, [this]() {EditInstrument::fileOpen();});
+      connect(fileSaveAction, &QAction::triggered, [this]() {EditInstrument::fileSave();});
+      connect(fileSaveAsAction, &QAction::triggered, [this]() {EditInstrument::fileSaveAs();});
+      connect(fileCloseAction, &QAction::triggered, [this]() {EditInstrument::fileClose();});
+      connect(whatsThisAction, &QAction::triggered, [this]() {EditInstrument::helpWhatsThis();});
       }
 
 EditInstrument::~EditInstrument()
@@ -1130,9 +1132,7 @@ void EditInstrument::fileSaveAs()
                 if(QMessageBox::question(this,
                     tr("MusE: Save instrument as"),
                     tr("The user instrument '%1' already exists. This will overwrite its .idf instrument file.\nAre you sure?").arg(s),
-                    QMessageBox::Ok | QMessageBox::Default,
-                    QMessageBox::Cancel | QMessageBox::Escape,
-                    Qt::NoButton) == QMessageBox::Ok)
+                    QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
                 {
                   // Set the working instrument's file path to the found instrument's path.
                   workingInstrument->setFilePath((*imi)->filePath());
@@ -1505,10 +1505,7 @@ void EditInstrument::instrumentNameReturn()
 
       QMessageBox::critical(this,
           tr("MusE: Bad instrument name"),
-          tr("Please choose a unique instrument name.\n(The name might be used by a hidden instrument.)"),
-          QMessageBox::Ok,
-          Qt::NoButton,
-          Qt::NoButton);
+          tr("Please choose a unique instrument name.\n(The name might be used by a hidden instrument.)"));
 
       return;
     }
@@ -1649,10 +1646,7 @@ void EditInstrument::patchNameReturn()
 
           QMessageBox::critical(this,
               tr("MusE: Bad patch name"),
-              tr("Please choose a unique patch name"),
-              QMessageBox::Ok,
-              Qt::NoButton,
-              Qt::NoButton);
+              tr("Please choose a unique patch name"));
 
           return;
         }
@@ -1671,10 +1665,7 @@ void EditInstrument::patchNameReturn()
 
         QMessageBox::critical(this,
             tr("MusE: Bad patchgroup name"),
-            tr("Please choose a unique patchgroup name"),
-            QMessageBox::Ok,
-            Qt::NoButton,
-            Qt::NoButton);
+            tr("Please choose a unique patchgroup name"));
 
         return;
       }
@@ -2132,10 +2123,7 @@ void EditInstrument::ctrlNameReturn()
 
           QMessageBox::critical(this,
               tr("MusE: Bad controller name"),
-              tr("Please choose a unique controller name"),
-              QMessageBox::Ok,
-              Qt::NoButton,
-              Qt::NoButton);
+              tr("Please choose a unique controller name"));
 
           return;
         }
@@ -3498,16 +3486,24 @@ int EditInstrument::checkDirty(MusECore::MidiInstrument* i, bool isClose)
             return 0;
 
       int n;
+      QMessageBox mb(this);
+      QPushButton *sb = mb.addButton(tr("&Save"), QMessageBox::AcceptRole);
+      QPushButton *dsb = mb.addButton(tr("&Don't save"), QMessageBox::ActionRole);
+      mb.setIcon(QMessageBox::Warning);
+      mb.setWindowTitle(tr("MusE"));
+      mb.setText(tr("The current Instrument contains unsaved data\n"
+       "Save Current Instrument?"));
       if(isClose)
-        n = QMessageBox::warning(this, tr("MusE"),
-         tr("The current Instrument contains unsaved data\n"
-         "Save Current Instrument?"),
-         tr("&Save"), tr("&Don't save"), tr("&Abort"), 0, 2);
+        mb.addButton(QMessageBox::Abort);
+
+      mb.exec();
+      if(mb.clickedButton() == sb)
+        n = 0;
+      else if(mb.clickedButton() == dsb)
+        n = 1;
       else
-        n = QMessageBox::warning(this, tr("MusE"),
-         tr("The current Instrument contains unsaved data\n"
-         "Save Current Instrument?"),
-         tr("&Save"), tr("&Don't save"), 0, 1);
+        n = 2;
+
       if (n == 0) {
             if (i->filePath().isEmpty())
             {

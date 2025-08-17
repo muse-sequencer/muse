@@ -368,7 +368,7 @@ void WaveView::setPos(int idx, unsigned val, bool adjustScrollbar)
 void WaveView::viewMousePressEvent(QMouseEvent* event)
       {
       button = event->button();
-      unsigned x = event->x();
+      unsigned x = event->position().toPoint().x();
 
       switch (button) {
             case Qt::LeftButton:
@@ -457,7 +457,7 @@ void WaveView::viewMouseReleaseEvent(QMouseEvent* /*event*/)
 
 void WaveView::viewMouseMoveEvent(QMouseEvent* event)
       {
-      unsigned x = event->x();
+      unsigned x = event->position().toPoint().x();
       emit timeChanged(x);
 
       int i;

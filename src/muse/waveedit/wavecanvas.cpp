@@ -784,11 +784,7 @@ void WaveCanvas::wheelEvent(QWheelEvent* ev)
             newXpos = 0;
       emit horizontalScroll((unsigned)newXpos);
   } else if (ctrl) {  // zoom horizontally
-#if QT_VERSION >= 0x050e00
       emit horizontalZoom(delta>0, ev->globalPosition().toPoint());
-#else
-      emit horizontalZoom(delta>0, ev->globalPos());
-#endif
   } else { // scroll horizontally
       emit mouseWheelMoved(delta / 10);
   }
@@ -806,7 +802,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
       const bool ctl = event->modifiers() & Qt::ControlModifier;
       button = event->button();
       QPoint pt = event->pos();
-      unsigned x = event->x();
+      unsigned x = event->position().toPoint().x();
 
       switch (_tool)
       {

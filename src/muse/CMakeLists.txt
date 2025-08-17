@@ -58,7 +58,7 @@ endif (PYTHON_SUPPORT)
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP ( muse_moc_headers
+QT6_WRAP_CPP ( muse_moc_headers
       app.h
       cobject.h
       conf.h
@@ -74,14 +74,14 @@ QT5_WRAP_CPP ( muse_moc_headers
       vst_native.h
       )
 
-QT5_WRAP_CPP ( wavepreview_moc_headers
+QT6_WRAP_CPP ( wavepreview_moc_headers
       wavepreview.h
       )
 
 ##
 ## Resource files
 ##
-QT5_ADD_RESOURCES (muse_qrc_files
+QT6_ADD_RESOURCES (muse_qrc_files
 #		  muse.qrc
 		  ../resources.qrc
 		  )
@@ -353,7 +353,7 @@ if(LV2_SUPPORT)
       ##
       ## Expand Qt macros in source files
       ##
-      QT5_WRAP_CPP ( lv2host_moc_headers
+      QT6_WRAP_CPP ( lv2host_moc_headers
             lv2host.h
             )
       file (GLOB lv2host_source_files

@@ -192,15 +192,8 @@ class MuseApplication : public QApplication {
 
             bool accepted = ke->isAccepted();
               if (!accepted) {
-               int key = ke->key();
-               if (((QInputEvent*)ke)->modifiers() & Qt::ShiftModifier)
-                  key += Qt::SHIFT;
-               if (((QInputEvent*)ke)->modifiers() & Qt::AltModifier)
-                  key += Qt::ALT;
-               if (((QInputEvent*)ke)->modifiers() & Qt::ControlModifier)
-                  key+= Qt::CTRL;
                if(muse)
-                 muse->kbAccel(key);
+                 muse->kbAccel(ke->keyCombination().toCombined());
                return true;
             }
          }
@@ -214,7 +207,7 @@ class MuseApplication : public QApplication {
       }
 
 #ifdef HAVE_LASH
-     virtual void timerEvent (QTimerEvent*) {
+     virtual void timerEvent (QTimerEvent*) override {
             if(muse && MusEGlobal::useLASH)
               muse->lash_idle_cb ();
             }
@@ -578,22 +571,12 @@ int main(int argc, char* argv[])
       // "Note: on desktop Windows, qgetenv() may produce data loss if the original string
       //   contains Unicode characters not representable in the ANSI encoding.
       //  Use qEnvironmentVariable() instead. On Unix systems, this function is lossless."
-      #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
-        const QString ladspa_path = qEnvironmentVariable("LADSPA_PATH");
-        const QString dssi_path = qEnvironmentVariable("DSSI_PATH");
-        const QString vst_path = qEnvironmentVariable("VST_PATH");
-        // This Linux VST path is known to be used by Ardour.
-        const QString lxvst_path = qEnvironmentVariable("LXVST_PATH");
-        const QString lv2_path = qEnvironmentVariable("LV2_PATH");
-      #else
-        // "To convert the data to a QString use QString::fromLocal8Bit()."
-        const QString ladspa_path = QString::fromLocal8Bit(qgetenv("LADSPA_PATH"));
-        const QString dssi_path = QString::fromLocal8Bit(qgetenv("DSSI_PATH"));
-        const QString vst_path = QString::fromLocal8Bit(qgetenv("VST_PATH"));
-        const QString lxvst_path = QString::fromLocal8Bit(qgetenv("LXVST_PATH"));
-        const QString lv2_path = QString::fromLocal8Bit(qgetenv("LV2_PATH"));
-      #endif
-
+      const QString ladspa_path = qEnvironmentVariable("LADSPA_PATH");
+      const QString dssi_path = qEnvironmentVariable("DSSI_PATH");
+      const QString vst_path = qEnvironmentVariable("VST_PATH");
+      // This Linux VST path is known to be used by Ardour.
+      const QString lxvst_path = qEnvironmentVariable("LXVST_PATH");
+      const QString lv2_path = qEnvironmentVariable("LV2_PATH");
 
 #ifdef HAVE_INSTPATCH
       // See https://github.com/brummer10/Fluida.lv2/issues/18
@@ -652,8 +635,9 @@ int main(int argc, char* argv[])
   #endif
 
         // Now create the application, and let Qt remove recognized arguments.
-        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+        // Qt6: High-DPI scaling and high-DPI pixmaps are always on now and these attributes have no effect.
+        //QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        //QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
         // Qt style must be set before app object is created (->Qt docu)
         // Should the standard Qt style (Fusion) get removed in future,
@@ -836,13 +820,10 @@ int main(int argc, char* argv[])
           MusEGlobal::config.startSong = "";
         }
 
-	app.instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, true);
+        app.instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, true);
         app.instance()->setAttribute(Qt::AA_DontShowIconsInMenus, !MusEGlobal::config.showIconsInMenus);
         app.instance()->setAttribute(Qt::AA_DontUseNativeDialogs, !MusEGlobal::config.useNativeStandardDialogs);
-
-#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
         app.styleHints()->setShowShortcutsInContextMenus(true);
-#endif
 
         //=================
         //  LADSPA paths:
@@ -862,12 +843,7 @@ int main(int argc, char* argv[])
           }
           else
           {
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
             MusEGlobal::config.pluginLadspaPathList = ladspa_path.split(list_separator, Qt::SkipEmptyParts);
-#else
-            MusEGlobal::config.pluginLadspaPathList = ladspa_path.split(list_separator, QString::SkipEmptyParts);
-#endif
             found = true;
           }
         }
@@ -892,12 +868,7 @@ int main(int argc, char* argv[])
           }
           else
           {
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
             MusEGlobal::config.pluginDssiPathList = dssi_path.split(list_separator, Qt::SkipEmptyParts);
-#else
-            MusEGlobal::config.pluginDssiPathList = dssi_path.split(list_separator, QString::SkipEmptyParts);
-#endif
             found = true;
           }
         }
@@ -926,12 +897,7 @@ int main(int argc, char* argv[])
           }
           else
           {
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
             MusEGlobal::config.pluginVstPathList = vst_path.split(list_separator, Qt::SkipEmptyParts);
-#else
-            MusEGlobal::config.pluginVstPathList = vst_path.split(list_separator, QString::SkipEmptyParts);
-#endif
             found = true;
           }
         }
@@ -986,23 +952,13 @@ int main(int argc, char* argv[])
             }
             else
             {
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
               MusEGlobal::config.pluginLinuxVstPathList = vst_path.split(list_separator, Qt::SkipEmptyParts);
-#else
-              MusEGlobal::config.pluginLinuxVstPathList = vst_path.split(list_separator, QString::SkipEmptyParts);
-#endif
               found = true;
             }
           }
           else
           {
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
             MusEGlobal::config.pluginLinuxVstPathList = lxvst_path.split(list_separator, Qt::SkipEmptyParts);
-#else
-            MusEGlobal::config.pluginLinuxVstPathList = lxvst_path.split(list_separator, QString::SkipEmptyParts);
-#endif
             found = true;
           }
         }
@@ -1029,12 +985,7 @@ int main(int argc, char* argv[])
           }
           else
           {
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
             MusEGlobal::config.pluginLv2PathList = lv2_path.split(list_separator, Qt::SkipEmptyParts);
-#else
-            MusEGlobal::config.pluginLv2PathList = lv2_path.split(list_separator, QString::SkipEmptyParts);
-#endif
             found = true;
           }
         }

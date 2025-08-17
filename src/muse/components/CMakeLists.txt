@@ -45,7 +45,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP (components_mocs
+QT6_WRAP_CPP (components_mocs
       aboutbox_impl.h 
       appearance.h
       arrangercolumns.h 
@@ -208,7 +208,7 @@ file (GLOB components_ui_files
       warn_bad_timing.ui
       #zita_resampler_settings_base.ui
       )
-QT5_WRAP_UI (components_ui_headers ${components_ui_files})
+QT6_WRAP_UI (components_ui_headers ${components_ui_files})
 
 ##
 ## List of source files to compile

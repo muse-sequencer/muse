@@ -181,7 +181,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
       else
             setCursor(QCursor(Qt::ArrowCursor));
       
-      int x = event->x();
+      int x = event->position().toPoint().x();
       if (x < 0)
             x = 0;
       if (waveMode)

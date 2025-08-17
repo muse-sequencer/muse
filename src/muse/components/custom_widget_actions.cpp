@@ -744,15 +744,15 @@ void RoutingMatrixWidgetAction::sendActionChanged()
   // Now update the associated widgets and graphics widgets (popup menus, widgets etc. containing this action)...
   
 #ifndef QT_NO_GRAPHICSVIEW
-  for (int i = 0; i < associatedGraphicsWidgets().size(); ++i) {
+  for (int i = 0; i < associatedObjects().size(); ++i) {
       //DEBUG_PRST_ROUTES(stderr, "RoutingMatrixWidgetAction::sendActionChanged associated graphics widget\n");
-      QGraphicsWidget *w = associatedGraphicsWidgets().at(i);
+      QGraphicsWidget *w = qobject_cast<QGraphicsWidget*>(associatedObjects().at(i));
       qApp->sendEvent(w, &e);
   }
 #endif
 
-  for (int i = 0; i < associatedWidgets().size(); ++i) {
-      QWidget *w = associatedWidgets().at(i);
+  for (int i = 0; i < associatedObjects().size(); ++i) {
+      QWidget *w = qobject_cast<QWidget*>(associatedObjects().at(i));
       //DEBUG_PRST_ROUTES(stderr, "RoutingMatrixWidgetAction::sendActionChanged associated widget:%s \n", w->metaObject()->className());
       qApp->sendEvent(w, &e);
   }

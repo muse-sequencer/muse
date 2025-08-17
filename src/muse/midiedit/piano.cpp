@@ -487,12 +487,12 @@ void Piano::setPitch(int pitch)
 
 void Piano::viewMouseMoveEvent(QMouseEvent* event)
 {
-    int pitch = y2pitch(event->y());
+    int pitch = y2pitch(event->position().toPoint().y());
     emit pitchChanged(pitch);
     setPitch(pitch);
 
     if (button == Qt::LeftButton) {
-        int nk = y2pitch(event->y());
+        int nk = y2pitch(event->position().toPoint().y());
         if (nk < 0 || nk > 127)
             nk = -1;
         if (nk != keyDown) {
@@ -501,7 +501,7 @@ void Piano::viewMouseMoveEvent(QMouseEvent* event)
             }
             keyDown = nk;
             if (keyDown != -1) {
-                int velocity = (event->x() + 1) * 127 / pianoWidth;
+                int velocity = (event->position().toPoint().x() + 1) * 127 / pianoWidth;
                 if(velocity > 127)
                     velocity = 127;
                 else if(velocity <= 0)
@@ -515,9 +515,9 @@ void Piano::viewMouseMoveEvent(QMouseEvent* event)
     if (!MusEGlobal::config.showNoteTooltips)
         return;
 
-    int v = qMax(1, qMin(127, (event->x() + 1) * 127 / pianoWidth));
+    int v = qMax(1, qMin(127, (event->position().toPoint().x() + 1) * 127 / pianoWidth));
     QString str = tr("Velocity: ") + QString::number(v);
-    QToolTip::showText(event->globalPos(), str);
+    QToolTip::showText(event->globalPosition().toPoint(), str);
 }
 
 //---------------------------------------------------------
@@ -534,12 +534,12 @@ void Piano::viewMousePressEvent(QMouseEvent* event)
             emit keyReleased(keyDown, shift);
             keyDown = -1;
         }
-        keyDown = y2pitch(event->y());
+        keyDown = y2pitch(event->position().toPoint().y());
         if (keyDown < 0 || keyDown > 127) {
             keyDown = -1;
         }
         else {
-            int velocity = (event->x() + 1) * 127 / pianoWidth;
+            int velocity = (event->position().toPoint().x() + 1) * 127 / pianoWidth;
             if(velocity > 127)
                 velocity = 127;
             else if(velocity <= 0)
@@ -554,7 +554,7 @@ void Piano::viewMousePressEvent(QMouseEvent* event)
             emit keyReleased(keyDown, shift);
             keyDown = -1;
         }
-        selectedPitch = y2pitch(event->y());
+        selectedPitch = y2pitch(event->position().toPoint().y());
         emit curSelectedPitchChanged(selectedPitch);
         redraw();
         MusEGlobal::song->update(SC_DRUMMAP);

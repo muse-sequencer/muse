@@ -90,6 +90,7 @@
 #include <QTimer>
 #include <QWindow>
 #include <QLibrary>
+#include <QVariant>
 
 #include "type_defs.h"
 #include "globaldefs.h"

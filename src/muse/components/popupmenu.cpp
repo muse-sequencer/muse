@@ -27,7 +27,6 @@
 #include <QPoint>
 #include <QList>
 #include <QVariant>
-#include <QDesktopWidget>
 #include <QApplication>
 #include <QStyle>
 #include <QFont>
@@ -35,6 +34,7 @@
 #include "popupmenu.h"
 #include "gconfig.h"
 #include "route.h"
+#include "helper.h"
 
 // Forwards from header:
 #include <QWidget>
@@ -224,8 +224,10 @@ bool PopupMenu::event(QEvent* event)
       if(!MusEGlobal::config.scrollableSubMenus)
       {
         QMouseEvent* e = static_cast<QMouseEvent*>(event);
-        QPoint globPos = e->globalPos();
-        int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
+        QPoint globPos = e->globalPosition().toPoint();
+        // We want the whole thing if multiple monitors.
+        //int dw = QApplication::desktop()->width();
+        int dw = getDesktopGeometry().width();
         if(x() < 0 && globPos.x() <= 0)   // If on the very first pixel (or beyond)
         {
           moveDelta = 32;
@@ -270,11 +272,11 @@ void PopupMenu::closeUp()
   if(act)
   {
     DEBUG_PRST_ROUTES(stderr, "PopupMenu::closeUp() this:%p menuAction:%p\n", this, act);
-    const int sz = act->associatedWidgets().size();
+    const int sz = act->associatedObjects().size();
     for(int i = 0; i < sz; ++i)
     {
       DEBUG_PRST_ROUTES(stderr, "   associated widget#:%d\n", i);
-      if(PopupMenu* pup = qobject_cast<PopupMenu*>(act->associatedWidgets().at(i)))
+      if(PopupMenu* pup = qobject_cast<PopupMenu*>(act->associatedObjects().at(i)))
       {
         DEBUG_PRST_ROUTES(stderr, "   associated popup:%p\n", pup);
         DEBUG_PRST_ROUTES(stderr, "   closing...\n");
@@ -301,7 +303,9 @@ void PopupMenu::timerHandler()
       return;
    }
 
-   int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
+   // We want the whole thing if multiple monitors.
+   //int dw = QApplication::desktop()->width();
+   int dw = getDesktopGeometry().width();
    int nx = x() + moveDelta;
    if(moveDelta < 0 && nx + width() < dw)
    {
@@ -327,7 +331,9 @@ void PopupMenu::popHovered(QAction* action)
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
    if(action && !MusEGlobal::config.scrollableSubMenus)
    {
-      int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
+      // We want the whole thing if multiple monitors.
+      //int dw = QApplication::desktop()->width();
+      int dw = getDesktopGeometry().width();
       QRect r = actionGeometry(action);
       if(x() + r.x() < 0)
          move(-r.x(), y());
@@ -410,7 +416,8 @@ PopupMenu* PopupMenu::getMenu(const QString& parentText)
    
    // We want the whole thing if multiple monitors.
    // Reasonable to assume if X can show this desktop, it can show a menu with the same width?
-   int dh = QApplication::desktop()->height();
+   //int dh = QApplication::desktop()->height();
+   int dh = getDesktopGeometry().height();
    // [danvd] Due to slow actionGeometry method in qt5 QMenu, only limit PopupMenu to 2 columns without width checking...
    // [Tim]  It seems that sizeHint() is only slightly more costly, use it instead.
    //int _act_height = _cur_menu->actionGeometry(_actions [0]).height();
@@ -480,26 +487,6 @@ QAction* PopupMenu::addAction(const QIcon& icon, const QString& text)
    return act;
 }
 
-QAction* PopupMenu::addAction(const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut)
-{
-   if(MusEGlobal::config.scrollableSubMenus)
-   {
-      return QMenu::addAction(text, receiver, member, shortcut);
-   }
-   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(text, receiver, member, shortcut);
-   return act;
-}
-
-QAction* PopupMenu::addAction(const QIcon& icon, const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut)
-{
-   if(MusEGlobal::config.scrollableSubMenus)
-   {
-      return QMenu::addAction(icon, text, receiver, member, shortcut);
-   }
-   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(icon, text, receiver, member, shortcut);
-   return act;
-}
-
 void PopupMenu::addAction(QAction* action)
 {
    if(MusEGlobal::config.scrollableSubMenus)
@@ -508,6 +495,71 @@ void PopupMenu::addAction(QAction* action)
    }
    static_cast<QMenu*>(getMenu(action->text()))->addAction(action);
 }
+
+QAction *PopupMenu::addAction(const QString &text, const QKeySequence &shortcut)
+{
+   if(MusEGlobal::config.scrollableSubMenus)
+   {
+      return QMenu::addAction(text, shortcut);
+   }
+   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(text, shortcut);
+   return act;
+}
+
+QAction *PopupMenu::addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut)
+{
+   if(MusEGlobal::config.scrollableSubMenus)
+   {
+      return QMenu::addAction(icon, text, shortcut);
+   }
+   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(icon, text, shortcut);
+   return act;
+}
+
+QAction *PopupMenu::addAction(const QString &text, const QObject *receiver,
+                  const char *member, Qt::ConnectionType type)
+{
+   if(MusEGlobal::config.scrollableSubMenus)
+   {
+      return QMenu::addAction(text, receiver, member, type);
+   }
+   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(text, receiver, member, type);
+   return act;
+}
+
+QAction *PopupMenu::addAction(const QIcon &icon, const QString &text, const QObject *receiver,
+                  const char *member, Qt::ConnectionType type)
+{
+   if(MusEGlobal::config.scrollableSubMenus)
+   {
+      return QMenu::addAction(icon, text, receiver, member, type);
+   }
+   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(icon, text, receiver, member, type);
+   return act;
+}
+
+QAction *PopupMenu::addAction(const QString &text, const QKeySequence &shortcut, const QObject *receiver,
+                  const char *member, Qt::ConnectionType type)
+{
+   if(MusEGlobal::config.scrollableSubMenus)
+   {
+      return QMenu::addAction(text, shortcut, receiver, member, type);
+   }
+   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(text, shortcut, receiver, member, type);
+   return act;
+}
+
+QAction *PopupMenu::addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut, const QObject *receiver,
+                  const char *member, Qt::ConnectionType type)
+{
+   if(MusEGlobal::config.scrollableSubMenus)
+   {
+      return QMenu::addAction(icon, text, shortcut, receiver, member, type);
+   }
+   QAction* act = static_cast<QMenu*>(getMenu(text))->addAction(icon, text, shortcut, receiver, member, type);
+   return act;
+}
+
 
 QAction* PopupMenu::addMenu(QMenu* menu)
 {

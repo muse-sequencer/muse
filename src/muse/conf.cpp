@@ -738,42 +738,21 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         // ---- Global config stuff begins here ----
 
                         else if (tag == "pluginLadspaPathList")
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
-#if QT_VERSION >= 0x050e00
                               MusEGlobal::config.pluginLadspaPathList = xml.parse1().split(":", Qt::SkipEmptyParts);
-#else
-                              MusEGlobal::config.pluginLadspaPathList = xml.parse1().split(":", QString::SkipEmptyParts);
-#endif
                         else if (tag == "pluginDssiPathList")
-#if QT_VERSION >= 0x050e00
                               MusEGlobal::config.pluginDssiPathList = xml.parse1().split(":", Qt::SkipEmptyParts);
-#else
-                              MusEGlobal::config.pluginDssiPathList = xml.parse1().split(":", QString::SkipEmptyParts);
-#endif
                         // Obsolete. Replaced with one below.
                         else if (tag == "pluginVstPathList")
                               xml.parse1();
                         else if (tag == "pluginVstsPathList")
-#if QT_VERSION >= 0x050e00
                               MusEGlobal::config.pluginVstPathList = xml.parse1().split(":", Qt::SkipEmptyParts);
-#else
-                              MusEGlobal::config.pluginVstPathList = xml.parse1().split(":", QString::SkipEmptyParts);
-#endif
                         // Obsolete. Replaced with one below.
                         else if (tag == "pluginLinuxVstPathList")
                               xml.parse1();
                         else if (tag == "pluginLinuxVstsPathList")
-#if QT_VERSION >= 0x050e00
                               MusEGlobal::config.pluginLinuxVstPathList = xml.parse1().split(":", Qt::SkipEmptyParts);
-#else
-                              MusEGlobal::config.pluginLinuxVstPathList = xml.parse1().split(":", QString::SkipEmptyParts);
-#endif
                         else if (tag == "pluginLv2PathList")
-#if QT_VERSION >= 0x050e00
                               MusEGlobal::config.pluginLv2PathList = xml.parse1().split(":", Qt::SkipEmptyParts);
-#else
-                              MusEGlobal::config.pluginLv2PathList = xml.parse1().split(":", QString::SkipEmptyParts);
-#endif
                         else if (tag == "pluginCacheTriggerRescan")
                               MusEGlobal::config.pluginCacheTriggerRescan = xml.parseInt();
                         
@@ -1147,11 +1126,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "canvasBgPixmap")
                               MusEGlobal::config.canvasBgPixmap = xml.parse1();
                         else if (tag == "canvasCustomBgList")
-#if QT_VERSION >= 0x050e00
                               MusEGlobal::config.canvasCustomBgList = xml.parse1().split(";", Qt::SkipEmptyParts);
-#else
-                              MusEGlobal::config.canvasCustomBgList = xml.parse1().split(";", QString::SkipEmptyParts);
-#endif
                         else if (tag == "bigtimeForegroundcolor")
                               MusEGlobal::config.bigTimeForegroundColor = readColor(xml);
                         else if (tag == "bigtimeBackgroundcolor")
@@ -1943,8 +1918,9 @@ bool MusE::loadConfigurationColors(QWidget* parent)
     return false;
   
   if(QMessageBox::question(parent, QString("MusE"),
-      tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"), tr("&Ok"), tr("&Cancel"),
-      QString(), 0, 1 ) == 1)
+      tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"),
+      QMessageBox::Ok | QMessageBox::Cancel,
+      QMessageBox::Ok) != QMessageBox::Ok)
     return false;
   
   // Read, and return if error.

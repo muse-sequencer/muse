@@ -328,8 +328,8 @@ void KnobWithMeter::drawKnob(QPainter* p, const QRect& r)
 void KnobWithMeter::mousePressEvent(QMouseEvent *e)
 {
 //   if (e->button() == Qt::MiddleButton || e->modifiers() & Qt::ControlModifier) {
-//     int xpos = e->x() - width() /2;
-//     double v = float(e->y()) / height() * 1.2;
+//     int xpos = e->position().toPoint().x() - width() /2;
+//     double v = float(e->position().toPoint().y()) / height() * 1.2;
 // 
 //     double halfRange = (maxValue() - minValue())/2;
 //     double midValue = minValue() + halfRange;

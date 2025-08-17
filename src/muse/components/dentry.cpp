@@ -346,7 +346,7 @@ void Dentry::keyPressEvent(QKeyEvent* e)
 
   // Show a handy tooltip value box.
   //if(d_enableValueToolTips)
-  //  showValueToolTip(e->globalPos());
+  //  showValueToolTip(e->globalPosition().toPoint());
 }
 
 void Dentry::keyReleaseEvent(QKeyEvent* e)

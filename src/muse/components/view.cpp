@@ -481,7 +481,7 @@ void View::viewKeyReleaseEvent(QKeyEvent* event)
 void View::mousePressEvent(QMouseEvent* ev)
       {
       QMouseEvent e(ev->type(), mapDev(ev->pos()),
-         ev->globalPos(), ev->button(), ev->buttons(), ev->modifiers());
+         ev->globalPosition().toPoint(), ev->button(), ev->buttons(), ev->modifiers());
       viewMousePressEvent(&e);
       }
 
@@ -492,7 +492,7 @@ void View::mousePressEvent(QMouseEvent* ev)
 void View::mouseDoubleClickEvent(QMouseEvent* ev)
       {
       QMouseEvent e(ev->type(), mapDev(ev->pos()),
-         ev->globalPos(), ev->button(), ev->buttons(), ev->modifiers());
+         ev->globalPosition().toPoint(), ev->button(), ev->buttons(), ev->modifiers());
       viewMouseDoubleClickEvent(&e);
       }
 
@@ -503,7 +503,7 @@ void View::mouseDoubleClickEvent(QMouseEvent* ev)
 void View::mouseMoveEvent(QMouseEvent* ev)
       {
       QMouseEvent e(ev->type(), mapDev(ev->pos()),
-         ev->globalPos(), ev->button(), ev->buttons(), ev->modifiers());
+         ev->globalPosition().toPoint(), ev->button(), ev->buttons(), ev->modifiers());
       viewMouseMoveEvent(&e);
       }
 
@@ -514,7 +514,7 @@ void View::mouseMoveEvent(QMouseEvent* ev)
 void View::mouseReleaseEvent(QMouseEvent* ev)
       {
       QMouseEvent e(ev->type(), mapDev(ev->pos()),
-         ev->globalPos(), ev->button(), ev->buttons(), ev->modifiers());
+         ev->globalPosition().toPoint(), ev->button(), ev->buttons(), ev->modifiers());
       viewMouseReleaseEvent(&e);
       }
 
@@ -529,7 +529,8 @@ void View::dropEvent(QDropEvent* ev)
       //  as it will be set internally before your widget receives the drop event."     
       // But we need to remap it here...
       //ev->setPoint(mapDev(ev->pos())); 
-      QDropEvent nev(mapDev(ev->pos()), ev->possibleActions(), ev->mimeData(), ev->mouseButtons(), ev->keyboardModifiers(), ev->type());     
+      QDropEvent nev(mapDev(ev->position().toPoint()), ev->possibleActions(), ev->mimeData(),
+                     ev->buttons(), ev->modifiers(), ev->type());
       //viewDropEvent(ev);
       viewDropEvent(&nev);
       }

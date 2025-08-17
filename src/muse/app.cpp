@@ -22,7 +22,6 @@
 //
 //=========================================================
 
-#include <QDesktopWidget>
 #include <QClipboard>
 #include <QMessageBox>
 #include <QShortcut>
@@ -43,6 +42,8 @@
 #include <QStatusBar>
 #if QT_VERSION >= 0x050b00
 #include <QScreen>
+#else
+#include <QDesktopWidget>
 #endif
 
 #include <samplerate.h>
@@ -2768,12 +2769,12 @@ void MusE::closeEvent(QCloseEvent* event)
         qApp->processEvents();
     }
     if (MusEGlobal::song->dirty) {
-        int n = 0;
-        n = QMessageBox::warning(this, appName,
+        QMessageBox::StandardButton n = QMessageBox::warning(this, appName,
                                  tr("The current project contains unsaved data.\n"
                                     "Save current project?"),
-                                 tr("&Save"), tr("&Discard"), tr("&Cancel"), 0, 2);
-        if (n == 0) {
+                                 QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                                 QMessageBox::Save);
+        if (n == QMessageBox::Save) {
             if (!save())      // don't quit if save failed
             {
                 setRestartingApp(false); // Cancel any restart.
@@ -2781,7 +2782,7 @@ void MusE::closeEvent(QCloseEvent* event)
                 return;
             }
         }
-        else if (n == 2)
+        else if (n == QMessageBox::Cancel)
         {
             setRestartingApp(false); // Cancel any restart.
             event->ignore();
@@ -4530,19 +4531,19 @@ bool MusE::clearSong(bool clear_all)
 //       return false;
 
     if (MusEGlobal::song->dirty) {
-        int n = 0;
-        n = QMessageBox::warning(this, appName,
+        QMessageBox::StandardButton n = QMessageBox::warning(this, appName,
                                  tr("The current project contains unsaved data.\n"
                                     "Save current project before continuing?"),
-                                 tr("&Save"), tr("&Discard"), tr("&Cancel"), 0, 2);
+                                 QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                                 QMessageBox::Save);
         switch (n) {
-        case 0:
+        case QMessageBox::Save:
             if (!save())      // abort if save failed
                 return false;
             break;
-        case 1:
+        case QMessageBox::Discard:
             break;
-        case 2:
+        case QMessageBox::Cancel:
             return false;
         default:
             fprintf(stderr, "InternalError: gibt %d\n", n);
@@ -5685,6 +5686,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
    int samples = f->samples();
    if (MusEGlobal::sampleRate != f->samplerate()) {
       QMessageBox mbox(this);
+      mbox.setIcon(QMessageBox::Question);
       mbox.setWindowTitle(tr("Import Wavefile"));
       mbox.setText(tr("This wave file has a samplerate of %1 Hz,\n"
                       " as opposed to current setting %2 Hz.\n"
@@ -5695,7 +5697,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 
       QPushButton* converter_button = mbox.addButton(tr("Use live converter"), QMessageBox::YesRole);
       QPushButton* resample_button = mbox.addButton(tr("Resample now"), QMessageBox::NoRole);
-      mbox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+      mbox.addButton(QMessageBox::Cancel);
       mbox.setDefaultButton(converter_button);
 
       mbox.exec();

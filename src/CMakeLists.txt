@@ -21,7 +21,15 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-project(muse)
+# REMOVE Tim. qt6. Added. Moved from below as warned by cmake configuring.
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
+if (COMMAND cmake_policy)
+    cmake_policy(SET CMP0003 NEW)
+    cmake_policy (SET CMP0007 NEW)
+endif(COMMAND cmake_policy)
+
+# project(muse)
+project(muse LANGUAGES CXX C)
 
 include(FindPkgConfig)
 include(CheckIncludeFile)
@@ -30,6 +38,9 @@ include(CheckIncludeFiles)
 include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
 include(CheckCXXSymbolExists)
+
+# REMOVE Tim. qt6. Added.
+include(GNUInstallDirs)
 
 
 # ==================================================================
@@ -64,16 +75,18 @@ if (CheckAtomic_Result STREQUAL "NOTFOUND")
   include(cmake/CheckAtomic.cmake)
 endif (CheckAtomic_Result STREQUAL "NOTFOUND")
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
-if (COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-    cmake_policy (SET CMP0007 NEW)
-endif(COMMAND cmake_policy)
+# REMOVE Tim. qt6. Moved above as warned by cmake configuring.
+# CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
+# if (COMMAND cmake_policy)
+#     cmake_policy(SET CMP0003 NEW)
+#     cmake_policy (SET CMP0007 NEW)
+# endif(COMMAND cmake_policy)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# REMOVE Tim. qt6. Removed.
 if (NOT DEFINED LIB_SUFFIX)
         SET(LIB_SUFFIX "" CACHE STRING "Suffix for installed library path. Ex. 64 for lib64")
 endif (NOT DEFINED LIB_SUFFIX)
@@ -121,21 +134,37 @@ message(" vst header path: " ${VST_HEADER_PATH} )
 include_directories(${VST_HEADER_PATH})
 
 # set libdir if not use -DLIB_INSTALL_DIR
+# REMOVE Tim. qt6. Changed.
+# if (NOT LIB_INSTALL_DIR)
+#         if(CMAKE_INSTALL_LIBDIR)
+#                 SET(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+#         else(CMAKE_INSTALL_LIBDIR)
+#                 SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
+#         endif(CMAKE_INSTALL_LIBDIR)
+# endif (NOT LIB_INSTALL_DIR)
+#
+# if (LIB_SUFFIX)
+#         message(" Install libraries to: " ${LIB_INSTALL_DIR} )
+# endif (LIB_SUFFIX)
+
 if (NOT LIB_INSTALL_DIR)
-        if(CMAKE_INSTALL_LIBDIR)
-                SET(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
-        else(CMAKE_INSTALL_LIBDIR)
+        if(CMAKE_INSTALL_FULL_LIBDIR)
+                SET(LIB_INSTALL_DIR ${CMAKE_INSTALL_FULL_LIBDIR})
+        else(CMAKE_INSTALL_FULL_LIBDIR)
                 SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
-        endif(CMAKE_INSTALL_LIBDIR)
+        endif(CMAKE_INSTALL_FULL_LIBDIR)
 endif (NOT LIB_INSTALL_DIR)
 
-if (LIB_SUFFIX)
-        message(" Install libraries to: " ${LIB_INSTALL_DIR} )
-endif (LIB_SUFFIX)
+
+# REMOVE Tim. qt6. Changed.
+# IF(NOT DEFINED SHARE_INSTALL_PREFIX)
+#         SET(SHARE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/share")
+# ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 
 IF(NOT DEFINED SHARE_INSTALL_PREFIX)
-        SET(SHARE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/share")
+        SET(SHARE_INSTALL_PREFIX ${CMAKE_INSTALL_FULL_DATAROOTDIR})
 ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
+
 
 #set(CMAKE_BUILD_TYPE debug)
 #set(CMAKE_BUILD_TYPE release)
@@ -164,14 +193,44 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
 SET(MusE_VERSION_MAJOR 4)
-SET(MusE_VERSION_MINOR 0)
-SET(MusE_VERSION_PATCH 0)
+# REMOVE Tim. qt6. Changed. Hm, why zero? Mistake?
+# SET(MusE_VERSION_MINOR 0)
+# SET(MusE_VERSION_PATCH 0)
+SET(MusE_VERSION_MINOR 2)
+SET(MusE_VERSION_PATCH 1)
 SET(MusE_VERSION       "4.2.1")
 SET(MusE_VERSION_FULL  "4.2.1")
 SET(MusE_INSTALL_NAME  "muse-4.2")
 SET(MusE_EXEC_NAME     "muse4")
 
-SET(MusE_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
+# REMOVE Tim. qt6. Changed.
+# SET(MusE_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
+SET(MusE_BIN_DIR ${CMAKE_INSTALL_FULL_BINDIR})
+
+# REMOVE Tim. qt6. Changed.
+
+# ## The directory where we will install the shared components:
+# SET(MusE_MODULES_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/modules)
+#
+# ## Synthesizers directory
+# SET(MusE_SYNTHI_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/synthi)
+#
+# ## Plugins directory
+# SET(MusE_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/plugins)
+#
+# ## Audio converter plugins directory
+# SET(MusE_AUDIO_CONVERTER_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/converters)
+#
+# ## Top documentation dir
+# IF(NOT DEFINED MusE_DOC_DIR)
+#       SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${MusE_INSTALL_NAME}/)
+# ENDIF(NOT DEFINED MusE_DOC_DIR)
+#
+# ## Data directory
+# SET(MusE_SHARE_DIR ${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME})
+#
+# ## Lib directory
+# SET(MusE_LIB_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME})
 
 ## The directory where we will install the shared components:
 SET(MusE_MODULES_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/modules)
@@ -186,9 +245,15 @@ SET(MusE_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/plugins)
 SET(MusE_AUDIO_CONVERTER_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/converters)
 
 ## Top documentation dir
+# REMOVE Tim. qt6. Changed.
 IF(NOT DEFINED MusE_DOC_DIR)
       SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${MusE_INSTALL_NAME}/)
 ENDIF(NOT DEFINED MusE_DOC_DIR)
+
+# IF(NOT DEFINED MusE_DOC_DIR)
+#       SET(MusE_DOC_DIR ${CMAKE_INSTALL_DOCDIR}/)
+# ENDIF(NOT DEFINED MusE_DOC_DIR)
+
 
 ## Data directory
 SET(MusE_SHARE_DIR ${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME})
@@ -279,6 +344,8 @@ else ( MODULES_BUILD_STATIC )
 #       SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 #       SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
 endif ( MODULES_BUILD_STATIC )
+
+#  REMOVE Tim. qt6. Removed.
 # We need these always, for a few of the shared modules in the muse/core build,
 #  even when building muse/core as static. Otherwise it can't find them on run. Tim.
 SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
@@ -303,47 +370,57 @@ endif (APPLE)
 set(CMAKE_THREAD_PREFER_PTHREAD On)
 find_package(Threads REQUIRED)
 
+
 ##
-##  look for Qt5
+##  look for Qt6
 ##
 
+# REMOVE Tim. qt6. Added.
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets UiTools LinguistTools Svg Xml)
 
-set(QT_MIN_VERSION "5.9.5")
-set(QT_USE_QTXML TRUE)
-set(QT_USE_QTDESIGNER TRUE)
-set(QT_USE_QTSVG TRUE)
+qt_standard_project_setup()
 
-find_package(Qt5Widgets)
 
-if (NOT Qt5Widgets_FOUND)
-      message(FATAL_ERROR "Fatal error: QT (version >= 5.9.5) required.\n"
-      "Cmake tries to detect QT5 by searching for 'Qt5Widgets' package\n"
-      "If you have QT5 installed, make sure 'Qt5Widgets' package is in PKG_CONFIG_PATH."
-      )
-endif (NOT Qt5Widgets_FOUND)
+# REMOVE Tim. qt6. Removed.
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5UiTools REQUIRED)
-find_package(Qt5LinguistTools REQUIRED)
-find_package(Qt5Xml REQUIRED)
-find_package(Qt5Svg REQUIRED)
+# set(QT_MIN_VERSION "6.4.0")
+# set(QT_USE_QTXML TRUE)
+# set(QT_USE_QTDESIGNER TRUE)
+# set(QT_USE_QTSVG TRUE)
+#
+# find_package(Qt6Widgets)
+#
+# if (NOT Qt6Widgets_FOUND)
+#       message(FATAL_ERROR "Fatal error: QT (version >= 6.4.0) required.\n"
+#       "Cmake tries to detect QT6 by searching for 'Qt6Widgets' package\n"
+#       "If you have QT6 installed, make sure 'Qt6Widgets' package is in PKG_CONFIG_PATH."
+#       )
+# endif (NOT Qt6Widgets_FOUND)
 
-# Needed for plugins factory:
-SET(QT_USE_QTUITOOLS TRUE)
+# find_package(Qt6Core REQUIRED)
+# find_package(Qt6UiTools REQUIRED)
+# find_package(Qt6LinguistTools REQUIRED)
+# find_package(Qt6Xml REQUIRED)
+# find_package(Qt6Svg REQUIRED)
 
-include_directories (${Qt5Widgets_INCLUDE_DIRS})
-include_directories (${Qt5Core_INCLUDE_DIRS})
-include_directories (${Qt5UiTools_INCLUDE_DIRS})
-include_directories (${Qt5Xml_INCLUDE_DIRS})
-include_directories (${Qt5Svg_INCLUDE_DIRS})
+# # Needed for plugins factory:
+# SET(QT_USE_QTUITOOLS TRUE)
 
-LINK_DIRECTORIES(${Qt5Widgets_LIBRARY_DIRS})
-LINK_DIRECTORIES(${Qt5Core_LIBRARY_DIRS})
-LINK_DIRECTORIES(${Qt5UiTools_LIBRARY_DIRS})
-LINK_DIRECTORIES(${Qt5Xml_LIBRARY_DIRS})
-LINK_DIRECTORIES(${Qt5Svg_LIBRARY_DIRS})
+include_directories (${Qt6Widgets_INCLUDE_DIRS})
+include_directories (${Qt6Core_INCLUDE_DIRS})
+include_directories (${Qt6UiTools_INCLUDE_DIRS})
+include_directories (${Qt6Xml_INCLUDE_DIRS})
+include_directories (${Qt6Svg_INCLUDE_DIRS})
 
-SET(QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5UiTools_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5Svg_LIBRARIES} ${Qt5Core_LIBRARIES})
+LINK_DIRECTORIES(${Qt6Widgets_LIBRARY_DIRS})
+LINK_DIRECTORIES(${Qt6Core_LIBRARY_DIRS})
+LINK_DIRECTORIES(${Qt6UiTools_LIBRARY_DIRS})
+LINK_DIRECTORIES(${Qt6Xml_LIBRARY_DIRS})
+LINK_DIRECTORIES(${Qt6Svg_LIBRARY_DIRS})
+
+SET(QT_LIBRARIES ${Qt6Widgets_LIBRARIES} ${Qt6UiTools_LIBRARIES} ${Qt6Xml_LIBRARIES} ${Qt6Svg_LIBRARIES} ${Qt6Core_LIBRARIES})
+
+
 #~ set(CMAKE_AUTOUIC ON)
 
 ##include(${QT_USE_FILE})

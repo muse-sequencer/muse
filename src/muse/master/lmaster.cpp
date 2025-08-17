@@ -463,12 +463,7 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
     emit seekTo(((LMasterLViewItem*) i)->tick());
 
     QFontMetrics fm(font());
-    // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
     int fnt_w = fm.horizontalAdvance('0');
-#else
-    int fnt_w = fm.width('0');
-#endif
     if (!editedItem && editorColumn == LMASTER_VAL_COL) {
         editedItem = (LMasterLViewItem*) i;
         QRect itemRect = view->visualItemRect(editedItem);
@@ -592,8 +587,7 @@ void LMaster::editingFinished()
         else {
             QMessageBox::warning(this, tr("MusE: List Editor"),
                                  tr("Input error, conversion not OK or value out of range"),
-                                 QMessageBox::Ok, Qt::NoButton
-                                 );
+                                 QMessageBox::Ok);
         }
     }
     //
@@ -611,8 +605,7 @@ void LMaster::editingFinished()
         if (newtick == 0) { // Do not allow change of position to beginning of song
             QMessageBox::warning(this, tr(LMASTER_MSGBOX_STRING),
                                  tr("Reposition of tempo and signature events to start position is not allowed!"),
-                                 QMessageBox::Ok, Qt::NoButton
-                                 );
+                                 QMessageBox::Ok);
         }
         else if (oldtick != newtick) {  // Ignore if tick hasn't changed
             if (editedItem->getType() == LMASTER_TEMPO) {

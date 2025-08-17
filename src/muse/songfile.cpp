@@ -1186,6 +1186,25 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                   case MusECore::Xml::End:
                         return;
                   case MusECore::Xml::TagStart:
+                        // {
+                        //   // REMOVE Tim. qt6. Added. Diagnostics.
+                        //   QString t1(tag);
+                        //   QString t2("muse");
+                        //   const int ts1 = t1.size();
+                        //   const int ts2 = t2.size();
+                        //   fprintf(stderr, "t1:\n");
+                        //   for(int i = 0; i < ts1; ++i)
+                        //   {
+                        //     fprintf(stderr, " pos:%d value:%X\n", i, t1.at(i).unicode());
+                        //   }
+                        //   fprintf(stderr, "\nt2:\n");
+                        //   for(int i = 0; i < ts2; ++i)
+                        //   {
+                        //     fprintf(stderr, " pos:%d value:%X\n", i, t2.at(i).unicode());
+                        //   }
+                        //
+                        // }
+
                         if (skipmode && tag == "muse")
                               skipmode = false;
                         else if (skipmode)

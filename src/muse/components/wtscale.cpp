@@ -120,7 +120,7 @@ void WTScale::viewMouseReleaseEvent(QMouseEvent* event)
 
 void WTScale::viewMouseMoveEvent(QMouseEvent* event)
       {
-      int x= MusEGlobal::song->tempomap()->time2tick(double(event->x())/double(sampleRate));
+      int x= MusEGlobal::song->tempomap()->time2tick(double(event->position().toPoint().x())/double(sampleRate));
       x = MusEGlobal::song->raster(x, *raster);
       if (x < 0)
             x = 0;

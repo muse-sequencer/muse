@@ -29,6 +29,7 @@
 #include <utility>
 
 #include <QMessageBox>
+#include <QPushButton>
 
 #include "app.h"
 #include "song.h"
@@ -85,36 +86,39 @@ void MusE::importMidi(const QString &file)
       else
             fn = file;
 
-      int n = QMessageBox::question(this, appName,
-         tr("Add midi file to current project?\n"),
-         tr("&Add to Project"),
-         tr("&Replace"),
-         tr("&Abort"), 0, 2);
+      QMessageBox msg(this);
+      QPushButton *atb = msg.addButton(tr("&Add to Project"), QMessageBox::AcceptRole);
+      QPushButton *rb = msg.addButton(tr("&Replace"), QMessageBox::AcceptRole);
+      QPushButton *ab = msg.addButton(QMessageBox::Abort);
+      msg.setDefaultButton(ab);
+      msg.setEscapeButton(ab);
+      msg.setIcon(QMessageBox::Question);
+      msg.setText(tr("Add midi file to current project?"));
+      msg.setWindowTitle(appName);
+      msg.exec();
 
-      switch (n) {
-            case 0:
-                  // FIXME TODO REMOVE Tim. clip. Added. Comment.
-                  // Hm, importMidi() doesn't even stop the audio or idle or anything! Unsafe?
-                  // Do like in loadProjectFile() ... Hm, don't think we can stop the audio
-                  //  because it needs to process commands below.
-                  //
-                  // Try this as a minimum...
-                  stopHeartBeat();
-                  MusEGlobal::audio->msgIdle(true);
+      if(msg.clickedButton() == atb)
+      {
+        // FIXME TODO REMOVE Tim. clip. Added. Comment.
+        // Hm, importMidi() doesn't even stop the audio or idle or anything! Unsafe?
+        // Do like in loadProjectFile() ... Hm, don't think we can stop the audio
+        //  because it needs to process commands below.
+        //
+        // Try this as a minimum...
+        stopHeartBeat();
+        MusEGlobal::audio->msgIdle(true);
 
-                  importMidi(fn, true);
+        importMidi(fn, true);
 
-                  MusEGlobal::audio->msgIdle(false);
-                  setHeartBeat();
+        MusEGlobal::audio->msgIdle(false);
+        setHeartBeat();
 
-                  MusEGlobal::song->update();
-                  break;
-            case 1:
-                  loadProjectFile(fn, false, false);    // replace
-                  break;
-            default:
-                  return;
-            }
+        MusEGlobal::song->update();
+      }
+      else if(msg.clickedButton() == rb)
+      {
+        loadProjectFile(fn, false, false);    // replace
+      }
       }
 
 //---------------------------------------------------------

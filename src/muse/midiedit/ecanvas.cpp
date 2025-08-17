@@ -597,7 +597,7 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
       if (event->mimeData()->hasFormat("text/x-muse-groupedeventlists")) {
             text = QString(event->mimeData()->data("text/x-muse-groupedeventlists"));
       
-            int x = event->pos().x();
+            int x = event->position().toPoint().x();
             if(x < 0)
               x = 0;
             x = editor->rasterVal(x);

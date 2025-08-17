@@ -257,14 +257,15 @@ SimpleSynthGui::SimpleSynthGui(int sampleRate)
       channelButtonGroups[i]->setTitle(QString::number(i + 1));
 
       QString name = QString("volumeSlider");
-      name.append(i + 1);
+      name.append(QString::number(i + 1));
 
       channelLayout->addWidget(channelButtonGroups[i]);
 
       QVBoxLayout* inchnlLayout = new QVBoxLayout(channelButtonGroups[i]); //, 2, 0, "channelinternallayout");
       inchnlLayout->setAlignment(Qt::AlignHCenter);
       inchnlLayout->setSpacing(1);
-      inchnlLayout->setMargin(0);
+      //inchnlLayout->setMargin(0);
+      inchnlLayout->setContentsMargins(0, 0, 0, 0);
 
 
       onOff[i] = new QChannelCheckbox(channelButtonGroups[i], i);
@@ -430,7 +431,8 @@ SimpleSynthGui::SimpleSynthGui(int sampleRate)
    connect(openPluginsButton, SIGNAL(clicked()), SLOT(openPluginButtonClicked()));
    rbLayout->addWidget(openPluginsButton, 2, 1, Qt::AlignCenter | Qt::AlignVCenter);
    rbLayout->setSpacing(0);
-   rbLayout->setMargin(0);
+   //rbLayout->setMargin(0);
+   rbLayout->setContentsMargins(0, 0, 0, 0);
    aboutButton = new QPushButton("About SimpleDrums");
    connect(aboutButton, SIGNAL(clicked()), SLOT(aboutButtonClicked()));
    rbLayout->addWidget(aboutButton, 4, 1, Qt::AlignLeft | Qt::AlignVCenter);
@@ -964,9 +966,7 @@ void SimpleSynthGui::aboutButtonClicked()
    ///QString text = caption + "\n\n(C) Copyright 2000-2004 Mathias Lundgren (lunar_shuttle@users.sf.net), Werner Schweer\nPublished under the GNU Public License";
    QString text = caption + "\n\n(C) Copyright 2000-2004 Mathias Lundgren (lunar_shuttle@users.sf.net), Werner Schweer\n"
                             "Fixes/mods: (C) Copyright 2011 Tim E. Real (terminator356@users.sf.net)\nPublished under the GNU Public License";
-   QMessageBox* msgBox = new QMessageBox(caption, text, QMessageBox::NoIcon,
-                                         QMessageBox::Ok, Qt::NoButton, Qt::NoButton, this);
-   msgBox->exec();
+   QMessageBox::information(this, caption, text);
 }
 
 

@@ -33,6 +33,7 @@
 
 class QPainterPath;
 class QEvent;
+class QEnterEvent;
 
 namespace MusEGui {
 
@@ -195,7 +196,7 @@ class CompactSlider : public SliderBase, public ScaleIf
     virtual void mouseDoubleClickEvent(QMouseEvent*);
     virtual void keyPressEvent(QKeyEvent*);
     virtual void leaveEvent(QEvent*);
-    virtual void enterEvent(QEvent*);
+    virtual void enterEvent(QEnterEvent*);
     virtual bool event(QEvent*);
 
     void valueChange();

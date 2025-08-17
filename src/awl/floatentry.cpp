@@ -197,12 +197,7 @@ QSize FloatEntry::sizeHint() const
       QFontMetrics fm = fontMetrics();
       int h           = fm.height() + 4;
       int n = _precision + 3;
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
       int w = fm.horizontalAdvance(QString("-0.")) + fm.horizontalAdvance('0') * n + 6;
-#else
-      int w = fm.width(QString("-0.")) + fm.width('0') * n + 6;
-#endif
       return QSize(w, h);
       }
 
@@ -224,8 +219,8 @@ void FloatEntry::endEdit()
 void FloatEntry::mousePressEvent(QMouseEvent* event)
       {
       button = event->button();
-      starty = event->y();
-      evx    = double(event->x());
+      starty = event->position().toPoint().y();
+      evx    = double(event->position().toPoint().x());
       timecount = 0;
       repeat();
       timer->start(TIMER1);

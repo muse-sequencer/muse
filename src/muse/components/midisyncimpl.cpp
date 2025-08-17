@@ -597,18 +597,19 @@ void MidiSyncConfig::closeEvent(QCloseEvent* e)
       {
       if(_dirty)
       {
-        int n = QMessageBox::warning(this, tr("MusE"),
+        QMessageBox::StandardButton n = QMessageBox::warning(this, tr("MusE"),
          tr("Settings have changed\n"
          "Apply sync settings?"),
-         tr("&Apply"), tr("&No"), tr("&Abort"), 0, 2);
+         QMessageBox::Apply | QMessageBox::No | QMessageBox::Abort,
+         QMessageBox::Apply);
          
-        if(n == 2)
+        if(n == QMessageBox::Abort)
         {
           e->ignore();
           return; 
         }  
         
-        if(n == 0)
+        if(n == QMessageBox::Apply)
           apply();
       }
       
