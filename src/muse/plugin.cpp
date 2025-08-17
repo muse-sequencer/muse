@@ -87,6 +87,9 @@
 // Turn on constant stream of debugging messages.
 //#define PLUGIN_DEBUGIN_PROCESS
 
+// For debugging output: Uncomment the fprintf section.
+#define DEBUG_PARAMS(dev, format, args...) // fprintf(dev, format, ##args);
+
 namespace MusEGlobal {
 MusECore::PluginList plugins;
 MusECore::PluginGroups plugin_groups;
@@ -700,6 +703,17 @@ static MusEPlugin::PluginType string2SynthType(const QString& type)
     return MusEPlugin::PluginTypeUnknown;
 
   return MusEPlugin::PluginTypeUnknown;
+}
+
+//---------------------------------------------------------
+//   PluginCallbackEventStruct
+//---------------------------------------------------------
+
+PluginCallbackEventStruct::PluginCallbackEventStruct(PluginCallbackEventStruct::EventType type, unsigned long id, float value)
+{
+  _type = type;
+  _id = id;
+  _value = value;
 }
 
 //==============================================================
@@ -2626,6 +2640,7 @@ PluginIBase::PluginIBase()
   _curActiveState = false;
   _showGuiPending = false;
   _showNativeGuiPending = false;
+  _ipcCallbackEvents = nullptr;
 }
 
 PluginIBase::~PluginIBase()
@@ -2820,6 +2835,21 @@ void PluginIBase::closeNativeGui() { }
 void PluginIBase::nativeGuiTitleAboutToChange() { }
 bool PluginIBase::nativeGuiVisible() const { return false; }
 void PluginIBase::updateNativeGuiWindowTitle() { }
+void *PluginIBase::getPrograms() const { return nullptr; }
+bool PluginIBase::swapPrograms(void*) { return false; }
+bool PluginIBase::deleteProgramData(void*) const { return false; }
+
+//---------------------------------------------------------
+//   addIpcCallbackEvent
+//   Returns false if event cannot be delivered.
+//---------------------------------------------------------
+
+bool PluginIBase::addIpcCallbackEvent(const PluginCallbackEventStruct &ev)
+{
+  if(!_ipcCallbackEvents)
+    return false;
+  return _ipcCallbackEvents->put(ev);
+}
 
 //---------------------------------------------------------
 //   addScheduledControlEvent
@@ -3011,6 +3041,9 @@ PluginI::PluginI() : PluginIBase()
       _id = -1;
       _track = 0;
       init();
+      // For now we are not expecting a lot of traffic here. Try 256.
+      // (An exception might be if the plugin sends us automation begin or end for all of its parameters at once.)
+      _ipcCallbackEvents = new LockFreeMPSCRingBuffer<PluginCallbackEventStruct>(256);
       }
 
 //---------------------------------------------------------
@@ -3042,6 +3075,8 @@ PluginI::~PluginI()
             delete[] controls;
       if (handle)
             delete[] handle;
+      if(_ipcCallbackEvents)
+        delete _ipcCallbackEvents;
       }
 
 Plugin* PluginI::plugin() const       { return _plugin; }
@@ -3063,20 +3098,30 @@ void PluginI::setID(int i)
 }
 
 //---------------------------------------------------------
+//   updateController
+//---------------------------------------------------------
+
+void PluginI::updateController(unsigned long i)
+{
+  // If plugin is not available just return.
+  if(!plugin() || !controls || !_track)
+    return;
+
+  const float v = param(i);
+  // For vst we use the control array as a cache, not as ports. Update the cached value.
+  if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
+    controls[i].val = v;
+  _track->setPluginCtrlVal(genACnum(_id, i), v);  // TODO A faster bulk message
+}
+
+//---------------------------------------------------------
 //   updateControllers
 //---------------------------------------------------------
 
 void PluginI::updateControllers()
 {
-  // If plugin is not available just return.
-  if(!plugin() || !controls)
-    return;
-
-  if(!_track)
-    return;
-
   for(unsigned long i = 0; i < controlPorts; ++i)
-    _track->setPluginCtrlVal(genACnum(_id, i), param(i));  // TODO A faster bulk message
+    updateController(i);
 }
 
 //---------------------------------------------------------
@@ -3561,8 +3606,13 @@ bool PluginI::initPluginInstance(Plugin* plug, int c, const QString& name)
           {
             controls[curPort].idx = k;
             controls[curPort].enCtrl  = true;
-            // Special for VST: Port value is not used.
-            if(pluginType() != MusEPlugin::PluginTypeLinuxVST)
+            // Special for VST: No concept of a default value. Use the plugin's current value.
+            if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
+            {
+              // For vst we use the control array as a cache, not as ports.
+              controls[curPort].val = param(curPort);
+            }
+            else
             {
               controls[curPort].val = _plugin->defaultValue(k);
               for(int i = 0; i < instances; ++i)
@@ -4074,7 +4124,16 @@ void PluginI::configure(const PluginConfiguration& config, ConfigureOptions_t op
   if(opts & ConfigCustomData)
   {
     if(setCustomData(config._accumulatedCustomParams))
+    {
       hasCustomData = true;
+      const long unsigned int params = parameters();
+      for(long unsigned int i = 0; i < params; ++i)
+      {
+        // Disable any automation controller streams so What You See Is What Was Last Stored by the plugin.
+        // The process routine will update our own automation controllers with the new values from the plugin.
+        enableController(i, false);
+      }
+    }
   }
   // Done with initial custom data. Clear them.
   //config._accumulatedCustomParams.clear();
@@ -4092,11 +4151,14 @@ void PluginI::configure(const PluginConfiguration& config, ConfigureOptions_t op
     for(ciPluginControlList ipcl = config._initParams.cbegin(); ipcl != config._initParams.cend(); ++ipcl)
     {
       const PluginControlConfig& cc = ipcl->second;
-        if((unsigned long)cc._ctlnum < controlPorts)
+        if(cc._ctlnum >= 0 && (unsigned long)cc._ctlnum < controlPorts)
         {
           // TODO: Set vst params directly here, maybe even instead of controls array?
           //       Maybe not. Process sets the vst params for us.
           putParam(cc._ctlnum, cc._val);
+          // Disable any automation controller streams so What You See Is What Was Last Stored by us.
+          // The process routine will update our own automation controllers with the new values from the plugin.
+          enableController(cc._ctlnum, false);
         }
         else
         {
@@ -4469,14 +4531,13 @@ void PluginI::putParam(unsigned long i, double val)
 {
   if(plugin())
   {
-// Special for VST: Port value is not used.
+    // Special for VST: Port value is not used.
 #ifdef VST_NATIVE_SUPPORT
     if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
     {
-      // For multi-instance plugins use only first instance's state
-      if(instances > 0)
+      for(int i = 0; i < instances; ++i)
       {
-        VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State*)handle[0];
+        VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State*)handle[i];
         state->plugin->setParameter(state->plugin, i, val);
       }
       return;
@@ -4730,6 +4791,139 @@ void PluginI::apply(unsigned pos, unsigned long n,
   const bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
   const unsigned long in_ctrls = _plugin->controlInPorts();
 
+// Diagnostics.
+  //static long unsigned int prevcycle = 0;
+  //static long unsigned int cycle = 0;
+  //bool messprinted = false;
+
+  // Process events sent to us by the plugin's callback now before other controller stuff.
+  if(_ipcCallbackEvents)
+  {
+    const unsigned sz = _ipcCallbackEvents->getSize();
+    for(unsigned i = 0; i < sz; ++i)
+    {
+      PluginCallbackEventStruct ev;
+      if(!_ipcCallbackEvents->get(ev))
+        continue;
+      switch(ev._type)
+      {
+        case PluginCallbackEventStruct::AutomationBeginType:
+          // Update the automation controller's current value and tell the graphics to redraw etc.
+          if(_track && _id != -1)
+            _track->setPluginCtrlVal(genACnum(_id, ev._id), ev._value);
+          // Disable the automation controller stream while a control is being manipulated.
+          enableController(ev._id, false);
+          DEBUG_PARAMS(stderr, "PluginI::apply: Got AutomationBeginType: cycle dif:%lu\n", cycle - prevcycle);
+          //messprinted = true;
+        break;
+
+        case PluginCallbackEventStruct::AutomationEditType:
+          // Update the automation controller's current value and tell the graphics to redraw etc.
+          if(_track && _id != -1)
+            _track->setPluginCtrlVal(genACnum(_id, ev._id), ev._value);
+          // Disable the automation controller stream while a control is being manipulated.
+          // No! We cannot disable controllers here.
+          //enableController(ev._id, false);
+          DEBUG_PARAMS(stderr, "PluginI::apply: Got AutomationEditType: cycle dif:%lu\n", cycle - prevcycle);
+          //messprinted = true;
+        break;
+
+        case PluginCallbackEventStruct::AutomationEndType:
+          // Update the automation controller's current value and tell the graphics to redraw etc.
+          if(_track && _id != -1)
+            _track->setPluginCtrlVal(genACnum(_id, ev._id), ev._value);
+          // Re-enable the automation controller stream now that a control is no longer being manipulated.
+          enableController(ev._id, true);
+          DEBUG_PARAMS(stderr, "PluginI::apply: Got AutomationEndType: cycle dif:%lu\n", cycle - prevcycle);
+          //messprinted = true;
+        break;
+
+        case PluginCallbackEventStruct::UpdateDisplayType:
+          DEBUG_PARAMS(stderr, "PluginI::apply: Got UpdateDisplayType: cycle dif:%lu\n", cycle - prevcycle);
+          //messprinted = true;
+          // If we receive an UpdateDisplay notification from the plugin, we use it as an indicator
+          //  that the program changed. We disable all controller streams to be consistent because
+          //  otherwise that job is left to the polling and automation handlers here, and they ONLY
+          //  disable controller streams for which a control actually changed, which is imperfect.
+          // For plugins that do not send UpdateDisplay, there is nothing more we can do than that.
+          // No! We cannot disable controllers here.
+          //for(unsigned long k = 0; k < in_ctrls; ++k)
+          //  enableController(k, false);
+        break;
+
+        case PluginCallbackEventStruct::NoType:
+        break;
+      }
+    }
+  }
+
+  // Special for VST:
+  // This section handles a few different scenarios:
+  // 1) Catch parameters that change without notification, such as the plugin's own midi-to-control assignments.
+  //    There seems to be a convention that such assignments do not notify the host on changes.
+  // 2) Catch parameters that change upon program changes. Some plugins notify via audioMasterUpdateDisplay,
+  //     some only notify via audioMasterAutomate, some do both, and some do nothing.
+  //
+  // FIXME NOTE: Unfixable?
+  // Some plugins do not update their parameters immediately after setting them. It happens later.
+  // So what happens is that this thinks there was a change and disables the controller stream.
+  // A solution was to provide a timeout timer. We are expecting the parameter to change so we wait for some time,
+  //  and if it changed, great, and if not we stop the timer and just carry on.
+  // Unfortunately the continuous stream of automation controllers would constantly activate the timer,
+  //  preventing anything else from activating this code, such as a plugin's own midi-to-control mapping which
+  //  as mentioned does not inform us in any other way.
+  // So, we CANNOT disable controller streams here.
+  if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
+  {
+    for(unsigned long k = 0; k < controlPorts; ++k)
+    {
+      const float curval = param(k);
+      // Has the plugin's parameter changed, compared to our cached value?
+      // NOTE:
+      // Many plugins manipulate the parameters, for example Tonespace has a very long
+      //  update time ~50 cycles! And most of them smooth parameter changes, ramping them up or down.
+      // So the parameters are NOT changed to the requested value immediately, if at all.
+      // Also, for things like switches the plugin may round requested values to 0 or 1.
+      // This means the automation controllers, if enabled, in some cases will be constantly
+      //  fighting with the cached value. It was observed that even static linear values returned
+      //  from a plugin did not match what value our cache recorded was sent.
+      // This suggests the plugin was applying granularity to the values.
+      // The match even depended on the value itself. Some values sent matched, others did not.
+      // So, during those cases this code will be CONSTANTLY called.
+      // We have no choice but to just let it be called. Setting the cached value HERE or in the
+      //  automation reading code below makes does not help and actually makes things worse.
+      // Therefore make sure to check whether the value really needs changing below.
+      // Then we should be OK.
+      if(curval != controls[k].val)
+      {
+        DEBUG_PARAMS(stderr, "PluginI::apply: Got param change k:%lu "
+                     "plugin curval:%.15f controls[k].val:%.15f cycle dif:%lu\n",
+                     k, curval, controls[k].val, cycle - prevcycle);
+        //messprinted = true;
+
+        // Update the automation controller's current value and tell the graphics to redraw etc.
+        if(_track && _id != -1)
+        {
+          const long unsigned acnum = genACnum(_id, k);
+          // Is the automation controller's static 'current value' different than the plugin's current value?
+          const double accurval = cll->value(acnum, 0, true);
+          if(accurval != curval)
+          {
+            DEBUG_PARAMS(stderr, "  accurval:%.15f != plugin curval. Updating.\n", accurval);
+
+            // Update the automation controller's current value and tell the graphics to redraw etc.
+            _track->setPluginCtrlVal(acnum, curval);
+          }
+        }
+        // Whatever caused the change, we must treat this condition as a user-manipulated native control.
+        // Disable the automation controller stream while a control is being manipulated.
+        // No! We cannot disable controllers here.
+        //enableController(k, false);
+        //messprinted = true;
+      }
+    }
+  }
+
   int cur_slice = 0;
   while(sample < fin_nsamp)
   {
@@ -4813,10 +5007,57 @@ void PluginI::apply(unsigned pos, unsigned long n,
 
         }
 
+        float new_val;
         if(ci.doInterp && cl)
-          putParam(k, cl->interpolate(MusEGlobal::audio->isPlaying() ? slice_frame : pos, ci));
+          new_val = cl->interpolate(MusEGlobal::audio->isPlaying() ? slice_frame : pos, ci);
         else
+          new_val = ci.sVal;
+        // Special for VST:
+        if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
+        {
+          // Is the new desired value different than our cached value?
+          if(controls[k].val != new_val)
+          {
+            DEBUG_PARAMS(stderr, "PluginI::apply _controls[%lu].val:%f != new_val:%f "
+              "cur_slice:%d sample:%lu fin_nsamp:%lu slice_samps:%lu, slice_frame:%lu cycle dif:%lu\n",
+              k, controls[k].val, new_val, cur_slice, sample, fin_nsamp, slice_samps, slice_frame, cycle - prevcycle);
+            //messprinted = true;
+
+            controls[k].val = new_val;
+
+#ifdef VST_NATIVE_SUPPORT
+            if(instances > 0)
+            {
+              // For multi-instance plugins use only first instance's state
+              VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State*)handle[0];
+              // Hm, AMSynth said this was false and yet removing it works fine. I guess it doesn't support this call?
+              //if(state->plugin->dispatcher(state->plugin, effCanBeAutomated, k, 0, nullptr, 0.0f) == 1)
+              {
+                const float cur_val = state->plugin->getParameter(state->plugin, k);
+                if(new_val != cur_val)
+                {
+                  DEBUG_PARAMS(stderr, "  plugin curval:%.15f != new_val. Updating plugin.\n", curval);
+
+                  for(int i = 0; i < instances; ++i)
+                  {
+                    VstNativePluginWrapper_State *state_write = (VstNativePluginWrapper_State*)handle[i];
+                    state_write->plugin->setParameter(state_write->plugin, k, new_val);
+                  }
+                }
+              }
+#ifdef PLUGIN_DEBUGIN_PROCESS
+              else
+                fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n",
+                        name().toLocal8Bit().constData(), k);
+#endif
+            }
+#endif
+          }
+        }
+        else
+        {
           putParam(k, ci.sVal);
+        }
 
 #ifdef LV2_SUPPORT
         if(pluginType() == MusEPlugin::PluginTypeLV2)
@@ -4952,6 +5193,11 @@ void PluginI::apply(unsigned pos, unsigned long n,
 
     ++cur_slice; // Slice is done. Moving on to any next slice now...
   }
+
+  // Diagnostics.
+  //if(messprinted)
+  //  prevcycle = cycle;
+  //++cycle;
 }
 
 //---------------------------------------------------------
@@ -6437,9 +6683,6 @@ void PluginGui::updateValues()
 
 void PluginGui::updateControls()
 {
-    if (!plugin->track() || plugin->id() == -1)
-        return;
-
     // update outputs
 
     if (paramsOut) {
@@ -6456,11 +6699,7 @@ void PluginGui::updateControls()
     if (params) {
         for (unsigned long i = 0; i < plugin->parameters(); ++i) {
             GuiParam* gp = &params[i];
-            const double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), i),
-                                                            MusEGlobal::audio->curFramePos(),
-                                                            !MusEGlobal::automation ||
-                                                            plugin->track()->automationType() == MusECore::AUTO_OFF ||
-                                                            !plugin->controllerEnabled(i));
+            const double v = plugin->param(i);
             if (gp->type == GuiParam::GUI_SLIDER) {
                 gp->label->blockSignals(true);
                 gp->actuator->blockSignals(true);
@@ -6511,11 +6750,7 @@ void PluginGui::updateControls()
             QWidget* widget = gw[i].widget;
             const int type = gw[i].type;
             const unsigned long param = gw[i].param;
-            const double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), param),
-                                                            MusEGlobal::audio->curFramePos(),
-                                                            !MusEGlobal::automation ||
-                                                            plugin->track()->automationType() == MusECore::AUTO_OFF ||
-                                                            !plugin->controllerEnabled(param));
+            const double v = plugin->param(param);
             widget->blockSignals(true);
             switch(type) {
             case GuiWidgets::SLIDER:

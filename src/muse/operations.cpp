@@ -214,6 +214,7 @@ unsigned int PendingOperationItem::getIndex() const
     case SwapRackEffectPlugins:
     case MoveRackEffectPlugin:
     case ModifyMidiAudioCtrlMap:
+    case ModifyPluginPrograms:
 
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
@@ -1754,6 +1755,18 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       flags |= SC_MIDI_AUDIO_CTRL_MAPPER;
     break;
 
+    case ModifyPluginPrograms:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyMidiPrograms: PluginIBase:%p new list:%p\n",
+                       _pluginIBase, _newMidiPrograms);
+      if(_pluginIBase && _newPluginPrograms)
+      {
+        // Transfers the original data back to _newMidiPrograms so it can be deleted in the non-RT stage.
+        _pluginIBase->swapPrograms(_newPluginPrograms);
+      }
+      // No flags required yet.
+      //flags |= SC_???;
+    break;
+
     case Uninitialized:
     break;
     
@@ -1984,6 +1997,13 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
       // Delete it now.
       if(_src_midi_audio_ctrl_map)
         delete _src_midi_audio_ctrl_map;
+    break;
+
+    case ModifyPluginPrograms:
+      // At this point _newMidiPrograms contains all the data that was in the original list, via swap().
+      // Delete it now.
+      if(_pluginIBase && _newPluginPrograms)
+        _pluginIBase->deleteProgramData(_newPluginPrograms);
     break;
 
     default:
@@ -3378,6 +3398,31 @@ bool PendingOperationList::add(PendingOperationItem op)
             if(poi._src_midi_audio_ctrl_map)
               delete poi._src_midi_audio_ctrl_map;
             poi._src_midi_audio_ctrl_map = op._src_midi_audio_ctrl_map;
+            // An operation will still take place.
+            return true;
+          }
+        }
+      break;
+
+      case PendingOperationItem::ModifyPluginPrograms:
+        if(poi._type == PendingOperationItem::ModifyPluginPrograms)
+        {
+          // Cannot have the same data applying twice.
+          if(poi._newPluginPrograms == op._newPluginPrograms)
+          {
+            fprintf(stderr,
+              "MusE error: PendingOperationList::add(): ModifyPluginPrograms: "
+              "Same newPluginPrograms. Ignoring.\n");
+            // No operation will take place.
+            return false;
+          }
+          // Different data applying to the same plugin.
+          if(poi._pluginIBase == op._pluginIBase)
+          {
+            // To avoid memory leaks, delete the original data.
+            if(poi._newPluginPrograms)
+              poi._pluginIBase->deleteProgramData(poi._newPluginPrograms);
+            poi._newPluginPrograms = op._newPluginPrograms;
             // An operation will still take place.
             return true;
           }

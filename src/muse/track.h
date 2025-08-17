@@ -199,8 +199,8 @@ class Track {
       bool locked() const             { return _locked; }
       void setLocked(bool b)          { _locked = b; }
 
-      void clearRecAutomation(bool clearList);
-      
+      void clearRecAutomation();
+
       const QString& name() const     { return _name; }
       // setName can be overloaded to do other things like setting port names, while setNameText just sets the text.
       virtual void setName(const QString& s)  { _name = s; }

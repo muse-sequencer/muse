@@ -620,7 +620,6 @@ public:
     virtual void enableController(unsigned long i, bool v = true) override;
     virtual bool controllerEnabled(unsigned long i) const override;
     virtual void enableAllControllers(bool v = true) override;
-    virtual void updateControllers() override;
 
     void populatePresetsMenu(MusEGui::PopupMenu *menu);
     void applyPreset(void *preset);

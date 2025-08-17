@@ -4739,8 +4739,10 @@ void MusE::switchMixerAutomation()
       MusEGlobal::audio->msgIdle(true);
 
       MusEGlobal::automation = ! MusEGlobal::automation;
-      // Clear all pressed and touched and rec event lists.
-      MusEGlobal::song->clearRecAutomation(true);
+      // Clear all rec event lists.
+      MusEGlobal::song->clearRecAutomation();
+      // Force re-enable all track and plugin controllers, and synth controllers if applicable.
+      MusEGlobal::song->reenableTouchedControllers(true);
 
       // If going to OFF mode, need to update current 'manual' values from the automation values at this time...
       if(!MusEGlobal::automation)

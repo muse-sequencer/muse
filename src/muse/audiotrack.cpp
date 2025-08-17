@@ -867,8 +867,10 @@ bool AudioTrack::setupController(CtrlList* l)
 
 void AudioTrack::setAutomationType(AutomationType t)
 {
-  // Clear pressed and touched and rec event list.
-  clearRecAutomation(true);
+  // Clear rec event list.
+  clearRecAutomation();
+  // Re-enable all track and plugin controllers, and synth controllers if applicable.
+  enableAllControllers();
 
   // Now set the type.
   _automationType = t;
@@ -1615,8 +1617,6 @@ void AudioTrack::setPluginCtrlVal(int param, double val)
 
   cl->second->setCurVal(val);
   // Notify the GUI to redraw the controller.
-  // Yes, we're already in the GUI thread. But take advantage of the
-  //  ring buffer's leisurely processing rate to avoid overloading the GUI.
   if(MusEGlobal::song)
     MusEGlobal::song->putIpcCtrlGUIMessage(CtrlGUIMessage(this, param));
 }

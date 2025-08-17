@@ -241,20 +241,8 @@ void VstNativeEditor::showEvent(QShowEvent *pShowEvent)
 
 void VstNativeEditor::closeEvent(QCloseEvent *pCloseEvent)
 {
-   /*if(resizeTimerId)
-   {
-      killTimer(resizeTimerId);
-      resizeTimerId = 0;
-   }*/
-
-   pCloseEvent->accept();
-   QWidget::closeEvent(pCloseEvent);
-}
-
-void VstNativeEditor::close()
-{
    // Note that we delete on close, but that will happen later.
-   QWidget::close();
+   pCloseEvent->accept();
    if(_sif)
    {
      _sif->dispatch(effEditClose, 0, 0, nullptr, 0.0f);
@@ -266,6 +254,7 @@ void VstNativeEditor::close()
       _pstate->plugin->dispatcher(_pstate->plugin, effEditClose, 0, 0, nullptr, 0.0f);
       _pstate->editorClosed();
    }
+   QWidget::closeEvent(pCloseEvent);
 }
 
 //---------------------------------------------------------------------

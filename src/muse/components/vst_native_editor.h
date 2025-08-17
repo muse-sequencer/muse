@@ -90,7 +90,6 @@ public:
     ~VstNativeEditor();
 
     void open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativePluginWrapper_State *state);
-    void close();
 
     bool fixScaling() { return m_fixScaling; }
     void updateWindowTitle(const QString&);
