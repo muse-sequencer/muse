@@ -2116,7 +2116,7 @@ struct MidiIncListStruct
   int _port;
   int _chan;
   MidiIncListStruct(int port, int chan) : _port(port), _chan(chan) { }
-  bool operator==(const MidiIncListStruct& other) { return other._port == _port && other._chan == _chan; }
+  bool operator==(const MidiIncListStruct& other) const { return other._port == _port && other._chan == _chan; }
 };
 
 void Strip::componentChanged(int type, double val, bool off, int id, int scrollMode)
