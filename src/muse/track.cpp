@@ -557,15 +557,12 @@ QString Track::displayName() const
 //   clearRecAutomation
 //---------------------------------------------------------
 
-void Track::clearRecAutomation(bool clearList)
+void Track::clearRecAutomation()
 {
     if(isMidiTrack())
       return;
     AudioTrack *t = static_cast<AudioTrack*>(this);
-    // Re-enable all track and plugin controllers, and synth controllers if applicable.
-    t->enableAllControllers();
-    if(clearList)
-      t->recEvents()->clear();
+    t->recEvents()->clear();
 }
 
 //---------------------------------------------------------
@@ -2425,7 +2422,7 @@ bool Track::readProperties(Xml& xml, const QString& tag)
       else if (tag == "color") {
           QString c = xml.parse1();
           if (QColor::isValidColorName(c))
-              m_color.fromString(c);
+              m_color = QColor::fromString(c);
       }
       // Added in song file version 4.
       else if (tag == "midiAssign")

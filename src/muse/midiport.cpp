@@ -853,9 +853,14 @@ bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
   if(ctrl < 0)
     return true;
 
+  Song::IpcEventItem ipci;
+  ipci._type = Song::IpcEventItem::MidiEvent;
+  ipci._mpe = ev;
+  ipci._sif = nullptr;
+
   // Make sure to create the controller if necessary.
   //createController(chan, ctrl);
-  
+
   // Make sure the controller exists, create it if not.
   const int chan = ev.channel();
   ciMidiCtrlValList cl = _controller->find(chan, ctrl);
@@ -865,17 +870,17 @@ bool MidiPort::putHwCtrlEvent(const MidiPlayEvent& ev)
     // Tell the gui thread to create and add a new controller.
     // It will store and re-deliver the events directly to the buffers
     //  after the controller is created.
-    MusEGlobal::song->putIpcInEvent(ev);
+    MusEGlobal::song->putIpcInEvent(ipci);
     // Technically the event is being delivered.
     return false;
   }
-  
-  if(!MusEGlobal::song->putIpcOutEvent(ev))
+
+  if(!MusEGlobal::song->putIpcOutEvent(ipci))
   {
     fprintf(stderr, "MidiPort::putHwCtrlEvent: Error: gui2AudioFifo fifo overflow\n");
     return true;
   }
-  
+
   return false;
 }
 
@@ -948,7 +953,11 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
   const int i_dataA = ev.dataA();
   const double d_dataB = ev.dataB();
   const int i_dataB = MidiController::dValToInt(d_dataB);
-  
+  Song::IpcEventItem ipci;
+  ipci._type = Song::IpcEventItem::MidiEvent;
+  ipci._mpe = ev;
+  ipci._sif = nullptr;
+
   int fin_db = i_dataB;
   switch(type)
   {
@@ -963,10 +972,10 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
           {
             // Tell the gui to create the controller and add the value.
             if(createAsNeeded)
-              return MusEGlobal::song->putIpcInEvent(ev);
+              return MusEGlobal::song->putIpcInEvent(ipci);
             return false;
           }
-          
+
           int hb = 0xff;
           if(!MidiController::iValIsUnknown(i_dataB))
             hb = i_dataB & 0xff;
@@ -974,7 +983,7 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
             hb = limitValToInstrCtlRange(i_dataA, hb, chn);
           int lb = 0xff;
           int pr = 0xff;
-          
+
           MidiCtrlValList* mcvl = imcvl->second;
           if(!mcvl->hwValIsUnknown())
           {
@@ -982,18 +991,18 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
             lb = (hw_val >> 8) & 0xff;
             pr = hw_val & 0xff;
           }
-          
+
           if((hb != 0xff || lb != 0xff) && pr == 0xff)
             pr = 0x01;
           if(hb == 0xff && lb == 0xff && pr == 0xff)
             fin_db = CTRL_VAL_UNKNOWN;
           else
             fin_db = (hb << 16) | (lb << 8) | pr;
-          
+
           // Set the value. Be sure to update drum maps (and inform the gui).
           if(mcvl->setHwVal(fin_db))
             updateDrumMaps(chn, fin_db);
-          
+
           return true;
         }
         break;
@@ -1006,10 +1015,10 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
           {
             // Tell the gui to create the controller and add the value.
             if(createAsNeeded)
-              return MusEGlobal::song->putIpcInEvent(ev);
+              return MusEGlobal::song->putIpcInEvent(ipci);
             return false;
           }
-          
+
           int hb = 0xff;
           int lb = 0xff;
           if(!MidiController::iValIsUnknown(i_dataB))
@@ -1017,7 +1026,7 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
           if(lb != 0xff)
             lb = limitValToInstrCtlRange(i_dataA, lb, chn);
           int pr = 0xff;
-          
+
           MidiCtrlValList* mcvl = imcvl->second;
           if(!mcvl->hwValIsUnknown())
           {
@@ -1025,18 +1034,18 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
             hb = (hw_val >> 16) & 0xff;
             pr = hw_val & 0xff;
           }
-          
+
           if((hb != 0xff || lb != 0xff) && pr == 0xff)
             pr = 0x01;
           if(hb == 0xff && lb == 0xff && pr == 0xff)
             fin_db = CTRL_VAL_UNKNOWN;
           else
             fin_db = (hb << 16) | (lb << 8) | pr;
-          
+
           // Set the value. Be sure to update drum maps (and inform the gui).
           if(mcvl->setHwVal(fin_db))
             updateDrumMaps(chn, fin_db);
-          
+
           return true;
         }
         break;
@@ -1045,25 +1054,25 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
         {
           // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
           //        defined by the user in the controller list.
-            
+
           // Does the CTRL_PROGRAM controller exist?
           iMidiCtrlValList imcvl = _controller->find(chn, CTRL_PROGRAM);
           if(imcvl == _controller->end())
           {
             // Tell the gui to create the controller and add the value.
             if(createAsNeeded)
-              return MusEGlobal::song->putIpcInEvent(ev);
+              return MusEGlobal::song->putIpcInEvent(ipci);
             return false;
           }
-          
+
           // Set the value. Be sure to update drum maps (and inform the gui).
           if(imcvl->second->setHwVal(fin_db))
             updateDrumMaps(chn, fin_db);
-          
+
           return true;
         }
         break;
-        
+
         default:
         {
           // Does the controller exist?
@@ -1072,43 +1081,43 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
           {
             // Tell the gui to create the controller and add the value.
             if(createAsNeeded)
-              return MusEGlobal::song->putIpcInEvent(ev);
+              return MusEGlobal::song->putIpcInEvent(ipci);
             return false;
           }
 
           fin_db = limitValToInstrCtlRange(i_dataA, i_dataB, chn);
           // Set the value.
           imcvl->second->setHwVal(fin_db);
-          
+
           return true;
         }
         break;
       }
     break;
-    
+
     case ME_POLYAFTER:
     {
       const int pitch = i_dataA & 0x7f;
       const int fin_da = (CTRL_POLYAFTER & ~0xff) | pitch;
-      
+
       // Does the controller exist?
       iMidiCtrlValList imcvl = _controller->find(chn, fin_da);
       if(imcvl == _controller->end())
       {
         // Tell the gui to create the controller and add the value.
         if(createAsNeeded)
-          return MusEGlobal::song->putIpcInEvent(ev);
+          return MusEGlobal::song->putIpcInEvent(ipci);
         return false;
       }
 
       fin_db = limitValToInstrCtlRange(fin_da, i_dataB, chn);
       // Set the value.
       imcvl->second->setHwVal(fin_db);
-      
+
       return true;
     }
     break;
-    
+
     case ME_AFTERTOUCH:
     {
       // Does the controller exist?
@@ -1117,18 +1126,18 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
       {
         // Tell the gui to create the controller and add the value.
         if(createAsNeeded)
-          return MusEGlobal::song->putIpcInEvent(ev);
+          return MusEGlobal::song->putIpcInEvent(ipci);
         return false;
       }
 
       fin_db = limitValToInstrCtlRange(CTRL_AFTERTOUCH, i_dataA, chn);
       // Set the value.
       imcvl->second->setHwVal(fin_db);
-      
+
       return true;
     }
     break;
-    
+
     case ME_PITCHBEND:
     {
       // Does the controller exist?
@@ -1137,18 +1146,18 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
       {
         // Tell the gui to create the controller and add the value.
         if(createAsNeeded)
-          return MusEGlobal::song->putIpcInEvent(ev);
+          return MusEGlobal::song->putIpcInEvent(ipci);
         return false;
       }
 
       fin_db = limitValToInstrCtlRange(CTRL_PITCH, i_dataA, chn);
       // Set the value.
       imcvl->second->setHwVal(fin_db);
-      
+
       return true;
     }
     break;
-    
+
     case ME_PROGRAM:
     {
       // Does the controller exist?
@@ -1157,7 +1166,7 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
       {
         // Tell the gui to create the controller and add the value.
         if(createAsNeeded)
-          return MusEGlobal::song->putIpcInEvent(ev);
+          return MusEGlobal::song->putIpcInEvent(ipci);
         return false;
       }
 
@@ -1168,7 +1177,7 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
         pr = i_dataA & 0xff;
       //if(pr != 0xff)
       //  pr = limitValToInstrCtlRange(da, pr, chn);
-      
+
       MidiCtrlValList* mcvl = imcvl->second;
       if(!mcvl->hwValIsUnknown())
       {
@@ -1176,26 +1185,26 @@ bool MidiPort::handleGui2AudioEvent(const MidiPlayEvent& ev, bool createAsNeeded
         hb = (hw_val >> 16) & 0xff;
         lb = (hw_val >> 8) & 0xff;
       }
-      
+
       if((hb != 0xff || lb != 0xff) && pr == 0xff)
         pr = 0x01;
       if(hb == 0xff && lb == 0xff && pr == 0xff)
         fin_db = CTRL_VAL_UNKNOWN;
       else
         fin_db = (hb << 16) | (lb << 8) | pr;
-      
+
       // Set the value. Be sure to update drum maps (and inform the gui).
       if(mcvl->setHwVal(fin_db))
         updateDrumMaps(chn, fin_db);
-      
+
       return true;
     }
     break;
-    
+
     default:
     break;
   }
-  
+
   return false;
 }
 

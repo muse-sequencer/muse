@@ -2080,26 +2080,26 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
         //    NOTE_OFFs.  It is the host's responsibility to remap events in
         //    cases where an external MIDI source has sent it zero-velocity
         //    NOTE_ONs."
-        
+
       int type = a & 0xf0;
       if (type == ME_NOTEON && c == 0) {
             type = ME_NOTEOFF;
             c = 64;
             }
-            
+
       const int channel = a & 0x0f;
-      
-      const int port    = synti->midiPort();        
-      
+
+      const int port    = synti->midiPort();
+
       if(port != -1)
       {
         // Time-stamp the event.
         MidiPlayEvent event(MusEGlobal::audio->curFrame(), port, channel, type, b, c);
-      
-        #ifdef DSSI_DEBUG   
-        printf("DssiSynthIF::oscMidi midi event port:%d type:%d chn:%d a:%d b:%d\n", event.port(), event.type(), event.channel(), event.dataA(), event.dataB());  
+
+        #ifdef DSSI_DEBUG
+        printf("DssiSynthIF::oscMidi midi event port:%d type:%d chn:%d a:%d b:%d\n", event.port(), event.type(), event.channel(), event.dataA(), event.dataB());
         #endif
-        
+
         // Just in case someone decides to send controllers, sysex, or stuff
         //  OTHER than "test notes", contrary to the rules...
         // Since this is a thread other than audio or gui, it may not be safe to
@@ -2107,13 +2107,19 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
         //  would not be safe here. Ask the gui to do it for us.
         // Is it a controller message? Send the message to the gui.
         //if(event.translateCtrlNum() >= 0)
-          MusEGlobal::song->putIpcInEvent(event);
-          
+        {
+          Song::IpcEventItem ipci;
+          ipci._type = Song::IpcEventItem::MidiEvent;
+          ipci._mpe = event;
+          ipci._sif = nullptr;
+          MusEGlobal::song->putIpcInEvent(ipci);
+        }
+
         // Send the message to the device.
         if(MidiDevice* md = MusEGlobal::midiPorts[port].device())
           md->putEvent(event, MidiDevice::Late);
       }
-      
+
       return 0;
       }
 
@@ -2422,7 +2428,7 @@ void DssiSynthIF::enableAllControllers(bool v)
   for(unsigned long i = 0; i < _synth->_controlInPorts; ++i)
     _controls[i].enCtrl = v;
 }
-void DssiSynthIF::updateControllers() { }
+
 void DssiSynthIF::activate()
 {
   if(_curActiveState)

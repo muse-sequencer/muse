@@ -1587,7 +1587,7 @@ bool processMidiToAudioControl(
       // Unlike our built-in gui controls, there is not much choice here but to
       //  just do this:
       if ( (at == AUTO_WRITE) ||
-          (at == AUTO_READ && !playing) ||
+          (at == AUTO_READ /*&& !playing*/) ||
           (at == AUTO_TOUCH) ||
           (at == AUTO_LATCH) )
         atrack->enableController(id, false);

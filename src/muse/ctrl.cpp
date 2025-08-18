@@ -1592,7 +1592,7 @@ bool CtrlList::read(Xml& xml)
                         {
                               ok = _displayColor.isValidColorName(xml.s2());
                               if (ok)
-                                _displayColor.fromString(xml.s2());
+                                _displayColor = QColor::fromString(xml.s2());
                               else
                               {
                                 fprintf(stderr, "CtrlList::read failed reading color string: %s\n", xml.s2().toLocal8Bit().constData());

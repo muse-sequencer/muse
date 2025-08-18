@@ -166,6 +166,7 @@ MusECore::AudioTrack* SynthIF::track() const             { return static_cast < 
 void SynthIF::enableController(unsigned long, bool)  { }
 bool SynthIF::controllerEnabled(unsigned long) const   { return true;}
 void SynthIF::enableAllControllers(bool)               { }
+void SynthIF::updateController(unsigned long /*i*/)      { }
 void SynthIF::updateControllers()                        { }
 void SynthIF::activate()
 {
@@ -1194,7 +1195,16 @@ void SynthI::configure(const PluginConfiguration& config, PluginIBase::Configure
   if(opts & PluginIBase::ConfigCustomData)
   {
     if(_sif->setCustomData(config._accumulatedCustomParams))
+    {
       hasCustomData = true;
+      const long unsigned int params = _sif->parameters();
+      for(long unsigned int i = 0; i < params; ++i)
+      {
+        // Disable any automation controller streams so What You See Is What Was Last Stored by the plugin.
+        // The process routine will update our own automation controllers with the new values from the plugin.
+        _sif->enableController(i, false);
+      }
+    }
   }
 
   // Ignore parameters if there is custom data.
@@ -1210,9 +1220,20 @@ void SynthI::configure(const PluginConfiguration& config, PluginIBase::Configure
          ipcl != _initConfig._initParams.cend(); ++ipcl)
     {
       const PluginControlConfig &cc = ipcl->second;
-      if(cc._ctlnum < 0 || (long unsigned int)cc._ctlnum >= params)
-        continue;
-      _sif->setParameter(cc._ctlnum, cc._val);
+      if(cc._ctlnum >= 0 && (unsigned long)cc._ctlnum < params)
+      {
+        _sif->setParameter(cc._ctlnum, cc._val);
+        // Disable any controller automation streams so What You See Is What Was Last Stored by us.
+        // The process routine will update our own automation controllers with the new values from the plugin.
+        _sif->enableController(cc._ctlnum, false);
+      }
+      else
+      {
+        fprintf(stderr, "SynthI::configure(%d %s, %f) controller number out of range\n",
+          cc._ctlnum, cc._name.toLocal8Bit().constData(), cc._val);
+        // Don't break. Let it continue.
+        //break;
+      }
     }
   }
 

@@ -1,3 +1,24 @@
+18.08.2025
+    * Introducing MusE for Qt6: (Tim)
+      Converted entire project to Qt6. It was a MAJOR hand-editing effort.
+      Currently resides in a branch "qt6_attempt_1".
+      Tested OK so far loading songs.
+      Only possible area to watch is some functions involving deprecated QDesktopWidget
+       which is hard to replace.
+
+17.08.2025
+    - Fixed issue 1299: Regression vst controls/presets. (Tim)
+      Caused by fixes at 13.05.2025 and before.
+      Major rewrite of vst processing and control handling.
+    - Vst plugin states are now restored verbatim as they were saved, according to their state (chunk) data.
+      Previously, control states were restored according to any automation controller graph values.
+      At song load, any automation graphs are now initially disabled so that state data takes priority.
+    - Reload midi program names when requested by vst plugins (pianoteq etc.).
+    - Update our generic ui controls when program is changed from vst native gui (if no automation graph).
+    - Update our generic ui controls when midi assignment is operated from vst native gui (if no automation graph).
+    - Fixed (again) vst native window open state not updated when closed, menu item still said open.
+    - General: Operating a midi assignment (ours) can now interrupt playback of automation controller graphs.
+      Previously it would not disable the graphs in playback mode.
 17.05.2025
     - Replaced QRegExp with QRegularExpression in savenewrevisiondialog.cpp (Tim)
 16.05.2025

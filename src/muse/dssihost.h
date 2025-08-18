@@ -204,7 +204,6 @@ class DssiSynthIF : public SynthIF
       void enableController(unsigned long i, bool v = true);
       bool controllerEnabled(unsigned long i) const;          
       void enableAllControllers(bool v = true);
-      void updateControllers();
       unsigned long parameters() const;                            
       unsigned long parametersOut() const;
       void setParam(unsigned long i, double val); 

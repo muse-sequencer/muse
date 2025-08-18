@@ -108,8 +108,8 @@ Song::Song(const char* name)
 
       _audioCtrlMoveModeBegun = false;
 
-      _ipcInEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
-      _ipcOutEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
+      _ipcInEventBuffers = new LockFreeMPSCRingBuffer<IpcEventItem>(16384);
+      _ipcOutEventBuffers = new LockFreeMPSCRingBuffer<IpcEventItem>(16384);
 
       _ipcCtrlGUIMessages = new LockFreeMPSCRingBuffer<CtrlGUIMessage>(4096);
   
@@ -5017,9 +5017,8 @@ void Song::seqSignal(int fd)
                         }
                         break;
                   case 'N':
-                        // Re-enable all track and plugin controllers, and synth controllers if applicable,
-                        //  and clear all track record event lists.
-                        clearRecAutomation(true);
+                        // Clear all track record event lists.
+                        clearRecAutomation();
                         break;
                   case 'S':   // shutdown audio
                         MusEGlobal::muse->seqStop();
@@ -5705,7 +5704,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
 //   calling, and that may not be safe from threads other than gui or audio.
 //---------------------------------------------------------
 
-bool Song::putIpcInEvent(const MidiPlayEvent& ev)
+bool Song::putIpcInEvent(const IpcEventItem& ev)
 {
   if(!_ipcInEventBuffers->put(ev))
   {
@@ -5721,7 +5720,7 @@ bool Song::putIpcInEvent(const MidiPlayEvent& ev)
 //  Called by gui thread only. Returns true on success.
 //---------------------------------------------------------
 
-bool Song::putIpcOutEvent(const MidiPlayEvent& ev)
+bool Song::putIpcOutEvent(const IpcEventItem& ev)
 {
   if(!_ipcOutEventBuffers->put(ev))
   {
@@ -5740,109 +5739,138 @@ bool Song::putIpcOutEvent(const MidiPlayEvent& ev)
 bool Song::processIpcInEventBuffers()
 {
   PendingOperationList operations;
-  MidiPlayEvent buf_ev;
+  IpcEventItem buf_ev;
   int port, chan, ctrl;
   MidiPort* mp;
   iMidiCtrlValList imcvl;
   MidiCtrlValListList* mcvll;
   MidiCtrlValList* mcvl;
-  
+
   //-----------------------------------------------------------
-  // First pass: Peek into the buffers and find out if any 
+  // First pass: Peek into the buffers and find out if any
   //  controllers need to be created here in the gui thread.
   //-----------------------------------------------------------
-  
-  // False = don't use the size snapshot, but update it.
+
   const unsigned int sz = _ipcInEventBuffers->getSize();
   for(unsigned int i = 0; i < sz; ++i)
   {
     buf_ev = _ipcInEventBuffers->peek(i);
-    port = buf_ev.port();
-    if(port < 0 || port >= MusECore::MIDI_PORTS)
-      continue;
-    chan = buf_ev.channel();
-    if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS)
-      continue;
-    
-    ctrl = buf_ev.translateCtrlNum();
-    // Event translates to a controller?
-    if(ctrl < 0)
-      continue;
-    
-    mp = &MusEGlobal::midiPorts[port];
-    mcvll = mp->controller();
-
-    // Does the controller exist?
-    imcvl = mcvll->find(chan, ctrl);
-    if(imcvl == mcvll->end())
+    switch(buf_ev._type)
     {
-      // Controller does not exist. Prepare a pending operation.
-      PendingOperationItem poi(mcvll, 0, chan, ctrl, PendingOperationItem::AddMidiCtrlValList);
-      // Have we already created and prepared this controller? Look in the operations list.
-      iPendingOperation ipos = operations.findAllocationOp(poi);
-      if(ipos == operations.end())
+      case IpcEventItem::MidiEvent:
       {
-        // We have not created and prepared the controller. Create it now.
-        mcvl = new MidiCtrlValList(ctrl);
-        // Set the operation controller member now.
-        poi._mcvl = mcvl;
-        // Add the operation to the pending operations.
-        operations.add(poi);
+        port = buf_ev._mpe.port();
+        if(port < 0 || port >= MusECore::MIDI_PORTS)
+          continue;
+        chan = buf_ev._mpe.channel();
+        if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS)
+          continue;
+
+        ctrl = buf_ev._mpe.translateCtrlNum();
+        // Event translates to a controller?
+        if(ctrl < 0)
+          continue;
+
+        mp = &MusEGlobal::midiPorts[port];
+        mcvll = mp->controller();
+
+        // Does the controller exist?
+        imcvl = mcvll->find(chan, ctrl);
+        if(imcvl == mcvll->end())
+        {
+          // Controller does not exist. Prepare a pending operation.
+          PendingOperationItem poi(mcvll, 0, chan, ctrl, PendingOperationItem::AddMidiCtrlValList);
+          // Have we already created and prepared this controller? Look in the operations list.
+          iPendingOperation ipos = operations.findAllocationOp(poi);
+          if(ipos == operations.end())
+          {
+            // We have not created and prepared the controller. Create it now.
+            mcvl = new MidiCtrlValList(ctrl);
+            // Set the operation controller member now.
+            poi._mcvl = mcvl;
+            // Add the operation to the pending operations.
+            operations.add(poi);
+          }
+        }
       }
+      break;
+
+      case IpcEventItem::QueryPrograms:
+      {
+        if(buf_ev._sif)
+        {
+          // Get allocated data representing the list of programs.
+          // The operation will take ownership of the data and delete it when done.
+          void *data = buf_ev._sif->getPrograms();
+          if(data)
+            operations.add(PendingOperationItem(buf_ev._sif, data, PendingOperationItem::ModifyPluginPrograms));
+        }
+      }
+      break;
     }
   }
 
-  // Execute any operations to create controllers.
+  // Execute any required operations.
   // This waits for audio process thread to execute it.
   if(!operations.empty())
     MusEGlobal::audio->msgExecutePendingOperations(operations, true);
-  
+
   //-----------------------------------------------------------
   // Second pass: Read the buffers and set the controller values.
   // For the moment, the writer threads may have also put some more events
   //  into these buffers while they checked if the controller existed.
   //-----------------------------------------------------------
-  
+
   for(unsigned int i = 0; i < sz; ++i)
   {
     if(!_ipcInEventBuffers->get(buf_ev))
       continue;
-    
-    port = buf_ev.port();
-    if(port < 0 || port >= MusECore::MIDI_PORTS)
-      continue;
-    chan = buf_ev.channel();
-    if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS)
-      continue;
-    
-    ctrl = buf_ev.translateCtrlNum();
-    // Event translates to a controller?
-    if(ctrl < 0)
-      continue;
-    
-    mp = &MusEGlobal::midiPorts[port];
-    mcvll = mp->controller();
 
-    // Put the event BACK INTO the midi port's event buffer so that 
-    //  the port will process it 'where it left off' before it put 
-    //  this controller creation event into this ring buffer.
-    // It also allows the port to call updateDrumMap in the audio thread. 
-    // Keep the time intact, so the driver will at least play them in 
-    //  sequence even though they will all be 'bunched up' at frame zero.
-    // Make sure the controller REALLY was created before proceeding,
-    //  otherwise the mechanism might get stuck in a continuous loop.
-//     imcvl = mcvll->find(chan, ctrl);
-//     if(imcvl != mcvll->end())
+    switch(buf_ev._type)
     {
-      //mp->putHwCtrlEvent(buf_ev);
-      // Let's bypass the putHwCtrlEvent and save some time -
-      //  put directly into the midi port's controller event buffers.
-      // This will also prevent getting stuck in continuous loop.
-      if(!_ipcOutEventBuffers->put(buf_ev))
+      case IpcEventItem::MidiEvent:
       {
-        fprintf(stderr, "Error: Song::processIpcInEventBuffers(): Midi port controller fifo overflow\n");
-        continue;
+        port = buf_ev._mpe.port();
+        if(port < 0 || port >= MusECore::MIDI_PORTS)
+          continue;
+        chan = buf_ev._mpe.channel();
+        if(chan < 0 || chan >= MusECore::MUSE_MIDI_CHANNELS)
+          continue;
+
+        ctrl = buf_ev._mpe.translateCtrlNum();
+        // Event translates to a controller?
+        if(ctrl < 0)
+          continue;
+
+        mp = &MusEGlobal::midiPorts[port];
+        mcvll = mp->controller();
+
+        // Put the event BACK INTO the midi port's event buffer so that
+        //  the port will process it 'where it left off' before it put
+        //  this controller creation event into this ring buffer.
+        // It also allows the port to call updateDrumMap in the audio thread.
+        // Keep the time intact, so the driver will at least play them in
+        //  sequence even though they will all be 'bunched up' at frame zero.
+        // Make sure the controller REALLY was created before proceeding,
+        //  otherwise the mechanism might get stuck in a continuous loop.
+    //     imcvl = mcvll->find(chan, ctrl);
+    //     if(imcvl != mcvll->end())
+        {
+          //mp->putHwCtrlEvent(buf_ev);
+          // Let's bypass the putHwCtrlEvent and save some time -
+          //  put directly into the midi port's controller event buffers.
+          // This will also prevent getting stuck in continuous loop.
+          if(!_ipcOutEventBuffers->put(buf_ev))
+          {
+            fprintf(stderr, "Error: Song::processIpcInEventBuffers(): Midi port controller fifo overflow\n");
+            continue;
+          }
+        }
       }
+      break;
+
+      case IpcEventItem::QueryPrograms:
+      break;
     }
   }
 
@@ -5860,17 +5888,27 @@ bool Song::processIpcOutEventBuffers()
   // Receive hardware state events sent from various threads to this audio thread.
   // Update hardware state so gui controls are updated.
   const int sz = _ipcOutEventBuffers->getSize();
-  MidiPlayEvent ev;
+  IpcEventItem ev;
   for(int i = 0; i < sz; ++i)
   {
     if(!_ipcOutEventBuffers->get(ev))
       continue;
-    const int port = ev.port();
-    if(port < 0 || port >= MusECore::MIDI_PORTS)
-      continue;
-    // Handle the event. Tell the gui NOT to create controllers as needed,
-    //  that should be done before it ever gets here.
-    MusEGlobal::midiPorts[port].handleGui2AudioEvent(ev, false);
+    switch(ev._type)
+    {
+      case IpcEventItem::MidiEvent:
+      {
+        const int port = ev._mpe.port();
+        if(port < 0 || port >= MusECore::MIDI_PORTS)
+          continue;
+        // Handle the event. Tell the gui NOT to create controllers as needed,
+        //  that should be done before it ever gets here.
+        MusEGlobal::midiPorts[port].handleGui2AudioEvent(ev._mpe, false);
+      }
+      break;
+
+      case IpcEventItem::QueryPrograms:
+      break;
+    }
   }
   return true;
 }
@@ -6094,7 +6132,7 @@ void Song::updateSoloStates()
 //   Enable all track and plugin controllers, and synth controllers if applicable, which are NOT in AUTO_WRITE mode.
 //---------------------------------------------------------
 
-void Song::reenableTouchedControllers()
+void Song::reenableTouchedControllers(bool forceAll)
 {
   for(iTrack it = _tracks.begin(); it != _tracks.end(); ++it)
   {
@@ -6102,7 +6140,8 @@ void Song::reenableTouchedControllers()
       continue;
     AudioTrack* t = static_cast<AudioTrack*>(*it);
     AutomationType at = t->automationType();
-    if(at == AUTO_WRITE || at == AUTO_LATCH)  // Exclude write/latch mode because controls need to remain disabled if pressed before play.
+    // Exclude write/latch mode because controls need to remain disabled if pressed before play.
+    if(!forceAll && (at == AUTO_WRITE || at == AUTO_LATCH))
       continue;
     t->enableAllControllers();
   }
@@ -6112,11 +6151,11 @@ void Song::reenableTouchedControllers()
 //   clearRecAutomation
 //---------------------------------------------------------
 
-void Song::clearRecAutomation(bool clearList)
+void Song::clearRecAutomation()
 {
   // Clear all pan/vol pressed and touched flags, and all rec event lists, if needed.
   for (iTrack it = tracks()->begin(); it != tracks()->end(); ++it)
-    ((Track*)(*it))->clearRecAutomation(clearList);
+    ((Track*)(*it))->clearRecAutomation();
 }
 
 //---------------------------------------------------------

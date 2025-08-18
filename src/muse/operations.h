@@ -55,6 +55,7 @@ class AudioConverterSettingsGroup;
 class AudioConverterPluginI;
 class MidiRemote;
 class PluginI;
+class PluginIBase;
 
 typedef std::list < iMidiCtrlValList > MidiCtrlValListIterators_t;
 typedef MidiCtrlValListIterators_t::iterator iMidiCtrlValListIterators_t;
@@ -168,6 +169,8 @@ struct PendingOperationItem
     AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
     ModifyMidiCtrlValList,
 
+    ModifyPluginPrograms,
+
     RemapDrumControllers,
     AddAudioCtrlVal,   AddAudioCtrlValStruct, DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
     AddAudioCtrlValList, DeleteAudioCtrlValList, ModifyAudioCtrlValListList,
@@ -248,6 +251,7 @@ struct PendingOperationItem
     MetroAccentsMap* _newMetroAccentsMap;
     AudioConverterSettingsGroup* _audio_converter_settings;
     MidiRemote* _newMidiRemote;
+    void *_newPluginPrograms;
   };
 
   iPart _iPart; 
@@ -314,6 +318,7 @@ struct PendingOperationItem
     bool _marker_lock;
     CtrlVal* _audCtrlValStruct;
     PluginI *_pluginI;
+    PluginIBase *_pluginIBase;
   };
 
   //========================================================================
@@ -618,6 +623,9 @@ struct PendingOperationItem
 
   PendingOperationItem(MidiAudioCtrlMap* dst, MidiAudioCtrlMap* src, PendingOperationType type = ModifyMidiAudioCtrlMap)
     { _type = type; _midi_audio_ctrl_map = dst; _src_midi_audio_ctrl_map = src; }
+
+  PendingOperationItem(PluginIBase* dst, void* src, PendingOperationType type = ModifyPluginPrograms)
+    { _type = type; _pluginIBase = dst; _newPluginPrograms = src; }
 
   PendingOperationItem()
     { _type = Uninitialized; }

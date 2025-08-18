@@ -107,6 +107,21 @@ class Song : public QObject {
           FAST_REWIND,
       };
 
+      struct IpcEventItem
+      {
+        enum Type
+        {
+          // MidiPlayEvent is valid.
+          MidiEvent,
+          // SynthIF is valid.
+          QueryPrograms
+        };
+
+        Type _type;
+        MidiPlayEvent _mpe;
+        SynthIF *_sif;
+      };
+
    private:
       // fifos for feeding info events into the GUI
       LockFreeMPSCRingBuffer<MidiRecordEvent> *realtimeMidiEvents;
@@ -138,11 +153,11 @@ class Song : public QObject {
       float _fDspLoad;
       long _xRunsCount;
 
-      // Receives events from any threads. For now, specifically for creating new
+      // Receives events from any threads. For example for creating new
       //  midi controllers in the gui thread and adding them safely to the controller lists.
-      LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
-      LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcOutEventBuffers;
-      
+      LockFreeMPSCRingBuffer<IpcEventItem> *_ipcInEventBuffers;
+      LockFreeMPSCRingBuffer<IpcEventItem> *_ipcOutEventBuffers;
+
       // Receives messages about audio controller changes from any thread, such as assigning
       //  midi messages to an audio controller from inside the audio thread.
       // This supports more information than just a song changed signal, so that drawing updates
@@ -540,8 +555,9 @@ class Song : public QObject {
       void readRoute(Xml& xml);
       void recordEvent(MidiTrack*, Event&);
       // Enable all track and plugin controllers, and synth controllers if applicable, which are NOT in AUTO_WRITE mode.
-      void reenableTouchedControllers();  
-      void clearRecAutomation(bool clearList);
+      // If forceAll is true, all controllers are re-enabled regardless of mode.
+      void reenableTouchedControllers(bool forceAll = false);
+      void clearRecAutomation();
       // Fills operations if given, otherwise creates and executes its own operations list.
       void processAutomationEvents(Undo* operations = 0);
       void processMasterRec();
@@ -558,10 +574,10 @@ class Song : public QObject {
       // NOTE: Although the ring buffer is multi-writer, call this from audio thread only for now, unless
       //  you know what you are doing because the thread needs to ask whether the controller exists before
       //  calling, and that may not be safe from threads other than gui or audio.
-      bool putIpcInEvent(const MidiPlayEvent& ev);
+      bool putIpcInEvent(const IpcEventItem& ev);
       // Put an event into the IPC event ring buffer for the audio thread to process.
       // Called by gui thread only. Returns true on success.
-      bool putIpcOutEvent(const MidiPlayEvent& ev);
+      bool putIpcOutEvent(const IpcEventItem& ev);
       // Process any special IPC audio thread - to - gui thread messages.
       // Called by gui thread only. Returns true on success.
       bool processIpcInEventBuffers();

@@ -27,6 +27,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include <QThread>
+
 #include "app.h"
 #include "song.h"
 #include "mididev.h"
@@ -184,6 +186,8 @@ Audio::Audio()
       startExternalRecTick = 0;
       endExternalRecTick = 0;
       
+      _ignoreNextEnableAllControllers = false;
+
       //---------------------------------------------------
       //  establish pipes/sockets
       //---------------------------------------------------
@@ -253,21 +257,95 @@ bool Audio::start()
                }
           }
 
+      const int sleeptime = 100;
+      // Wait for say 4 cycles plus a few hundred ms for any thread IPC delays etc.
+      // Avoid divide by zero in case for some reason samplerate is zero.
+      int sleepcount =
+        ((MusEGlobal::sampleRate > 0 ? (MusEGlobal::segmentSize / MusEGlobal::sampleRate) : 1) * 4 + 200) / sleeptime;
+      // Slap a lower limit on it. Say 100ms.
+      if(sleepcount <= 0)
+        sleepcount = 1;
+      // Slap an upper limit on it. Say 4s.
+      if(sleepcount > 40)
+        sleepcount = 40;
+
       _running = true;  // Set before we start to avoid error messages in process.
+      _ignoreNextEnableAllControllers = true;
       if(!MusEGlobal::audioDevice->start(MusEGlobal::realTimePriority))
       {
         fprintf(stderr, "Failed to start audio!\n");
+        _ignoreNextEnableAllControllers = false;
         _running = false;
         return false;
+      }
+      // Wait until the flag is reset by seek().
+      int ti = 0;
+      for(; ti < sleepcount; ++ti)
+      {
+        QThread::msleep(sleeptime);
+        if(!_ignoreNextEnableAllControllers)
+          break;
+      }
+      if(ti >= sleepcount)
+      {
+        _ignoreNextEnableAllControllers = false;
+        // Don't bother warning. It's expected in some cases.
+        // It's OK. It just means the driver probably ignores stopping in stop mode.
+        // So seek would not be called and the controllers not re-enabled since the slow sync callback is not called.
+        //fprintf(stderr, "Warning: Audio::start: audioDevice->start: ignoreNextEnableAllControllers was not reset!\n");
       }
 
       // shall we really stop JACK transport and locate to
       // saved position?
 
-      MusEGlobal::audioDevice->stopTransport();  
+      // Before we stop the transport, tell the sync() routine that when it calls seek(), DON'T re-enable all controllers.
+      // TESTED: Our own dummy driver treats stopping in stop mode with a slow sync and seek call, so the flag is reset.
+      // But using the jack driver didn't reset the flag. (I bypassed a conditional in stopTransport() to force stop.)
+      // This may mean it ignores stopping in stop mode.
+      _ignoreNextEnableAllControllers = true;
+      MusEGlobal::audioDevice->stopTransport();
+      // Wait until the flag is reset by seek().
+      ti = 0;
+      for(; ti < sleepcount; ++ti)
+      {
+        QThread::msleep(sleeptime);
+        if(!_ignoreNextEnableAllControllers)
+          break;
+      }
+      if(ti >= sleepcount)
+      {
+        _ignoreNextEnableAllControllers = false;
+        // Don't bother warning. It's expected in some cases.
+        // It's OK. It just means the driver probably ignores stopping in stop mode.
+        // So seek would not be called and the controllers not re-enabled since the slow sync callback is not called.
+        //fprintf(stderr, "Warning: Audio::start: stopTransport: ignoreNextEnableAllControllers was not reset!\n");
+      }
+      // Before we seek the transport, tell the sync() routine that when it calls seek(), DON'T re-enable all controllers.
+      // When loading a song and the audio is stopped before loading then restarted after, this allows synths and
+      //  plugins to disable any controls where state data exists (custom data or control values).
+      // The state data takes priority over automation contollers.
+      // Since this start() comes AFTER song loading, we need a way to prevent seekTransport(), below, from causing
+      //  sync() to cause seek() to re-enable all the controllers.
+      // Thus preserving the existing state of all the controller enable flags, just this one time only.
+      // The flag is reset in seek().
+      _ignoreNextEnableAllControllers = true;
+
+      MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());
       
-      MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());   
-      
+      // Wait until the flag is reset by seek().
+      ti = 0;
+      for(; ti < sleepcount; ++ti)
+      {
+        QThread::msleep(sleeptime);
+        if(!_ignoreNextEnableAllControllers)
+          break;
+      }
+      if(ti >= sleepcount)
+      {
+        _ignoreNextEnableAllControllers = false;
+        fprintf(stderr, "Warning: Audio::start: seekTransport: ignoreNextEnableAllControllers was not reset!\n");
+      }
+
       // Should be OK to start this 'leisurely' timer only after everything
       //  else has been started.
       MusEGlobal::muse->setHeartBeat();
@@ -1577,14 +1655,24 @@ void Audio::seek(const Pos& p)
           //fprintf(stderr, "Audio::seek: pos:%d\n", _pos.frame());
           MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true);
         }
-              
-        write(sigFd, "G", 1);   // signal seek to gui
-        // Signal enable all controllers and clear all track automation record lists to gui.
+
+        // Force enable all controllers, and signal clear all track automation record lists to gui (below).
         // NOT if we're already there.
         // This is to preserve controller enabled states and any initial value stored while in
         //  automation 'write' mode while transport stopped.
+        // Also NOT in the case of having just started the audio and seeked the transport.
+        // Thus preserving the existing state of all the controller enable flags, just this one time only.
+        if(!alreadyThere && !_ignoreNextEnableAllControllers)
+          MusEGlobal::song->reenableTouchedControllers(true);
+        // Reset this 'one-shot' flag.
+        _ignoreNextEnableAllControllers = false;
+
+        write(sigFd, "G", 1);   // signal seek to gui
+
+        // Signal clear all track automation record lists to gui.
         if(!alreadyThere)
           write(sigFd, "N", 1);
+
       }
       }
 

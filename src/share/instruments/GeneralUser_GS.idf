@@ -1,0 +1,704 @@
+<?xml version="1.0" ?>
+<muse version="2.1">
+    <MidiInstrument name="GeneralUser-GS-2.0.2">
+        <PatchGroup name="Piano">
+            <Patch name="Grand Piano" hbank="0" prog="0" />
+            <Patch name="Piano and Str.-Fade" hbank="11" prog="0" />
+            <Patch name="Bell Piano" hbank="12" prog="0" />
+            <Patch name="Bright Grand Piano" hbank="0" prog="1" />
+            <Patch name="Piano and Str.-Sus" hbank="11" prog="1" />
+            <Patch name="Electric Grand Piano" hbank="0" prog="2" />
+            <Patch name="Honky-Tonk Piano" hbank="0" prog="3" />
+            <Patch name="Tine Electric Piano" hbank="0" prog="4" />
+            <Patch name="Chorused Tine EP" hbank="8" prog="4" />
+            <Patch name="Tine and FM EPs" hbank="11" prog="4" />
+            <Patch name="Bell Tine EP" hbank="12" prog="4" />
+            <Patch name="FM Electric Piano" hbank="0" prog="5" />
+            <Patch name="Chorused FM EP" hbank="8" prog="5" />
+            <Patch name="Piano and FM EP" hbank="11" prog="5" />
+            <Patch name="Harpsichord" hbank="0" prog="6" />
+            <Patch name="Coupled Harpsichord" hbank="8" prog="6" />
+            <Patch name="Harpsichord noVel" hbank="11" prog="6" />
+            <Patch name="Coupled Harpsi noVel" hbank="12" prog="6" />
+            <Patch name="Clavinet" hbank="0" prog="7" />
+        </PatchGroup>
+        <PatchGroup name="Chromatic Perc">
+            <Patch name="Celeste" hbank="0" prog="8" />
+            <Patch name="Tinkling Bells" hbank="11" prog="8" />
+            <Patch name="Glockenspiel" hbank="0" prog="9" />
+            <Patch name="Music Box" hbank="0" prog="10" />
+            <Patch name="Christmas Bells" hbank="12" prog="10" />
+            <Patch name="Vibraphone" hbank="0" prog="11" />
+            <Patch name="Vibraphone No Trem." hbank="11" prog="11" />
+            <Patch name="Marimba" hbank="0" prog="12" />
+            <Patch name="Xylophone" hbank="0" prog="13" />
+            <Patch name="Tubular Bells" hbank="0" prog="14" />
+            <Patch name="Church Bells" hbank="8" prog="14" />
+            <Patch name="Carillon" hbank="9" prog="14" />
+            <Patch name="Bell Tower" hbank="11" prog="14" />
+            <Patch name="Dulcimer" hbank="0" prog="15" />
+        </PatchGroup>
+        <PatchGroup name="Organ">
+            <Patch name="Tonewheel Organ" hbank="0" prog="16" />
+            <Patch name="Detuned Tnwl. Organ" hbank="8" prog="16" />
+            <Patch name="Tonewheel Org noVel" hbank="11" prog="16" />
+            <Patch name="Detun Tnwl Org noVel" hbank="12" prog="16" />
+            <Patch name="Percussive Organ" hbank="0" prog="17" />
+            <Patch name="Detuned Perc. Organ" hbank="8" prog="17" />
+            <Patch name="Percussive Org noVel" hbank="11" prog="17" />
+            <Patch name="Detun Perc Org noVel" hbank="12" prog="17" />
+            <Patch name="Rock Organ" hbank="0" prog="18" />
+            <Patch name="Rock Organ noVel" hbank="11" prog="18" />
+            <Patch name="Pipe Organ" hbank="0" prog="19" />
+            <Patch name="Pipe Organ 2" hbank="8" prog="19" />
+            <Patch name="Pipe Organ noVel" hbank="11" prog="19" />
+            <Patch name="Pipe Organ 2 noVel" hbank="12" prog="19" />
+            <Patch name="Reed Organ" hbank="0" prog="20" />
+            <Patch name="Reed Organ noVel" hbank="11" prog="20" />
+            <Patch name="Accordion" hbank="0" prog="21" />
+            <Patch name="Italian Accordion" hbank="8" prog="21" />
+            <Patch name="Harmonica" hbank="0" prog="22" />
+            <Patch name="Bandoneon" hbank="0" prog="23" />
+        </PatchGroup>
+        <PatchGroup name="Guitar">
+            <Patch name="Nylon Guitar" hbank="0" prog="24" />
+            <Patch name="Ukulele" hbank="8" prog="24" />
+            <Patch name="Steel Guitar" hbank="0" prog="25" />
+            <Patch name="12-String Guitar" hbank="8" prog="25" />
+            <Patch name="Mandolin" hbank="16" prog="25" />
+            <Patch name="Jazz Guitar" hbank="0" prog="26" />
+            <Patch name="Hawaiian Guitar" hbank="8" prog="26" />
+            <Patch name="Clean Guitar" hbank="0" prog="27" />
+            <Patch name="Chorused Clean Gt." hbank="8" prog="27" />
+            <Patch name="Clean Guitar 2" hbank="12" prog="27" />
+            <Patch name="Muted Guitar" hbank="0" prog="28" />
+            <Patch name="Funk Guitar" hbank="8" prog="28" />
+            <Patch name="Overdrive Guitar" hbank="0" prog="29" />
+            <Patch name="Wah Guitar (CC21)" hbank="11" prog="29" />
+            <Patch name="Distortion Guitar" hbank="0" prog="30" />
+            <Patch name="Feedback Guitar" hbank="8" prog="30" />
+            <Patch name="Guitar Harmonics" hbank="0" prog="31" />
+            <Patch name="Guitar Feedback" hbank="8" prog="31" />
+        </PatchGroup>
+        <PatchGroup name="Bass">
+            <Patch name="Acoustic Bass" hbank="0" prog="32" />
+            <Patch name="Finger Bass" hbank="0" prog="33" />
+            <Patch name="Pick Bass" hbank="0" prog="34" />
+            <Patch name="Fretless Bass" hbank="0" prog="35" />
+            <Patch name="Slap Bass 1" hbank="0" prog="36" />
+            <Patch name="Slap Bass 2" hbank="0" prog="37" />
+            <Patch name="Synth Bass 1" hbank="0" prog="38" />
+            <Patch name="Synth Bass 101" hbank="1" prog="38" />
+            <Patch name="Acid Bass" hbank="8" prog="38" />
+            <Patch name="Techno Bass" hbank="11" prog="38" />
+            <Patch name="Mean Saw Bass" hbank="12" prog="38" />
+            <Patch name="Synth Bass 2" hbank="0" prog="39" />
+            <Patch name="Beef FM Bass" hbank="8" prog="39" />
+            <Patch name="Pulse Bass" hbank="11" prog="39" />
+        </PatchGroup>
+        <PatchGroup name="Strings/Orchestra">
+            <Patch name="Violin" hbank="0" prog="40" />
+            <Patch name="Viola" hbank="0" prog="41" />
+            <Patch name="Cello" hbank="0" prog="42" />
+            <Patch name="Double Bass" hbank="0" prog="43" />
+            <Patch name="Tremolo Strings" hbank="0" prog="44" />
+            <Patch name="Tremolo Strings Mono" hbank="1" prog="44" />
+            <Patch name="Pizzicato Strings" hbank="0" prog="45" />
+            <Patch name="Orchestral Harp" hbank="0" prog="46" />
+            <Patch name="Timpani" hbank="0" prog="47" />
+        </PatchGroup>
+        <PatchGroup name="Ensemble">
+            <Patch name="Fast Strings" hbank="0" prog="48" />
+            <Patch name="Fast Strings Mono" hbank="1" prog="48" />
+            <Patch name="Orchestra Pad" hbank="8" prog="48" />
+            <Patch name="Full Orchestra" hbank="12" prog="48" />
+            <Patch name="Woodwind Choir" hbank="13" prog="48" />
+            <Patch name="Slow Strings" hbank="0" prog="49" />
+            <Patch name="Slow Strings Mono" hbank="1" prog="49" />
+            <Patch name="Velo Strings" hbank="11" prog="49" />
+            <Patch name="Velo Strings Mono" hbank="12" prog="49" />
+            <Patch name="Synth Strings 1" hbank="0" prog="50" />
+            <Patch name="Synth Strings 3" hbank="8" prog="50" />
+            <Patch name="Synth Strings 4" hbank="11" prog="50" />
+            <Patch name="Synth Strings 2" hbank="0" prog="51" />
+            <Patch name="Synth Strings 5" hbank="11" prog="51" />
+            <Patch name="Concert Choir" hbank="0" prog="52" />
+            <Patch name="Concert Choir Mono" hbank="1" prog="52" />
+            <Patch name="Voice Oohs" hbank="0" prog="53" />
+            <Patch name="Synth Voice" hbank="0" prog="54" />
+            <Patch name="Orchestra Hit" hbank="0" prog="55" />
+        </PatchGroup>
+        <PatchGroup name="Brass">
+            <Patch name="Trumpet" hbank="0" prog="56" />
+            <Patch name="Trumpet 2" hbank="1" prog="56" />
+            <Patch name="Trombone" hbank="0" prog="57" />
+            <Patch name="Trombone 2" hbank="1" prog="57" />
+            <Patch name="Tuba" hbank="0" prog="58" />
+            <Patch name="Muted Trumpet" hbank="0" prog="59" />
+            <Patch name="French Horns" hbank="0" prog="60" />
+            <Patch name="Solo French Horn" hbank="1" prog="60" />
+            <Patch name="Brass Section" hbank="0" prog="61" />
+            <Patch name="Brass Section Mono" hbank="1" prog="61" />
+            <Patch name="Brass Section 2" hbank="8" prog="61" />
+            <Patch name="Brass Section 3" hbank="11" prog="61" />
+            <Patch name="Synth Brass 1" hbank="0" prog="62" />
+            <Patch name="Synth Brass 3" hbank="8" prog="62" />
+            <Patch name="Synth Brass 2" hbank="0" prog="63" />
+            <Patch name="Synth Brass 4" hbank="8" prog="63" />
+        </PatchGroup>
+        <PatchGroup name="Reed">
+            <Patch name="Soprano Sax" hbank="0" prog="64" />
+            <Patch name="Alto Sax" hbank="0" prog="65" />
+            <Patch name="Tenor Sax" hbank="0" prog="66" />
+            <Patch name="Baritone Sax" hbank="0" prog="67" />
+            <Patch name="Oboe" hbank="0" prog="68" />
+            <Patch name="English Horn" hbank="0" prog="69" />
+            <Patch name="Bassoon" hbank="0" prog="70" />
+            <Patch name="Clarinet" hbank="0" prog="71" />
+        </PatchGroup>
+        <PatchGroup name="Pipe">
+            <Patch name="Piccolo" hbank="0" prog="72" />
+            <Patch name="Flute" hbank="0" prog="73" />
+            <Patch name="Recorder" hbank="0" prog="74" />
+            <Patch name="Pan Flute" hbank="0" prog="75" />
+            <Patch name="Tin Whistle" hbank="24" prog="75" />
+            <Patch name="Tin Whistle Nm" hbank="25" prog="75" />
+            <Patch name="Tin Whistle Or" hbank="26" prog="75" />
+            <Patch name="Bottle Blow" hbank="0" prog="76" />
+            <Patch name="Shakuhachi" hbank="0" prog="77" />
+            <Patch name="Whistle" hbank="0" prog="78" />
+            <Patch name="Whistlin'" hbank="11" prog="78" />
+            <Patch name="Ocarina" hbank="0" prog="79" />
+        </PatchGroup>
+        <PatchGroup name="Synth Lead">
+            <Patch name="Square Lead" hbank="0" prog="80" />
+            <Patch name="Square Wave" hbank="1" prog="80" />
+            <Patch name="Sine Wave" hbank="8" prog="80" />
+            <Patch name="Square Lead 2" hbank="12" prog="80" />
+            <Patch name="Square Lead 3" hbank="13" prog="80" />
+            <Patch name="Saw Lead" hbank="0" prog="81" />
+            <Patch name="Saw Wave" hbank="1" prog="81" />
+            <Patch name="Doctor Solo" hbank="8" prog="81" />
+            <Patch name="Sawtooth Stab" hbank="11" prog="81" />
+            <Patch name="Saw Lead 2" hbank="12" prog="81" />
+            <Patch name="Saw Lead 3" hbank="13" prog="81" />
+            <Patch name="Synth Calliope" hbank="0" prog="82" />
+            <Patch name="Chiffer Lead" hbank="0" prog="83" />
+            <Patch name="Charang" hbank="0" prog="84" />
+            <Patch name="Solo Vox" hbank="0" prog="85" />
+            <Patch name="5th Saw Wave" hbank="0" prog="86" />
+            <Patch name="Bass and Lead" hbank="0" prog="87" />
+        </PatchGroup>
+        <PatchGroup name="Synth Pad">
+            <Patch name="Fantasia" hbank="0" prog="88" />
+            <Patch name="Harpsi Pad" hbank="11" prog="88" />
+            <Patch name="Fantasia 2" hbank="12" prog="88" />
+            <Patch name="Night Vision" hbank="13" prog="88" />
+            <Patch name="Warm Pad" hbank="0" prog="89" />
+            <Patch name="Solar Wind" hbank="11" prog="89" />
+            <Patch name="Solar Wind 2" hbank="12" prog="89" />
+            <Patch name="Polysynth" hbank="0" prog="90" />
+            <Patch name="Space Voice" hbank="0" prog="91" />
+            <Patch name="Bowed Glass" hbank="0" prog="92" />
+            <Patch name="Metal Pad" hbank="0" prog="93" />
+            <Patch name="Halo Pad" hbank="0" prog="94" />
+            <Patch name="Sweep Pad" hbank="0" prog="95" />
+        </PatchGroup>
+        <PatchGroup name="Synth SFX">
+            <Patch name="Ice Rain" hbank="0" prog="96" />
+            <Patch name="Mystery Pad" hbank="11" prog="96" />
+            <Patch name="Soundtrack" hbank="0" prog="97" />
+            <Patch name="Crystal" hbank="0" prog="98" />
+            <Patch name="Synth Mallet" hbank="1" prog="98" />
+            <Patch name="Synth Chime" hbank="11" prog="98" />
+            <Patch name="Atmosphere" hbank="0" prog="99" />
+            <Patch name="Brightness" hbank="0" prog="100" />
+            <Patch name="Bright Saw Stack" hbank="11" prog="100" />
+            <Patch name="Goblin" hbank="0" prog="101" />
+            <Patch name="Echo Drops" hbank="0" prog="102" />
+            <Patch name="Echo Pan" hbank="2" prog="102" />
+            <Patch name="Star Theme" hbank="0" prog="103" />
+        </PatchGroup>
+        <PatchGroup name="Ethnic">
+            <Patch name="Sitar" hbank="0" prog="104" />
+            <Patch name="Banjo" hbank="0" prog="105" />
+            <Patch name="Shamisen" hbank="0" prog="106" />
+            <Patch name="Koto" hbank="0" prog="107" />
+            <Patch name="Taisho Koto" hbank="8" prog="107" />
+            <Patch name="Kalimba" hbank="0" prog="108" />
+            <Patch name="Bagpipes" hbank="0" prog="109" />
+            <Patch name="Fiddle" hbank="0" prog="110" />
+            <Patch name="Shenai" hbank="0" prog="111" />
+        </PatchGroup>
+        <PatchGroup name="Percussive">
+            <Patch name="Tinker Bell" hbank="0" prog="112" />
+            <Patch name="Agogo" hbank="0" prog="113" />
+            <Patch name="Steel Drums" hbank="0" prog="114" />
+            <Patch name="Wood Block" hbank="0" prog="115" />
+            <Patch name="Castanets" hbank="8" prog="115" />
+            <Patch name="Taiko Drum" hbank="0" prog="116" />
+            <Patch name="Concert Bass Drum" hbank="8" prog="116" />
+            <Patch name="Melodic Tom" hbank="0" prog="117" />
+            <Patch name="Melodic Tom 2" hbank="8" prog="117" />
+            <Patch name="Synth Drum" hbank="0" prog="118" />
+            <Patch name="808 Tom" hbank="8" prog="118" />
+            <Patch name="Reverse Cymbal" hbank="0" prog="119" />
+            <Patch name="Cymbal Crash" hbank="11" prog="119" />
+            <Patch name="Tambourine" hbank="12" prog="119" />
+        </PatchGroup>
+        <PatchGroup name="SFX">
+            <Patch name="Fret Noise" hbank="0" prog="120" />
+            <Patch name="Cut Noise" hbank="1" prog="120" />
+            <Patch name="String Slap" hbank="2" prog="120" />
+            <Patch name="Breath Noise" hbank="0" prog="121" />
+            <Patch name="Fl. Key Click" hbank="1" prog="121" />
+            <Patch name="Filter Snap" hbank="11" prog="121" />
+            <Patch name="Seashore" hbank="0" prog="122" />
+            <Patch name="Rain" hbank="1" prog="122" />
+            <Patch name="Thunder" hbank="2" prog="122" />
+            <Patch name="Wind" hbank="3" prog="122" />
+            <Patch name="Stream" hbank="4" prog="122" />
+            <Patch name="Bubbles" hbank="5" prog="122" />
+            <Patch name="Howling Winds" hbank="11" prog="122" />
+            <Patch name="White Noise Wave" hbank="12" prog="122" />
+            <Patch name="Birds" hbank="0" prog="123" />
+            <Patch name="Dog" hbank="1" prog="123" />
+            <Patch name="Horse Gallop" hbank="2" prog="123" />
+            <Patch name="Bird 2" hbank="3" prog="123" />
+            <Patch name="Telephone 1" hbank="0" prog="124" />
+            <Patch name="Telephone 2" hbank="1" prog="124" />
+            <Patch name="Door Creaking" hbank="2" prog="124" />
+            <Patch name="Door" hbank="3" prog="124" />
+            <Patch name="Scratch" hbank="4" prog="124" />
+            <Patch name="Windchime" hbank="5" prog="124" />
+            <Patch name="Helicopter" hbank="0" prog="125" />
+            <Patch name="Car-Engine" hbank="1" prog="125" />
+            <Patch name="Car-Stop" hbank="2" prog="125" />
+            <Patch name="Car-Pass" hbank="3" prog="125" />
+            <Patch name="Car-Crash" hbank="4" prog="125" />
+            <Patch name="Siren" hbank="5" prog="125" />
+            <Patch name="Train" hbank="6" prog="125" />
+            <Patch name="Jet Plane" hbank="7" prog="125" />
+            <Patch name="Starship" hbank="8" prog="125" />
+            <Patch name="Burst Noise" hbank="9" prog="125" />
+            <Patch name="Applause" hbank="0" prog="126" />
+            <Patch name="Laughing" hbank="1" prog="126" />
+            <Patch name="Scream" hbank="2" prog="126" />
+            <Patch name="Punch" hbank="3" prog="126" />
+            <Patch name="Heart Beat" hbank="4" prog="126" />
+            <Patch name="Footsteps" hbank="5" prog="126" />
+            <Patch name="Gun Shot" hbank="0" prog="127" />
+            <Patch name="Machine Gun" hbank="1" prog="127" />
+            <Patch name="Lasergun" hbank="2" prog="127" />
+            <Patch name="Explosion" hbank="3" prog="127" />
+            <Patch name="Interference" hbank="11" prog="127" />
+            <Patch name="Shooting Star" hbank="12" prog="127" />
+        </PatchGroup>
+        <PatchGroup name="Drums">
+            <Patch name="Standard 1" hbank="127" prog="0" drum="1" />
+            <Patch name="Standard 2" hbank="127" prog="1" drum="1" />
+            <Patch name="Standard 3" hbank="127" prog="2" drum="1" />
+            <Patch name="Room" hbank="127" prog="8" drum="1" />
+            <Patch name="Power" hbank="127" prog="16" drum="1" />
+            <Patch name="Electronic" hbank="127" prog="24" drum="1" />
+            <Patch name="808/909" hbank="127" prog="25" drum="1" />
+            <Patch name="Dance" hbank="127" prog="26" drum="1" />
+            <Patch name="Jazz" hbank="127" prog="32" drum="1" />
+            <Patch name="Brush" hbank="127" prog="40" drum="1" />
+            <Patch name="Orchestra"  hbank="127" prog="48" drum="1" />
+            <Patch name="SFX"  hbank="127" prog="56" drum="1" />
+            <Patch name="CM-64/32L"  hbank="127" prog="127" drum="1" />
+                 
+        </PatchGroup>
+        <Controller name="Bank Select MSB" l="0" />
+        <Controller name="Modulation" l="1" />
+        <Controller name="Portamento time" l="5" />
+        <Controller name="Data Entry MSB" l="6" />
+        <Controller name="Volume" l="7" />
+        <Controller name="Pan" l="10" />
+        <Controller name="Expression" l="11" />
+        <Controller name="Bank Select LSB" l="32" />
+        <Controller name="Data Entry LSB" l="38" />
+        <Controller name="Hold 1" l="64" />
+        <Controller name="Portamento" l="65" />
+        <Controller name="Sostenuto" l="66" />
+        <Controller name="Soft" l="67" />
+        <Controller name="Portamento Control" l="84" />
+        <Controller name="Reverb Depth" l="91" />
+        <Controller name="Chorus Depth" l="93" />
+        <Controller name="Sel. LSB/MSB" l="98" />
+        <Controller name="Init. LSB/MSB" l="99" />
+        <Controller name="RPN LSB" l="100" />
+        <Controller name="RPN MSB" l="101" />
+        <Controller name="Reset All Controllers" l="121" />
+        <Controller name="All Notes Off" l="123" />
+
+    <Drummaps>
+      <entry>
+        <patch_collection hbank="127" prog="0-7" />
+        <drummap>
+          <entry pitch="27"> <name>High Q</name> </entry>
+          <entry pitch="28"> <name>Slap</name> </entry>
+          <entry pitch="29"> <name>Scratch Push</name> </entry>
+          <entry pitch="30"> <name>Scratch Pull</name> </entry>
+          <entry pitch="31"> <name>Sticks</name> </entry>
+          <entry pitch="32"> <name>Square Click</name> </entry>
+          <entry pitch="33"> <name>Metronome Click</name> </entry>
+          <entry pitch="34"> <name>Metronome Bell</name> </entry>
+          <entry pitch="35"> <name>Kick Drum 2</name> </entry>
+          <entry pitch="36"> <name>Kick Drum 1</name> </entry>
+          <entry pitch="38"> <name>Snare Drum 1</name> </entry>
+          <entry pitch="40"> <name>Snare Drum 2</name> </entry>
+          <entry pitch="41"> <name>Low Tom 2</name> </entry>
+          <entry pitch="43"> <name>Low Tom 1</name> </entry>
+          <entry pitch="45"> <name>Mid Tom 2</name> </entry>
+          <entry pitch="47"> <name>Mid Tom 1</name> </entry>
+          <entry pitch="48"> <name>High Tom 2</name> </entry>
+          <entry pitch="50"> <name>High Tom 1</name> </entry>
+          <entry pitch="82"> <name>Shaker</name> </entry>
+          <entry pitch="83"> <name>Jingle Bell</name> </entry>
+          <entry pitch="84"> <name>Belltree</name> </entry>
+          <entry pitch="85"> <name>Castanets</name> </entry>
+          <entry pitch="86"> <name>Mute Surdo</name> </entry>
+          <entry pitch="87"> <name>Open Surdo</name> </entry>
+        </drummap>
+      </entry>
+        
+      <entry>
+        <patch_collection hbank="127" prog="8-15" />
+        <drummap>
+          <entry pitch="27"> <name>High Q</name> </entry>
+          <entry pitch="28"> <name>Slap</name> </entry>
+          <entry pitch="29"> <name>Scratch Push</name> </entry>
+          <entry pitch="30"> <name>Scratch Pull</name> </entry>
+          <entry pitch="31"> <name>Sticks</name> </entry>
+          <entry pitch="32"> <name>Square Click</name> </entry>
+          <entry pitch="33"> <name>Metronome Click</name> </entry>
+          <entry pitch="34"> <name>Metronome Bell</name> </entry>
+          <entry pitch="35"> <name>Kick Drum 2</name> </entry>
+          <entry pitch="36"> <name>Kick Drum 1</name> </entry>
+          <entry pitch="38"> <name>Snare Drum 1</name> </entry>
+          <entry pitch="40"> <name>Snare Drum 2</name> </entry>
+          <entry pitch="41"> <name>Room Low Tom 2</name> </entry>
+          <entry pitch="43"> <name>Room Low Tom 1</name> </entry>
+          <entry pitch="45"> <name>Room Mid Tom 2</name> </entry>
+          <entry pitch="47"> <name>Room Mid Tom 1</name> </entry>
+          <entry pitch="48"> <name>Room High Tom 2</name> </entry>
+          <entry pitch="50"> <name>Room High Tom 1</name> </entry>
+          <entry pitch="82"> <name>Shaker</name> </entry>
+          <entry pitch="83"> <name>Jingle Bell</name> </entry>
+          <entry pitch="84"> <name>Belltree</name> </entry>
+          <entry pitch="85"> <name>Castanets</name> </entry>
+          <entry pitch="86"> <name>Mute Surdo</name> </entry>
+          <entry pitch="87"> <name>Open Surdo</name> </entry>
+        </drummap>
+      </entry>
+        
+      <entry>
+        <patch_collection hbank="127" prog="16-23" />
+        <drummap>
+          <entry pitch="27"> <name>High Q</name> </entry>
+          <entry pitch="28"> <name>Slap</name> </entry>
+          <entry pitch="29"> <name>Scratch Push</name> </entry>
+          <entry pitch="30"> <name>Scratch Pull</name> </entry>
+          <entry pitch="31"> <name>Sticks</name> </entry>
+          <entry pitch="32"> <name>Square Click</name> </entry>
+          <entry pitch="33"> <name>Metronome Click</name> </entry>
+          <entry pitch="34"> <name>Metronome Bell</name> </entry>
+          <entry pitch="35"> <name>Kick Drum 2</name> </entry>
+          <entry pitch="36"> <name>Mondo Kick</name> </entry>
+          <entry pitch="38"> <name>Gated Snare</name> </entry>
+          <entry pitch="40"> <name>Snare Drum 2</name> </entry>
+          <entry pitch="41"> <name>Room Low Tom 2</name> </entry>
+          <entry pitch="43"> <name>Room Low Tom 1</name> </entry>
+          <entry pitch="45"> <name>Room Mid Tom 2</name> </entry>
+          <entry pitch="47"> <name>Room Mid Tom 1</name> </entry>
+          <entry pitch="48"> <name>Room High Tom 2</name> </entry>
+          <entry pitch="50"> <name>Room High Tom 1</name> </entry>
+          <entry pitch="82"> <name>Shaker</name> </entry>
+          <entry pitch="83"> <name>Jingle Bell</name> </entry>
+          <entry pitch="84"> <name>Belltree</name> </entry>
+          <entry pitch="85"> <name>Castanets</name> </entry>
+          <entry pitch="86"> <name>Mute Surdo</name> </entry>
+          <entry pitch="87"> <name>Open Surdo</name> </entry>
+        </drummap>
+      </entry>
+        
+      <entry>
+        <patch_collection hbank="127" prog="24" />
+        <drummap>
+          <entry pitch="27"> <name>High Q</name> </entry>
+          <entry pitch="28"> <name>Slap</name> </entry>
+          <entry pitch="29"> <name>Scratch Push</name> </entry>
+          <entry pitch="30"> <name>Scratch Pull</name> </entry>
+          <entry pitch="31"> <name>Sticks</name> </entry>
+          <entry pitch="32"> <name>Square Click</name> </entry>
+          <entry pitch="33"> <name>Metronome Click</name> </entry>
+          <entry pitch="34"> <name>Metronome Bell</name> </entry>
+          <entry pitch="35"> <name>Kick Drum 2</name> </entry>
+          <entry pitch="36"> <name>Elec. Bass Drum</name> </entry>
+          <entry pitch="38"> <name>Elec. Snare</name> </entry>
+          <entry pitch="40"> <name>Gated Snare</name> </entry>
+          <entry pitch="41"> <name>Elec. Low Tom 2</name> </entry>
+          <entry pitch="43"> <name>Elec. Low Tom 1</name> </entry>
+          <entry pitch="45"> <name>Elec. Mid Tom 2</name> </entry>
+          <entry pitch="47"> <name>Elec. Mid Tom 1</name> </entry>
+          <entry pitch="48"> <name>Elec. High Tom 2</name> </entry>
+          <entry pitch="50"> <name>Elec. High Tom 1</name> </entry>
+          <entry pitch="52"> <name>Reverse Cymbal</name> </entry>
+          <entry pitch="82"> <name>Shaker</name> </entry>
+          <entry pitch="83"> <name>Jingle Bell</name> </entry>
+          <entry pitch="84"> <name>Belltree</name> </entry>
+          <entry pitch="85"> <name>Castanets</name> </entry>
+          <entry pitch="86"> <name>Mute Surdo</name> </entry>
+          <entry pitch="87"> <name>Open Surdo</name> </entry>
+        </drummap>
+      </entry>
+        
+      <entry>
+        <patch_collection hbank="127" prog="25-31" />
+        <drummap>
+          <entry pitch="27"> <name>High Q</name> </entry>
+          <entry pitch="28"> <name>Slap</name> </entry>
+          <entry pitch="29"> <name>Scratch Push</name> </entry>
+          <entry pitch="30"> <name>Scratch Pull</name> </entry>
+          <entry pitch="31"> <name>Sticks</name> </entry>
+          <entry pitch="32"> <name>Square Click</name> </entry>
+          <entry pitch="33"> <name>Metronome Click</name> </entry>
+          <entry pitch="34"> <name>Metronome Bell</name> </entry>
+          <entry pitch="35"> <name>Kick Drum 2</name> </entry>
+          <entry pitch="36"> <name>808 Bass Drum</name> </entry>
+          <entry pitch="37"> <name>808 Rim Shot</name> </entry>
+          <entry pitch="38"> <name>808 Snare Drum</name> </entry>
+          <entry pitch="40"> <name>Snare Drum 2</name> </entry>
+          <entry pitch="41"> <name>808 Low Tom 2</name> </entry>
+          <entry pitch="42"> <name>808 Closed Hi-Hat</name> </entry>
+          <entry pitch="43"> <name>808 Low Tom 1</name> </entry>
+          <entry pitch="44"> <name>808 Pedal Hi-Hat</name> </entry>
+          <entry pitch="45"> <name>808 Tom 2</name> </entry>
+          <entry pitch="46"> <name>808 Open Hi-Hat</name> </entry>
+          <entry pitch="47"> <name>808 Mid Tom 1</name> </entry>
+          <entry pitch="48"> <name>808 High Tom 2</name> </entry>
+          <entry pitch="49"> <name>808 Cymbal</name> </entry>
+          <entry pitch="50"> <name>808 High Tom 1</name> </entry>
+          <entry pitch="52"> <name>Reverse Cymbal</name> </entry>
+          <entry pitch="56"> <name>808 Cowbell</name> </entry>
+          <entry pitch="62"> <name>808 High Conga</name> </entry>
+          <entry pitch="63"> <name>808 Mid Conga</name> </entry>
+          <entry pitch="64"> <name>808 Low Conga</name> </entry>
+          <entry pitch="70"> <name>808 Maracas</name> </entry>
+          <entry pitch="82"> <name>Shaker</name> </entry>
+          <entry pitch="83"> <name>Jingle Bell</name> </entry>
+          <entry pitch="84"> <name>Belltree</name> </entry>
+          <entry pitch="85"> <name>Castanets</name> </entry>
+          <entry pitch="86"> <name>Mute Surdo</name> </entry>
+          <entry pitch="87"> <name>Open Surdo</name> </entry>
+        </drummap>
+      </entry>
+        
+      <entry>
+        <patch_collection hbank="127" prog="32-39" />
+        <drummap>
+          <entry pitch="27"> <name>High Q</name> </entry>
+          <entry pitch="28"> <name>Slap</name> </entry>
+          <entry pitch="29"> <name>Scratch Push</name> </entry>
+          <entry pitch="30"> <name>Scratch Pull</name> </entry>
+          <entry pitch="31"> <name>Sticks</name> </entry>
+          <entry pitch="32"> <name>Square Click</name> </entry>
+          <entry pitch="33"> <name>Metronome Click</name> </entry>
+          <entry pitch="34"> <name>Metronome Bell</name> </entry>
+          <entry pitch="35"> <name>Jazz Bass Drum 2</name> </entry>
+          <entry pitch="36"> <name>Jazz Bass Drum 1</name> </entry>
+          <entry pitch="38"> <name>Snare Drum 1</name> </entry>
+          <entry pitch="40"> <name>Snare Drum 2</name> </entry>
+          <entry pitch="41"> <name>Low Tom 2</name> </entry>
+          <entry pitch="43"> <name>Low Tom 1</name> </entry>
+          <entry pitch="45"> <name>Mid Tom 2</name> </entry>
+          <entry pitch="47"> <name>Mid Tom 1</name> </entry>
+          <entry pitch="48"> <name>High Tom 2</name> </entry>
+          <entry pitch="50"> <name>High Tom 1</name> </entry>
+          <entry pitch="82"> <name>Shaker</name> </entry>
+          <entry pitch="83"> <name>Jingle Bell</name> </entry>
+          <entry pitch="84"> <name>Belltree</name> </entry>
+          <entry pitch="85"> <name>Castanets</name> </entry>
+          <entry pitch="86"> <name>Mute Surdo</name> </entry>
+          <entry pitch="87"> <name>Open Surdo</name> </entry>
+        </drummap>
+      </entry>
+        
+      <entry>
+        <patch_collection hbank="127" prog="40-47" />
+        <drummap>
+          <entry pitch="27"> <name>High Q</name> </entry>
+          <entry pitch="28"> <name>Slap</name> </entry>
+          <entry pitch="29"> <name>Scratch Push</name> </entry>
+          <entry pitch="30"> <name>Scratch Pull</name> </entry>
+          <entry pitch="31"> <name>Sticks</name> </entry>
+          <entry pitch="32"> <name>Square Click</name> </entry>
+          <entry pitch="33"> <name>Metronome Click</name> </entry>
+          <entry pitch="34"> <name>Metronome Bell</name> </entry>
+          <entry pitch="35"> <name>Jazz Bass Drum 2</name> </entry>
+          <entry pitch="36"> <name>Jazz Bass Drum 1</name> </entry>
+          <entry pitch="38"> <name>Brush Tap</name> </entry>
+          <entry pitch="39"> <name>Brush Slap</name> </entry>
+          <entry pitch="40"> <name>Brush Swirl</name> </entry>
+          <entry pitch="41"> <name>Low Tom 2</name> </entry>
+          <entry pitch="43"> <name>Low Tom 1</name> </entry>
+          <entry pitch="45"> <name>Mid Tom 2</name> </entry>
+          <entry pitch="47"> <name>Mid Tom 1</name> </entry>
+          <entry pitch="48"> <name>High Tom 2</name> </entry>
+          <entry pitch="50"> <name>High Tom 1</name> </entry>
+          <entry pitch="82"> <name>Shaker</name> </entry>
+          <entry pitch="83"> <name>Jingle Bell</name> </entry>
+          <entry pitch="84"> <name>Belltree</name> </entry>
+          <entry pitch="85"> <name>Castanets</name> </entry>
+          <entry pitch="86"> <name>Mute Surdo</name> </entry>
+          <entry pitch="87"> <name>Open Surdo</name> </entry>
+        </drummap>
+      </entry>
+        
+      <entry>
+        <patch_collection hbank="127" prog="48-55" />
+        <drummap>
+          <entry pitch="27"> <name>Closed Hi-Hat</name> </entry>
+          <entry pitch="28"> <name>Pedal Hi-Hat</name> </entry>
+          <entry pitch="29"> <name>Open Hi-Hat</name> </entry>
+          <entry pitch="30"> <name>Ride Cymbal</name> </entry>
+          <entry pitch="31"> <name>Sticks</name> </entry>
+          <entry pitch="32"> <name>Square Click</name> </entry>
+          <entry pitch="33"> <name>Metronome Click</name> </entry>
+          <entry pitch="34"> <name>Metronome Bell</name> </entry>
+          <entry pitch="35"> <name>Concert Bass Drum 2</name> </entry>
+          <entry pitch="36"> <name>Concert Bass Drum 1</name> </entry>
+          <entry pitch="38"> <name>Concert Snare Drum</name> </entry>
+          <entry pitch="39"> <name>Castanets</name> </entry>
+          <entry pitch="40"> <name>Concert Snare Drum</name> </entry>
+          <entry pitch="41"> <name>Timpani F</name> </entry>
+          <entry pitch="42"> <name>Timpani F#</name> </entry>
+          <entry pitch="43"> <name>Timpani G</name> </entry>
+          <entry pitch="44"> <name>Timpani G#</name> </entry>
+          <entry pitch="45"> <name>Timpani A</name> </entry>
+          <entry pitch="46"> <name>Timpani A#</name> </entry>
+          <entry pitch="47"> <name>Timpani B</name> </entry>
+          <entry pitch="48"> <name>Timpani C</name> </entry>
+          <entry pitch="49"> <name>Timpani C#</name> </entry>
+          <entry pitch="50"> <name>Timpani D</name> </entry>
+          <entry pitch="51"> <name>Timpani D#</name> </entry>
+          <entry pitch="52"> <name>Timpani E</name> </entry>
+          <entry pitch="53"> <name>Timpani F</name> </entry>
+          <entry pitch="57"> <name>Concert Cymbal 2</name> </entry>
+          <entry pitch="59"> <name>Concert Cymbal 1</name> </entry>
+          <entry pitch="82"> <name>Shaker</name> </entry>
+          <entry pitch="83"> <name>Jingle Bell</name> </entry>
+          <entry pitch="84"> <name>Belltree</name> </entry>
+          <entry pitch="85"> <name>Castanets</name> </entry>
+          <entry pitch="86"> <name>Mute Surdo</name> </entry>
+          <entry pitch="87"> <name>Open Surdo</name> </entry>
+        </drummap>
+      </entry>
+
+      <entry>
+        <patch_collection hbank="127" prog="56-126" />
+        <drummap>
+          <entry pitch="35"> <name></name> </entry>
+          <entry pitch="36"> <name></name> </entry>
+          <entry pitch="37"> <name></name> </entry>
+          <entry pitch="38"> <name></name> </entry>
+          <entry pitch="39"> <name>High Q</name> </entry>
+          <entry pitch="40"> <name>Slap</name> </entry>
+          <entry pitch="41"> <name>Scratch Push</name> </entry>
+          <entry pitch="42"> <name>Scratch Pull</name> </entry>
+          <entry pitch="43"> <name>Sticks</name> </entry>
+          <entry pitch="44"> <name>Square Click</name> </entry>
+          <entry pitch="45"> <name>Metronome Click</name> </entry>
+          <entry pitch="46"> <name>Metronome Bell</name> </entry>
+          <entry pitch="47"> <name>Guitar Fret Noise</name> </entry>
+          <entry pitch="48"> <name>Guitar Cut Noise Up</name> </entry>
+          <entry pitch="49"> <name>Guitar Cut Noise Down</name> </entry>
+          <entry pitch="50"> <name>Double Bass String Slap</name> </entry>
+          <entry pitch="51"> <name>Flute Key Click</name> </entry>
+          <entry pitch="52"> <name>Laughing</name> </entry>
+          <entry pitch="53"> <name>Screaming</name> </entry>
+          <entry pitch="54"> <name>Punch</name> </entry>
+          <entry pitch="55"> <name>Heartbeat</name> </entry>
+          <entry pitch="56"> <name>Footsteps 1</name> </entry>
+          <entry pitch="57"> <name>Footsteps 2</name> </entry>
+          <entry pitch="58"> <name>Applause</name> </entry>
+          <entry pitch="59"> <name>Door Creaking</name> </entry>
+          <entry pitch="60"> <name>Door Closing</name> </entry>
+          <entry pitch="61"> <name>Scratch</name> </entry>
+          <entry pitch="62"> <name>Wind Chimes</name> </entry>
+          <entry pitch="63"> <name>Car Engine</name> </entry>
+          <entry pitch="64"> <name>Car Brakes</name> </entry>
+          <entry pitch="65"> <name>Car Passing</name> </entry>
+          <entry pitch="66"> <name>Car Crash</name> </entry>
+          <entry pitch="67"> <name>Siren</name> </entry>
+          <entry pitch="68"> <name>Train</name> </entry>
+          <entry pitch="69"> <name>Jet Plane</name> </entry>
+          <entry pitch="70"> <name>Helicopter</name> </entry>
+          <entry pitch="71"> <name>Starship</name> </entry>
+          <entry pitch="72"> <name>Gun Shot</name> </entry>
+          <entry pitch="73"> <name>Machine Gun</name> </entry>
+          <entry pitch="74"> <name>Laser Gun</name> </entry>
+          <entry pitch="75"> <name>Explosion</name> </entry>
+          <entry pitch="76"> <name>Dog Bark</name> </entry>
+          <entry pitch="77"> <name>Horse Gallop</name> </entry>
+          <entry pitch="78"> <name>Birds Tweet</name> </entry>
+          <entry pitch="79"> <name>Rain</name> </entry>
+          <entry pitch="80"> <name>Thunder</name> </entry>
+          <entry pitch="81"> <name>Wind</name> </entry>
+          <entry pitch="82"> <name>Seashore</name> </entry>
+          <entry pitch="83"> <name>Stream</name> </entry>
+          <entry pitch="84"> <name>Bubble</name> </entry>
+        </drummap>
+      </entry>
+        
+      <entry>
+        <patch_collection hbank="127" prog="127" />
+        <drummap>
+          <entry pitch="52"> <name></name> </entry>
+          <entry pitch="53"> <name></name> </entry>
+          <entry pitch="55"> <name></name> </entry>
+          <entry pitch="57"> <name></name> </entry>
+          <entry pitch="58"> <name></name> </entry>
+          <entry pitch="59"> <name></name> </entry>
+          <entry pitch="73"> <name>Quijada</name> </entry>
+          <entry pitch="74"> <name></name> </entry>
+          <entry pitch="76"> <name>Laughing</name> </entry>
+          <entry pitch="77"> <name>Screaming</name> </entry>
+          <entry pitch="78"> <name>Punch</name> </entry>
+          <entry pitch="79"> <name>Heartbeat</name> </entry>
+          <entry pitch="80"> <name>Footsteps 1</name> </entry>
+          <entry pitch="81"> <name>Footsteps 2</name> </entry>
+          <entry pitch="82"> <name>Applause</name> </entry>
+          <entry pitch="83"> <name>Door Creaking</name> </entry>
+          <entry pitch="84"> <name>Door Closing</name> </entry>
+          <entry pitch="85"> <name>Scratch</name> </entry>
+          <entry pitch="86"> <name>Wind Chimes</name> </entry>
+          <entry pitch="87"> <name>Car Engine</name> </entry>
+          <entry pitch="88"> <name>Car Brakes</name> </entry>
+          <entry pitch="89"> <name>Car Passing</name> </entry>
+          <entry pitch="90"> <name>Car Crash</name> </entry>
+          <entry pitch="91"> <name>Siren</name> </entry>
+          <entry pitch="92"> <name>Train</name> </entry>
+          <entry pitch="93"> <name>Jet Plane</name> </entry>
+          <entry pitch="94"> <name>Helicopter</name> </entry>
+          <entry pitch="95"> <name>Starship</name> </entry>
+          <entry pitch="96"> <name>Gun Shot</name> </entry>
+          <entry pitch="97"> <name>Machine Gun</name> </entry>
+          <entry pitch="98"> <name>Laser Gun</name> </entry>
+          <entry pitch="99"> <name>Explosion</name> </entry>
+          <entry pitch="100"> <name>Dog Bark</name> </entry>
+          <entry pitch="101"> <name>Horse Gallop</name> </entry>
+          <entry pitch="102"> <name>Birds Tweet</name> </entry>
+          <entry pitch="103"> <name>Rain</name> </entry>
+          <entry pitch="104"> <name>Thunder</name> </entry>
+          <entry pitch="105"> <name>Wind</name> </entry>
+          <entry pitch="106"> <name>Seashore</name> </entry>
+          <entry pitch="107"> <name>Stream</name> </entry>
+          <entry pitch="108"> <name>Bubble</name> </entry>
+        </drummap>
+      </entry>
+    </Drummaps>
+  </MidiInstrument>
+</muse>

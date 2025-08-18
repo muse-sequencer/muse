@@ -6545,7 +6545,6 @@ void LV2SynthIF::enableAllControllers(bool v)
     for(unsigned long i = 0; i < _inportsControl; ++i)
         _controls[i].enCtrl = v;
 }
-void LV2SynthIF::updateControllers() { }
 
 void LV2SynthIF::populatePresetsMenu(MusEGui::PopupMenu *menu)
 {
