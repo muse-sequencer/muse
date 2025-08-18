@@ -376,7 +376,7 @@ find_package(Threads REQUIRED)
 ##
 
 # REMOVE Tim. qt6. Added.
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets UiTools LinguistTools Svg Xml)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets UiTools LinguistTools Svg Xml)
 
 qt_standard_project_setup()
 
