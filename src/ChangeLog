@@ -1,3 +1,12 @@
+19.08.2025
+    - Qt6 version: From forums: Fixed compile problems on Linux Mint 22.1 (Tim)
+      For some reason Mint 22.1's Qt6.4 seems either more strict or incomplete.
+      It does not like QString::arg(const std::string&). Replaced with QString::arg(QString::fromStdString(...)).
+      It also does not seem to support QSlider::valueChanged connection functors that work OK in Qt5 and my Qt6.9.
+      These connections were embedded in the ui files of VAMGui and FluidSynthGui. The compiler did not like the generated code.
+      I also tested it with old fashioned signals and slots. Same error.
+      Moved the offending connections from the ui file to the gui constructor. Changed them to use the QOverload versions.
+      Tested OK. Tested Qt5 version as well, OK.
 18.08.2025
     * Introducing MusE for Qt6: (Tim)
       Converted entire project to Qt6. It was a MAJOR hand-editing effort.

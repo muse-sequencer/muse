@@ -30,6 +30,7 @@
 
 #include <set>
 #include <QUuid>
+#include <QMetaObject>
 
 class QGridLayout;
 class QWidget;
@@ -61,6 +62,7 @@ class MidiEditor : public TopWin  {
       std::set<QUuid> _parts;
       int _curDrumInstrument;  // currently selected instrument if drum
                                // editor
+      QMetaObject::Connection _newPartsCreatedMetaConn;
 
    protected:
       MusEGui::ScrollScale* hscroll;
@@ -99,7 +101,7 @@ class MidiEditor : public TopWin  {
    protected slots:
       void updateTrackInfo();
       
-   private slots:
+   private:
       void addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
 
    public slots:

@@ -1036,7 +1036,6 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
     else
     {
       DEBUG_MIXER(stderr, "inserting new strip [%s] at %d\n", t->name().toLocal8Bit().data(), insert_pos);
-      // REMOVE Tim. qt6. Added comment.
       // FIXME: In Qt5 this appears to automatically grow the list if the insert position is beyond the end, without error.
       //        In Qt6 QList is quite changed. That condition is now considered an error.
       //        Neither help system mentions this.
@@ -1244,11 +1243,10 @@ bool AudioMixerApp::updateStripList()
           // Be sure to mark the strip config as undeleted (in use).
           sc._deleted = false;
           // Insert a new strip at the index, with the given config.
-          // REMOVE Tim. qt6. Added comment.
           // FIXME: In Qt5 this appears to automatically grow the list if the insert position is beyond the end, without error.
           //        In Qt6 QList is quite changed. That condition is now considered an error.
           //        Neither help system mentions this.
-          //        Immediate crash in addStrip because stripList size was 11 and pos was 34!
+          //        Immediate crash in addStrip because stripList size was 11 and pos was 34! Fixed now for Qt6 in addStrip.
           addStrip(track, sc, idx);
           changed = true;
           break;

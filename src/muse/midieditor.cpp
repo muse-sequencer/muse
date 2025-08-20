@@ -97,7 +97,9 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
       mainGrid->setSpacing(0);  
       setCentralWidget(mainw);
       
-      connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)), SLOT(addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)));
+      _newPartsCreatedMetaConn = connect(MusEGlobal::song, QOverload<const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&>::
+        of(&MusECore::Song::newPartsCreated), [=](const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >& v) { addNewParts(v); } );
+
       }
 
 int MidiEditor::rasterStep(unsigned tick) const   { return MusEGlobal::sigmap.rasterStep(tick, _raster); }
@@ -408,6 +410,7 @@ void MidiEditor::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
 MidiEditor::~MidiEditor()
       {
       DEBUG_MIDIEDITOR(stderr, "MidiEditor dtor\n");
+      disconnect(_newPartsCreatedMetaConn);
       if (_pl)
             delete _pl;
       }
@@ -550,10 +553,10 @@ void MidiEditor::addNewParts(const std::map< const MusECore::Part*, std::set<con
 {
   if(!_pl)
     return;
-  
+
   using std::map;
   using std::set;
-  
+
   for (map< const MusECore::Part*, set<const MusECore::Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
     if (_pl->index(it->first) != -1)
       for (set<const MusECore::Part*>::const_iterator it2=it->second.begin(); it2!=it->second.end(); it2++)

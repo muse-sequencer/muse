@@ -573,22 +573,4 @@
  </widget>
  <layoutdefault spacing="3" margin="8"/>
  <resources/>
- <connections>
-  <connection>
-   <sender>Gain</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>labelGainValue</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>302</x>
-     <y>482</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>581</x>
-     <y>482</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
 </ui>
