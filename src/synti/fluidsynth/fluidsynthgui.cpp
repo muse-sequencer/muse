@@ -109,6 +109,25 @@ FluidSynthGui::FluidSynthGui()
       //Clear channels
       for (int i=0; i<FS_MAX_NR_OF_CHANNELS; i++)
             channels[i] = FS_UNSPECIFIED_ID;
+
+      // NOTICE: These connections were previously embedded inside the ui file in the connections section.
+      //         It worked fine in Qt5 and on opensuse tumbleweed with Qt6.9
+      //         Report from forums:
+      //         On Linux Mint 22.1, it gave a bunch of errors because the generated code looked like this:
+      //
+      //           connect(Gain, &QSlider::valueChanged, labelGainValue, &QLabel::setNum);
+      //
+      //         I tried that code here in the constructor and it failed.
+      //         I also tried the old fashioned way, taken from a Qt5 build:
+      //
+      //           connect(Gain, SIGNAL(valueChanged(int)), labelGainValue, SLOT(setNum(int)));
+      //
+      //         That also failed.
+      //         Possibly Linux Mint's Qt6.4 meta data isn't quite up to date for all the controls?
+      //
+      //         So we must use the QOverload version of the connections. See also the VAMGui constructor.
+      //
+      connect(Gain, QOverload<int>::of(&QSlider::valueChanged), [=](int v) { labelGainValue->setNum(v); } );
       }
 
 FluidSynthGui::~FluidSynthGui()

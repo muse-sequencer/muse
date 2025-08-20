@@ -246,6 +246,50 @@ VAMGui::VAMGui()
 	connect(deletePreset, SIGNAL(clicked()), this, SLOT(deletePresetPressed()));
 	connect(savePresetsToFile, SIGNAL(clicked()), this, SLOT(savePresetsToFilePressed()));
 
+	// NOTICE: These connections were previously embedded inside the ui file in the connections section.
+	//         It worked fine in Qt5 and on opensuse tumbleweed with Qt6.9
+	//         Report from forums:
+	//         On Linux Mint 22.1, it gave a bunch of errors because the generated code looked like this:
+	//
+	//           connect(PitchModS, &QSlider::valueChanged, LCDNumber1, &QLCDNumber::display);
+	//
+	//         I tried that code here in the constructor and it failed.
+	//         I also tried the old fashioned way, taken from a Qt5 build:
+	//
+	//           connect(PitchModS, SIGNAL(valueChanged(int)), LCDNumber1, SLOT(display(int)));
+	//
+	//         That also failed.
+	//         Possibly Linux Mint's Qt6.4 meta data isn't quite up to date for all the controls?
+	//
+	//         So we must use the QOverload version of the connections. See also the FluidSynthGui constructor.
+	//
+	connect(PitchModS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) { LCDNumber1->display(v); } );
+	connect(FMS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_2->display(v); } );
+	connect(PWMS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3->display(v); } );
+	connect(AttackS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2->display(v); } );
+	connect(DecayS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_2->display(v); } );
+	connect(SustainS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_3->display(v); } );
+	connect(ReleaseS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_4->display(v); } );
+	connect(FreqS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_5->display(v); } );
+	connect(FMS2, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_2_2->display(v); } );
+	connect(PWMS2, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_3->display(v); } );
+	connect(AttackS2, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_5->display(v); } );
+	connect(SustainS2, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_3_2->display(v); } );
+	connect(ReleaseS2, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_4_2->display(v); } );
+	connect(ResS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_5_5->display(v); } );
+	connect(EnvModS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_5_3->display(v); } );
+	connect(AttackS3, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_5_2->display(v); } );
+	connect(DecayS3, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_2_2_2->display(v); } );
+	connect(SustainS3, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_3_2_2->display(v); } );
+	connect(ReleaseS3, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_4_2_2->display(v); } );
+	connect(PitchModS2, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_4->display(v); } );
+	connect(DecayS2, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_3_2_2_2->display(v); } );
+	connect(CutoffS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_5_5_2->display(v); } );
+	connect(DetuneS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_6->display(v); } );
+	connect(DetuneS2, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_6_2->display(v); } );
+	connect(PWS, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_2_3->display(v); } );
+	connect(PWS2, QOverload<int>::of(&QSlider::valueChanged), [=](int v) {  LCDNumber1_2_4->display(v); } );
+
 	ctrlHi = 0;
 	ctrlLo = 0;
 	dataHi = 0;

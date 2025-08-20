@@ -168,6 +168,8 @@ class ScoreEdit : public TopWin
 		MusEGui::MTScaleFlo* time_bar;
 
 		QMetaObject::Connection _configChangedEditToolsMetaConn;
+		QMetaObject::Connection _newPartsCreatedMetaConn;
+
 
 		bool apply_velo;
 		
@@ -809,6 +811,7 @@ class ScoreCanvas : public MusEGui::View
 		void deselect_all();
 		void midi_note(int pitch, int velo);
 		
+	public:
 		void add_new_parts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
 
 	public slots:

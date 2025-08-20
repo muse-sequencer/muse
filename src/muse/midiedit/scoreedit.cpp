@@ -530,7 +530,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     selection_changed();
 
     connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(song_changed(MusECore::SongChangedStruct_t)));
-    connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)), score_canvas, SLOT(add_new_parts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)));
+    _newPartsCreatedMetaConn = connect(MusEGlobal::song, QOverload<const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&>::
+      of(&MusECore::Song::newPartsCreated), [=](const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >& v) { score_canvas->add_new_parts(v); } );
 
     score_canvas->fully_recalculate();
     score_canvas->goto_tick(initPos,true);
@@ -667,6 +668,8 @@ bool ScoreEdit::set_name(QString newname, bool emit_signal, bool emergency_name)
 ScoreEdit::~ScoreEdit()
 {
     disconnect(_configChangedEditToolsMetaConn);
+    disconnect(_newPartsCreatedMetaConn);
+
     names.erase(name);
 }
 

@@ -137,9 +137,7 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   connect(nbrVoicesSpinBox, SIGNAL(valueChanged(int)), 
 	  this, SLOT(setNbrVoices(int)));
   //quality
-// REMOVE Tim. qt6. Changed. The QString version is obsolete in Qt 5.15
-//   connect(qualityComboBox, SIGNAL(activated(const QString&)),
-// 	  this, SLOT(setQuality(const QString&)));
+  // The QString version is obsolete in Qt 5.15
   connect(qualityComboBox, QOverload<int>::of(&QComboBox::activated), [=](int index)
   { setQuality(qualityComboBox->itemText(index)); } );
   connect(filterCheckBox, SIGNAL(toggled(bool)),
@@ -1954,7 +1952,7 @@ void DeicsOnzeGui::deleteCategoryDialog() {
     if(QMessageBox::question(
 			      this,
 			      tr("Delete category"),
-			      tr("Do you really want to delete %1 ?").arg(cat->_category->_categoryName),
+			      tr("Do you really want to delete %1 ?").arg(QString::fromStdString(cat->_category->_categoryName)),
 			      QMessageBox::Yes | QMessageBox::No,
 			      QMessageBox::Yes) == QMessageBox::Yes)
       {
@@ -2028,7 +2026,7 @@ void DeicsOnzeGui::loadCategoryDialog() {
       msg.setIcon(QMessageBox::Question);
       msg.setText(tr("%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.\n"
         " Do you want to replace it or to add it in the next free slot ?")
-          .arg(lCategory->_categoryName)
+          .arg(QString::fromStdString(lCategory->_categoryName))
           .arg(buffstr.setNum(lCategory->_hbank+1)));
       msg.setWindowTitle(tr("Replace or add"));
       msg.exec();
@@ -2128,7 +2126,7 @@ void DeicsOnzeGui::deleteSubcategoryDialog() {
 			      this,
 			      tr("Delete subcategory"),
 			      tr("Do you really want to delete %1 ?")
-			      .arg(sub->_subcategory->_subcategoryName),
+			      .arg(QString::fromStdString(sub->_subcategory->_subcategoryName)),
 			      QMessageBox::Yes | QMessageBox::No,
 			      QMessageBox::Yes) == QMessageBox::Yes) {
       	for(int c = 0; c < NBRCHANNELS; c++)
@@ -2199,7 +2197,7 @@ void DeicsOnzeGui::loadSubcategoryDialog() {
       msg.setIcon(QMessageBox::Question);
       msg.setText(tr("%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.\n"
         " Do you want to replace it or to add it in the next free slot ?")
-          .arg(lSubcategory->_subcategoryName)
+          .arg(QString::fromStdString(lSubcategory->_subcategoryName))
           .arg(buffstr.setNum(lSubcategory->_lbank+1)));
       msg.setWindowTitle(tr("Replace or add"));
       msg.exec();
@@ -2303,7 +2301,7 @@ void DeicsOnzeGui::deletePresetDialog() {
       if(QMessageBox::question(
 				this,
 				tr("Delete preset"),
-				tr("Do you really want to delete %1 ?").arg(pre->_preset->name),
+				tr("Do you really want to delete %1 ?").arg(QString::fromStdString(pre->_preset->name)),
 				QMessageBox::Yes | QMessageBox::No,
 				QMessageBox::Yes) == QMessageBox::Yes) {
 	for(int c = 0; c < NBRCHANNELS; c++)
@@ -2376,7 +2374,7 @@ void DeicsOnzeGui::loadPresetDialog() {
       msg.setIcon(QMessageBox::Question);
       msg.setText(tr("%1 is supposed to be affected to the prog number %2, but there is already one on this slot.\n"
         "Do you want to replace it or to add it in the next free slot ?")
-          .arg(lPreset->name)
+          .arg(QString::fromStdString(lPreset->name))
           .arg(buffstr.setNum(lPreset->prog+1)));
       msg.setWindowTitle(tr("Replace or add"));
       msg.exec();
