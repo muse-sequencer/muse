@@ -50,7 +50,7 @@ class Part;
 class PartList;
 class PasteCtrlTrackMap;
 class AudioTrack;
-class XmlReadStatistics;
+struct XmlReadStatistics;
 }
 
 namespace MusEGui {
@@ -445,9 +445,6 @@ void processArrangerPasteObjects(Undo& operations, unsigned int pos,
                         PasteCtrlTrackMap* pctm = nullptr,
                         unsigned int minPos = 0);
 void pasteAudioAutomation(AudioTrack* track, int ctrlId, /*bool fitToRange = true,*/ int amount=1, int raster=1536);
-
-// internal
-QMimeData* file_to_mimedata(FILE *datafile, QString mimeType);
 
 } // namespace MusECore
 

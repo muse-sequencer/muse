@@ -407,9 +407,9 @@ void TopWin::writeStatus(int level, MusECore::Xml& xml) const
 //    xml.intTag(level, "shares_menu", sharesToolsAndMenu());
 
     if (sharesToolsAndMenu())
-        xml.strTag(level, "toolbars", _savedToolbarState.toHex().data());
+        xml.strTag(level, "toolbars", _savedToolbarState.toHex());
     else
-        xml.strTag(level, "toolbars", saveState().toHex().data());
+        xml.strTag(level, "toolbars", saveState().toHex());
 
     xml.etag(--level, "topwin");
 }
@@ -738,8 +738,8 @@ void TopWin::writeConfiguration(ToplevelType t, int level, MusECore::Xml& xml)
     xml.tag(level++, "topwin");
     xml.intTag(level, "width", _widthInit[t]);
     xml.intTag(level, "height", _heightInit[t]);
-    xml.strTag(level, "nonshared_toolbars", _toolbarNonsharedInit[t].toHex().data());
-    xml.strTag(level, "shared_toolbars", _toolbarSharedInit[t].toHex().data());
+    xml.strTag(level, "nonshared_toolbars", _toolbarNonsharedInit[t].toHex());
+    xml.strTag(level, "shared_toolbars", _toolbarSharedInit[t].toHex());
     xml.intTag(level, "default_subwin", _openTabbed[t]);
     xml.etag(--level, "topwin");
 }

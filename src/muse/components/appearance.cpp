@@ -840,19 +840,22 @@ void Appearance::saveCurrentThemeColors() {
 
     QString lastColorPath = MusEGlobal::configPath + "/themes/" + config->theme + ".cfc";
 
-    FILE* f = fopen(qPrintable(lastColorPath), "w");
-    if (!f) {
-        fprintf(stderr, "Saving configuration colors to <%s> failed: %s\n",
-                qPrintable(lastColorPath), strerror(errno));
-    } else {
-        MusECore::Xml xml(f);
-        xml.header();
-        xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
-        xml.tag(1, "configuration");
-        MusECore::writeConfigurationColors(2, xml, false); // Don't save part colour names.
-        xml.etag(1, "configuration");
-        xml.tag(0, "/muse");
-        fclose(f);
+    QFile f(lastColorPath);
+    if(!f.open(QIODevice::WriteOnly))
+    {
+      fprintf(stderr, "Saving configuration colors to <%s> failed: %d:%s\n",
+              qPrintable(lastColorPath), f.error(), f.errorString().toLocal8Bit().constData());
+    }
+    else
+    {
+      MusECore::Xml xml(&f);
+      xml.header();
+      xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+      xml.tag(1, "configuration");
+      MusECore::writeConfigurationColors(2, xml, false); // Don't save part colour names.
+      xml.etag(1, "configuration");
+      xml.tag(0, "/muse");
+      f.close();
     }
 }
 
