@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include <QString>
+#include <QByteArray>
 #include <QColor>
 #include <QRect>
 #include <QWidget>
@@ -40,8 +41,6 @@ namespace MusECore {
 //---------------------------------------------------------
 
 class Xml {
-      // When constructed with a FILE* parameter, this will be valid.
-      FILE* f;
       // When constructed with a QString* parameter, this will be valid.
       QString* _destStr;
       // When constructed with a QIODevice* parameter, this will be valid.
@@ -98,8 +97,7 @@ class Xml {
             _minorVersion = min;
             _majorVersion = maj;
             }
-      // For writing and reading a FILE. Constructs an xml from a FILE.
-      Xml(FILE*);
+
       // For reading from a char array only. Writing may cause error. Constructs an xml from a char array.
       Xml(const char*);
       // For writing to a QString only. Reading may cause error. Constructs an xml from a QString.
@@ -146,9 +144,7 @@ class Xml {
       void uLongLongTag(int level, const char* const name, unsigned long long val);
       void doubleTag(int level, const char* const name, double val);
       void floatTag(int level, const char* const name, float val);
-      void strTag(int level, const char* const name, const char* val);
-      void strTag(int level, const char* const name, const QString& s);
-      void strTag(int level, const QString& name, const QString& val);
+      void strTag(int level, const QString& name, QString val);
       void colorTag(int level, const char* name, const QColor& color);
       void colorTag(int level, const QString& name, const QColor& color);
       void geometryTag(int level, const char* name, const QWidget* g);

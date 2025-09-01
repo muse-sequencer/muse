@@ -41,6 +41,7 @@
 #include <QFileDialog>
 #include <QLCDNumber>
 #include <QSlider>
+#include <QFile>
 
 #include "xml.h"
 #include "muse/midi_consts.h"
@@ -594,19 +595,19 @@ void VAMGui::processEvent(const MusECore::MidiPlayEvent& ev)
 void VAMGui::loadPresetsPressed()
 {
 #if 1   // TODO
-        QString fn = QFileDialog::getOpenFileName(this, tr("MusE: Load VAM Presets"), 
+        QString fn = QFileDialog::getOpenFileName(this, tr("MusE: Load VAM Presets"),
                                                   QString::fromStdString(VAM_configPath), "Presets (*.vam)");
 
 	if (fn.isEmpty())
 		return;
-// 	bool popenFlag=false;
-	FILE* f = fopen(fn.toLocal8Bit().constData(),"r");//fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
-	if (f == 0)
-		return;
+  QFile infile(fn);
+  if(!infile.open(QIODevice::ReadOnly))
+    return;
+	MusECore::Xml xml(&infile);
+
 	presets.clear();
 	presetList->clear();
 
-	MusECore::Xml xml(f);
 	int mode = 0;
 	for (;;) {
 		MusECore::Xml::Token token = xml.parse();
@@ -646,12 +647,7 @@ void VAMGui::loadPresetsPressed()
 		}
 	}
 ende:
-// Keep this commented out as per above. It used to do fileOpen long ago.
-// Something in my compiler chain must have changed because now it is complaining about this.
-// 	if (popenFlag)
-// 		pclose(f);
-// 	else
-		fclose(f);
+  infile.close();
 
 	QString dots ("...");
 	fileName->setText(fn.right(32).insert(0, dots));
@@ -666,20 +662,20 @@ ende:
 //---------------------------------------------------------
 //   doSavePresets
 //---------------------------------------------------------
+
 void VAMGui::doSavePresets(const QString& fn, bool /*_showWarning*/)
 {
     //_showWarning=_showWarning; // prevent of unused variable warning
 #if 1
-// 	bool popenFlag=false;
   if (fn=="") {
     printf("empty name\n");
     return;
-    } 
+    }
   printf("fn=%s\n",fn.toLocal8Bit().constData());
-  FILE* f = fopen(fn.toLocal8Bit().constData(),"w");
-	if (f == 0)
-		return;
-	MusECore::Xml xml(f);
+  QFile outfile(fn);
+  if(!outfile.open(QIODevice::WriteOnly /*| QIODevice::Text*/))
+    return;
+	MusECore::Xml xml(&outfile);
 	xml.header();
 	xml.tag(0, "muse version=\"1.0\"");
 	xml.tag(0, "instrument iname=\"vam-1.0\" /");
@@ -689,12 +685,8 @@ void VAMGui::doSavePresets(const QString& fn, bool /*_showWarning*/)
 
 	xml.tag(1, "/muse");
 
-// Keep this commented out as per above. It used to do fileOpen long ago.
-// Something in my compiler chain must have changed because now it is complaining about this.
-// 	if (popenFlag)
-// 		pclose(f);
-// 	else
-		fclose(f);
+  // Flush and close the output file.
+  outfile.close();
 #endif
 }
 

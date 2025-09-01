@@ -49,15 +49,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <stdint.h>
-#ifdef _WIN32
-#include "mman.h"
-#include "mman.c"
-#else
-#include <sys/mman.h>
-#endif
+
 #include "muse_math.h"
 
-#include <QTemporaryFile>
+#include <QFile>
 #include <QByteArray>
 #include <QDrag>
 #include <QMessageBox>
@@ -829,17 +824,12 @@ QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
         return nullptr;
 
     //---------------------------------------------------
-    //    write events as XML into tmp file
+    //    write events as XML into tmp QString
     //---------------------------------------------------
 
-    FILE* tmp = tmpfile();
-    if (tmp == 0)
-    {
-        fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
-        return 0;
-    }
+    QString tmp;
 
-    Xml xml(tmp);
+    Xml xml(&tmp);
     int level = 0;
 
     for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
@@ -851,8 +841,9 @@ QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
         xml.etag(--level, "eventlist");
     }
 
-    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
-    fclose(tmp);
+    QMimeData* mimeData = new QMimeData();
+    mimeData->setData("text/x-muse-groupedeventlists", tmp.toUtf8());
+
     return mimeData;
 }
 
@@ -942,58 +933,24 @@ QMimeData* parts_to_mime(const set<const Part*>& parts)
 {
 
 	//---------------------------------------------------
-	//    write events as XML into tmp file
+	//    write events as XML into tmp QString
 	//---------------------------------------------------
 
-	FILE* tmp = tmpfile();
-	if (tmp == 0)
-	{
-		fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
-		return 0;
-	}
+  QString tmp;
 
-	XmlWriteStatistics stats;
-	Xml xml(tmp);
-	int level = 0;
+  XmlWriteStatistics stats;
+  Xml xml(&tmp);
+  int level = 0;
 
-	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-	{
-        (*part)->write(level, xml, true, true, &stats);
-    }
-    QString mimeString = "text/x-muse-mixedpartlist";
-    QMimeData *mimeData =  file_to_mimedata(tmp, mimeString );
-    fclose(tmp);
-    return mimeData;
-}
+  for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+  {
+      (*part)->write(level, xml, true, true, &stats);
+  }
+  QString mimeString = "text/x-muse-mixedpartlist";
+  QMimeData* mimeData = new QMimeData();
+  mimeData->setData(mimeString, tmp.toUtf8());
 
-//---------------------------------------------------
-//    read datafile into mime Object
-//---------------------------------------------------
-QMimeData* file_to_mimedata(FILE *datafile, QString mimeType)
-{
-
-    fflush(datafile);
-	struct stat f_stat;
-    if (fstat(fileno(datafile), &f_stat) == -1)
-	{
-		fprintf(stderr, "copy_notes() fstat failed:<%s>\n",
-		strerror(errno));
-        fclose(datafile);
-		return 0;
-	}
-	int n = f_stat.st_size;
-	char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
-    MAP_PRIVATE, fileno(datafile), 0);
-	fbuf[n] = 0;
-
-	QByteArray data(fbuf);
-
-    QMimeData* md = new QMimeData();
-    md->setData(mimeType, data);
-
-	munmap(fbuf, n);
-
-	return md;
+  return mimeData;
 }
 
 // true on success, false on failure
@@ -3067,23 +3024,18 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mod
 {
     if(tag_list->empty())
       return nullptr;
-  
-    QTemporaryFile tmp;
-    if(!tmp.open())
-    {
-        fprintf(stderr, "cut_or_copy_tagged_items_to_mime(): ERROR: Failed to open temporary file\n");
-        return nullptr;
-    }
-    
+
+    QString tmp;
+
     const Pos start_pos = tag_list->globalStats().evrange();
 
     Undo operations;
-  
+
     bool changed = false;
     const Part* part;
 
     //---------------------------------------------------
-    //    write events as XML into tmp file
+    //    write events as XML into tmp QString
     //---------------------------------------------------
 
     Xml xml(&tmp);
@@ -3095,7 +3047,7 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mod
       const EventList& el = itl->evlist();
       if(el.empty())
         continue;
-      
+
       xml.tag(level++, QString("eventlist part_id=\"%1\"").arg(part->uuid().toString()));
       for(ciEvent ie = el.begin(); ie != el.end(); ie++)
       {
@@ -3111,16 +3063,13 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mod
       }
       xml.etag(--level, "eventlist");
     }
-    
-    tmp.flush();
-    tmp.seek(0);
-    const QByteArray data = tmp.readAll();
+
     QMimeData* mimeData = new QMimeData();
-    mimeData->setData("text/x-muse-groupedeventlists", data);
+    mimeData->setData("text/x-muse-groupedeventlists", tmp.toUtf8());
 
     if(changed)
       MusEGlobal::song->applyOperationGroup(operations);
-    
+
     return mimeData;
 }
 

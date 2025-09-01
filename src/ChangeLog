@@ -3,6 +3,11 @@
       When splitting wave or midi events we want a duplicate, not a clone.
     - Fixed crashes with external editing. Rewrote and simplified WaveCanvas::getSelection().
       Tested OK with split parts, hidden or partially hidden events, and functions menu.
+25.08.2025
+    - Fixed issue 1307: Utf8 names not stored correctly. (Tim)
+      Fixed Xml::strTag() not storing utf8 correctly.
+    - Eliminated Xml::Xml(FILE*) and all code using FILE*.
+      All xml calling code uses either QFile or QString or char* now.
 17.08.2025
     - Fixed issue 1299: Regression vst controls/presets. (Tim)
       Caused by fixes at 13.05.2025 and before.

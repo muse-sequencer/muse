@@ -23,7 +23,6 @@
 //=========================================================
 
 #include <stdarg.h>
-#include <QByteArray>
 
 #include "xml.h"
 
@@ -44,25 +43,9 @@ const int Xml::_latestMinorVersion = 0;   // Latest known songfile minor version
 //   Xml
 //---------------------------------------------------------
 
-Xml::Xml(FILE* _f)
-      {
-      f          = _f;
-      _destStr   = nullptr;
-      _destIODev = nullptr;
-      _line      = 0;
-      _col       = 0;
-      level      = 0;
-      inTag      = false;
-      inComment  = false;
-      lbuffer[0] = 0;
-      bufptr     = lbuffer;
-      _minorVersion = -1;
-      _majorVersion = -1;
-      }
 
 Xml::Xml(const char* buf)
       {
-      f         = nullptr;
       _destStr  = nullptr;
       _destIODev = nullptr;
       _line     = 0;
@@ -77,7 +60,6 @@ Xml::Xml(const char* buf)
 
 Xml::Xml(QString* s)
       {
-      f         = nullptr;
       _destIODev = nullptr;
       _line     = 0;
       _col      = 0;
@@ -93,7 +75,6 @@ Xml::Xml(QString* s)
 
 Xml::Xml(QIODevice* d)
       {
-      f         = nullptr;
       _destStr   = nullptr;
       _destIODev = d;
       _line     = 0;
@@ -120,15 +101,12 @@ Xml::Xml(QIODevice* d)
 void Xml::next()
       {
       if (*bufptr == 0) {
-        
-            if((!f && !_destIODev) ||
-               (f && fgets(lbuffer, 512, f) == nullptr) ||
-               (_destIODev && _destIODev->readLine(lbuffer, 512) <= 0))
+            if((!_destIODev) || (_destIODev && _destIODev->readLine(lbuffer, 512) <= 0))
             {
               c = EOF;
               return;
             }
-                  
+
             bufptr = lbuffer;
             }
       c = *bufptr++;
@@ -263,7 +241,6 @@ QString Xml::strip(const QString& s)
 Xml::Token Xml::parse()
       {
       QByteArray buffer;
-      int idx = 0;
 
  again:
       bool endFlag = false;
@@ -327,14 +304,12 @@ Xml::Token Xml::parse()
                   }
             if (c == '?') {
                   next();
-                  idx = 0;
                   buffer.clear();
                   for (;;) {
                         if (c == '?' || c == EOF || c == '>')
                               break;
                         
                         buffer.append(c);
-                        idx++;
                         
                         // TODO: check overflow
                         next();
@@ -408,7 +383,6 @@ Xml::Token Xml::parse()
                         }
                   goto again;
                   }
-            idx = 0;
             buffer.clear();
             for (;;) {
                   if (c == '/' || c == ' ' || c == '\t' || c == '>' || c == '\n' || c == EOF)
@@ -416,7 +390,6 @@ Xml::Token Xml::parse()
                   // TODO: check overflow
                   
                   buffer.append(c);
-                  idx++;
                   
                   next();
                   }
@@ -471,7 +444,6 @@ Xml::Token Xml::parse()
                   fprintf(stderr, "XML: level = 0\n");
                   goto error;
                   }
-            idx = 0;
             buffer.clear();
             for (;;) {
                   if (c == EOF || c == '<')
@@ -480,7 +452,6 @@ Xml::Token Xml::parse()
                         next();
                         if (c == '<') {         // be tolerant with old muse files
                               buffer.append('&');
-                              idx++;
                               continue;
                               }
                               
@@ -515,7 +486,6 @@ Xml::Token Xml::parse()
                         }
 
                   buffer.append(c);
-                  idx++;
                   
                   next();
                   }
@@ -722,16 +692,7 @@ void Xml::skip(const QString& etag)
 
 void Xml::dump(QString &dump)
       {
-      if(f)
-      {
-        fpos_t pos;
-        fgetpos(f, &pos);
-        rewind(f);
-        while(fgets(lbuffer, 512, f) != nullptr)
-            dump.append(lbuffer);
-        fsetpos(f, &pos);
-      }
-      else if(_destIODev)
+      if(_destIODev)
       {
         // Only if not sequential.
         if(!_destIODev->isSequential())
@@ -848,15 +809,10 @@ void Xml::unknown(const char* s)
 void Xml::header()
       {
       const char* s = "<?xml version=\"1.0\" encoding=\"utf8\"?>\n";
-      if(f)
-        fprintf(f, "%s", s);
-      else
-      {
-        if(_destIODev)
-          _destIODev->write(s);
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      if(_destIODev)
+        _destIODev->write(s);
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 //---------------------------------------------------------
@@ -878,21 +834,12 @@ void Xml::put(const char* format, ...)
       va_list args;
       va_start(args, format);
 
-      if(f)
-      {
-        vfprintf(f, format, args);
-        va_end(args);
-        putc('\n', f);
-      }
-      else
-      {
-        const QString s = QString::vasprintf(format, args) + '\n';
-        va_end(args);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString::vasprintf(format, args) + '\n';
+      va_end(args);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::put(int level, const char* format, ...)
@@ -901,21 +848,12 @@ void Xml::put(int level, const char* format, ...)
       va_start(args, format);
       putLevel(level);
 
-      if(f)
-      {
-        vfprintf(f, format, args);
-        va_end(args);
-        putc('\n', f);
-      }
-      else
-      {
-        const QString s = QString::vasprintf(format, args) + '\n';
-        va_end(args);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString::vasprintf(format, args) + '\n';
+      va_end(args);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 //---------------------------------------------------------
@@ -928,20 +866,12 @@ void Xml::nput(int level, const char* format, ...)
       va_start(args, format);
       putLevel(level);
 
-      if(f)
-      {
-        vfprintf(f, format, args);
-        va_end(args);
-      }
-      else
-      {
-        const QString s = QString::vasprintf(format, args);
-        va_end(args);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString::vasprintf(format, args);
+      va_end(args);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::nput(const char* format, ...)
@@ -949,20 +879,12 @@ void Xml::nput(const char* format, ...)
       va_list args;
       va_start(args, format);
 
-      if(f)
-      {
-        vfprintf(f, format, args);
-        va_end(args);
-      }
-      else
-      {
-        const QString s = QString::vasprintf(format, args);
-        va_end(args);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString::vasprintf(format, args);
+      va_end(args);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 //---------------------------------------------------------
@@ -975,41 +897,23 @@ void Xml::tag(int level, const char* format, ...)
       va_start(args, format);
       putLevel(level);
 
-      if(f)
-      {
-        putc('<', f);
-        vfprintf(f, format, args);
-        va_end(args);
-        putc('>', f);
-        putc('\n', f);
-      }
-      else
-      {
-        const QString s = '<' + QString::vasprintf(format, args) + ">\n";
-        va_end(args);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = '<' + QString::vasprintf(format, args) + ">\n";
+      va_end(args);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::tag(int level, const QString& name)
 {
       putLevel(level);
 
-      if(f)
-      {
-        fprintf(f, "<%s>\n", name.toUtf8().constData());
-      }
-      else
-      {
-        const QString s = QString("<%1>\n").arg(name);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString("<%1>\n").arg(name);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
 }
 
 //---------------------------------------------------------
@@ -1022,52 +926,28 @@ void Xml::etag(int level, const char* format, ...)
       va_start(args, format);
       putLevel(level);
 
-      if(f)
-      {
-        putc('<', f);
-        putc('/', f);
-        vfprintf(f, format, args);
-        va_end(args);
-        putc('>', f);
-        putc('\n', f);
-      }
-      else
-      {
-        const QString s = "</" + QString::vasprintf(format, args) + ">\n";
-        va_end(args);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = "</" + QString::vasprintf(format, args) + ">\n";
+      va_end(args);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::emptyTag(int level, const QString& name)
 {
       putLevel(level);
 
-      if(f)
-      {
-        fprintf(f, "<%s />\n", name.toUtf8().constData());
-      }
-      else
-      {
-        const QString s = QString("<%1 />\n").arg(name);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString("<%1 />\n").arg(name);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
 }
 
 void Xml::putLevel(int n)
       {
-      if(f)
-      {
-        for (int i = 0; i < n*2; ++i)
-              putc(' ', f);
-      }
-      else if(_destIODev)
+      if(_destIODev)
       {
         for (int i = 0; i < n*2; ++i)
               _destIODev->putChar(' ');
@@ -1082,168 +962,96 @@ void Xml::putLevel(int n)
 void Xml::intTag(int level, const char* name, int val)
       {
       putLevel(level);
-      if(f)
-      {
-        fprintf(f, "<%s>%d</%s>\n", name, val, name);
-      }
-      else
-      {
-        const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
-        if(_destIODev)
-        _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      if(_destIODev)
+      _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::longIntTag(int level, const char* name, long int val)
       {
       putLevel(level);
-      fprintf(f, "<%s>%ld</%s>\n", name, val, name);
+      const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      if(_destIODev)
+      _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::uintTag(int level, const char* name, unsigned int val)
       {
       putLevel(level);
-      if(f)
-      {
-        fprintf(f, "<%s>%u</%s>\n", name, val, name);
-      }
-      else
-      {
-        const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
-        if(_destIODev)
-        _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      if(_destIODev)
+      _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::longLongTag(int level, const char* name, long long val)
       {
       putLevel(level);
-      if(f)
-      {
-        fprintf(f, "<%s>%lld</%s>\n", name, val, name);
-      }
-      else
-      {
-        const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
-        if(_destIODev)
-        _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      if(_destIODev)
+      _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::uLongLongTag(int level, const char* name, unsigned long long val)
       {
       putLevel(level);
-      if(f)
-      {
-        fprintf(f, "<%s>%llu</%s>\n", name, val, name);
-      }
-      else
-      {
-        const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
-        if(_destIODev)
-        _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      if(_destIODev)
+      _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::longUintTag(int level, const char* name, unsigned long int val)
       {
       putLevel(level);
-      fprintf(f, "<%s>%lu</%s>\n", name, val, name);
+      const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      if(_destIODev)
+      _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::floatTag(int level, const char* name, float val)
       {
       putLevel(level);
-      if(f)
-      {
-        // using QString to format decimal values since we know that
-        // toLatin1 will make a string with decimal point instead of
-        // decimal comma that some locales use
-        QString s("<%1>%2</%3>\n");
-        fprintf(f, "%s", s.arg(name).arg(val).arg(name).toUtf8().constData());
-      }
-      else
-      {
-        const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::doubleTag(int level, const char* name, double val)
       {
       putLevel(level);
-      if(f)
-      {
-        // using QString to format decimal values since we know that
-        // toLatin1 will make a string with decimal point instead of
-        // decimal comma that some locales use
-        QString s("<%1>%2</%3>\n");
-        fprintf(f, "%s", s.arg(name).arg(val).arg(name).toUtf8().constData());
-      }
-      else
-      {
-        const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
-void Xml::strTag(int level, const char* name, const char* val)
+void Xml::strTag(int level, const QString& name, QString val)
       {
       putLevel(level);
-      if(f)
-      {
-        fprintf(f, "<%s>", name);
-        if (val) {
-              while (*val) {
-                    switch(*val) {
-                          case '&': fprintf(f, "&amp;"); break;
-                          case '<': fprintf(f, "&lt;"); break;
-                          case '>': fprintf(f, "&gt;"); break;
-                          case '\'': fprintf(f, "&apos;"); break;
-                          case '"': fprintf(f, "&quot;"); break;
-                          default: fputc(*val, f); break;
-                          }
-                    ++val;
-                    }
-              }
-        fprintf(f, "</%s>\n", name);
-      }
-      else
-      {
-        QString s = QString("<%1>").arg(name);
-        if (val) {
-              while (*val) {
-                    switch(*val) {
-                          case '&': s.append("&amp;"); break;
-                          case '<': s.append("&lt;"); break;
-                          case '>': s.append("&gt;"); break;
-                          case '\'': s.append("&apos;"); break;
-                          case '"': s.append("&quot;"); break;
-                          default: s.append(*val); break;
-                          }
-                    ++val;
-                    }
-              }
-        s.append(QString("</%1>\n").arg(name));
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      val.replace('&', "&amp;");
+      val.replace('<', "&lt;");
+      val.replace('>', "&gt;");
+      val.replace('\'', "&apos;");
+      val.replace('"', "&quot;");
+      QString s = QString("<%1>%2</%3>\n").arg(name).arg(val).arg(name);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 //---------------------------------------------------------
@@ -1253,20 +1061,12 @@ void Xml::strTag(int level, const char* name, const char* val)
 void Xml::colorTag(int level, const char* name, const QColor& color)
       {
       putLevel(level);
-      if(f)
-      {
-        fprintf(f, "<%s r=\"%d\" g=\"%d\" b=\"%d\"></%s>\n",
-	      name, color.red(), color.green(), color.blue(), name);
-      }
-      else
-      {
-        const QString s = QString("<%1 r=\"%2\" g=\"%3\" b=\"%4\"></%5>\n")
-          .arg(name).arg(color.red()).arg(color.green()).arg(color.blue()).arg(name);
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
+      const QString s = QString("<%1 r=\"%2\" g=\"%3\" b=\"%4\"></%5>\n")
+        .arg(name).arg(color.red()).arg(color.green()).arg(color.blue()).arg(name);
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
 
 void Xml::colorTag(int level, const QString& name, const QColor& color)
@@ -1290,37 +1090,15 @@ void Xml::geometryTag(int level, const char* name, const QWidget* g)
 void Xml::qrectTag(int level, const char* name, const QRect& r)
       {
       putLevel(level);
-      if(f)
-      {
-        fprintf(f, "<%s x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\"></%s>\n",
-           name, r.x(), r.y(), r.width(), r.height(), name);
-      }
-      else
-      {
-        const QString s = 
-          QString("<%1 x=\"%2\" y=\"%3\" w=\"%4\" h=\"%5\"></%6>\n")
-           .arg(name).arg(r.x()).arg(r.y()).arg(r.width()).arg(r.height()).arg(name);
-          
-        if(_destIODev)
-          _destIODev->write(s.toUtf8());
-        else if(_destStr)
-          _destStr->append(s);
-      }
-      }
+      const QString s =
+        QString("<%1 x=\"%2\" y=\"%3\" w=\"%4\" h=\"%5\"></%6>\n")
+         .arg(name).arg(r.x()).arg(r.y()).arg(r.width()).arg(r.height()).arg(name);
 
-//---------------------------------------------------------
-//   strTag
-//---------------------------------------------------------
-
-void Xml::strTag(int level, const char* name, const QString& val)
-      {
-      strTag(level, name, val.toUtf8().constData());
+      if(_destIODev)
+        _destIODev->write(s.toUtf8());
+      else if(_destStr)
+        _destStr->append(s);
       }
-
-void Xml::strTag(int level, const QString& name, const QString& val)
-{
-  strTag(level, name.toUtf8().constData(), val.toUtf8().constData());
-}
       
 //---------------------------------------------------------
 //   xmlString

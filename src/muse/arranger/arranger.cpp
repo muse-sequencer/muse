@@ -933,7 +933,7 @@ void Arranger::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arranger");
       writeCustomColumns(level, xml);
-      xml.strTag(level, "tlist_header", header->saveState().toHex().constData());
+      xml.strTag(level, "tlist_header", header->saveState().toHex());
       xml.etag(--level, "arranger");
       }
 
