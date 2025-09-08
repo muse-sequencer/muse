@@ -2713,65 +2713,6 @@ void WaveCanvas::cmd(int cmd)
 //---------------------------------------------------------
 //   getSelection
 //---------------------------------------------------------
-// REMOVE Tim. wave. Changed. TODO: Work in progress. Editing does not work correctly if there is an offset or the part is partially hidden.
-// MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned stoppos)
-//       {
-//       MusECore::WaveSelectionList selection;
-// 
-//       for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
-//             MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
-//             unsigned part_offset = wp->frame();
-//             
-//             const MusECore::EventList& el = wp->events();
-// 
-//             for (MusECore::ciEvent e = el.begin(); e != el.end(); ++e) {
-//                   MusECore::Event event  = e->second;
-//                   if (event.empty())
-//                         continue;
-//                   MusECore::SndFileR file = event.sndFile();
-//                   if (file.isNull())
-//                         continue;
-// 
-//                   // Respect part end: Don't modify stuff outside of part boundary.
-//                   unsigned elen = event.lenFrame();
-//                   if(event.frame() + event.lenFrame() >= wp->lenFrame())
-//                   {
-//                     // Adjust apparent operation length:
-//                     if(event.frame() > wp->lenFrame())
-//                       elen = 0;
-//                     else
-//                       elen = wp->lenFrame() - event.frame();
-//                   }
-//                   
-//                   unsigned event_offset = event.frame() + part_offset;
-//                   unsigned event_startpos  = event.spos();
-//                   unsigned event_length = elen + event.spos();
-//                   unsigned event_end    = event_offset + event_length;
-//                   //printf("startpos=%d stoppos=%d part_offset=%d event_offset=%d event_startpos=%d event_length=%d event_end=%d\n",
-//                   // startpos, stoppos, part_offset, event_offset, event_startpos, event_length, event_end);
-// 
-//                   if (!(event_end <= startpos || event_offset > stoppos)) {
-//                         int tmp_sx = startpos - event_offset + event_startpos;
-//                         int tmp_ex = stoppos  - event_offset + event_startpos;
-//                         unsigned sx;
-//                         unsigned ex;
-// 
-//                         tmp_sx < (int)event_startpos ? sx = event_startpos : sx = tmp_sx;
-//                         tmp_ex > (int)event_length   ? ex = event_length   : ex = tmp_ex;
-// 
-//                         //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLocal8Bit().constData());
-//                         MusECore::WaveEventSelection s;
-//                         s.event = event;  
-//                         s.startframe = sx;
-//                         s.endframe   = ex+1;
-//                         //printf("sx=%d ex=%d\n",sx,ex);
-//                         selection.push_back(s);
-//                         }
-//                   }
-//             }
-// 
-//             return selection;
-//       }
 
 MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned stoppos)
       {
@@ -2781,9 +2722,10 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
 
       for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
             MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
-            const int part_offset = wp->frame();
+            const int part_pos = wp->frame();
             const int part_len = wp->lenFrame();
-            
+            const int part_end = part_pos + part_len;
+
             const MusECore::EventList& el = wp->events();
 
             for (MusECore::ciEvent e = el.begin(); e != el.end(); ++e) {
@@ -2795,51 +2737,43 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
                         continue;
 
                   // Respect part end: Don't modify stuff outside of part boundary.
-                  int eframe = event.frame();
-                  int elen = event.lenFrame();
-                  // Adjust apparent operation start and length:
-// REMOVE Tim. wave. Added. TODO: Work in progress. Editing does not work correctly if there is an offset or the part is partially hidden.
-//                   if(eframe < 0)
-//                   {
-//                     elen += eframe;
-//                     if(elen < 0)
-//                       continue;
-//                     eframe = 0;
-//                   }
-                  if(eframe >= part_len)
+                  int event_pos = event.frame();
+                  int event_len = event.lenFrame();
+
+                  if(event_pos >= part_len)
                     break;
-                  if(eframe + elen <= 0)
+                  if(event_pos + event_len <= 0)
                     continue;
-                  if(eframe + elen >= part_len)
-                    elen = part_len - eframe;
-                  
-                  const int event_offset = eframe + part_offset;
-                  const int event_startpos  = event.spos();
-// REMOVE Tim. wave. Changed. This seemed wrong and it caused a crash because events that were before the selection area were included.
-//                   const int event_length = elen + event_startpos;
-                  const int event_length = elen - event_startpos;
-                  const int event_end    = event_offset + event_length;
-                  //printf("startpos=%d stoppos=%d part_offset=%d event_offset=%d event_startpos=%d event_length=%d event_end=%d\n",
-                  // startpos, stoppos, part_offset, event_offset, event_startpos, event_length, event_end);
 
-                  if (event_end > (int)startpos && event_offset < (int)stoppos) {
-                        int tmp_sx = (int)startpos - event_offset + event_startpos;
-                        int tmp_ex = (int)stoppos  - event_offset + event_startpos;
-                        int sx;
-                        int ex;
+                  const int event_abs_pos = event_pos + part_pos;
+                  const int event_abs_end = event_abs_pos + event_len;
+                  const int event_wave_offset  = event.spos();
 
-                        tmp_sx < event_startpos ? sx = event_startpos : sx = tmp_sx;
-                        tmp_ex > event_length   ? ex = event_length   : ex = tmp_ex;
+                  // Adjust apparent operation start and length:
+                  int startpos_lim = (int)startpos;
+                  if(startpos_lim < part_pos)
+                    startpos_lim = part_pos;
+                  if(startpos_lim < event_abs_pos)
+                    startpos_lim = event_abs_pos;
 
-                        //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLocal8Bit().constData());
-                        MusECore::WaveEventSelection s;
-                        s.event = event;  
-                        s.startframe = sx;
-                        s.endframe   = ex+1;
-                        //printf("sx=%d ex=%d\n",sx,ex);
-                        selection.push_back(s);
-                        }
+                  int stoppos_lim = (int)stoppos;
+                  if(stoppos_lim >= part_end)
+                    stoppos_lim = part_end;
+                  if(stoppos_lim >= event_abs_end)
+                    stoppos_lim = event_abs_end;
+
+                  int wave_start = startpos_lim - event_abs_pos + event_wave_offset;
+                  int wave_end = stoppos_lim - event_abs_pos + event_wave_offset;
+
+                  if(wave_start < wave_end)
+                  {
+                    MusECore::WaveEventSelection s;
+                    s.event = event;
+                    s.startframe = wave_start;
+                    s.endframe   = wave_end;
+                    selection.push_back(s);
                   }
+              }
             }
 
             return selection;
@@ -2852,7 +2786,7 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
             MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
             const unsigned part_offset = wp->frame();
             const unsigned part_len = wp->lenFrame();
-            
+
             const MusECore::EventList& el = wp->events();
 
             for (MusECore::ciEvent e = el.begin(); e != el.end(); ++e) {
@@ -2874,7 +2808,7 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
                     else
                       elen = part_len - eframe;
                   }
-                  
+
                   const unsigned event_offset = eframe + part_offset;
                   const unsigned event_startpos  = event.spos();
                   const unsigned event_length = elen + event.spos();
@@ -2893,7 +2827,7 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
 
                         //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLocal8Bit().constData());
                         MusECore::WaveEventSelection s;
-                        s.event = event;  
+                        s.event = event;
                         s.startframe = sx;
                         s.endframe   = ex+1;
                         //printf("sx=%d ex=%d\n",sx,ex);
@@ -2905,7 +2839,6 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
             return selection;
 #endif
       }
-
 
 //---------------------------------------------------------
 //   modifySelection

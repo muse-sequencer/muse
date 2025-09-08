@@ -1,3 +1,8 @@
+01.09.2025
+    - Fixed issue 1302: Wave editor issues, split parts, external editor, sometimes crashes. (Tim)
+      When splitting wave or midi events we want a duplicate, not a clone.
+    - Fixed crashes with external editing. Rewrote and simplified WaveCanvas::getSelection().
+      Tested OK with split parts, hidden or partially hidden events, and functions menu.
 25.08.2025
     - Fixed issue 1307: Utf8 names not stored correctly. (Tim)
       Fixed Xml::strTag() not storing utf8 correctly.
