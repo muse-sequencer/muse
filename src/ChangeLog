@@ -1,3 +1,6 @@
+14.10.2025
+    - Fixed issue 1313: Settings of LV2 synths are not saved or reloaded correctly. (Tim)
+      Regression from 13.05.2025.
 01.09.2025
     - Fixed issue 1302: Wave editor issues, split parts, external editor, sometimes crashes. (Tim)
       When splitting wave or midi events we want a duplicate, not a clone.
