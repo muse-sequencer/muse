@@ -4478,7 +4478,7 @@ bool MusE::clearSong(bool clear_all)
     // Are any of the windows marked as 'delete on close'?
     // Then we MUST wait until they delete, otherwise crashes will happen
     //  when the song is cleared due to still-active signal/slot connections
-    //  and attempts by the various top levels to access non-existant tracks etc.
+    //  and attempts by the various top levels to access non-existent tracks etc.
     // It turns out that close() will call deleteLater() - NOT delete!
     // Simply calling processEvents() several times did not let them delete.
     // From help on QCoreApplication::processEvents():
@@ -4645,7 +4645,7 @@ bool MusE::clearSong(bool clear_all)
     // Are any of the windows marked as 'delete on close'?
     // Then we MUST wait until they delete, otherwise crashes will happen
     //  when the song is cleared due to still-active signal/slot connections
-    //  and attempts by the various top levels to access non-existant tracks etc.
+    //  and attempts by the various top levels to access non-existent tracks etc.
     // It turns out that close() will call deleteLater() - NOT delete!
     // Simply calling processEvents() several times did not let them delete.
     // From help on QCoreApplication::processEvents():

@@ -20,7 +20,7 @@
    Open Settings->MidiPorts/SoftSynth.
 
       - select a software synthesizer
-      - press "Add Instance" to create an istance of this
+      - press "Add Instance" to create an instance of this
         synthesizer; the synthi shows up in the list
         of instances with a unique name
 

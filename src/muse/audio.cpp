@@ -323,7 +323,7 @@ bool Audio::start()
       // Before we seek the transport, tell the sync() routine that when it calls seek(), DON'T re-enable all controllers.
       // When loading a song and the audio is stopped before loading then restarted after, this allows synths and
       //  plugins to disable any controls where state data exists (custom data or control values).
-      // The state data takes priority over automation contollers.
+      // The state data takes priority over automation controllers.
       // Since this start() comes AFTER song loading, we need a way to prevent seekTransport(), below, from causing
       //  sync() to cause seek() to re-enable all the controllers.
       // Thus preserving the existing state of all the controller enable flags, just this one time only.

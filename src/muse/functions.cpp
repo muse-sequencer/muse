@@ -1697,7 +1697,7 @@ bool merge_parts(const set<const Part*>& parts)
 		if (begin==INT_MAX || end==0)
 		{
 			printf("THIS SHOULD NEVER HAPPEN: begin==INT_MAX || end==0 in merge_parts()\n");
-			continue; // skip the actual work, as we cannot work under errorneous conditions.
+			continue; // skip the actual work, as we cannot work under erroneous conditions.
 		}
 		
 		// create and prepare the new part
