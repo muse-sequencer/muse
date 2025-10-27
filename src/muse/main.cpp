@@ -1048,7 +1048,7 @@ int main(int argc, char* argv[])
         AudioDriverSelect audioType = DriverConfigSetting;
         bool force_plugin_rescan = false;
         bool dont_plugin_rescan = false;
-        // A block because we don't want ths hanging around. Use it then lose it.
+        // A block because we don't want this hanging around. Use it then lose it.
         {
           QCommandLineParser parser;
           QString errorMessage;
@@ -1175,7 +1175,7 @@ int main(int argc, char* argv[])
         //  and should be letting Qt handle the locale stuff.
         // Usually when someone uses a c function in this app, they are not expecting
         //  (or are even aware of) any locale and usually expect the normal "C" locale.
-        // A check of virually all such calls in this app reveals that they are all used for simple
+        // A check of virtually all such calls in this app reveals that they are all used for simple
         //  things which do not - or even must not - require locale.
         // For project files for example, we NEVER want locale considerations because that would
         //  break portability, sharing files with other machines in other locales.

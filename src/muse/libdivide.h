@@ -1807,7 +1807,7 @@ namespace libdivide_internal {
 
 // The following convenience macros are used to build a type of the base
 // divider class and give it as template arguments the C functions
-// related to the macro name and the macro type paramaters.
+// related to the macro name and the macro type parameters.
 
 #define BRANCHFULL_DIVIDER(INT, TYPE) \
     typedef base<INT, \
@@ -1942,7 +1942,7 @@ namespace libdivide_internal {
 
 // This is the main divider class for use by the user (C++ API).
 // The divider itself is stored in the div variable who's
-// type is chosen by the dispatcher based on the template paramaters.
+// type is chosen by the dispatcher based on the template parameters.
 template<typename T, int ALGO = BRANCHFULL>
 class divider
 {

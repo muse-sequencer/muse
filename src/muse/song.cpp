@@ -4448,7 +4448,7 @@ void Song::beat()
             continue;
         }
 
-        // Some syncronization commands have the complete implementation in sync.cc
+        // Some synchronization commands have the complete implementation in sync.cc
         // some have the executive part here in the song class to be executed in the song thread.
         switch (command)
         {
@@ -4730,7 +4730,7 @@ void Song::clear(bool signal, bool clear_all)
       // p3.3.45 Clear all midi port devices.
       for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
       {
-        // p3.3.50 Since midi ports are not deleted, clear all midi port in/out routes. They point to non-existant tracks now.
+        // p3.3.50 Since midi ports are not deleted, clear all midi port in/out routes. They point to non-existent tracks now.
         MusEGlobal::midiPorts[i].inRoutes()->clear();
         MusEGlobal::midiPorts[i].outRoutes()->clear();
         
@@ -4759,7 +4759,7 @@ void Song::clear(bool signal, bool clear_all)
             {
               // Since Jack midi devices are created dynamically, we must delete them.
               // The destructor unregisters the device from Jack, which also disconnects all device-to-jack routes.
-              // This will also delete all midi-track-to-device routes, they point to non-existant midi tracks 
+              // This will also delete all midi-track-to-device routes, they point to non-existent midi tracks 
               //  which were all deleted above
               delete (*imd);
               // Remove the device from the list.
@@ -4772,7 +4772,7 @@ void Song::clear(bool signal, bool clear_all)
           else if(dynamic_cast< MidiAlsaDevice* >(*imd))
           {
             // With alsa devices, we must not delete them (they're always in the list). But we must 
-            //  clear all routes. They point to non-existant midi tracks, which were all deleted above.
+            //  clear all routes. They point to non-existent midi tracks, which were all deleted above.
             (*imd)->inRoutes()->clear();
             (*imd)->outRoutes()->clear();
           }
