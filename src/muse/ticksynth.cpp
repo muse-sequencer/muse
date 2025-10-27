@@ -327,7 +327,7 @@ void MetronomeSynthIF::initSamples()
     accent1Samples = nullptr;
     accent2Samples = nullptr;
 
-    // Try loading all samples, absolute path samples has precedense over global path.
+    // Try loading all samples, absolute path samples has precedence over global path.
     MusECore::MetronomeSettings* metro_settings =
       MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 

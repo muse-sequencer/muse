@@ -29,7 +29,7 @@ namespace MusEGui {
 
 //---------------------------------------------------------
 //   MLabel
-//    label widged which sends signal mousePressed
+//    label widget which sends signal mousePressed
 //    on mousePressEvent
 //---------------------------------------------------------
 

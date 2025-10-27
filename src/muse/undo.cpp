@@ -4869,7 +4869,7 @@ void Song::executeOperationGroup1(Undo& operations)
                               // Erase any items in the new list found at the frames given by the erase list.
                               for(ciCtrl ic = i->_eraseCtrlList->cbegin(); ic != i->_eraseCtrlList->cend(); ++ic)
                               {
-                                // TODO: It would be faster if we used 'group end' markers, either as an auxilliary
+                                // TODO: It would be faster if we used 'group end' markers, either as an auxiliary
                                 //        list or embedded in each controller list item. That way we could use
                                 //        the erase(start, end) to quickly erase whole sections - or the entire range.
                                 if(new_list->erase(ic->first) != 0)

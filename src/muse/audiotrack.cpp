@@ -688,7 +688,7 @@ void AudioTrack::setupPlugin(PluginI* plugin, int idx)
       }
     }
     else
-    // Plugin is missing. Grab the information from the plugin's persistent properies.
+    // Plugin is missing. Grab the information from the plugin's persistent properties.
     {
       const PluginConfiguration &pc = plugin->initialConfiguration();
       for(ciPluginControlList ipcl = pc._initParams.cbegin(); ipcl != pc._initParams.cend(); ++ipcl)
