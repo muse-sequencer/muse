@@ -1926,22 +1926,22 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
 
 // Static.
 LV2UI_Request_Value_Status  LV2Synth::lv2ui_Request_Value (
-  LV2UI_Feature_Handle /*handle*/, LV2_URID /*key*/, LV2_URID /*type*/, const LV2_Feature *const */*features*/ )
+  LV2UI_Feature_Handle handle, LV2_URID key, LV2_URID type, const LV2_Feature *const */*features*/ )
 {
 // TODO FIXME Finish this...
-//     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-//     LV2Synth *synth = state->synth;
-//     const char *uriKey = synth->unmapUrid(key);
-//     const char *uriType = synth->unmapUrid(type);
-//
-//     //fprintf(stderr, "uriKey:%s uriType:%s\n", uriKey, uriType);
-//
-//     LilvNode* keyNode = lilv_new_uri(lilvWorld, uriKey);
-//     if(keyNode)
-//     {
-//
-//       lilv_free(keyNode);
-//     }
+    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+    LV2Synth *synth = state->synth;
+    const char *uriKey = synth->unmapUrid(key);
+    //const char *uriType = synth->unmapUrid(type);
+
+    //fprintf(stderr, "uriKey:%s uriType:%s\n", uriKey, uriType);
+
+    LilvNode* keyNode = lilv_new_uri(lilvWorld, uriKey);
+    if(keyNode)
+    {
+
+      lilv_free(keyNode);
+    }
 
     return LV2UI_REQUEST_VALUE_ERR_UNKNOWN;
 }
@@ -2513,17 +2513,6 @@ QString LV2Synth::lv2conf_getCustomData(LV2PluginWrapper_State *state)
                             state, LV2_STATE_IS_POD, state->_ppifeatures);
     }
 
-    // NOTE: Although plugins store their control values inside the state data,
-    //        those values often only restore a plugin's internal values.
-    //       It can be seen that the UI controls do change to the stored values,
-    //        but the plugin will NOT restore OUR port array, only the plugin's internal values.
-    //       As per LV2 specs, only midi program changes are allowed to self-modify the port array.
-    //       FIXME:
-    //       I could not seem to find something that would ask the plugin to give us its
-    //        internal values so we can update our port array.
-    //       Therefore, we must store OUR port array values along with any plugin state data.
-    //       This seems redundant, but it is possible that the array values might be different than
-    //        the internal values (internals ramped or enumerated etc.) and so both require storing.
     if(state->sif != nullptr) // write control ports values only for synths
     {
         for(size_t c = 0; c < state->sif->_inportsControl; c++)
@@ -2628,18 +2617,28 @@ bool LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
             }
             else
             {
-                if(state->sif != nullptr) //setting control value only for synths
+                bool ok = false;
+                float val = (float)qVal.toDouble(&ok);
+                if(ok)
                 {
-                    bool ok = false;
-                    float val = (float)qVal.toDouble(&ok);
-                    if(ok)
+                    const auto& iter = state->controlsNameMap.find(name.toLower());
+                    if(iter != state->controlsNameMap.end())
                     {
-                        const auto& iter = state->controlsNameMap.find(name.toLower());
-                        if(iter != state->controlsNameMap.end())
-                        {
-                            size_t ctrlNum = iter->second;
-                            state->sif->_controls [ctrlNum].val = val;
-                        }
+                        size_t ctrlNum = iter->second;
+// Changed.
+//                             state->sif->_controls [ctrlNum].val = val;
+// TODO: See if this part helps.
+// TESTED: Unable to test. The tested plugins did not support UI port_event().
+// So these were not even used in function lv2ui_SendChangedControls().
+//                             state->sif->_controls [ctrlNum].val = state->lastControls [ctrlNum] = val;
+//                             // Reset this in case it was set. Prevent sending to the ui. This new value takes priority.
+//                             state->controlsMask [ctrlNum] = false;
+
+                        if(state->sif)
+                          state->sif->_controls [ctrlNum].val = val;
+
+                        if(state->inst && state->plugInst)
+                          state->plugInst->controls [ctrlNum].val = val;
                     }
                 }
             }
