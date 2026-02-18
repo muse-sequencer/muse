@@ -29,7 +29,6 @@
 #include "synth.h"
 #include "functions.h"
 #include "operations.h"
-#include "gconfig.h"
 
 #include "driver/jackmidi.h"
 #include "route.h"
@@ -74,93 +73,239 @@
 #include <QActionGroup>
 #include <QMenu>
 #include <QWidget>
+#include <QLocale>
+#include <QCollator>
+#include <QList>
+#include <QIntValidator>
+
+// Forwards from header.
+#include "gconfig.h"
 
 using std::set;
 
-namespace MusEGlobal {
-extern bool hIsB;
-}
-
 namespace MusECore {
 
+namespace {
+    static QString stripDirectionMarks(const QString& s)
+    {
+        static const QVector<QChar> dirMarks = {
+            0x200E, // LRM
+            0x200F, // RLM
+            0x202A, // LRE
+            0x202B, // RLE
+            0x202C, // PDF
+            0x202D, // LRO
+            0x202E, // RLO
+            0x2066, // LRI
+            0x2067, // RLI
+            0x2068, // FSI
+            0x2069  // PDI
+        };
 
-static const char* vall[] = {
-      "c","c#","d","d#","e","f","f#","g","g#","a","a#","h"
-      };
-static const char* valu[] = {
-      "C","C#","D","D#","E","F","F#","G","G#","A","A#","H"
-      };
+        QString out;
+        out.reserve(s.size());
+        for (QChar c : s)
+            if (!dirMarks.contains(c))
+                out.append(c);
 
-//---------------------------------------------------------
-//   pitch2string
-//---------------------------------------------------------
+        return out;
+    }
+}
 
-QString pitch2string(int v)
-      {
-      if (v < 0 || v > 127)
-            return QString("----");
-      int octave = (v / 12) - 2;
-      QString o = QString::number(octave);
-      int i = v % 12;
-      QString s(octave < 0 ? valu[i] : vall[i]);
-      if (MusEGlobal::hIsB) {
-            if (s == "h")
-                  s = "b";
-            else if (s == "H")
-                  s = "B";
+QValidator::State parseBiDirectional(
+    const QString& s,
+    const NoteNameList& list,
+    int& outIndex,
+    int& outNumber)
+{
+    QString input = stripDirectionMarks(s).trimmed();
+    if (input.isEmpty())
+        return QValidator::Intermediate;
+
+    // Get default or system locale.
+    QLocale loc;
+    // There is a default constructor but it's rather new at 5.13 so we'll do this.
+    QCollator col(loc);
+    col.setCaseSensitivity(Qt::CaseInsensitive);
+
+    const int octaves = (128 - list.startingMidiNote()) / list.size();
+    QIntValidator intv(list.startingMidiOctave(), list.startingMidiOctave() + octaves);
+    bool ok = false;
+
+    for (auto it = list.begin(); it != list.end(); ++it)
+    {
+        const NoteName &nn = *it;
+        QString name = stripDirectionMarks(nn.firstName()).trimmed();
+        // Check the note first name.
+        if (!name.isEmpty())
+        {
+          const int len = name.size();
+
+          // ---- NOTE + NUMBER ----
+          // Use a collator because case-insensitive comparisons are tricky in different locales.
+          if (input.size() >= len &&
+              col.compare(input.left(len), name) == 0)
+          {
+              QString rem = input.mid(len).trimmed();
+              int pos = 0; // Dummy, not used.
+              // Uses locale.
+              const QValidator::State st = intv.validate(rem, pos);
+              if(st == QValidator::Acceptable)
+              {
+                // Use the locale. Supports for example both Arabic and Western digits in Arabic locale.
+                int number = loc.toInt(rem, &ok);
+                if (ok) {
+                    outIndex = nn.noteNum();
+                    outNumber = number;
+                    return QValidator::Acceptable;
+                }
+                // Oops, something went wrong.
+                // The validator said ok but not the conversion.
+                // This will be counted as intermediate.
+              }
+          }
+        }
+        // Check the note second name.
+        if(!ok)
+        {
+          name = stripDirectionMarks(nn.secondName()).trimmed();
+          if (!name.isEmpty())
+          {
+            const int len = name.size();
+
+            // ---- NOTE + NUMBER ----
+            // Use a collator because case-insensitive comparisons are tricky in different locales.
+            if (input.size() >= len &&
+                col.compare(input.left(len), name) == 0)
+            {
+              QString rem = input.mid(len).trimmed();
+              int pos = 0; // Dummy, not used.
+              // Uses locale.
+              const QValidator::State st = intv.validate(rem, pos);
+              if(st == QValidator::Acceptable)
+              {
+                // Use the locale. Supports for example both Arabic and Western digits in Arabic locale.
+                int number = loc.toInt(rem, &ok);
+                if (ok) {
+                    outIndex = nn.noteNum();
+                    outNumber = number;
+                    return QValidator::Acceptable;
+                }
+                // Oops, something went wrong.
+                // The validator said ok but not the conversion.
+                // This will be counted as intermediate.
+              }
             }
-      return s + o;
-      }
+          }
+        }
+    }
+
+    // NOTE: There is no QValidator::Invalid state returned at all.
+    // Suppose there are two notes 'RICE' and 'RACE' and the text currently says 'RICE4' which is OK.
+    // Now put the caret just after the 'I' and attempt to backspace so you can replace it with 'A'.
+    // You wouldn't be allowed because 'RCE' doesn't match or even partially (forward) match any of the notes,
+    //  and would return Invalid which would prevent you from backspacing.
+    // Thus unless there is a match, ALL other states are intermediate, there is no choice.
+    //
+    // How about implementing backward partial match (match 'CE') ?
+    // I thought about it, don't think that would help.
+    // How about if any of the letters are in the string, in sequence?
+    // No, people have different ways of typing and different ways of correcting a wrongly typed letter.
+
+    return QValidator::Intermediate;
+}
+
+//QString pitch2string(int v, bool rtl)
+QString pitch2string(int v)
+{
+    if (v < 0 || v > 127)
+        return QStringLiteral("----");
+
+    if (MusEGlobal::config.noteNameList.isEmpty())
+        return QString();
+
+    v += MusEGlobal::config.noteNameList.startingMidiNote();
+    const int notesInOctave = MusEGlobal::config.noteNameList.size();
+    const int noteIndex = v % notesInOctave;
+
+    auto it = MusEGlobal::config.noteNameList.find(noteIndex);
+    if (it == MusEGlobal::config.noteNameList.end())
+        return QStringLiteral("----");
+
+    QString name = it->firstName().trimmed();
+    if (name.isEmpty())
+        return QString();
+
+    const int octave =
+        (v / notesInOctave) +
+        MusEGlobal::config.noteNameList.startingMidiOctave() +
+        MusEGlobal::config.globalOctaveSuffixOffset;
+
+//     if (!rtl)
+//         return name + QString::number(octave);
+//
+//     // RTL logical ordering: <octave> <note>
+//     return QString::number(octave) + " " + name;
+
+    // Let the system or default locale handle conversion. For example Arabic vs. Western digits.
+    return name + QLocale().toString(octave);
+}
 
 //---------------------------------------------------------
 //   string2pitch
 //---------------------------------------------------------
 
-int string2pitch(const QString &s)
+int string2pitch(QString s)
 {
-    if (validatePitch(s) != QValidator::Acceptable)
-        return 0;
+    int noteIdx = 0;
+    int octave  = 0;
 
-    QString p;
-    int oct = 0;
-    if (s.length() == 4) {
-        p = s.left(2);
-        oct = s.mid(2, 2).toInt();
-    } else if (s.length() == 3) {
-        if (s.at(1) == '#') {
-            p = s.left(2);
-            oct = s.mid(2, 1).toInt();
-        } else {
-            p = s.left(1);
-            oct = s.mid(1, 2).toInt();
-        }
-    } else {
-        p = s.left(1);
-        oct = s.mid(1, 1).toInt();
+    QValidator::State st = parseBiDirectional(
+        s,
+        MusEGlobal::config.noteNameList,
+        noteIdx,
+        octave);
+
+    if(st != QValidator::Acceptable)
+    {
+      //fprintf(stderr, "string2pitch Not acceptable. Returning 0.\n");
+      return 0;
     }
 
-    int cnt = 0;
-    for (const auto& it : vall) {
-        if (QString::compare(QString(it), p, Qt::CaseInsensitive) == 0)
-            break;
-        cnt++;
+    int notesInOctave = MusEGlobal::config.noteNameList.size();
+    int n = (octave - MusEGlobal::config.noteNameList.startingMidiOctave() -
+             MusEGlobal::config.globalOctaveSuffixOffset) * notesInOctave +
+            noteIdx - MusEGlobal::config.noteNameList.startingMidiNote();
+
+    //fprintf(stderr, "string2pitch Acceptable. n:%d\n", n);
+    return qBound(0, n, 127);
+}
+
+QValidator::State validatePitch(const QString& s)
+{
+    QString input = stripDirectionMarks(s).trimmed();
+    if (input.isEmpty())
+        return QValidator::Intermediate;
+
+    int noteIdx, octave;
+
+    QValidator::State st = parseBiDirectional(
+        input,
+        MusEGlobal::config.noteNameList,
+        noteIdx,
+        octave
+    );
+
+    if (st == QValidator::Acceptable || st == QValidator::Intermediate)
+    {
+      //fprintf(stderr, "validatePitch Acceptable or Intermediate\n");
+      return st;
     }
 
-    return (oct + 2) * 12 + cnt;
+    //fprintf(stderr, "validatePitch Invalid\n");
+    return QValidator::Invalid;
 }
 
-QValidator::State validatePitch(const QString &s) {
-    static const QRegularExpression regExp("\\A[A-H]#?-[12]|[a-h]#?[0-8]\\z");
-     Q_ASSERT(regExp.isValid());
-
-     const QRegularExpressionMatch match = regExp.match(s, 0, QRegularExpression::PartialPreferCompleteMatch);
-     if (match.hasMatch())
-         return QValidator::Acceptable;
-     else if (match.hasPartialMatch())
-         return QValidator::Intermediate;
-     else
-         return QValidator::Invalid;
-}
 
 //---------------------------------------------------------
 //   dumpMPEvent
@@ -1543,6 +1688,142 @@ struct CI {
             bool instrument;
             CI(int n, const QString& ss, bool u, bool o, bool i) : num(n), s(ss), used(u), off(o), instrument(i) {}
             };
+
+int populatePianoConfigMenu(PopupMenu* menu, const MusEGlobal::GlobalConfigValues *cfg)
+{
+  QLocale loc;
+  QAction *act;
+  const MusECore::NoteNameList &nnl = cfg->noteNameList;
+  menu->addAction(new MenuTitleItem(QWidget::tr("Current Note Name List"), menu));
+  menu->addAction(nnl.displayName())->setEnabled(false);
+  menu->addAction(QWidget::tr("Open Settings..."))->setData(PIANO_CFG_OPEN_SETTINGS);
+  menu->addAction(new MenuTitleItem(QWidget::tr("Global Settings"), menu));
+
+  act = menu->addAction(QWidget::tr("Show Piano"));
+  act->setData(PIANO_CFG_SHOW_PIANO);
+  act->setCheckable(true);
+  act->setChecked(cfg->globalShowPiano);
+
+  act = menu->addAction(QWidget::tr("Show Note Colors"));
+  act->setData(PIANO_CFG_SHOW_NOTE_COLORS);
+  act->setCheckable(true);
+  act->setChecked(cfg->pianoShowNoteColors);
+
+  PopupMenu *octSubPop = new PopupMenu(QWidget::tr("Octave Suffix Adjust"), menu, true);  // true = enable stay open
+  QActionGroup *actg = new QActionGroup(octSubPop);
+
+  act = actg->addAction(QString("+") + loc.toString(4));
+  act->setData(PIANO_CFG_OCT_P4);
+  act->setCheckable(true);
+  if(cfg->globalOctaveSuffixOffset == 4)
+    act->setChecked(true);
+
+  act = actg->addAction(QString("+") + loc.toString(3));
+  act->setData(PIANO_CFG_OCT_P3);
+  act->setCheckable(true);
+  if(cfg->globalOctaveSuffixOffset == 3)
+    act->setChecked(true);
+
+  act = actg->addAction(QString("+") + loc.toString(2));
+  act->setData(PIANO_CFG_OCT_P2);
+  act->setCheckable(true);
+  if(cfg->globalOctaveSuffixOffset == 2)
+    act->setChecked(true);
+
+  act = actg->addAction(QString("+") + loc.toString(1));
+  act->setData(PIANO_CFG_OCT_P1);
+  act->setCheckable(true);
+  if(cfg->globalOctaveSuffixOffset == 1)
+    act->setChecked(true);
+
+  act = actg->addAction(loc.toString(0));
+  act->setData(PIANO_CFG_OCT_0);
+  act->setCheckable(true);
+  if(cfg->globalOctaveSuffixOffset == 0)
+    act->setChecked(true);
+
+  act = actg->addAction(QString("-") + loc.toString(1));
+  act->setData(PIANO_CFG_OCT_M1);
+  act->setCheckable(true);
+  if(cfg->globalOctaveSuffixOffset == -1)
+    act->setChecked(true);
+
+  act = actg->addAction(QString("-") + loc.toString(2));
+  act->setData(PIANO_CFG_OCT_M2);
+  act->setCheckable(true);
+  if(cfg->globalOctaveSuffixOffset == -2)
+    act->setChecked(true);
+
+  act = actg->addAction(QString("-") + loc.toString(3));
+  act->setData(PIANO_CFG_OCT_M3);
+  act->setCheckable(true);
+  if(cfg->globalOctaveSuffixOffset == -3)
+    act->setChecked(true);
+
+  act = actg->addAction(QString("-") + loc.toString(4));
+  act->setData(PIANO_CFG_OCT_M4);
+  act->setCheckable(true);
+  if(cfg->globalOctaveSuffixOffset == -4)
+    act->setChecked(true);
+
+  octSubPop->addActions(actg->actions());
+
+  menu->addMenu(octSubPop);
+
+  return 0;
+}
+
+void pianoConfigPopupTriggered(QAction* act)
+{
+  if(!act)
+    return;
+
+  const PianoConfigMenuId rv = PianoConfigMenuId(act->data().toInt());
+  switch(rv)
+  {
+    case PIANO_CFG_SHOW_PIANO:
+      MusEGlobal::config.globalShowPiano = !MusEGlobal::config.globalShowPiano;
+      // Notify the rest of the app. Do not save the configuration file immediately.
+      MusEGlobal::muse->changeConfig(false);
+    break;
+
+    case PIANO_CFG_SHOW_NOTE_COLORS:
+      MusEGlobal::config.pianoShowNoteColors = !MusEGlobal::config.pianoShowNoteColors;
+      // Notify the rest of the app. Do not save the configuration file immediately.
+      MusEGlobal::muse->changeConfig(false);
+    break;
+
+
+    case PIANO_CFG_CUR_NOTE_LIST_NAME:
+      // Unused.
+      return;
+    break;
+
+    case PIANO_CFG_OPEN_SETTINGS:
+      // Open with the note names tab showing.
+      MusEGlobal::muse->configGlobalSettings(5);
+      return;
+    break;
+
+    case PIANO_CFG_OCT_M4:
+    case PIANO_CFG_OCT_M3:
+    case PIANO_CFG_OCT_M2:
+    case PIANO_CFG_OCT_M1:
+    case PIANO_CFG_OCT_0:
+    case PIANO_CFG_OCT_P1:
+    case PIANO_CFG_OCT_P2:
+    case PIANO_CFG_OCT_P3:
+    case PIANO_CFG_OCT_P4:
+    {
+      // Simply subtract the oct 0 enum to arrive at the octave offset number.
+      const int oct = rv - PIANO_CFG_OCT_0;
+      MusEGlobal::config.globalOctaveSuffixOffset = oct;
+      // Notify the rest of the app. Do not save the configuration file immediately.
+      MusEGlobal::muse->changeConfig(false);
+    }
+    break;
+  }
+}
 
 //---------------------------------------------------
 //  populateMidiCtrlMenu

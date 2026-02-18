@@ -29,6 +29,9 @@
 #include <QRect>
 #include <QShowEvent>
 #include <QString>
+#include <QLocale>
+#include <QCollator>
+#include <QMessageBox>
 
 #include "genset.h"
 #include "app.h"
@@ -40,6 +43,7 @@
 #include "filedialog.h"
 //#include "al/al.h"
 #include "undo.h"
+#include "cobject.h"
 
 #include "song.h"
 #include "operations.h"
@@ -69,6 +73,9 @@ static int selectableAudioBufSizes[] = {
 static unsigned long minControlProcessPeriods[] = {
       1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048
       };
+
+static int NOTE_FIRST_NAME_COL = 0;
+static int NOTE_SECOND_NAME_COL = 1;
 
 //---------------------------------------------------------
 //   GlobalSettingsConfig
@@ -110,6 +117,15 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       
       connect(audioConvertersButton, SIGNAL(clicked()), SLOT(showAudioConverterSettings()));
       
+      connect(noteNamesLoad,    &QPushButton::clicked, [this]() { loadNoteNames(); } );
+      connect(noteNamesSave,    &QPushButton::clicked, [this]() { saveNoteNames(); } );
+      connect(noteNameAdd,      &QPushButton::clicked, [this]() { addNoteName(); } );
+      connect(noteNameInsert,   &QPushButton::clicked, [this]() { insertNoteName(); } );
+      connect(noteNameDel,      &QPushButton::clicked, [this]() { delNoteName(); } );
+      connect(noteNameMoveUp,   &QPushButton::clicked, [this]() { moveNoteNameUp(); } );
+      connect(noteNameMoveDown, &QPushButton::clicked, [this]() { moveNoteNameDown(); } );
+      connect(noteNameTable,    &QTableWidget::itemChanged, [this](QTableWidgetItem *item) { noteNamesItemChanged(item); } );
+
       connect(deviceAudioBackendComboBox, SIGNAL(currentIndexChanged(int)), SLOT(updateBackendDeviceSettings()));
 
       for (int i = 0; i < MusEGlobal::numRtAudioDevices; i++){
@@ -139,6 +155,264 @@ void GlobalSettingsConfig::updateBackendDeviceSettings()
         deviceAudioRate->setDisabled(false);
 
     }
+}
+
+void GlobalSettingsConfig::updateStartingMidiNote(const MusECore::NoteNameList &nnl)
+{
+  const int sz = nnl.size();
+  noteNamesMidiStartingNote->setMinimum(0);
+  noteNamesMidiStartingNote->setMaximum(sz > 0 ? sz - 1 : 0);
+  noteNamesMidiStartingNote->setValue(nnl.startingMidiNote());
+}
+
+void GlobalSettingsConfig::updateNoteNames(const MusECore::NoteNameList &nnl)
+{
+  // Update the backup mirror note list. Make it a copy of the given note list.
+  _noteNamesBackup.clear();
+  _noteNamesBackup = nnl;
+
+  noteNameListName->setText(nnl.displayName());
+
+  // Prevent notification.
+  noteNameTable->blockSignals(true);
+  noteNameTable->clearContents();
+  noteNameTable->setRowCount(nnl.size());
+  noteNameTable->blockSignals(false);
+
+  for(MusECore::NoteNameList::const_iterator i = nnl.cbegin(); i != nnl.cend(); ++i)
+  {
+    const MusECore::NoteName &nn = *i;
+    setupNoteNameRow(nn.noteNum(), nn.firstName(), nn.secondName());
+  }
+
+  // Update the note number column.
+  updateNoteNumbers();
+
+  // Update the midi starting note range.
+  updateStartingMidiNote(nnl);
+
+  noteNamesMidiStartingOctave->setMinimum(-10);
+  noteNamesMidiStartingOctave->setMaximum(10);
+  noteNamesMidiStartingOctave->setValue(nnl.startingMidiOctave());
+
+//   noteNamesShowPiano->setChecked(nnl.showPiano());
+  noteNamesShowPiano->setChecked(MusEGlobal::config.globalShowPiano);
+  noteNamesShowNoteColors->setChecked(MusEGlobal::config.pianoShowNoteColors);
+}
+
+void GlobalSettingsConfig::applyNoteNames(MusECore::NoteNameList &nnl)
+{
+  nnl.clear();
+  nnl.setDisplayName(noteNameListName->text());
+  const int rows = noteNameTable->rowCount();
+  for(int i = 0; i < rows; ++i)
+  {
+    const QString fnn = noteNameTable->item(i, NOTE_FIRST_NAME_COL)->text();
+    const QString snn = noteNameTable->item(i, NOTE_SECOND_NAME_COL)->text();
+    const MusECore::NoteName nn(i, fnn, snn);
+    nnl.insert(i, nn);
+  }
+  nnl.setStartingMidiNote(noteNamesMidiStartingNote->value());
+  nnl.setStartingMidiOctave(noteNamesMidiStartingOctave->value());
+  MusEGlobal::config.globalShowPiano = noteNamesShowPiano->isChecked();
+  MusEGlobal::config.pianoShowNoteColors = noteNamesShowNoteColors->isChecked();
+}
+
+void GlobalSettingsConfig::loadNoteNames()
+{
+  // Temporary note name list.
+  MusECore::NoteNameList nnl;
+  // Load the temporary note name list.
+  const MusECore::NoteNameList::ReturnResult res = nnl.load();
+  if(res == MusECore::NoteNameList::ResultCancelled)
+    return;
+  if(res == MusECore::NoteNameList::ResultError)
+  {
+    QMessageBox::critical(this, tr("Load Note Names"), tr("Error reading note name list."));
+    return;
+  }
+  if(res == MusECore::NoteNameList::ResultSuccess)
+    // Update the note name table from the temporary list.
+    updateNoteNames(nnl);
+}
+
+void GlobalSettingsConfig::saveNoteNames()
+{
+  // Temporary note name list.
+  MusECore::NoteNameList nnl;
+  // Apply the note name table to the temporary note name list.
+  applyNoteNames(nnl);
+  // Save the temporary note name list. True on error.
+  const MusECore::NoteNameList::ReturnResult res = nnl.save();
+  if(res == MusECore::NoteNameList::ResultCancelled)
+    return;
+  if(res == MusECore::NoteNameList::ResultError)
+    QMessageBox::critical(this, tr("Save Note Names"), tr("Error saving note name list."));
+}
+
+void GlobalSettingsConfig::addNoteName()
+{
+  if(!newNoteNameRow(noteNameTable->rowCount()))
+    QMessageBox::critical(this, tr("Add Note Name"), tr("Error appending new row."));
+}
+
+void GlobalSettingsConfig::insertNoteName()
+{
+  const int row = noteNameTable->currentRow();
+  if(row < 0)
+    return;
+
+  if(!newNoteNameRow(row))
+    QMessageBox::critical(this, tr("Insert Note Name"), tr("Error inserting new row."));
+}
+
+void GlobalSettingsConfig::delNoteName()
+{
+  const int row = noteNameTable->currentRow();
+  if(row < 0)
+    return;
+
+  noteNameTable->removeRow(row);
+
+  // Update the note number column starting at row.
+  updateNoteNumbers(row);
+
+  // Rebuild the backup mirror note name list.
+  applyNoteNames(_noteNamesBackup);
+
+  // Update the midi starting note range.
+  updateStartingMidiNote(_noteNamesBackup);
+}
+
+void GlobalSettingsConfig::moveNoteNameUp()
+{
+  const int row = noteNameTable->currentRow();
+  if(row <= 0)
+    return;
+
+  if(!moveNoteName(row, row - 1))
+  {
+    QMessageBox::critical(this, tr("Move Note Names"), tr("Error moving note names up."));
+    return;
+  }
+
+  // Move the selection.
+  noteNameTable->selectRow(row - 1);
+}
+
+void GlobalSettingsConfig::moveNoteNameDown()
+{
+  const int row = noteNameTable->currentRow();
+  if(row < 0 || row + 1 >= noteNameTable->rowCount())
+    return;
+
+  if(!moveNoteName(row, row + 1))
+  {
+    QMessageBox::critical(this, tr("Move Note Names"), tr("Error moving note names down."));
+    return;
+  }
+
+  // Move the selection.
+  noteNameTable->selectRow(row + 1);
+}
+
+void GlobalSettingsConfig::noteNamesItemChanged(QTableWidgetItem *item)
+{
+  if(!item)
+    return;
+
+  const int col = item->column();
+  if(col == NOTE_FIRST_NAME_COL || col == NOTE_SECOND_NAME_COL)
+  {
+    const int row = item->row();
+    const QString txt = item->text();
+
+    // Check if the cell's text is empty or is duplicated in any other row's first or second note name.
+    bool revert = false;
+    // Blank second names are allowed.
+    if(col == NOTE_FIRST_NAME_COL && txt.isEmpty())
+    {
+      revert = true;
+      QMessageBox::critical(this, tr("Edit Note Name"), tr("Note first name cannot be blank. Try again."));
+    }
+    else if(!txt.isEmpty())
+    {
+      const QLocale loc;
+      QCollator coll(loc);
+      coll.setCaseSensitivity(Qt::CaseInsensitive);
+      const int rows = noteNameTable->rowCount();
+      for(int i = 0; i < rows; ++i)
+      {
+        // Skip the edited table row.
+        if(i == row)
+          continue;
+        const QString dfnn = noteNameTable->item(i, NOTE_FIRST_NAME_COL)->text();
+        const QString dsnn = noteNameTable->item(i, NOTE_SECOND_NAME_COL)->text();
+        if((!dfnn.isEmpty() && coll.compare(txt, dfnn) == 0) || (!dsnn.isEmpty() && coll.compare(txt, dsnn) == 0))
+        {
+          revert = true;
+          QMessageBox::critical(this, tr("Edit Note Name"),
+            tr("The note name entered already exists in another row. Try again."));
+          break;
+        }
+      }
+    }
+    if(revert)
+    {
+      // Find the cell's mirror backup note.
+      MusECore::NoteNameList::const_iterator bnni = _noteNamesBackup.find(row);
+      if(bnni == _noteNamesBackup.cend())
+      {
+        // This shouldn't happen.
+        fprintf(stderr, "GlobalSettingsConfig::noteNamesItemChanged: ERROR: Backup note not found! row:%d col:%d\n",
+                item->row(), item->column());
+        const QString newname = newNoteName();
+        // Prevent notification.
+        noteNameTable->blockSignals(true);
+        item->setText(newname);
+        noteNameTable->blockSignals(false);
+        // TODO: What to put here. Create a new backup note list item?
+        MusECore::NoteName nn(row, newname, newname);
+        _noteNamesBackup.insert(row, nn);
+      }
+      else
+      {
+        const MusECore::NoteName &bnn = *bnni;
+        // Prevent notification.
+        noteNameTable->blockSignals(true);
+        // Restore the cell's previous text from the text in the backup note name list.
+        if(col == NOTE_FIRST_NAME_COL)
+          item->setText(bnn.firstName());
+        else if(col == NOTE_SECOND_NAME_COL)
+          item->setText(bnn.secondName());
+        noteNameTable->blockSignals(false);
+      }
+    }
+    else
+    {
+      // OK, text not blank and no duplicates found.
+      // Find the cell's mirror backup note.
+      MusECore::NoteNameList::iterator bnni = _noteNamesBackup.find(row);
+      if(bnni == _noteNamesBackup.end())
+      {
+        // This shouldn't happen.
+        fprintf(stderr, "GlobalSettingsConfig::noteNamesItemChanged: ERROR: Backup note not found! row:%d col:%d\n",
+                item->row(), item->column());
+        // TODO: What to put here. Create a new backup note list item?
+        MusECore::NoteName nn(row, txt, txt);
+        _noteNamesBackup.insert(row, nn);
+      }
+      else
+      {
+        MusECore::NoteName &bnn = *bnni;
+        // Update the cell's mirror backup text in the backup note name list.
+        if(col == NOTE_FIRST_NAME_COL)
+          bnn.setFirstName(txt);
+        else if(col == NOTE_SECOND_NAME_COL)
+          bnn.setSecondName(txt);
+      }
+    }
+  }
 }
 
 //---------------------------------------------------------
@@ -278,6 +552,11 @@ void GlobalSettingsConfig::updateSettings()
 
       cbAMixerDocked->setChecked(MusEGlobal::config.mixerDockedA);
       cbBMixerDocked->setChecked(MusEGlobal::config.mixerDockedB);
+
+      updateNoteNames(MusEGlobal::config.noteNameList);
+      noteNamesOctaveOffset->setMinimum(-10);
+      noteNamesOctaveOffset->setMaximum(10);
+      noteNamesOctaveOffset->setValue(MusEGlobal::config.globalOctaveSuffixOffset);
 }
 
 //---------------------------------------------------------
@@ -406,6 +685,9 @@ void GlobalSettingsConfig::apply()
       
       MusEGlobal::config.pluginCacheTriggerRescan = pluginRescanButton->isChecked();
       
+      applyNoteNames(MusEGlobal::config.noteNameList);
+      MusEGlobal::config.globalOctaveSuffixOffset = noteNamesOctaveOffset->value();
+
 //      applyMdiSettings();
       TopWin::_openTabbed[TopWin::PIANO_ROLL] = cbTabPianoroll->isChecked();
       TopWin::_openTabbed[TopWin::DRUM] = cbTabDrum->isChecked();
@@ -756,6 +1038,187 @@ void GlobalSettingsConfig::startSongReset()
 {
   startSongEntry->setText("<default>");
   readMidiConfigFromSongCheckBox->setChecked(false);
+}
+
+QString GlobalSettingsConfig::newNoteName() const
+{
+  const QString newname(tr("NewNote"));
+  int suf;
+  QString n;
+  const QTableWidgetItem *item;
+  const int rows = noteNameTable->rowCount();
+  QLocale loc;
+  QCollator coll(loc);
+  for(suf = 1; suf < 129; ++suf)
+  {
+    n = newname;
+    if(suf != 1)
+      n = newname + loc.toString(suf);
+
+    bool found = false;
+    for(int i = 0; i < rows; ++i)
+    {
+      QString fnn;
+      QString snn;
+      item = noteNameTable->item(i, NOTE_FIRST_NAME_COL);
+      if(item)
+        fnn = item->text();
+      item = noteNameTable->item(i, NOTE_SECOND_NAME_COL);
+      if(item)
+        snn = item->text();
+
+      if((!fnn.isEmpty() && coll.compare(fnn, n) == 0) || (!snn.isEmpty() && coll.compare(snn, n) == 0))
+      {
+        found = true;
+        break;
+      }
+    }
+    if(!found)
+      break;
+  }
+  return n;
+}
+
+bool GlobalSettingsConfig::setupNoteNameRow(int row, const QString &sharpName, const QString &flatName)
+{
+  if(row >= noteNameTable->rowCount())
+    return false;
+
+  // Prevent notification.
+  noteNameTable->blockSignals(true);
+
+  QTableWidgetItem *wi = new QTableWidgetItem(sharpName);
+  wi->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled);
+  wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  noteNameTable->setItem(row, NOTE_FIRST_NAME_COL, wi);
+
+  wi = new QTableWidgetItem(flatName);
+  wi->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled);
+  wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  noteNameTable->setItem(row, NOTE_SECOND_NAME_COL, wi);
+
+  noteNameTable->blockSignals(false);
+
+  return true;
+}
+
+bool GlobalSettingsConfig::newNoteNameRow(int row)
+{
+  const int rows = noteNameTable->rowCount();
+  // More than 128 notes not allowed.
+  if(rows >= 128)
+    return false;
+  if(row >= rows)
+    row = rows;
+
+  const QString newname = newNoteName();
+  if(newname.isEmpty())
+  {
+    QMessageBox::critical(this, tr("Note Names"), tr("Error creating new unique note name."));
+    return false;
+  }
+
+  // Append a new row if past the end. Prevent notification.
+  // Tested: This works OK if it's at the end, but not some distance past the end.
+  noteNameTable->blockSignals(true);
+  noteNameTable->insertRow(row);
+  noteNameTable->blockSignals(false);
+
+  // Check if a new row was created.
+  const int newrows = noteNameTable->rowCount();
+  if(newrows != rows + 1)
+  {
+    QMessageBox::critical(this, tr("Note Names"), tr("Error setting up note name row."));
+    return false;
+  }
+
+  if(!setupNoteNameRow(row, newname, newname))
+  {
+    noteNameTable->blockSignals(true);
+    noteNameTable->removeRow(row);
+    noteNameTable->blockSignals(false);
+    QMessageBox::critical(this, tr("Note Names"), tr("Error setting up new note name row."));
+    return false;
+  }
+
+  // Update the note number column starting at row.
+  updateNoteNumbers(row);
+
+  // Rebuild the backup mirror note name list.
+  applyNoteNames(_noteNamesBackup);
+
+  // Update the midi starting note range.
+  updateStartingMidiNote(_noteNamesBackup);
+
+  return true;
+}
+
+void GlobalSettingsConfig::updateNoteNumbers(int startRow)
+{
+  const int rows = noteNameTable->rowCount();
+  if(startRow >= rows)
+    return;
+  if(startRow < 0)
+    startRow = 0;
+  const QLocale loc;
+  // Prevent notification.
+  noteNameTable->blockSignals(true);
+  for(int i = startRow; i < rows; ++i)
+    noteNameTable->setVerticalHeaderItem(i, new QTableWidgetItem(loc.toString(i)));
+  noteNameTable->blockSignals(false);
+}
+
+bool GlobalSettingsConfig::moveNoteName(int from, int to)
+{
+  const int rows = noteNameTable->rowCount();
+  if(from == to || from < 0 || to < 0 || from >= rows || to >= rows)
+    return false;
+
+  // Prevent notification.
+  noteNameTable->blockSignals(true);
+
+  // Take the items at 'from'.
+  QTableWidgetItem *fwi_f = noteNameTable->takeItem(from, NOTE_FIRST_NAME_COL);
+  QTableWidgetItem *fwi_s = noteNameTable->takeItem(from, NOTE_SECOND_NAME_COL);
+
+  // The items at 'from' should be empty now.
+  // Shift all the items towards 'from'.
+  if(from < to)
+  {
+    for(int i = from; i < to; ++i)
+    {
+      QTableWidgetItem *wi_f = noteNameTable->takeItem(i + 1, NOTE_FIRST_NAME_COL);
+      QTableWidgetItem *wi_s = noteNameTable->takeItem(i + 1, NOTE_SECOND_NAME_COL);
+      noteNameTable->setItem(i, NOTE_FIRST_NAME_COL, wi_f);
+      noteNameTable->setItem(i, NOTE_SECOND_NAME_COL, wi_s);
+    }
+  }
+  else
+  {
+    for(int i = from; i > to; --i)
+    {
+      QTableWidgetItem *wi_f = noteNameTable->takeItem(i - 1, NOTE_FIRST_NAME_COL);
+      QTableWidgetItem *wi_s = noteNameTable->takeItem(i - 1, NOTE_SECOND_NAME_COL);
+      noteNameTable->setItem(i, NOTE_FIRST_NAME_COL, wi_f);
+      noteNameTable->setItem(i, NOTE_SECOND_NAME_COL, wi_s);
+    }
+  }
+
+  // The items at 'to' should be empty now. Put the items we took from 'from' at 'to'.
+  noteNameTable->setItem(to, NOTE_FIRST_NAME_COL, fwi_f);
+  noteNameTable->setItem(to, NOTE_SECOND_NAME_COL, fwi_s);
+
+  noteNameTable->blockSignals(false);
+
+  // Rebuild the backup mirror note name list.
+  applyNoteNames(_noteNamesBackup);
+
+  return true;
+}
+
+void GlobalSettingsConfig::selectTab(int tab) const
+{
+  TabWidget2->setCurrentIndex(tab);
 }
 
 } // namespace MusEGui

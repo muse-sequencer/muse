@@ -23,6 +23,7 @@
 
 #include <QToolTip>
 //#include <QDebug>
+#include <QLocale>
 
 //#include <stdio.h>
 
@@ -196,7 +197,7 @@ Piano::Piano(QWidget* parent, int ymag, int width, MidiEditor* editor)
     setFocusPolicy(Qt::ClickFocus);
     _midiEditor = editor;
     curPitch = -1;
-    selectedPitch = 60;  // Start with 'C3"
+    selectedPitch = 60;  // Start with middle 'C'
     keyDown = -1;
     button = Qt::NoButton;
     setStatusTip(tr("Piano: Press key to play or enter events in step record mode (SHIFT for chords). RMB: Set cursor for polyphonic control events. CTRL+Mousewheel to zoom view vertically."));
@@ -208,36 +209,197 @@ Piano::Piano(QWidget* parent, int ymag, int width, MidiEditor* editor)
 
 void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 {
-    //      QRect ur = mapDev(mr);
-    //      if (ur.height() > pianoHeight)
-    //          ur.setHeight(pianoHeight);
-    //      // FIXME: For some reason need the expansion otherwise drawing
-    //      //        artifacts (incomplete drawing). Can't figure out why.
-    //      ur.adjust(0, -4, 0, 4);
+  const int selPitchY = pitch2y(selectedPitch);
+  const int curPitchY = pitch2y(curPitch);
 
-    const int selPitchY = pitch2y(selectedPitch);
-    const int curPitchY = pitch2y(curPitch);
+  const QColor colKeyCur = MusEGlobal::config.pianoCurrentKey;
+  const QColor colKeyCurP = MusEGlobal::config.pianoPressedKey;
+  const QColor colKeySel = MusEGlobal::config.pianoSelectedKey;
+  const qreal rad = 1.0;
 
-    const QColor colKeyCur = MusEGlobal::config.pianoCurrentKey;
-    const QColor colKeyCurP = MusEGlobal::config.pianoPressedKey;
-    const QColor colKeySel = MusEGlobal::config.pianoSelectedKey;
-    const qreal rad = 1.0;
+  QPen pen(QColor(80,80,80));
+  pen.setCosmetic(true);
 
-    QPen pen(QColor(80,80,80));
-    pen.setCosmetic(true);
-    pen.setWidth(2);
-    p.setPen(pen);
-    p.setRenderHint(QPainter::Antialiasing);
+  const int sclsz = MusEGlobal::config.noteNameList.size();
+  const int snote = MusEGlobal::config.noteNameList.startingMidiNote();
+  const bool showpiano = MusEGlobal::config.globalShowPiano;
+  const bool nopiano = sclsz != 12 || !showpiano;
+
+  if(nopiano)
+  {
+    const int pianoH = pianoHeight();
 
     // draw white keys
     {
         const QColor colKeyW("Ivory");
 
+        pen.setWidth(1);
+        p.setPen(pen);
+        p.setBrush(colKeyW);
+        p.setRenderHint(QPainter::Antialiasing);
+
+        if(MusEGlobal::config.pianoShowNoteColors)
+        {
+          // We need to make sure that the colours here match the colours on the piano canvas.
+          // That means first drawing the piano canvas background colour and/or possibly a darker
+          //  lane colour, then the transparent note colour. So it looks identical to the canvas.
+          p.fillRect(0, 0, pianoWidth, pianoH, MusEGlobal::config.midiCanvasBg);
+        }
+        else
+        {
+          // Draw a slight gradient from the top to the bottom of each octave
+          //  to help distinguish where each octave starts.
+          // (Note that drawing a repeating gradient all the way from piano top to bottom
+          //  doesn't work precisely. The border slowy wanders as it's drawn. Same result as
+          //  using relative mode (0.0 - 1.0). So we draw by octave instead.)
+          const int topnote = (127 + snote) % sclsz;
+          const int gradoff = sclsz - topnote - 1;
+          QLinearGradient g(0.0, -gradoff * KH_MT, 0.0, (sclsz - gradoff) * KH_MT);
+          g.setSpread(QGradient::RepeatSpread);
+          g.setColorAt(0.0, colKeyW.darker(118));
+          g.setColorAt(1.0, colKeyW);
+          p.setBrush(g);
+          int starty = 0;
+          int endy = (topnote + 1) * KH_MT;
+
+          while(endy < pianoH)
+          {
+            p.fillRect(0, starty, pianoWidth, endy - starty, g);
+            starty = endy;
+            endy += sclsz * KH_MT;
+          }
+
+          // Fill remainder at bottom.
+          if(pianoH - starty > 0)
+            p.fillRect(0, starty, pianoWidth, pianoH - starty, g);
+        }
+
+        int y = 0;
+        // 128 keys.
+        for (int i = 0; i < 128; ++i) {
+            y = pitch2y(i);
+
+            if (y == selPitchY)
+            {
+                p.setBrush(colKeySel);
+                p.fillRect(0, y, pianoWidth, KH_MT, p.brush());
+            }
+            else if(MusEGlobal::config.pianoShowNoteColors)
+            {
+              QColor c = MusECore::noteColorScrambled((i + snote) % sclsz);
+              c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+              p.fillRect(0, y, pianoWidth, KH_MT, c);
+            }
+
+            p.setRenderHint(QPainter::Antialiasing, false);
+            // Octave divider? Draw solid line, else draw broken line.
+            if(((i + snote + 1) % sclsz) == 0)
+              pen.setStyle(Qt::SolidLine);
+            else
+              pen.setStyle(Qt::DotLine);
+            p.setPen(pen);
+            p.drawLine(0, y, pianoWidth, y);
+            // Reset to solid.
+            pen.setStyle(Qt::SolidLine);
+            p.setPen(pen);
+
+            p.drawLine(pianoWidth, y, pianoWidth, y + KH_MT);
+
+            if (y == curPitchY) {
+                p.save();
+                if (curPitch == keyDown)
+                    p.setBrush(colKeyCurP);
+                else
+                    p.setBrush(colKeyCur);
+                p.setPen(Qt::NoPen);
+                p.setRenderHint(QPainter::Antialiasing);
+                p.drawRoundedRect(pianoWidth * 0.65, y + 2, pianoWidth * 0.3, KH_MT - 4, rad, rad);
+                p.restore();
+            }
+        }
+
+        p.setRenderHint(QPainter::Antialiasing, false);
+        p.drawLine(0, pianoH, pianoWidth, pianoH);
+    }
+
+    // draw note names
+    {
+        QFont f(MusEGlobal::config.fonts[0].family(), 7);
+        QFontMetrics fm(f);
+        p.setFont(f);
+        p.setRenderHint(QPainter::Antialiasing);
+
+        int y;
+        for (int i = 0; i < 128; ++i)
+        {
+            p.setPen(Qt::black);
+            y = pitch2y(i);
+            if(y == selPitchY)
+            {
+              if(!MusECore::isColorBright(colKeySel))
+                p.setPen(Qt::white);
+            }
+            else if(MusEGlobal::config.pianoShowNoteColors)
+            {
+              if(!MusECore::isColorBright(MusECore::noteColorScrambled((i + snote) % sclsz)))
+                p.setPen(Qt::white);
+            }
+
+            const int note = (i + snote) % sclsz;
+            const MusECore::NoteName nn = MusEGlobal::config.noteNameList.findNoteName(note);
+            // -1 if not found.
+            if(nn.noteNum() == -1)
+              continue;
+            const int oct = (i + snote) / sclsz;
+            // Octave divider?
+            //if(note == 0)
+            {
+              QString s = nn.firstName();
+              // Octave note?
+              if(note == 0)
+                s += QLocale().toString(oct + MusEGlobal::config.noteNameList.startingMidiOctave() +
+                                     MusEGlobal::config.globalOctaveSuffixOffset);
+              // For text, y is the top of the font.
+              const QRect rect(3, y, pianoWidth - 6, KH_MT);
+              p.drawText(rect, Qt::AlignRight | Qt::AlignVCenter, s);
+            }
+        }
+    }
+  }
+  else
+  // Normal piano.
+  {
+    pen.setWidth(2);
+    p.setPen(pen);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    const int pianoH = pianoHeight();
+
+    const int hn [] { false,true,false,true,false,false,true,false,true,false,false,true };
+    const bool ishalfnote = hn[snote];
+
+    // draw white keys
+    {
+
+        const QColor colKeyW("Ivory");
+
         p.setBrush(colKeyW);
 
         int y = 0;
-        for (int i = 0; i < 75; i++) {
-            y = i * KH;
+        if(ishalfnote)
+        {
+          y = KH / 2;
+          // Need to fill in the top half white key area with something.
+          p.fillRect(0, 0, pianoWidth, y, p.brush());
+          p.drawLine(0, 0, pianoWidth, 0);
+          p.drawLine(pianoWidth, 0, pianoWidth, y);
+        }
+
+        for (; y < pianoH; y += KH)
+        {
+            //fprintf(stderr, "Piano::draw white key: y:%d curPitchY:%d selPitchY:%d ishalfnote:%d\n",
+            //  y, curPitchY, selPitchY, ishalfnote);
+
             if (y + 1 == selPitchY)
                 p.setBrush(colKeySel);
 
@@ -259,15 +421,14 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
                 p.restore();
             }
         }
-        y = 75 * KH;
-        p.drawLine(0, y, pianoWidth, y);
+
+        p.drawLine(0, pianoH, pianoWidth, pianoH);
     }
 
     // draw black keys
     {
+        const int wb = pianoWidth * .6;
         const int keyHeightB = 7;
-        const int distSmallB = 6;
-        const int distLargeB = 19;
         const int topOffsetB = 10;
 
         QLinearGradient g(0.0, 0.0, 1.0, 0.0);
@@ -279,49 +440,65 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
         g.setColorAt(1.0, QColor(20, 20, 20));
         p.setBrush(g);
 
-        int cnt = 2;
-        bool flag = true;
-        int y = topOffsetB;
-        int wb = pianoWidth * .6;
-        for (int i = 0; i < 53; i++) {
-            if ((y - 3) == selPitchY) {
-                p.setBrush(colKeySel);
-                p.drawRoundedRect(0, y, wb, keyHeightB, rad, rad);
-                p.setBrush(g);
-            }
-            else
-                p.drawRoundedRect(0, y, wb, keyHeightB, rad, rad);
+        // Black keys 5 and 10 are imaginary.
+        const int sy  [] { topOffsetB,0,topOffsetB,0,topOffsetB,topOffsetB,0,topOffsetB,0,topOffsetB,topOffsetB,0 };
+        const int sbk [] { 3,4,4,5,5,6,0,0,1,1,2,3 };
+        int y = sy[snote];
+        int sblackkey = sbk[snote];
 
-            if ((y - 3) == curPitchY) {
-                p.save();
-                if (curPitch == keyDown)
-                    p.setBrush(colKeyCurP);
-                else
-                    p.setBrush(colKeyCur);
-                p.setPen(Qt::NoPen);
-                p.drawRoundedRect(pianoWidth * 0.2, y + 1, pianoWidth * 0.3, 5, rad, rad);
-                p.restore();
+        if(ishalfnote)
+          y += KH / 4;
+
+        // Stop at about half a white key from the bottom,
+        //  to avoid drawing half a black key.
+        const int yend = pianoH - (KH / 2 + 1);
+        for (; y < yend; y += KH) {
+            // Skip over where there are no black keys.
+            if(sblackkey != 2 && sblackkey != 6)
+            {
+              //fprintf(stderr, "Piano::draw black key: y:%d curPitchY:%d selPitchY:%d ishalfnote:%d\n",
+              //  y, curPitchY, selPitchY, ishalfnote);
+
+              if ((y - 3) == selPitchY) {
+                  p.setBrush(colKeySel);
+                  p.drawRoundedRect(0, y, wb, keyHeightB, rad, rad);
+                  p.setBrush(g);
+              }
+              else
+              {
+                  //fprintf(stderr, "Piano::draw: Drawing rounded rect x:0 y:%d w:%d h:%d rad:%f sblackkey:%d\n",
+                  //        y, wb, keyHeightB, rad, sblackkey);
+
+                  p.drawRoundedRect(0, y, wb, keyHeightB, rad, rad);
+              }
+
+              if ((y - 3) == curPitchY) {
+                  p.save();
+                  if (curPitch == keyDown)
+                      p.setBrush(colKeyCurP);
+                  else
+                      p.setBrush(colKeyCur);
+                  p.setPen(Qt::NoPen);
+                  p.drawRoundedRect(pianoWidth * 0.2, y + 1, pianoWidth * 0.3, 5, rad, rad);
+                  p.restore();
+              }
             }
 
-            if ((flag && ++cnt == 3) || (!flag && ++cnt == 2)) {
-                y = y + distLargeB + keyHeightB;
-                flag = !flag;
-                cnt = 0;
-            }
-            else
-                y = y + distSmallB + keyHeightB;
+            --sblackkey;
+            if(sblackkey < 0)
+              // Reset the black key down-counter.
+              sblackkey = 6;
         }
     }
 
     // draw shadow
     {
-        const int pianoHeight = (7 * KH * 10) + (KH * 5) + 1;
         QLinearGradient g(0.0, 0.0, 1.0, 0.0);
         g.setCoordinateMode(QGradient::ObjectBoundingMode);
         g.setColorAt(0.0, Qt::black);
         g.setColorAt(1.0, QColor(127, 127, 127, 0));
         p.setBrush(g);
-        p.fillRect(0, 0, pianoWidth * .1, pianoHeight, g);
+        p.fillRect(0, 0, pianoWidth * .1, pianoH + 1, g);
     }
 
     // draw C notes
@@ -331,14 +508,28 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
         QFontMetrics fm(f);
         p.setFont(f);
         p.setPen(Qt::black);
-        int y = 5 * KH;
-        for (int i = 0; i < 11; i++) {
-            QString s("C" + QString::number(8 - i));
-            p.drawText(pianoWidth - fm.size(0, s).width() - (pianoWidth / 10 - 3), y - 3, s);
-            y += octaveHeight;
+
+        // First note in the note name list is always an octave note.
+        const MusECore::NoteName &nn = MusEGlobal::config.noteNameList.findNoteName(0);
+        // -1 if not found.
+        const QString octnotename = nn.noteNum() == -1 ? "C" : nn.firstName();
+        const int octnote = (12 - MusEGlobal::config.noteNameList.startingMidiNote()) % 12;
+        int y = pitch2y(octnote);
+        // If the midi starting note is not zero, the displayed octave number starts at 1 higher.
+        const int octoff = (snote > 0 ? 1 : 0);
+
+        for (int oct = 0; oct < 11; ++oct) {
+            const QString s = octnotename +
+                      QLocale().toString(MusEGlobal::config.noteNameList.startingMidiOctave() +
+                        MusEGlobal::config.globalOctaveSuffixOffset + oct + octoff);
+            // For text, y is the top of the font.
+            const QRect rect(3, y - 1, pianoWidth - 6, KH);
+            p.drawText(rect, Qt::AlignRight | Qt::AlignVCenter, s);
+
+            y -= octaveHeight;
         }
     }
-
+  }
 
     if(!_midiEditor)
         return;
@@ -404,7 +595,6 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
         path.lineTo(w * 0.1, y);
         p.fillPath(path, p.brush());
     }
-
 }
 
 //---------------------------------------------------------
@@ -416,10 +606,32 @@ int Piano::pitch2y(int pitch) const
 	if (pitch<0)
 		return 0;
 
-	int tt[] = {
-		12, 19, 25, 32, 38, 51, 58, 64, 71, 77, 84, 90
-	};
-	int y = (75 * KH) - (tt[pitch%12] + (7 * KH) * (pitch/12));
+  int y;
+  const int pianoH = pianoHeight();
+  const int sclsz = MusEGlobal::config.noteNameList.size();
+  const int snote = MusEGlobal::config.noteNameList.startingMidiNote();
+  const bool showpiano = MusEGlobal::config.globalShowPiano;
+  const bool nopiano = sclsz != 12 || !showpiano;
+
+  if(nopiano)
+  {
+    y = pianoH - (pitch + 1) * KH_MT;
+  }
+  else
+  {
+    const int KH2 = KH / 2;
+    const int tt[] = {
+      12, 19, 25, 32, 38, 51, 58, 64, 71, 77, 84, 90
+    };
+    const int toff[] = {
+      0, 12 - KH2, 13, 25 - KH2, 26, 39, 51 - KH2, 52, 64 - KH2, 65, 66 + KH2, 78
+    };
+    const int starty = toff[snote % 12];
+    y = pianoH - (tt[(snote + pitch) % 12] + (7 * KH) * ((snote + pitch) / 12) - starty);
+
+    //fprintf(stderr, "Piano::pitch2y: pitch:%d y:%d starty:%d tableidx:%d tablev:%d pianoH:%d\n",
+    //  pitch, y, starty, (snote + pitch) % 12, tt[(snote + pitch) % 12], pianoH);
+  }
 	if (y < 0)
 		y = 0;
 	return y;
@@ -431,28 +643,71 @@ int Piano::pitch2y(int pitch) const
 
 int Piano::y2pitch(int y) const
 {
-    if (y < KH)
+  const int pianoH = pianoHeight();
+  const int sclsz = MusEGlobal::config.noteNameList.size();
+  const int snote = MusEGlobal::config.noteNameList.startingMidiNote();
+  const bool showpiano = MusEGlobal::config.globalShowPiano;
+  const bool nopiano = sclsz != 12 || !showpiano;
+
+  if(nopiano)
+  {
+    //fprintf(stderr, "Piano::y2pitch: y:%d\n", y);
+
+    if (y < KH_MT)
         return 127;
-    const int total = (10 * 7 + 5) * KH;       // 75 full tone steps
-    y = total - y;
+
+    // 128 steps.
+    y = (pianoH - 1 - y) / KH_MT;
+
+    //fprintf(stderr, "Piano::y2pitch: pitch:%d\n", y);
+
     if (y < 0)
         return 0;
-    int oct = (y / (7 * KH)) * 12;
-    char kt[] = {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 1, 1, 1, 1, 1, 1,
-        2, 2, 2, 2, 2, 2,
-        3, 3, 3, 3, 3, 3, 3,
-        4, 4, 4, 4, 4, 4, 4, 4, 4,
-        5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-        6, 6, 6, 6, 6, 6, 6,
-        7, 7, 7, 7, 7, 7,
-        8, 8, 8, 8, 8, 8, 8,
-        9, 9, 9, 9, 9, 9,
-        10, 10, 10, 10, 10, 10, 10,
-        11, 11, 11, 11, 11, 11, 11, 11, 11, 11
+    if (y >= 128)
+    {
+        //fprintf(stderr, "Piano::y2pitch: pitch:%d is >= 128\n", y);
+        return 127;
+    }
+    return y;
+  }
+  else
+  {
+    int tt[] = {
+      0, 6, 13, 19, 26, 39, 45, 52, 58, 65, 71, 78
     };
-    return kt[y % 91] + oct;
+    const int starty = tt[snote];
+    const int yy = pianoH - (y - starty);
+
+    if (yy < 0)
+        return 0;
+    int oct = (yy / (7 * KH)) * 12;
+    char kt[] = {
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+/*10*/        1, 1, 1, 1, 1, 1, 1,
+/*17*/        2, 2, 2, 2, 2, 2,
+/*23*/        3, 3, 3, 3, 3, 3, 3,
+/*30*/        4, 4, 4, 4, 4, 4, 4, 4, 4,
+/*39*/        5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+/*49*/        6, 6, 6, 6, 6, 6, 6,
+/*56*/        7, 7, 7, 7, 7, 7,
+/*62*/        8, 8, 8, 8, 8, 8, 8,
+/*69*/        9, 9, 9, 9, 9, 9,
+/*75*/        10, 10, 10, 10, 10, 10, 10,
+/*82*/        11, 11, 11, 11, 11, 11, 11, 11, 11, 11
+    };
+
+    int pitch = kt[yy % 91] + oct - snote;
+
+    //fprintf(stderr, "Piano::y2pitch: y:%d starty:%d yy:%d tableidx:%d tablev:%d pitch:%d pianoH:%d\n",
+    //  y, starty, yy, yy % 91, kt[yy % 91], pitch, pianoH);
+
+    // These will catch any half white key areas at the top and bottom, where pitch would be -1 or 128.
+    if(pitch < 0)
+      pitch = 0;
+    if(pitch > 127)
+      pitch = 127;
+    return pitch;
+  }
 }
 
 //---------------------------------------------------------
@@ -488,6 +743,8 @@ void Piano::setPitch(int pitch)
 void Piano::viewMouseMoveEvent(QMouseEvent* event)
 {
     int pitch = y2pitch(event->y());
+    //fprintf(stderr, "Piano::viewMouseMoveEvent: pitch:%d event y:%d\n", pitch, event->y());
+
     emit pitchChanged(pitch);
     setPitch(pitch);
 
@@ -627,6 +884,22 @@ void Piano::wheelEvent(QWheelEvent* ev)
     }
 
     emit redirectWheelEvent(ev);
+}
+
+// Static.
+int Piano::pianoHeight()
+{
+  const int sclsz = MusEGlobal::config.noteNameList.size();
+  const int snote = MusEGlobal::config.noteNameList.startingMidiNote();
+//   const bool showpiano = MusEGlobal::config.noteNameList.showPiano();
+  const bool showpiano = MusEGlobal::config.globalShowPiano;
+  const bool nopiano = sclsz != 12 || !showpiano;
+  // Micro-tonal:
+  if(nopiano)
+    return 128 * KH_MT;
+  // Normal piano:
+  const int h[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, KH / 2, KH / 2 };
+  return 75 * KH + h[snote];
 }
 
 } // namespace MusEGui

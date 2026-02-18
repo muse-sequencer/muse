@@ -29,10 +29,9 @@
 
 #include <QDialog>
 #include <QString>
+#include <QList>
 
-#include "cobject.h"
-
-#include <list>
+#include "note_names.h"
 
 
 // Forward declarations:
@@ -50,7 +49,8 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       Q_OBJECT
 
       enum PathTab { LadspaTab = 0, DssiTab, VstTab, LinuxVstTab, Lv2Tab };
-      
+      MusECore::NoteNameList _noteNamesBackup;
+
    private slots:
       void updateSettings();
       void apply();
@@ -66,6 +66,18 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void startSongReset();
       void showAudioConverterSettings();
       void updateBackendDeviceSettings();
+      // Update the midi starting note range.
+      void updateStartingMidiNote(const MusECore::NoteNameList &nnl);
+      void updateNoteNames(const MusECore::NoteNameList &nnl);
+      void applyNoteNames(MusECore::NoteNameList &nnl);
+      void loadNoteNames();
+      void saveNoteNames();
+      void addNoteName();
+      void insertNoteName();
+      void delNoteName();
+      void moveNoteNameUp();
+      void moveNoteNameDown();
+      void noteNamesItemChanged(QTableWidgetItem *item);
 
     protected:
       void showEvent(QShowEvent*);
@@ -73,9 +85,20 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       QButtonGroup *recDrumGroup;
       
       QString browsePluginPath(const QString& path);
-      
+      // Returns a new unique note name.
+      QString newNoteName() const;
+      // Sets up a row. Returns true on success.
+      bool setupNoteNameRow(int row, const QString &sharpName, const QString &flatName);
+      // If row is past the end, this appends. Returns true on success.
+      bool newNoteNameRow(int row = -1);
+      // Updates the note number column starting at startRow.
+      void updateNoteNumbers(int startRow = 0);
+      // Returns true on success.
+      bool moveNoteName(int from, int to);
+
    public:
       GlobalSettingsConfig(QWidget* parent=nullptr);
+      void selectTab(int tab) const;
       };
 
 } // namespace MusEGui

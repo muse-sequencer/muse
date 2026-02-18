@@ -319,7 +319,6 @@ LV2OperationMessage::LV2OperationMessage() : _type(ProgramChanged), _index(-1) {
 LV2OperationMessage::LV2OperationMessage(Type type, int index) : _type(type), _index(index) { }
 
 
-
 //=================================================================
 
 LV2_URID Synth_Urid_Map(LV2_URID_Unmap_Handle _host_data, const char *uri)
@@ -1926,7 +1925,7 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
 
 // Static.
 LV2UI_Request_Value_Status  LV2Synth::lv2ui_Request_Value (
-  LV2UI_Feature_Handle handle, LV2_URID key, LV2_URID type, const LV2_Feature *const */*features*/ )
+  LV2UI_Feature_Handle handle, LV2_URID key, LV2_URID /*type*/, const LV2_Feature *const */*features*/ )
 {
 // TODO FIXME Finish this...
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;

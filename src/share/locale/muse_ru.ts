@@ -4799,6 +4799,92 @@ Some plugins ignore this settings.</source>
         <source>Keep Transport control window always on top (requires restart)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Note Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note list name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation type="obsolete">Нота</translation>
+    </message>
+    <message>
+        <source>Add Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation type="unfinished">Вставить ноту</translation>
+    </message>
+    <message>
+        <source>MIDI Starting octave suffix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global octave suffix offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MIDI Starting note number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note lists</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note list: Example: First names: Sharp scale (C, C#, D, D# etc.)
+Second names: Flats (Db, Eb, Gb etc.), or the flat scale (C, Db, D, Eb, E etc.), or blank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>First name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Second name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Together with the Global octave suffix offset, these determine which note name and
+ octave are shown for a MIDI note (MIDI 60 middle C showing C4 for example)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global settings (available for quick access in the piano roll)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This offset is added to the note list&apos;s MIDI Starting octave suffix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw a piano or a list (it will shift with the note list&apos;s MIDI Starting note number)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show a piano (if there are 12 notes)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show note colors (in list mode only)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LegatoBase</name>
@@ -7983,6 +8069,10 @@ To apply the changes, please restart MusE. Sorry.
         <source>&amp;Toggle Track Heights</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Note Names, Piano Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::AudioComponentRack</name>
@@ -9492,6 +9582,14 @@ I&apos;ll only display the old-style drumtracks in this editor, dropping the oth
         <source>Show Only Named and Used Instruments</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Note Names, Piano Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note names and piano settings</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::EditCAfterDialog</name>
@@ -10239,6 +10337,82 @@ PLUGIN IS UNAVAILABLE!</source>
     <message>
         <source>MusE: Choose start template or song</source>
         <translation>MusE: Начать с шаблона или сонга</translation>
+    </message>
+    <message>
+        <source>The note name entered already exists in another row. Try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NewNote</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load Note Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error reading note name list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error appending new row.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error inserting new row.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error creating new unique note name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error setting up note name row.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error setting up new note name row.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Note Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error saving note name list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move Note Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error moving note names up.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error moving note names down.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note first name cannot be blank. Try again.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13659,6 +13833,14 @@ Likely the selected track is the wrong type.</source>
         <source>&amp;Velocity Colors</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Note Names, Piano Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note names and piano settings</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::PluginDialog</name>
@@ -16597,6 +16779,14 @@ Likely the selected track is the wrong type.</source>
 Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>MusE: Load note name list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Save note name list</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QWidget</name>
@@ -16724,6 +16914,30 @@ failed: %2</source>
     </message>
     <message>
         <source>Mapped To Audio Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current Note Name List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global Settings</source>
+        <translation type="unfinished">Общие настройки</translation>
+    </message>
+    <message>
+        <source>Show Piano</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Note Colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Octave Suffix Adjust</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Settings...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -18431,6 +18645,10 @@ Robert Jonsson
     <message>
         <source>Qt style sheets (*.qss)</source>
         <translation type="unfinished">Таблицы стилей Qt (*.qss)</translation>
+    </message>
+    <message>
+        <source>Note name files (*.mnn)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

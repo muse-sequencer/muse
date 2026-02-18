@@ -128,8 +128,8 @@ class DrumCanvas : public EventCanvas {
       bool index2Note(int index, int* port, int* channel, int* note);
       int y2pitch(int y) const override;
       int pitch2y(int pitch) const override;
-      inline int y2height(int) const override { return TH; }
-      inline int yItemOffset() const override { return -TH/2; }
+      int y2height(int) const override;
+      int yItemOffset() const override;
       void startDrag(CItem*, DragType) override;
       void dragEnterEvent(QDragEnterEvent* event) override;
       void dragMoveEvent(QDragMoveEvent*) override;
@@ -197,6 +197,9 @@ class DrumCanvas : public EventCanvas {
       void propagate_drummap_change(int instrument, int fields, bool isReset, bool includeDefault, bool isInstrumentMod, bool doWholeMap);
       void rebuildOurDrumMap();
       DrumEdit* drumEdit() { return drumEditor; }
+
+      static int dcanvasY2height(int);
+      static int dcanvasYItemOffset();
       };
 
 } // namespace MusEGui

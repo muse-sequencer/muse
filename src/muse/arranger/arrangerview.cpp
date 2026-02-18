@@ -76,6 +76,7 @@
 #include "tools.h"
 #include "partcolortoolbar.h"
 #include "automation_mode_toolbar.h"
+#include "popupmenu.h"
 
 namespace MusEGui {
 
@@ -350,6 +351,13 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuSettings->addAction(*mixerSVGIcon, tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
                           MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
+
+  pianoConfigMenu = new PopupMenu(tr("Note Names, Piano Settings"), this, true);
+  pianoConfigMenu->setIcon(*pianoConfigSVGIcon);
+  menuSettings->addMenu(pianoConfigMenu);
+  connect(pianoConfigMenu, &QMenu::aboutToShow, [this]() { pianoConfigMenuAboutToShow(); } );
+  connect(pianoConfigMenu, &QMenu::aboutToHide, [this]() { pianoConfigMenuAboutToHide(); } );
+  connect(pianoConfigMenu, &QMenu::triggered, [](QAction* act) { pianoConfigPopupTriggered(act); } );
 
   QAction *trackHeightAction = new QAction(tr("&Toggle Track Heights"), this);
   trackHeightAction->setShortcut(shortcuts[SHRT_TOGGLE_TRACK_HEIGHTS].key);
@@ -1194,6 +1202,25 @@ void ArrangerView::automationBoxModeChanged(int m)
 void ArrangerView::automationOptimizeChanged(bool v)
 {
   MusEGlobal::config.audioAutomationOptimize = v;
+}
+
+void ArrangerView::pianoConfigMenuAboutToShow()
+{
+  // Clear the menu and delete the contents.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+  pianoConfigMenu->clear();
+  populatePianoConfigMenu(pianoConfigMenu, &MusEGlobal::config);
+}
+
+void ArrangerView::pianoConfigMenuAboutToHide()
+{
+  // Clear the menu and delete the contents, since it's going to be cleared
+  //  and refilled anyway next time opened, so we can save memory.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+// FIXME: This crashes, of course...
+//   pianoConfigMenu->clear();
 }
 
 } // namespace MusEGui

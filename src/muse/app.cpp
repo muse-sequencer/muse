@@ -1024,6 +1024,11 @@ MusE::MusE() : QMainWindow()
       addToolBar(Qt::BottomToolBarArea, songpos_tb);
 
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
+      // Force LTR layout on the transport toolbar.
+      // RTL is NOT to be used for flows of time or information or connections.
+      // Media buttons as well, including the punch in/out since they are time-related.
+      // (NOTE: TopWin constructor also has this. That's the one you see at startup, not this one.)
+      transportToolbar->setLayoutDirection(Qt::LeftToRight);
       transportToolbar->setObjectName("Transport tool");
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
       transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));

@@ -174,6 +174,7 @@ QIcon* metaSVGIcon;
 QIcon* ctrlSVGIcon;
 QIcon* sysexSVGIcon;
 QIcon* tracktypeSVGIcon;
+QIcon* pianoConfigSVGIcon;
 QIcon* pianorollSVGIcon;
 QIcon* arrangerSVGIcon;
 QIcon* waveeditorSVGIcon;
@@ -543,6 +544,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     ctrlSVGIcon       = icons.getSVG("ctrl.svg");
     sysexSVGIcon      = icons.getSVG("sysex.svg");
     tracktypeSVGIcon  = icons.getSVG("tracktype.svg");
+    pianoConfigSVGIcon  = icons.getSVG("piano_config.svg");
 
     filenewSVGIcon     = icons.getSVG("filenew.svg");
     filetemplateSVGIcon = icons.getSVG("filefromtemplate.svg");
@@ -849,6 +851,7 @@ void deleteIcons()
     delete ctrlSVGIcon;
     delete sysexSVGIcon;
     delete tracktypeSVGIcon;
+    delete pianoConfigSVGIcon;
 
     delete pencilIconSVG;
     delete glueIconSVG;

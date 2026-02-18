@@ -480,6 +480,10 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
          
       initTopwinState();
       finalizeInit();
+
+      // Force LTR layout on the whole thing.
+      // RTL is NOT to be used for flows of time or information or connections.
+      setLayoutDirection(Qt::LeftToRight);
       }
 
 void WaveEdit::initShortcuts()

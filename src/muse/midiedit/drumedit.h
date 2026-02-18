@@ -79,7 +79,7 @@ private:
     bool _ignore_hide;
 
     QMenu* menuEdit, *menuFunctions, *menuSelect, *menuScripts;
-    PopupMenu* addControllerMenu;
+    PopupMenu* addControllerMenu, *pianoConfigMenu;
 
     int tickValue;
     int lenValue;
@@ -104,6 +104,7 @@ private:
     bool _playEvents;
     MusECore::Scripts scripts;
 
+    QToolButton* pianoConfigButton;
     MusEGui::Toolbar1* toolbar;
     MusEGui::Splitter* hsplitter;
     MusEGui::Splitter* split1;
@@ -175,6 +176,9 @@ private slots:
     void ctrlPopupTriggered(QAction* act);
     void ctrlMenuAboutToShow();
     void ctrlMenuAboutToHide();
+    void pianoConfigMenuAboutToShow();
+    void pianoConfigMenuAboutToHide();
+    void pianoConfigClicked();
     void gridOnChanged(bool);
 
     void set_ignore_hide(bool);

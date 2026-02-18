@@ -6520,7 +6520,7 @@ void PluginGui::load()
             switch (token) {
                   case MusECore::Xml::Error:
                   case MusECore::Xml::End:
-                        return;
+                        goto ende;
                   case MusECore::Xml::TagStart:
                         if (mode == 0 && tag == "muse")
                               mode = 1;

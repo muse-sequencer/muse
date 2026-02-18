@@ -41,6 +41,8 @@
 #include "helper.h"
 #include "app.h"
 #include "type_defs.h"
+#include "piano.h"
+#include "utils.h"
 
 // Forwards from header:
 #include <QDragMoveEvent>
@@ -63,15 +65,13 @@ namespace MusEGui {
 
 NEvent::NEvent(const MusECore::Event& e, MusECore::Part* p, int y) : EItem(e, p)
       {
-      y = y - KH/4;
-      unsigned tick = e.tick() + p->tick();
-      setPos(QPoint(tick, y));
-      setBBox(QRect(tick, y, e.lenTick(), KH/2));
-      // Give the moving point an initial value.
-      setMp(pos());
+        y = y + PianoCanvas::prcanvasYItemOffset();
+        unsigned tick = e.tick() + p->tick();
+        setPos(QPoint(tick, y));
+        setBBox(QRect(tick, y, e.lenTick(), PianoCanvas::prcanvasY2height(y)));
+        // Give the moving point an initial value.
+        setMp(pos());
       }
-
-
 
 void PianoCanvas::setLastEdited(MusECore::Event& e)
 {
@@ -126,46 +126,127 @@ PianoCanvas::~PianoCanvas()
 //---------------------------------------------------------
 
 int PianoCanvas::pitch2y(int pitch) const
-      {
-      int tt[] = {
-            5, 13, 19, 26, 34, 44, 52, 58, 65, 71, 78, 85
-            };
-      int y = (75 * KH) - (tt[pitch%12] + (7 * KH) * (pitch/12));
-      if (y < 0)
-            y = 0;
-      return y;
-      }
+{
+  int y;
+  const int pianoH = Piano::pianoHeight();
+  const int sclsz = MusEGlobal::config.noteNameList.size();
+  const int snote = MusEGlobal::config.noteNameList.startingMidiNote();
+  const bool showpiano = MusEGlobal::config.globalShowPiano;
+  const bool nopiano = sclsz != 12 || !showpiano;
+
+  if(nopiano)
+  {
+    const int pianoh = 128 * KH_MT;
+    y = pianoh - (pitch + 1) * KH_MT;
+  }
+  else
+  {
+    int tt[] = { 5, 13, 19, 26, 34, 44, 52, 58, 65, 71, 78, 85 };
+    y = (75 * KH) - (tt[pitch%12] + (7 * KH) * (pitch/12));
+    const int KH2 = KH / 2;
+    const int toff[] = { 0, 12 - KH2, 13, 25 - KH2, 26, 39, 51 - KH2, 52, 64 - KH2, 65, 66 + KH2, 78 };
+    const int starty = toff[snote % 12];
+    y = pianoH - (tt[(snote + pitch) % 12] + (7 * KH) * ((snote + pitch) / 12) - starty);
+  }
+  if (y < 0)
+        y = 0;
+  return y;
+}
+
 
 //---------------------------------------------------------
 //   y2pitch
 //---------------------------------------------------------
 
 int PianoCanvas::y2pitch(int y) const
-      {
-    if (y < KH)
-        return 127;
-    const int total = (10 * 7 + 5) * KH;       // 75 Ganztonschritte
-      y = total - y;
-      if (y < 0)
-          return 0;
-      int oct = (y / (7 * KH)) * 12;
-      char kt[] = {
-            0, 0, 0, 0, 0,  0,   0, 0, 0, 0,          // 5
-            1, 1, 1,      1,   1, 1, 1,               // 13
-            2, 2,         2,   2, 2, 2,               // 19
-            3, 3, 3,      3,   3, 3, 3,               // 26
-            4, 4, 4, 4,   4,   4, 4, 4, 4,            // 34
-            5, 5, 5, 5,   5,   5, 5, 5, 5, 5,         // 43
-            6, 6, 6,      6,   6, 6, 6,               // 52
-            7, 7,         7,   7, 7, 7,               // 58
-            8, 8, 8,      8,   8, 8, 8,               // 65
-            9, 9,         9,   9, 9, 9,               // 71
-            10, 10, 10,  10,   10, 10, 10,            // 78
-            11, 11, 11, 11, 11,   11, 11, 11, 11, 11  // 87
-            };
-      return kt[y % 91] + oct;
-      }
+{
+  const int pianoH = Piano::pianoHeight();
+  const int sclsz = MusEGlobal::config.noteNameList.size();
+  const int snote = MusEGlobal::config.noteNameList.startingMidiNote();
+  const bool showpiano = MusEGlobal::config.globalShowPiano;
+  const bool nopiano = sclsz != 12 || !showpiano;
 
+  if(nopiano)
+  {
+    if (y < KH_MT)
+        return 127;
+    // 128 steps.
+    y = (pianoH - 1 - y) / KH_MT;
+    if (y < 0)
+        return 0;
+    if (y > 127)
+        return 127;
+    return y;
+  }
+  else
+  {
+      int tt[] = { 0, 6, 13, 19, 26, 39, 45, 52, 58, 65, 71, 78 };
+      const int starty = tt[snote];
+      const int yy = pianoH - (y - starty);
+
+      if (yy < 0)
+          return 0;
+      int oct = (yy / (7 * KH)) * 12;
+      char kt[] = {
+         0, 0, 0, 0, 0,        0,   0, 0, 0, 0,            // 5
+/*10*/   1, 1, 1,              1,   1, 1, 1,               // 13
+/*17*/   2, 2,                 2,   2, 2, 2,               // 19
+/*23*/   3, 3, 3,              3,   3, 3, 3,               // 26
+/*30*/   4, 4, 4, 4,           4,   4, 4, 4, 4,            // 34
+/*39*/   5, 5, 5, 5,           5,   5, 5, 5, 5, 5,         // 43
+/*49*/   6, 6, 6,              6,   6, 6, 6,               // 52
+/*56*/   7, 7,                 7,   7, 7, 7,               // 58
+/*62*/   8, 8, 8,              8,   8, 8, 8,               // 65
+/*69*/   9, 9,                 9,   9, 9, 9,               // 71
+/*75*/   10, 10, 10,          10,   10, 10, 10,            // 78
+/*82*/   11, 11, 11, 11, 11,  11,   11, 11, 11, 11         // 87
+      };
+
+      int pitch = kt[yy % 91] + oct - snote;
+
+      //fprintf(stderr, "PianoCanvas::y2pitch: y:%d starty:%d yy:%d tableidx:%d tablev:%d pitch:%d pianoH:%d\n",
+      //  y, starty, yy, yy % 91, kt[yy % 91], pitch, pianoH);
+
+      // These will catch any half white key areas at the top and bottom, where pitch would be -1 or 128.
+      if(pitch < 0)
+        pitch = 0;
+      if(pitch > 127)
+        pitch = 127;
+      return pitch;
+  }
+}
+
+// Static.
+int PianoCanvas::prcanvasY2height(int)
+{
+  if(MusEGlobal::config.noteNameList.size() != 12 || !MusEGlobal::config.globalShowPiano)
+    // No piano (note name list):
+    return KH_MT - 2;
+  else
+    // Piano:
+    return KH/2;
+}
+
+// Static.
+int PianoCanvas::prcanvasYItemOffset()
+{
+  if(MusEGlobal::config.noteNameList.size() != 12 || !MusEGlobal::config.globalShowPiano)
+    // No piano (note name list):
+    return 1;
+  else
+    // Piano:
+    return -KH/4;
+}
+
+int PianoCanvas::y2height(int y) const
+{
+    return prcanvasY2height(y);
+}
+
+int PianoCanvas::yItemOffset() const
+{
+  return prcanvasYItemOffset();
+}
 
 // REMOVE Tim. citem. Changed. The original code...
 // //---------------------------------------------------------
@@ -344,25 +425,6 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       pen.setColor(Qt::black);
       p.setPen(pen);
 
-      struct Triple {
-            int r, g, b;
-            };
-
-      static Triple myColors [12] = {  // ddskrjp
-            { 0xff, 0x3d, 0x39 },
-            { 0x39, 0xff, 0x39 },
-            { 0x39, 0x3d, 0xff },
-            { 0xff, 0xff, 0x39 },
-            { 0xff, 0x3d, 0xff },
-            { 0x39, 0xff, 0xff },
-            { 0xff, 0x7e, 0x7a },
-            { 0x7a, 0x7e, 0xff },
-            { 0x7a, 0xff, 0x7a },
-            { 0xff, 0x7e, 0xbf },
-            { 0x7a, 0xbf, 0xff },
-            { 0xff, 0xbf, 0x7a }
-            };
-
       QColor color;
       NEvent* nevent   = (NEvent*) item;
       MusECore::Event event = nevent->event();
@@ -388,8 +450,9 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
                   break;
               case MidiEventColorMode::pitchColorEvents:
                   {
-                  Triple* c = &myColors[event.pitch() % 12];
-                  color.setRgb(c->r, c->g, c->b);
+                  color = MusECore::noteColorScrambled(
+                    (event.pitch() + MusEGlobal::config.noteNameList.startingMidiNote()) %
+                     MusEGlobal::config.noteNameList.size());
                   }
                   break;
               case MidiEventColorMode::velocityColorEvents:
@@ -431,7 +494,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
         f.setPointSize(f.pointSize() * 0.85);
         p.setFont(f);
 
-        if (color.lightnessF() > 0.6f) {
+        if (MusECore::isColorBright(color)) {
           pen.setColor(Qt::black);
           p.setPen(pen);
 
@@ -443,7 +506,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
 
         const bool wmtxen = p.worldMatrixEnabled();
         p.setWorldMatrixEnabled(false);
-        p.drawText(mbbr,Qt::AlignHCenter|Qt::AlignCenter, noteStr.toUpper());
+        p.drawText(mbbr,Qt::AlignHCenter|Qt::AlignVCenter, noteStr);
         p.setWorldMatrixEnabled(wmtxen);
       }
 
@@ -767,7 +830,10 @@ void PianoCanvas::drawTopItem(QPainter& , const QRect&, const QRegion&)
 void PianoCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
     {
       const QRect ur = mapDev(mr);
-      QRect ur_item = QRect(item->mp().x(), item->mp().y() - item->height()/2, item->width(), item->height());
+      QRect ur_item;
+      //fprintf(stderr, "drawMoving: mp x:%d y:%d item w:%d h:%d\n",
+      //        item->mp().x(), item->mp().y(), item->width(), item->height());
+      ur_item = QRect(item->mp().x(), item->mp().y(), item->width(), item->height());
       ur_item = ur_item.intersected(ur);
       if(!ur_item.isValid())
         return;
@@ -1414,13 +1480,20 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 
 void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       {
-      const int pianoHeight = 91 * 10 + KH * 5 + 1;
+      //fprintf(stderr, "PianoCanvas::drawCanvas: mr: x%d y:%d w:%d h:%d\n", mr.x(), mr.y(), mr.width(), mr.height());
+
+      const int sclsz = MusEGlobal::config.noteNameList.size();
+      const int snote = MusEGlobal::config.noteNameList.startingMidiNote();
+      const bool showpiano = MusEGlobal::config.globalShowPiano;
+      const bool nopiano = sclsz != 12 || !showpiano;
+      const int pianoHeight = Piano::pianoHeight();
+
       QRect ur = mapDev(mr);
+
+      //fprintf(stderr, "PianoCanvas::drawCanvas: ur: x%d y:%d w:%d h:%d\n", ur.x(), ur.y(), ur.width(), ur.height());
+
       if (ur.height() > pianoHeight)
-      ur.setHeight(pianoHeight);
-      // FIXME: For some reason need the expansion otherwise drawing
-      //        artifacts (incomplete drawing). Can't figure out why.
-      ur.adjust(0, -4, 0, 4);
+        ur.setHeight(pianoHeight);
 
       int ux = ur.x();
       if(ux < 0)
@@ -1434,38 +1507,89 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       QPen pen;
       pen.setCosmetic(true);
       pen.setColor(MusEGlobal::config.midiDividerColor);
-//      pen.setColor(Qt::black);
       p.setPen(pen);
 
       //---------------------------------------------------
       //  horizontal lines
       //---------------------------------------------------
 
-      int uyy  = ((uy-1) / KH) * KH + KH;
-      int key = 75 - (uyy / KH);
+      if(nopiano)
+      {
+        int pitch = y2pitch(uy);
+        // Rasterize.
+        int uyy = pitch2y(pitch);
 
-// For testing...
-//       fprintf(stderr, "PianoCanvas::drawCanvas: x:%d y:%d yy:%d x + w:%d y + h:%d\n", x, y, yy, x + w, y + h);
+        //fprintf(stderr, "PianoCanvas::drawCanvas: uy:%d pitch:%d uyy:%d uy_2:%d\n", uy, pitch, uyy, uy_2);
 
-      for (; uyy < uy_2; uyy += KH) {
-            switch (key % 7) {
-                  case 0:
-                  case 3:
-// For testing...
-//                         fprintf(stderr, "...Drawing horizontal line at x:%d yy:%d x + w:%d yy:%d\n", x, yy, x + w, yy);
+        while(uyy < uy_2)
+        {
+          const bool isoctave = (pitch + snote) % sclsz == 0;
 
-                        if (MusEGlobal::config.canvasShowGrid || MusEGlobal::config.canvasShowGridHorizontalAlways)
-                          p.drawLine(ux, uyy, ux_2, uyy);
-                        break;
-                  default:
-// For testing...
-//                         fprintf(stderr, "...Filling rectangle at x:%d yy - 3:%d w:%d h:%d\n", x, yy - 3, w, 6);
+          // Alternate line?
+          if((pitch + snote) % 2 == 0)
+          {
+            p.fillRect(ux, uyy, uw, KH_MT, MusEGlobal::config.midiCanvasBg.darker(110));
+          }
 
-                        p.fillRect(ux, uyy-3, uw, 6, MusEGlobal::config.midiCanvasBg.darker(110));
-                        break;
-                  }
-            --key;
+          // Octave start?
+          if(isoctave)
+          {
+            if (MusEGlobal::config.canvasShowGrid || MusEGlobal::config.canvasShowGridHorizontalAlways)
+            {
+              // Draw at the bottom, ie the NEXT note's y.
+              p.drawLine(ux, uyy + KH_MT, ux_2, uyy + KH_MT);
             }
+          }
+
+          uyy += KH_MT;
+          pitch = y2pitch(uyy);
+        }
+      }
+      else
+      {
+        const int sn = snote % 12;
+        const int KH2 = KH / 2;
+        const int st [] { KH2, 0, KH2, 0, KH2, KH2, 0, KH2, 0, KH2, KH2, 0 };
+        const int starty = st[sn];
+        const int yoff = KH2 - starty;
+
+        int kuyy  = ((uy + starty) / KH) * KH;
+        // Skip over top key, to avoid drawing half a lane.
+        if(kuyy + yoff == 0)
+          kuyy = KH;
+        int uyy  = kuyy + yoff;
+
+        int kuyy_2  = ((uy_2 + starty) / KH) * KH;
+        // Skip over bottom key, to avoid drawing half a lane.
+        if(kuyy_2 + yoff >= pianoHeight)
+          kuyy_2 = pianoHeight - KH2 - 1;
+        const int uyy_2  = kuyy_2 + yoff;
+
+        const int ks [] { 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 6, 6 };
+
+        int key = 75 - (kuyy / KH) + ks[sn];
+        if(key < 0)
+          key = 0;
+
+// For testing.
+//        fprintf(stderr, "PianoCanvas::drawCanvas: uy:%d starty:%d kuyy:%d"
+//                        " uyy:%d key:%d uy_2:%d kuyy_2:%d uyy_2:%d yoff:%d pianoHeight:%d\n",
+//                uy, starty, kuyy, uyy, key, uy_2, kuyy_2, uyy_2, yoff, pianoHeight);
+
+        for (; uyy <= uyy_2; uyy += KH) {
+              switch (key % 7) {
+                    case 0:
+                    case 3:
+                          if (MusEGlobal::config.canvasShowGrid || MusEGlobal::config.canvasShowGridHorizontalAlways)
+                            p.drawLine(ux, uyy, ux_2, uyy);
+                          break;
+                    default:
+                            p.fillRect(ux, uyy-3, uw, 6, MusEGlobal::config.midiCanvasBg.darker(110));
+                          break;
+                    }
+              --key;
+              }
+      }
 
       if (MusEGlobal::config.canvasShowGrid)
       {

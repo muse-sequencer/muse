@@ -99,6 +99,10 @@ extern double normalizedValueFromRange(double in, const CtrlList *cl);
 extern double normalizedValueToRange(double in, const CtrlList *cl);
 extern double deltaNormalizedValueToRange(double in, double inDeltaNormalized, const CtrlList *cl);
 
+// 'Rainbow' sequence of colours for each i in the current note name list's size.
+extern QColor noteColor(int i);
+// Random sequence of colours for each i. Independent of any size.
+extern QColor noteColorScrambled(int i);
 
 } // namespace MusECore
 
@@ -116,6 +120,9 @@ extern void setupControllerWidgets(
 // Handy exploratory function that prints out the contents of a QPainterPath.
 // Crucial for determining when to optimize with QPainterPath::simplified().
 extern void printQPainterPath(const QPainterPath& p);
+
+// If the widget has RTL layout, sets or resets the painter's transform for RTL painting.
+extern void setRTLPainting(const QWidget *w, QPainter &p, bool enable);
 
 } // namespace MusEGui
 

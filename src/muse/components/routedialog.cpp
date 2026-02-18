@@ -30,7 +30,7 @@
 #include <QModelIndex>
 #include <QHeaderView>
 #include <QVariant>
-#include <QPainterPath>
+#include <QPainterPathStroker>
 
 #include "routedialog.h"
 #include "globaldefs.h"
@@ -81,6 +81,8 @@ const int RouteDialog::channelBarHeight = RouteDialog::channelDotDiameter + 2 * 
 const int RouteDialog::channelLineWidth = 1;
 const int RouteDialog::channelLinesSpacing = 1;
 const int RouteDialog::channelLinesMargin = 1;
+
+const int ConnectionsView::hitDetectRadius = 2;
 
 std::list<QString> tmpJackInPorts;
 std::list<QString> tmpJackOutPorts;
@@ -651,24 +653,38 @@ bool RouteTreeWidgetItem::mouseMoveHandler(QMouseEvent* e, const QRect& rect)
 
 bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
+  // From QStyledItemDelegate::paint help: Necessary?
+  // "After painting, you should ensure that the painter is returned to its the state it was supplied in when this function
+  //  was called. For example, it may be useful to call QPainter::save() before painting and QPainter::restore() afterwards."
+  painter->save();
+
   {
     if(index.column() == RouteDialog::ROUTE_NAME_COL)
     {
       RouteTreeWidget* rtw = qobject_cast<RouteTreeWidget*>(treeWidget());
       if(!rtw)
+      {
+        painter->restore();
         return false;
+      }
       
+      const int view_offset = rtw->header()->offset();
+
+      const QStyle* st = rtw->style();
+
       switch(type())
       {
         case ChannelsItem:
         {
-          if(!treeWidget()->viewport())
+          if(!rtw->viewport())
+          {
+            painter->restore();
             return false;
+          }
 
           const int col_width = rtw->columnWidth(index.column()); 
           const int view_width = rtw->viewport()->width();
           const int chans = _channels.size();
-          const int view_offset = rtw->header()->offset();
           const int x_offset = (_isInput ? 
                                 //view_width - _channels.widthHint(rtw->wordWrap() ? view_width : -1) - view_offset : -view_offset);
                                 col_width - _channels.widthHint(rtw->channelWrap() ? col_width : -1) - view_offset : -view_offset);
@@ -677,12 +693,6 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
                   option.rect.x(), option.rect.y(), option.rect.width(), option.rect.height(), view_offset, x_offset, painter->device()->width(), 
                   rtw->columnWidth(index.column()), rtw->header()->sectionSize(index.column()), view_width);  
       
-          
-          // From QStyledItemDelegate::paint help: Necessary?
-          // "After painting, you should ensure that the painter is returned to its the state it was supplied in when this function
-          //  was called. For example, it may be useful to call QPainter::save() before painting and QPainter::restore() afterwards."
-          painter->save();
-          
           // Need to be able to paint beyond the right edge of the column width, 
           //  all the way to the view's right edge.
           //painter->setClipRect(option.rect);
@@ -780,18 +790,19 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
               ++cur_chan;
             }
           }
-          painter->restore();
-          return true;
+
+//          painter->restore();
+//          return true;
         }
         break;
         
         case CategoryItem:
         case RouteItem:
         {
-          if(const QStyle* st = rtw->style())
+          if(st)
           {
             st = st->proxy();
-            painter->save();
+//            painter->save();
             painter->setClipRect(option.rect);
             
             const QRect cb_rect = st->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &option);
@@ -819,24 +830,87 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
             }
             else if((option.state & QStyle::State_Selected) &&
                     st->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, &option /*, widget*/))
+            {
               painter->fillRect(option.rect, option.palette.brush(cg, QPalette::Highlight));
+            }
             //else if(option.features & QStyleOptionViewItem::Alternate)
             // Hm, something else draws the alternating colours, no control over it here. 
             // Disabled it in the UI so it does not interfere here.
             //else if(treeWidget()->alternatingRowColors() && (index.row() & 0x01))
             else if((index.row() & 0x01))
+            {
               painter->fillRect(option.rect, option.palette.brush(cg, QPalette::AlternateBase));
+            }
 
             // Draw the item background.
             st->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter);
-            
+
+            Qt::Alignment textalign = option.displayAlignment;
+            QRect cb_rect_adj = cb_rect;
+            QRect ico_rect_adj = ico_rect;
+            QRect text_rect_adj = text_rect;
+            // Grab the direction from the locale, not the widgets, since we force LTR layout.
+            const Qt::LayoutDirection txtdir = QLocale().textDirection();
+
+            const int txtrectw = text_rect_adj.width();
+            const QString txt = rtw->wordWrap() ? option.text : option.fontMetrics.elidedText(
+                           option.text, rtw->textElideMode(), txtrectw);
+            const int txtsz = option.fontMetrics.horizontalAdvance(txt);
+            // Take the smaller width.
+            const int tw = txtrectw < txtsz ? txtrectw : txtsz;
+
+
+            // If it's a route item, force alignment regardless of LTR/RTL locale.
+            if(type() == RouteItem)
+            {
+              if(_isInput)
+              {
+                if(txtdir == Qt::RightToLeft)
+                  textalign = Qt::AlignLeft | Qt::AlignVCenter;
+                else
+                  textalign = Qt::AlignRight | Qt::AlignVCenter;
+                text_rect_adj.moveLeft(-view_offset);
+                ico_rect_adj.moveLeft(text_rect_adj.x() + text_rect_adj.width());
+                cb_rect_adj.moveLeft(ico_rect_adj.x() + ico_rect_adj.width());
+              }
+              else
+              {
+                if(txtdir == Qt::RightToLeft)
+                  textalign = Qt::AlignRight | Qt::AlignVCenter;
+                else
+                  textalign = Qt::AlignLeft | Qt::AlignVCenter;
+                cb_rect_adj.moveLeft(-view_offset);
+                ico_rect_adj.moveLeft(cb_rect_adj.x() + cb_rect_adj.width());
+                text_rect_adj.moveLeft(ico_rect_adj.x() + ico_rect_adj.width());
+              }
+            }
+            else // CategoryItem
+            {
+              text_rect_adj.setWidth(tw);
+              textalign = Qt::AlignHCenter | Qt::AlignVCenter;
+              if(txtdir == Qt::RightToLeft)
+              {
+                text_rect_adj.moveLeft(
+                  option.rect.width() / 2 - tw / 2 - ico_rect_adj.width() / 2 - cb_rect_adj.width() / 2 - view_offset);
+                ico_rect_adj.moveLeft(text_rect_adj.x() + text_rect_adj.width());
+                cb_rect_adj.moveLeft(ico_rect_adj.x() + ico_rect_adj.width());
+              }
+              else
+              {
+                cb_rect_adj.moveLeft(
+                  option.rect.width() / 2 - tw / 2 - ico_rect_adj.width() / 2 - cb_rect_adj.width() / 2 - view_offset);
+                ico_rect_adj.moveLeft(cb_rect_adj.x() + cb_rect_adj.width());
+                text_rect_adj.moveLeft(ico_rect_adj.x() + ico_rect_adj.width());
+              }
+            }
+
             // Draw the check mark
-            if(option.features & QStyleOptionViewItem::HasCheckIndicator) 
+            if(option.features & QStyleOptionViewItem::HasCheckIndicator)
             {
               QStyleOptionViewItem opt(option);
-              opt.rect = cb_rect;
+              opt.rect = cb_rect_adj;
               opt.state = opt.state & ~QStyle::State_HasFocus;
-              switch(option.checkState) 
+              switch(option.checkState)
               {
                 case Qt::Unchecked:
                     opt.state |= QStyle::State_Off;
@@ -858,41 +932,22 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
             else if(option.state & QStyle::State_Selected)
               mode = QIcon::Selected;
             QIcon::State state = option.state & QStyle::State_Open ? QIcon::On : QIcon::Off;
-            option.icon.paint(painter, ico_rect, option.decorationAlignment, mode, state);
-            
+            option.icon.paint(painter, ico_rect_adj, option.decorationAlignment, mode, state);
+
             // Draw the text.
             st->drawItemText(painter, 
-                              text_rect, 
-                              //textAlignment(index.column()) | Qt::TextWordWrap | Qt::TextWrapAnywhere, 
-                              option.displayAlignment | (rtw->wordWrap() ? (Qt::TextWordWrap | Qt::TextWrapAnywhere) : 0), 
-                              //treeWidget()->palette(), 
+                              text_rect_adj,
+                              //textAlignment(index.column()) | Qt::TextWordWrap | Qt::TextWrapAnywhere,
+                              textalign | (rtw->wordWrap() ? (Qt::TextWordWrap | Qt::TextWrapAnywhere) : 0),
+                              //treeWidget()->palette(),
                               option.palette, 
                               //!isDisabled(), 
                               option.state & QStyle::State_Enabled, 
                               //text(index.column()),
-                              rtw->wordWrap() ? 
-                                option.text : option.fontMetrics.elidedText(option.text, rtw->textElideMode(), text_rect.width()),
+                              txt,
                               //isSelected() ? QPalette::HighlightedText : QPalette::Text
                               (option.state & QStyle::State_Selected) ? QPalette::HighlightedText : QPalette::Text
                               );
-            
-            // Draw the focus.
-            if(option.state & QStyle::State_HasFocus)
-            {
-              QStyleOptionFocusRect o;
-              o.QStyleOption::operator=(option);
-              o.rect = st->subElementRect(QStyle::SE_ItemViewItemFocusRect, &option);
-              o.state |= QStyle::State_KeyboardFocusChange;
-              o.state |= QStyle::State_Item;
-              QPalette::ColorGroup cg = 
-                                  (option.state & QStyle::State_Enabled) ? QPalette::Normal : QPalette::Disabled;
-              o.backgroundColor = option.palette.color(cg, 
-                                  (option.state & QStyle::State_Selected) ? QPalette::Highlight : QPalette::Window);
-              st->drawPrimitive(QStyle::PE_FrameFocusRect, &o, painter);
-            }
-            
-            painter->restore();
-            return true;
           }
         }
         break;
@@ -900,9 +955,27 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
         case NormalItem:
         break;
       }
+
+      // Draw the focus.
+      if(st && option.state & QStyle::State_HasFocus)
+      {
+        QStyleOptionFocusRect o;
+        o.QStyleOption::operator=(option);
+        // We want the whole area, not just SE_ItemViewItemFocusRect which can be smaller.
+        o.rect = option.rect;
+        o.state |= QStyle::State_KeyboardFocusChange;
+        o.state |= QStyle::State_Item;
+        QPalette::ColorGroup cg =
+                            (option.state & QStyle::State_Enabled) ? QPalette::Normal : QPalette::Disabled;
+        o.backgroundColor = option.palette.color(cg,
+                            (option.state & QStyle::State_Selected) ? QPalette::Highlight : QPalette::Window);
+        st->drawPrimitive(QStyle::PE_FrameFocusRect, &o, painter);
+      }
     }
   }
-  return false;
+
+  painter->restore();
+  return true;
 }
 
 QSize RouteTreeWidgetItem::getSizeHint(int column, int width) const
@@ -1084,18 +1157,19 @@ bool RouteTreeWidgetItem::routeNodeExists()
   return false;
 }
 
-
 //-----------------------------------
 //   ConnectionsView
 //-----------------------------------
 
 ConnectionsView::ConnectionsView(QWidget* parent, RouteDialog* d)
-        : QFrame(parent), _routeDialog(d)
+        : QWidget(parent), _routeDialog(d)
 {
   lastY = 0;
   setMinimumWidth(20);
   //setMaximumWidth(120);
   setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+  setMouseTracking(true);
+  _cursorIsSet = false;
 }
 
 ConnectionsView::~ConnectionsView()
@@ -1136,7 +1210,7 @@ int ConnectionsView::itemY(RouteTreeWidgetItem* item, bool /*is_input*/, int cha
 }
 
 
-void ConnectionsView::drawConnectionLine(QPainter* pPainter,
+void ConnectionsView::drawConnectionLine(QPainter* pPainter, int routeListIndex,
         int x1, int y1, int x2, int y2, int h1, int h2 )
 {
   //DEBUG_PRST_ROUTES(stderr, "ConnectionsView::drawConnectionLine: x1:%d y1:%d x2:%d y2:%d h1:%d h2:%d\n", x1, y1, x2, y2, h1, h2);
@@ -1161,6 +1235,16 @@ void ConnectionsView::drawConnectionLine(QPainter* pPainter,
     QPainterPath path;
     path.moveTo(spline.at(0));
     path.cubicTo(spline.at(1), spline.at(2), spline.at(3));
+
+    // Create a stroker with width = 2*r
+    QPainterPathStroker stroker;
+    stroker.setWidth(2 * hitDetectRadius);
+    stroker.setCapStyle(Qt::RoundCap);
+    stroker.setJoinStyle(Qt::RoundJoin);
+    // Create a stroked version of the path
+    QPainterPath hitPath = stroker.createStroke(path);
+    _strokedPathList.insert(routeListIndex, hitPath);
+
     pPainter->strokePath(path, pPainter->pen());
   }
 //   else 
@@ -1171,7 +1255,7 @@ void ConnectionsView::drawConnectionLine(QPainter* pPainter,
     pPainter->drawLine(x2 - 4, y2, x2, y2);
 }
 
-void ConnectionsView::drawItem(QPainter* painter, QTreeWidgetItem* routesItem, const QColor& col)
+void ConnectionsView::drawItem(QPainter* painter, QTreeWidgetItem* routesItem, int routeListIndex, const QColor& col)
 {
   const int yc = QWidget::pos().y();
   const int yo = _routeDialog->newSrcList->pos().y();
@@ -1255,7 +1339,7 @@ void ConnectionsView::drawItem(QPainter* painter, QTreeWidgetItem* routesItem, c
         painter->setPen(pen);
         y1 = itemY(srcItem, true, src_chan) + (yo - yc);
         y2 = itemY(dstItem, false, dst_chan) + (yi - yc);
-        drawConnectionLine(painter, x1, y1, x2, y2, h1, h2);
+        drawConnectionLine(painter, routeListIndex, x1, y1, x2, y2, h1, h2);
       }
 //       else
 //       {
@@ -1276,6 +1360,9 @@ void ConnectionsView::drawItem(QPainter* painter, QTreeWidgetItem* routesItem, c
 // Draw visible port connection relation arrows.
 void ConnectionsView::paintEvent(QPaintEvent*)
 {
+  // Clear the stroked path list. The drawing routines will fill it.
+  _strokedPathList.clear();
+
   //DEBUG_PRST_ROUTES(stderr, "ConnectionsView::paintEvent: _routeDialog:%p\n", _routeDialog);
   if(!_routeDialog)
     return;
@@ -1303,7 +1390,7 @@ void ConnectionsView::paintEvent(QPaintEvent*)
     //if(!item)
     if(!item || item->isHidden() || item->isSelected())
       continue;
-    drawItem(&painter, item, QColor(rgb[i % 3], rgb[(i / 3) % 3], rgb[(i / 9) % 3], 128));
+    drawItem(&painter, item, iItem, QColor(rgb[i % 3], rgb[(i / 3) % 3], rgb[(i / 9) % 3], 128));
   } 
   // Draw selected items on top of unselected items.
   for(int iItem = 0; iItem < iItemCount; ++iItem) 
@@ -1312,7 +1399,7 @@ void ConnectionsView::paintEvent(QPaintEvent*)
     //if(!item)
     if(!item || item->isHidden() || !item->isSelected())
       continue;
-    drawItem(&painter, item, Qt::yellow);
+    drawItem(&painter, item, iItem, Qt::yellow);
   } 
 }
 
@@ -1320,6 +1407,45 @@ void ConnectionsView::mousePressEvent(QMouseEvent* e)
 {
   e->setAccepted(true);
   lastY = e->y();
+
+  // Check for any hits to the curves.
+  for(PainterPathList::const_iterator ippl = _strokedPathList.cbegin(); ippl != _strokedPathList.cend(); ++ippl)
+  {
+    const QPainterPath &ppi = ippl.value();
+
+    if(ppi.contains(e->pos()))
+    {
+      QTreeWidgetItem* item = _routeDialog->routeList->topLevelItem(ippl.key());
+
+      // Select the item but block signals and manually call the handler without the auto-scroll flag.
+      //
+      // ===============================================================================================
+      // NOTE: Since we are telling another widget, the routeList, to select an item
+      //        (actually setCurrentItem, which selects), the routeList honors the current state
+      //        of the modifiers Ctrl, Alt, Shift etc.
+      //
+      //       Amazingly, this means it supports multi-select here in this connections widget -
+      //        without us having to do anything more !
+      //       No processing of modifier keys. No unselecting all BEFORE a single selection. etc.
+      //
+      //       While this is welcome, it also has down sides like we CANNOT control the modifiers
+      //        or use them for other purposes here. We must let the routeList see them as they are.
+      //       It's just weird too. We're not passing the modifiers, we're relying on the routeList
+      //        to just happen to see them in their current state.
+      //       TODO: See the event list editor and how it was similarly coupled, for possible solutions.
+      // ===============================================================================================
+
+      _routeDialog->routeList->blockSignals(true);
+      _routeDialog->routeList->setCurrentItem(item);
+      // Do not auto-scroll the source/destination route trees.
+      _routeDialog->routeSelectionChanged(false);
+      _routeDialog->routeList->blockSignals(false);
+      return;
+    }
+  }
+
+  // No hits. Clear all selections and allow signals so that the selection handler can do its thing.
+  _routeDialog->routeList->clearSelection();
 }
 
 void ConnectionsView::mouseMoveEvent(QMouseEvent* e)
@@ -1329,8 +1455,27 @@ void ConnectionsView::mouseMoveEvent(QMouseEvent* e)
   const int y = e->y();
   const int ly = lastY;
   lastY = y;
+
   if(mb & Qt::LeftButton)
+  {
      emit scrollBy(0, ly - y);
+     return;
+  }
+
+  for(PainterPathList::const_iterator ippl = _strokedPathList.cbegin(); ippl != _strokedPathList.cend(); ++ippl)
+  {
+    const QPainterPath &ppi = ippl.value();
+
+    if(ppi.contains(e->pos()))
+    {
+      setCursor(Qt::SizeAllCursor);
+      _cursorIsSet = true;
+      return;
+    }
+  }
+  // set/unsetCursor might be expensive. Try to be infrequent.
+  if(_cursorIsSet)
+    unsetCursor();
 }
 
 void ConnectionsView::wheelEvent(QWheelEvent* e)
@@ -2015,6 +2160,11 @@ RouteDialog::RouteDialog(QWidget* parent)
   connect(dstRoutesButton, SIGNAL(clicked(bool)), SLOT(filterDstRoutesClicked(bool)));
   connect(routeAliasList, SIGNAL(activated(int)), SLOT(preferredRouteAliasChanged(int)));
   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
+
+  // Force LTR layout on the whole thing.
+  // RTL is NOT to be used for flows of time or information or connections.
+  // Leave any buttons as RTL.
+  verticalSplitter->setLayoutDirection(Qt::LeftToRight);
 }
 
 void RouteDialog::srcTreeScrollValueChanged(int value)
@@ -2544,8 +2694,26 @@ void RouteDialog::songChanged(MusECore::SongChangedStruct_t v)
 //   routeSelectionChanged
 //---------------------------------------------------------
 
-void RouteDialog::routeSelectionChanged()
+void RouteDialog::routeSelectionChanged(bool autoScroll)
 {
+  // If there are no selections, clear source and destination selections.
+  const QList<QTreeWidgetItem*> sel = routeList->selectedItems();
+  if(sel.isEmpty())
+  {
+    newSrcList->blockSignals(true);
+    newSrcList->clearSelection();
+    newSrcList->blockSignals(false);
+    newDstList->blockSignals(true);
+    newDstList->clearSelection();
+    newDstList->blockSignals(false);
+    connectButton->setEnabled(false);
+    removeButton->setEnabled(false);
+    // Redraw the connections.
+    connectionsWidget->update();
+    return;
+  }
+
+  // We are interested in what was just clicked, even if multi-selected, even if it was unselected.
   QTreeWidgetItem* item = routeList->currentItem();
   if(item == 0)
   {
@@ -2553,36 +2721,55 @@ void RouteDialog::routeSelectionChanged()
     removeButton->setEnabled(false);
     return;
   }
+
   if(!item->data(ROUTE_SRC_COL, RouteDialog::RouteRole).canConvert<MusECore::Route>() || !item->data(ROUTE_DST_COL, RouteDialog::RouteRole).canConvert<MusECore::Route>())
   {
     connectButton->setEnabled(false);
     removeButton->setEnabled(false);
+    // Redraw the connections.
+    connectionsWidget->update();
     return;
   }
   const MusECore::Route src = item->data(ROUTE_SRC_COL, RouteDialog::RouteRole).value<MusECore::Route>();
   const MusECore::Route dst = item->data(ROUTE_DST_COL, RouteDialog::RouteRole).value<MusECore::Route>();
   RouteTreeWidgetItem* srcItem = newSrcList->findItem(src);
   RouteTreeWidgetItem* dstItem = newDstList->findItem(dst);
+
+  // Backup.
+  const bool srcas = newSrcList->hasAutoScroll();
+  const bool dstas = newDstList->hasAutoScroll();
+
   newSrcList->blockSignals(true);
+  newSrcList->setAutoScroll(autoScroll);
   newSrcList->setCurrentItem(srcItem);
+  // Restore.
+  newSrcList->setAutoScroll(srcas);
   newSrcList->blockSignals(false);
   newDstList->blockSignals(true);
+  newDstList->setAutoScroll(autoScroll);
   newDstList->setCurrentItem(dstItem);
+  // Restore.
+  newDstList->setAutoScroll(dstas);
   newDstList->blockSignals(false);
   selectRoutes(true);
-  if(srcItem)
-    newSrcList->scrollToItem(srcItem, QAbstractItemView::PositionAtCenter);
-    //newSrcList->scrollToItem(srcItem, QAbstractItemView::EnsureVisible);
-  if(dstItem)
-    newDstList->scrollToItem(dstItem, QAbstractItemView::PositionAtCenter);
-    //newDstList->scrollToItem(dstItem, QAbstractItemView::EnsureVisible);
+  if(autoScroll)
+  {
+    if(srcItem)
+      newSrcList->scrollToItem(srcItem, QAbstractItemView::PositionAtCenter);
+      //newSrcList->scrollToItem(srcItem, QAbstractItemView::EnsureVisible);
+    if(dstItem)
+      newDstList->scrollToItem(dstItem, QAbstractItemView::PositionAtCenter);
+      //newDstList->scrollToItem(dstItem, QAbstractItemView::EnsureVisible);
+  }
+
+  // Redraw the connections.
   connectionsWidget->update();
 //   connectButton->setEnabled(MusECore::routeCanConnect(src, dst));
   connectButton->setEnabled(false);
 //   removeButton->setEnabled(MusECore::routeCanDisconnect(src, dst));
 //   removeButton->setEnabled(true);
-  
-  
+
+
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 // Special: Allow simulated midi track to midi port route (a route found in our 'local' routelist
 //           but not in any track or port routelist) until multiple output routes are allowed
@@ -2598,24 +2785,24 @@ void RouteDialog::routeSelectionChanged()
                 MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(src.track);
                 // We cannot 'remove' a simulated midi track output port and channel route.
                 // (Midi port cannot be -1 meaning 'no port'.)
-                // Only remove it if it's a different port or channel. 
+                // Only remove it if it's a different port or channel.
                 removeButton->setEnabled(mt->outPort() != dst.midiPort || mt->outChannel() != src.channel);
                 return;
               }
             break;
-            
+
             case MusECore::Route::TRACK_ROUTE: case MusECore::Route::MIDI_DEVICE_ROUTE: case MusECore::Route::JACK_ROUTE:
               break;
           }
         break;
-        
+
         case MusECore::Route::MIDI_PORT_ROUTE: case MusECore::Route::MIDI_DEVICE_ROUTE: case MusECore::Route::JACK_ROUTE:
         break;
       }
 #endif
-  
+
   removeButton->setEnabled(true);
-  
+
 }
 
 //---------------------------------------------------------
@@ -2875,7 +3062,7 @@ void RouteDialog::srcSelectionChanged()
   }
   
   if(routesSelCnt == 0)
-    routeList->setCurrentItem(0);
+    routeList->clearSelection();
   //routeList->setCurrentItem(routesItem);
   routeList->blockSignals(false);
   if(routesSelCnt == 1)

@@ -167,6 +167,10 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
 
     QToolBar* transportToolbar = addToolBar(tr("Transport"));
+    // Force LTR layout on the transport toolbar.
+    // RTL is NOT to be used for flows of time or information or connections.
+    // Media buttons as well, including the punch in/out since they are time-related.
+    transportToolbar->setLayoutDirection(Qt::LeftToRight);
     transportToolbar->setObjectName("Transport tool");
     transportToolbar->addActions(MusEGlobal::transportAction->actions());
     transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));

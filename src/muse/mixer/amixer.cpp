@@ -276,6 +276,10 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       central->installEventFilter(this);
       mixerLayout->installEventFilter(this);
       view ->installEventFilter(this);
+
+      // Force LTR layout on the whole thing.
+      // RTL is NOT to be used for flows of time or information or connections.
+      view->setLayoutDirection(Qt::LeftToRight);
 }
 
 AudioMixerApp::~AudioMixerApp()

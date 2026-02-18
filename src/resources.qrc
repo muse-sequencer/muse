@@ -220,5 +220,6 @@
         <file>svg/audio_automation_boxes.svg</file>
         <file>svg/audio_automation_no_boxes.svg</file>
         <file>svg/audio_automation_optimize.svg</file>
+        <file>svg/piano_config.svg</file>
     </qresource>
 </RCC>

@@ -1,3 +1,26 @@
+17.02.2026
+    - Relating to issue 1308: Feat req "[Adjustable] Middle C (C3 or C4)". (Tim)
+    - FIXED: Broken pitch edit on toolbar on pianoroll and drum edit for at least 12 years.
+      Neither worked in Delta mode.
+      Delta Absolute mode didn't work in the drum editor.
+    * NEW: Note name lists.
+      Added full variable-sized note name lists, colours etc.
+      Starting octave display suffix for each note name list, and separate global octave offset.
+      Quick access to most of the settings via new button and item in toolbars and menus.
+      Loading, saving, user-editing. New: Note name list Global Settings tab.
+      Piano can now be swapped for a list instead.
+      List can be painted with note colours.
+      Six ready-made note name lists supplied: Western, Solfege, German, Sargam, Arabic, and Persian.
+      Rewrites and OLD BUG fixes of piano canvas, piano, etc. drawing to support all of it.
+    - IMPROVED support for Right-To-Left locales.
+      Several windows needed to be forced to left-to-right layout direction in RTL locales,
+       because much of MusE is TIME LINE based. RTL is NOT to be used for flows of time or
+       information or connections. Qt wanted to arrange everything right-to-left automatically,
+       which in the case of a time line based DAW is NOT correct.
+    - IMPROVED Advanced Routing dialog.
+      New: Connection lines can be selected. Supports multi-selection.
+      Layout re-arranged to be more symmetrical.
+      Improved RTL locale support.
 27.10.2025
     - Fixed issue 1313 for rack plugins: Settings not saved or reloaded correctly. (Tim)
       Regression from 13.05.2025.

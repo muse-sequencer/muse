@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf8"?>
+<muse version="4.2">
+  <noteNameList name="Western 12-TET" startMidiNote="0" startMidiOctave="-1">
+    <noteName noteNum="0"  firstName="C"/>
+    <noteName noteNum="1"  firstName="C#"  secondName="Db"/>
+    <noteName noteNum="2"  firstName="D"/>
+    <noteName noteNum="3"  firstName="D#"  secondName="Eb"/>
+    <noteName noteNum="4"  firstName="E"/>
+    <noteName noteNum="5"  firstName="F"/>
+    <noteName noteNum="6"  firstName="F#"  secondName="Gb"/>
+    <noteName noteNum="7"  firstName="G"/>
+    <noteName noteNum="8"  firstName="G#"  secondName="Ab"/>
+    <noteName noteNum="9"  firstName="A"/>
+    <noteName noteNum="10" firstName="A#"  secondName="Bb"/>
+    <noteName noteNum="11" firstName="B"/>
+  </noteNameList>
+</muse>
+

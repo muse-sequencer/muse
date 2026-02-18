@@ -35,12 +35,15 @@ class PitchEdit : public SpinBox {
       Q_OBJECT
 
       bool deltaMode;
+      QSizePolicy originalPolicy;
 
    protected:
       QString textFromValue(int v) const override;
       int valueFromText(const QString &s) const override;
       QValidator::State validate(QString &input, int &pos) const override;
-      
+      //QSize sizeHint() const override;
+      void updateWidth();
+
    public:
       PitchEdit(QWidget* parent=0);
       void setDeltaMode(bool);

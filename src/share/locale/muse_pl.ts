@@ -159,7 +159,7 @@ Program wydany na licencji GNU Public License</translation>
         <translation>Rozciągnij w pionie</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+157"/>
         <source>Events</source>
         <translation>Elementy MIDI</translation>
     </message>
@@ -211,7 +211,7 @@ Program wydany na licencji GNU Public License</translation>
         <translation type="vanished">Tradycyjny (RMS/PEAK)</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-118"/>
         <source>Background picture</source>
         <translation>Obrazek w tle</translation>
     </message>
@@ -220,7 +220,7 @@ Program wydany na licencji GNU Public License</translation>
         <translation type="vanished">pokaż siatkę przyciągania</translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location line="+129"/>
         <source>Colors</source>
         <translation>Kolory</translation>
     </message>
@@ -249,17 +249,17 @@ Program wydany na licencji GNU Public License</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+220"/>
+        <location line="+62"/>
         <source>O&amp;nly outline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-68"/>
+        <location line="+97"/>
         <source>Add</source>
         <translation type="unfinished">Dodaj</translation>
     </message>
     <message>
-        <location line="-159"/>
+        <location line="-166"/>
         <source>Select e&amp;vents to show:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -269,7 +269,7 @@ Program wydany na licencji GNU Public License</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+126"/>
         <source>Remove</source>
         <translation type="unfinished">Usuń</translation>
     </message>
@@ -279,7 +279,7 @@ Program wydany na licencji GNU Public License</translation>
         <translation type="unfinished">Wyczyść</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="-73"/>
         <source>Grid</source>
         <translation type="unfinished"></translation>
     </message>
@@ -299,7 +299,7 @@ Program wydany na licencji GNU Public License</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-70"/>
         <source>Wave drawing in parts</source>
         <translation type="unfinished"></translation>
     </message>
@@ -314,7 +314,7 @@ Program wydany na licencji GNU Public License</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+625"/>
+        <location line="+783"/>
         <source>Choose color...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -392,12 +392,12 @@ Font 6: 80%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1221"/>
+        <location line="-1379"/>
         <source>RMS/PEAK (&amp;traditional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+930"/>
+        <location line="+1088"/>
         <source>Current theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4719,7 +4719,7 @@ Certain operations will also force them to be resent,
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+105"/>
+        <location line="+440"/>
         <source>Latency (experimental)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4738,12 +4738,12 @@ Certain operations will also force them to be resent,
         <translation type="vanished">Częstotliwość odświeżania interfejsu użytkownika</translation>
     </message>
     <message>
-        <location line="-420"/>
+        <location line="-755"/>
         <source>Warn if timer frequency is inadequate</source>
         <translation>Ostrzegaj, jeśli częstotliwość zegara jest nieodpowiednia</translation>
     </message>
     <message>
-        <location line="+654"/>
+        <location line="+989"/>
         <source>Track height</source>
         <translation>Wysokość śladu</translation>
     </message>
@@ -4888,7 +4888,7 @@ Wyłączenie tej opcji implikuje
         <translation type="vanished">MDI w stylu Borland/Mac</translation>
     </message>
     <message>
-        <location line="-1946"/>
+        <location line="-2281"/>
         <source>&amp;Apply</source>
         <translation>&amp;Zastosuj</translation>
     </message>
@@ -5156,16 +5156,18 @@ w przeciwnym razie konfiguruj automatycznie</translation>
     </message>
     <message>
         <location line="+45"/>
+        <location line="+1036"/>
         <source>Move up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="-1023"/>
+        <location line="+1030"/>
         <source>Move down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="-1017"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5318,7 +5320,7 @@ Wpływa na czułość nastaw audio i szczegółowość
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+185"/>
+        <location line="+520"/>
         <source>GUI</source>
         <translation type="unfinished">GUI</translation>
     </message>
@@ -5343,7 +5345,7 @@ Wpływa na czułość nastaw audio i szczegółowość
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1307"/>
+        <location line="-1642"/>
         <location line="+274"/>
         <source>32</source>
         <translation>32</translation>
@@ -5638,7 +5640,57 @@ Adjusts responsiveness of audio controls and
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+744"/>
+        <location line="+125"/>
+        <source>Note Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Note lists</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Note list name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Load...</source>
+        <translation type="unfinished">Ładuj...</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Save...</source>
+        <translation type="unfinished">Zapisz...</translation>
+    </message>
+    <message>
+        <location line="+81"/>
+        <source>Add Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Insert Note</source>
+        <translation type="unfinished">Wstaw nutę</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Remove Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+156"/>
+        <source>Show a piano (if there are 12 notes)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Show note colors (in list mode only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+645"/>
         <source>Can be overridden for individual plugins
 (see Settings in the generic GUI dialog).
 Some plugins ignore this settings.</source>
@@ -5655,7 +5707,7 @@ Some plugins ignore this settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-743"/>
+        <location line="-1078"/>
         <source>Send Null parameters</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5675,7 +5727,59 @@ Some plugins ignore this settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+89"/>
+        <source>Note list: Example: First names: Sharp scale (C, C#, D, D# etc.)
+Second names: Flats (Db, Eb, Gb etc.), or the flat scale (C, Db, D, Eb, E etc.), or blank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>First name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Second name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+88"/>
+        <source>Together with the Global octave suffix offset, these determine which note name and
+ octave are shown for a MIDI note (MIDI 60 middle C showing C4 for example)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>MIDI Starting note number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>MIDI Starting octave suffix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Global settings (available for quick access in the piano roll)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>This offset is added to the note list&apos;s MIDI Starting octave suffix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Global octave suffix offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Draw a piano or a list (it will shift with the note list&apos;s MIDI Starting note number)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+62"/>
         <source>Latency</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8328,7 +8432,7 @@ Brak: używane jedynie w przypadku konieczności
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="+5028"/>
+        <location filename="../../muse/song.cpp" line="+5027"/>
         <source>Jack shutdown!</source>
         <translation>Wyłączenie serwera Jack!</translation>
     </message>
@@ -8397,12 +8501,12 @@ przycisk Restart.</translation>
         <translation type="vanished">wyczyść automatykę</translation>
     </message>
     <message>
-        <location line="-1649"/>
+        <location line="-1648"/>
         <source>Record: At least one track must be armed for recording first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1650"/>
+        <location line="+1649"/>
         <source>Jack has detected a performance problem which has led to
 MusE being disconnected.
 This could happen due to a number of reasons:
@@ -8515,7 +8619,7 @@ click on the Restart button.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+801"/>
+        <location line="+841"/>
         <source>Copies of some automation points could not be made because points already exist at those time positions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8752,7 +8856,7 @@ Linie łamane są tylko w miejscu spacji.</translation>
         <translation type="vanished">Czy naprawdę chcesz powrócić do domyślnych kolorów tematu?</translation>
     </message>
     <message>
-        <location line="+850"/>
+        <location line="+853"/>
         <source>Style was changed.
 The program must be restarted for changes to take place.
 Restart now?</source>
@@ -9188,7 +9292,7 @@ Synth track: Right-click to show GUI.</source>
         <translation type="vanished">T</translation>
     </message>
     <message>
-        <location line="+240"/>
+        <location line="+244"/>
         <source>Track</source>
         <translation>Ślad</translation>
     </message>
@@ -9271,7 +9375,7 @@ Synth track: Right-click to show GUI.</source>
 <context>
     <name>MusEGui::ArrangerView</name>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="+89"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="+90"/>
         <source>MusE: Arranger</source>
         <translation>MusE: Główne Okno</translation>
     </message>
@@ -9634,6 +9738,11 @@ Synth track: Right-click to show GUI.</source>
     </message>
     <message>
         <location line="+2"/>
+        <source>Note Names, Piano Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>&amp;Toggle Track Heights</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9690,7 +9799,7 @@ Synth track: Right-click to show GUI.</source>
         <translation type="vanished">&amp;Przekształcanie MIDI</translation>
     </message>
     <message>
-        <location line="-930"/>
+        <location line="-937"/>
         <source>Global Cut</source>
         <translation>Globalne wycięcie</translation>
     </message>
@@ -9985,7 +10094,7 @@ Wymagany jest restart MusE. Przepraszamy.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+74"/>
         <source>Traditional Order</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10382,7 +10491,7 @@ Wymagany jest restart MusE. Przepraszamy.
         <translation type="vanished">Narzędzia:</translation>
     </message>
     <message>
-        <location filename="../../muse/components/canvas.cpp" line="+2264"/>
+        <location filename="../../muse/components/canvas.cpp" line="+2276"/>
         <source>Tools</source>
         <translation type="unfinished">Narzędzia</translation>
     </message>
@@ -10841,7 +10950,7 @@ Number of xruns
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+891"/>
+        <location line="+899"/>
         <source>Drum list: Edit instrument-specific settings. Click in the Sound column to play the sounds at different velocities.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10879,14 +10988,14 @@ Select the destination part, then try again.</source>
 Wybierz klocek docelowy i spróbuj ponownie.</translation>
     </message>
     <message>
-        <location line="+665"/>
-        <location line="+485"/>
+        <location line="+687"/>
+        <location line="+499"/>
         <source>Recording event failed</source>
         <translation>Nagranie zdarzenia nie powiodło się</translation>
     </message>
     <message>
-        <location line="-485"/>
-        <location line="+485"/>
+        <location line="-499"/>
+        <location line="+499"/>
         <source>Couldn&apos;t record the event, because the currently selected part isn&apos;t the same track, and the instrument to be recorded could be either on no or on multiple parts, which is ambiguous.
 Select the destination part, then try again.</source>
         <translatorcomment>Not sure I understand the text correctly. Probably should be fixed.</translatorcomment>
@@ -11251,7 +11360,17 @@ Wybierz klocek docelowy i spróbuj ponownie.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+130"/>
+        <location line="+57"/>
+        <source>Note Names, Piano Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Note names and piano settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+52"/>
         <source>Cursor step</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11274,7 +11393,7 @@ Wybierz klocek docelowy i spróbuj ponownie.</translation>
         <translation type="vanished">&amp;Konfiguracja okna</translation>
     </message>
     <message>
-        <location line="-4"/>
+        <location line="-11"/>
         <source>Drum tools</source>
         <translation>Narzędzia perkusyjne</translation>
     </message>
@@ -11323,7 +11442,7 @@ Wybierz klocek docelowy i spróbuj ponownie.</translation>
         <translation type="vanished">Przesortuj zestaw perkusyjny</translation>
     </message>
     <message>
-        <location line="-72"/>
+        <location line="-79"/>
         <source>&amp;Display</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11370,7 +11489,7 @@ Wybierz klocek docelowy i spróbuj ponownie.</translation>
         <translation type="vanished">Pokaż tylko używane instrumenty bądź te, których nazwa nie jest pusta</translation>
     </message>
     <message>
-        <location line="+61"/>
+        <location line="+75"/>
         <source>Step record</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11418,12 +11537,12 @@ Wybierz klocek docelowy i spróbuj ponownie.</translation>
         <translation>Ustaw rozmiar kroku dla edycji kursorem</translation>
     </message>
     <message>
-        <location line="-76"/>
+        <location line="-83"/>
         <source>Add Controller View</source>
         <translation>Dodaj widok kontrolera</translation>
     </message>
     <message>
-        <location line="-139"/>
+        <location line="-146"/>
         <source>C&amp;ut</source>
         <translation type="unfinished">&amp;Wytnij</translation>
     </message>
@@ -11548,7 +11667,7 @@ Wybierz klocek docelowy i spróbuj ponownie.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+247"/>
+        <location line="+261"/>
         <source>H</source>
         <extracomment>hide</extracomment>
         <translation>H</translation>
@@ -11620,7 +11739,7 @@ Wybierz klocek docelowy i spróbuj ponownie.</translation>
         <translation>PV4</translation>
     </message>
     <message>
-        <location line="+717"/>
+        <location line="+721"/>
         <source>Muse: Load Drum Map</source>
         <translation>MusE: załaduj zestaw perkusyjny</translation>
     </message>
@@ -12551,9 +12670,108 @@ Double-click a slot to insert FX</source>
 <context>
     <name>MusEGui::GlobalSettingsConfig</name>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="+748"/>
+        <location filename="../../muse/components/genset.cpp" line="+231"/>
+        <source>Load Note Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Error reading note name list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Save Note Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Error saving note name list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Add Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Error appending new row.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Insert Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Error inserting new row.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <location line="+16"/>
+        <source>Move Note Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-16"/>
+        <source>Error moving note names up.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Error moving note names down.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <location line="+18"/>
+        <source>Edit Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-18"/>
+        <source>Note first name cannot be blank. Try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>The note name entered already exists in another row. Try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+675"/>
         <source>MusE: Choose start template or song</source>
         <translation>MusE: wybierz szablon początkowy bądź utwór</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>NewNote</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+72"/>
+        <location line="+14"/>
+        <location line="+9"/>
+        <source>Note Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-23"/>
+        <source>Error creating new unique note name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Error setting up note name row.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Error setting up new note name row.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14651,7 +14869,7 @@ synchronizacji?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+2011"/>
+        <location line="+2016"/>
         <location line="+1643"/>
         <location line="+119"/>
         <source>&amp;Save</source>
@@ -14681,7 +14899,7 @@ Można też wybrać opcję Zapisz w menu Plik lub użyć kombinacji Ctrl-S.
         <translation type="vanished">Import klocka</translation>
     </message>
     <message>
-        <location line="+1109"/>
+        <location line="+1111"/>
         <source>Import Audio File</source>
         <translation>Import pliku audio</translation>
     </message>
@@ -14690,7 +14908,7 @@ Można też wybrać opcję Zapisz w menu Plik lub użyć kombinacji Ctrl-S.
         <translation type="vanished">Znajdź nieużywane pliki audio</translation>
     </message>
     <message>
-        <location line="-4862"/>
+        <location line="-4869"/>
         <source>&amp;Quit</source>
         <translation>&amp;Zakończ</translation>
     </message>
@@ -14903,7 +15121,7 @@ Można też wybrać opcję Zapisz w menu Plik lub użyć kombinacji Ctrl-S.
         <translation type="vanished">Pozycja utworu</translation>
     </message>
     <message>
-        <location line="+158"/>
+        <location line="+163"/>
         <source>Tempo</source>
         <translation>Tempo</translation>
     </message>
@@ -14913,7 +15131,7 @@ Można też wybrać opcję Zapisz w menu Plik lub użyć kombinacji Ctrl-S.
         <translation>Metrum</translation>
     </message>
     <message>
-        <location line="-50"/>
+        <location line="-55"/>
         <source>File Buttons</source>
         <translation>Przyciski Menu Plik</translation>
     </message>
@@ -14965,7 +15183,7 @@ Można też wybrać opcję Zapisz w menu Plik lub użyć kombinacji Ctrl-S.
         <translation type="vanished">Brak danych o obciążeniu CPU</translation>
     </message>
     <message>
-        <location line="+56"/>
+        <location line="+61"/>
         <source>&amp;File</source>
         <translation>&amp;Plik</translation>
     </message>
@@ -15044,7 +15262,7 @@ Można też wybrać opcję Zapisz w menu Plik lub użyć kombinacji Ctrl-S.
         <translation>MusE: ładuj utwór</translation>
     </message>
     <message>
-        <location line="-2175"/>
+        <location line="-2180"/>
         <source>Timeout waiting for audio to run. Check if jack is running or try another driver.
 </source>
         <translation type="unfinished"></translation>
@@ -15210,7 +15428,7 @@ Można też wybrać opcję Zapisz w menu Plik lub użyć kombinacji Ctrl-S.
         <translation type="unfinished">Z&amp;amknij</translation>
     </message>
     <message>
-        <location line="+3366"/>
+        <location line="+3371"/>
         <location line="+10"/>
         <location line="+33"/>
         <location line="+34"/>
@@ -15242,7 +15460,7 @@ Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1005"/>
+        <location line="+1007"/>
         <source>MusE Project: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -15252,7 +15470,7 @@ Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-4860"/>
+        <location line="-4867"/>
         <source>Import Part...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15331,7 +15549,7 @@ Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+358"/>
+        <location line="+363"/>
         <source>About &amp;Qt...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15380,7 +15598,7 @@ Zapisać otwarty utwór?</translation>
         <translation type="vanished">&amp;Pomiń</translation>
     </message>
     <message>
-        <location filename="../../muse/conf.cpp" line="+1940"/>
+        <location filename="../../muse/conf.cpp" line="+1964"/>
         <source>Load configuration colors</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15487,7 +15705,7 @@ Zapisać bieżący projekt?</translation>
         <translation>&amp;Anuluj</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+487"/>
+        <location filename="../../muse/app.cpp" line="+489"/>
         <source>This will clear all automation data on
  all audio tracks!
 Proceed?</source>
@@ -15696,7 +15914,7 @@ Nie można kontynuować.</translation>
         <translation>Anuluj</translation>
     </message>
     <message>
-        <location line="-5441"/>
+        <location line="-5448"/>
         <source>Failed to start audio disk prefetch!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15812,7 +16030,7 @@ Nie można kontynuować.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+17"/>
         <source>Recording</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15850,7 +16068,7 @@ Save current project?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2408"/>
+        <location line="+2410"/>
         <source>This wave file has a samplerate of %1 Hz,
  as opposed to current setting %2 Hz.
 A live, real-time samplerate converter can be used on this file.
@@ -15988,7 +16206,7 @@ Przy zapisywaniu pliku może być wykonana konwersja!</translation>
 <context>
     <name>MusEGui::PartCanvas</name>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="+570"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="+565"/>
         <source>Cannot copy/move/clone to different Track-Type</source>
         <translation>Nie można skopiować/przenieść/sklonować do śladu innego typu</translation>
     </message>
@@ -16282,7 +16500,7 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
         </translation>
     </message>
     <message>
-        <location line="+2374"/>
+        <location line="+2363"/>
         <source>Cannot paste: multiple tracks selected</source>
         <translation>Nie można wkleić: zaznaczono kilka śladów</translation>
     </message>
@@ -16386,12 +16604,12 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
 <context>
     <name>MusEGui::Piano</name>
     <message>
-        <location filename="../../muse/midiedit/piano.cpp" line="+202"/>
+        <location filename="../../muse/midiedit/piano.cpp" line="+203"/>
         <source>Piano: Press key to play or enter events in step record mode (SHIFT for chords). RMB: Set cursor for polyphonic control events. CTRL+Mousewheel to zoom view vertically.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+317"/>
+        <location line="+573"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -16404,7 +16622,7 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1851"/>
+        <location line="+1975"/>
         <source>Note: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -16670,7 +16888,7 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+77"/>
         <source>Play single note</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16684,12 +16902,22 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
         <translation type="vanished">&amp;Wtyczki</translation>
     </message>
     <message>
-        <location line="-87"/>
+        <location line="-101"/>
         <source>&amp;Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+56"/>
+        <location line="+29"/>
+        <source>Note Names, Piano Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Note names and piano settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Add controller view</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16713,7 +16941,7 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
         <translation type="vanished">&amp;Konfiguracja okna</translation>
     </message>
     <message>
-        <location line="-68"/>
+        <location line="-82"/>
         <source>&amp;Event Color</source>
         <translation>&amp;Kolor nut</translation>
     </message>
@@ -16731,7 +16959,7 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
         <translation type="vanished">Koloruj &amp;po prędkości uderzenia (velocity)</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+44"/>
         <source>Pianoroll tools</source>
         <translation>Narzędzia Pianoroll</translation>
     </message>
@@ -17049,7 +17277,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+5230"/>
+        <location filename="../../muse/plugin.cpp" line="+5501"/>
         <source>File Buttons</source>
         <translation>Przyciski Menu Plik</translation>
     </message>
@@ -17274,7 +17502,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
 <context>
     <name>MusEGui::RouteDialog</name>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="+1892"/>
+        <location filename="../../muse/components/routedialog.cpp" line="+2037"/>
         <source>Normal</source>
         <translation>Normalny</translation>
     </message>
@@ -17301,7 +17529,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <translation>Urz. docelowe</translation>
     </message>
     <message>
-        <location line="+1447"/>
+        <location line="+1489"/>
         <source>&lt;none&gt;</source>
         <translation>&lt;brak&gt;</translation>
     </message>
@@ -18833,7 +19061,7 @@ zmienił. Pewne zmiany mogą się okazać konieczne.</translation>
         <translation>Panel transportu</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+9"/>
         <source>Recording</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18847,12 +19075,12 @@ zmienił. Pewne zmiany mogą się okazać konieczne.</translation>
         <translation type="vanished">Pozycja utworu</translation>
     </message>
     <message>
-        <location line="-26"/>
+        <location line="-30"/>
         <source>Undo/Redo</source>
         <translation type="unfinished">Cofnij/Przywróć</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+35"/>
         <source>Tempo</source>
         <translation>Tempo</translation>
     </message>
@@ -19259,7 +19487,7 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation>Wybrany zakres został skopiowany do schowka i może być wklejony w Głównym Oknie.</translation>
     </message>
     <message>
-        <location line="+655"/>
+        <location line="+588"/>
         <source>MusE - external editor failed</source>
         <translation>MusE - wystąpił błąd w zewnętrznym edytorze</translation>
     </message>
@@ -20116,7 +20344,7 @@ projektów z plikami audio)</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../muse/functions.cpp" line="+100"/>
+        <location filename="../../muse/functions.cpp" line="+95"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
@@ -20126,7 +20354,7 @@ projektów z plikami audio)</translation>
         <translation>Proszę najpierw zaznaczyć zakres crescendo za pomocą lokatorów pętli.</translation>
     </message>
     <message numerus="yes">
-        <location line="+2573"/>
+        <location line="+2535"/>
         <source>%n part(s) out of %1 could not be pasted.
 Likely the selected track is the wrong type.</source>
         <translation type="unfinished">
@@ -20234,7 +20462,7 @@ Only one is allowed.</source>
         <translation>Włącz tryb Yamaha XG</translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="-3328"/>
+        <location filename="../../muse/components/routedialog.cpp" line="-3515"/>
         <source>Tracks:</source>
         <translation>Ślady:</translation>
     </message>
@@ -20310,7 +20538,7 @@ Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="+328"/>
+        <location filename="../../muse/globals.cpp" line="+298"/>
         <source>Input routing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20353,8 +20581,18 @@ sometimes requires write access to the file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="-3958"/>
+        <location filename="../../muse/plugin.cpp" line="-4215"/>
         <source>FX slot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/note_names.cpp" line="+281"/>
+        <source>MusE: Load note name list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>MusE: Save note name list</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -20449,7 +20687,7 @@ nie powiodło się: %2</translation>
         <translation type="vanished">Ogólny instrument MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="-1263"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="-1196"/>
         <source>No wave events selected.</source>
         <translation>Nie wybrano zdarzeń audio</translation>
     </message>
@@ -20459,7 +20697,7 @@ nie powiodło się: %2</translation>
         <translation>Niczego nie zaznaczono. Pomijam.</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+1661"/>
+        <location filename="../../muse/helper.cpp" line="+1942"/>
         <source>Instrument-defined</source>
         <translation>Zdefiniowane w instrumencie</translation>
     </message>
@@ -20479,7 +20717,37 @@ nie powiodło się: %2</translation>
         <translation type="vanished">Edytuj instrument...</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="-102"/>
+        <location filename="../../muse/helper.cpp" line="-259"/>
+        <source>Current Note Name List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Open Settings...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Global Settings</source>
+        <translation type="unfinished">Ustawienia globalne</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show Piano</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Show Note Colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Octave Suffix Adjust</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+142"/>
         <source>Mapped To Audio Controls</source>
         <translation type="unfinished"></translation>
     </message>
@@ -22128,12 +22396,12 @@ katalogu</translation>
 <context>
     <name>VAMGui</name>
     <message>
-        <location filename="../../synti/vam/vamgui.cpp" line="+597"/>
+        <location filename="../../synti/vam/vamgui.cpp" line="+598"/>
         <source>MusE: Load VAM Presets</source>
         <translation>MusE: ładuj ustawienia VAM</translation>
     </message>
     <message>
-        <location line="+111"/>
+        <location line="+102"/>
         <location line="+16"/>
         <source>MusE: Save VAM Presets</source>
         <translation>MusE: zapisz ustawienia VAM</translation>
@@ -22457,7 +22725,7 @@ Robert Jonsson
 <context>
     <name>file_patterns</name>
     <message>
-        <location filename="../../muse/globals.cpp" line="-172"/>
+        <location filename="../../muse/globals.cpp" line="-178"/>
         <source>Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)</source>
         <translation></translation>
     </message>
@@ -22486,11 +22754,12 @@ Robert Jonsson
         <location line="+8"/>
         <location line="+6"/>
         <location line="+6"/>
+        <location line="+6"/>
         <source>All Files (*)</source>
         <translation>Wszystkie Pliki (*)</translation>
     </message>
     <message>
-        <location line="-96"/>
+        <location line="-102"/>
         <source>Midi (*.mid)</source>
         <translation></translation>
     </message>
@@ -22639,6 +22908,11 @@ Robert Jonsson
         <location line="+6"/>
         <source>Qt style sheets (*.qss)</source>
         <translation type="unfinished">Arkusze stylów Qt (*.qss)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Note name files (*.mnn)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

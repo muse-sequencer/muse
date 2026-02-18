@@ -81,42 +81,6 @@ QTimer* heartBeatTimer;
 
 bool blinkTimerPhase = false;
 
-bool hIsB = true;             // call note h "b"
-
-const signed char sharpTab[14][7] = {
-      { 0, 3, -1, 2, 5, 1, 4 },
-      { 0, 3, -1, 2, 5, 1, 4 },
-      { 0, 3, -1, 2, 5, 1, 4 },
-      { 0, 3, -1, 2, 5, 1, 4 },
-      { 2, 5,  1, 4, 7, 3, 6 },
-      { 2, 5,  1, 4, 7, 3, 6 },
-      { 2, 5,  1, 4, 7, 3, 6 },
-      { 4, 0,  3, -1, 2, 5, 1 },
-      { 7, 3,  6, 2, 5, 1, 4 },
-      { 5, 8,  4, 7, 3, 6, 2 },
-      { 3, 6,  2, 5, 1, 4, 7 },
-      { 1, 4,  0, 3, 6, 2, 5 },
-      { 6, 2,  5, 1, 4, 0, 3 },
-      { 0, 3, -1, 2, 5, 1, 4 },
-      };
-const signed char flatTab[14][7]  = {
-      { 4, 1, 5, 2, 6, 3, 7 },
-      { 4, 1, 5, 2, 6, 3, 7 },
-      { 4, 1, 5, 2, 6, 3, 7 },
-      { 4, 1, 5, 2, 6, 3, 7 },
-      { 6, 3, 7, 4, 8, 5, 9 },
-      { 6, 3, 7, 4, 8, 5, 9 },
-      { 6, 3, 7, 4, 8, 5, 9 },
-
-      { 1, 5, 2, 6, 3, 7, 4 },
-      { 4, 1, 5, 2, 6, 3, 7 },
-      { 2, 6, 3, 7, 4, 8, 5 },
-      { 7, 4, 1, 5, 2, 6, 3 },
-      { 5, 2, 6, 3, 7, 4, 8 },
-      { 3, 0, 4, 1, 5, 2, 6 },
-      { 4, 1, 5, 2, 6, 3, 7 },
-      };
-
 QString museGlobalLib;
 QString museGlobalShare;
 QString museUser;
@@ -272,6 +236,12 @@ const char* stylesheet_file_pattern[] = {
     QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
     nullptr
 };
+
+const char* note_names_file_pattern[] = {
+      QT_TRANSLATE_NOOP("file_patterns", "Note name files (*.mnn)"),
+      QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
+    nullptr
+      };
 
 Qt::KeyboardModifiers globalKeyState;
 

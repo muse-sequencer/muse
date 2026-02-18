@@ -1140,11 +1140,6 @@ int main(int argc, char* argv[])
         // Locale diagnostics.
         fprintf(stderr, "New Qt locale: %s\n",QLocale().name().toLocal8Bit().data());
 
-        if (QLocale().name() == "de" || locale_override == "de") {
-          fprintf(stderr, "locale de - setting 'note h is B' override parameter.\n");
-          MusEGlobal::hIsB = false;
-        }
-
         // NOTICE About locales:
         //
         // From std::setlocale() help:

@@ -1415,6 +1415,25 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                             MusEGlobal::config.showNoteTooltips = xml.parseInt();
                         else if (tag == "showTimeScaleBeatNumbers")
                             MusEGlobal::config.showTimeScaleBeatNumbers = xml.parseInt();
+                        else if (tag == "noteNameList")
+                        {
+                            NoteNameList l;
+                            if(l.read(xml))
+                            {
+                              fprintf(stderr, "Error reading configuration NoteNameList\n");
+                            }
+                            else
+                            {
+                              MusEGlobal::config.noteNameList = l;
+                            }
+                        }
+                        else if (tag == "globalOctaveSuffixOffset")
+                            MusEGlobal::config.globalOctaveSuffixOffset = xml.parseInt();
+                        else if (tag == "globalShowPiano")
+                            MusEGlobal::config.globalShowPiano = xml.parseInt();
+                        else if (tag == "pianoShowNoteColors")
+                            MusEGlobal::config.pianoShowNoteColors = xml.parseInt();
+
                         else if (tag == "noPluginScaling")
                               MusEGlobal::config.noPluginScaling = xml.parseInt();
 //                        else if (tag == "openMDIWinMaximized")
@@ -2136,6 +2155,11 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "showNoteNamesInPianoRoll", MusEGlobal::config.showNoteNamesInPianoRoll);
       xml.intTag(level, "showNoteTooltips", MusEGlobal::config.showNoteTooltips);
       xml.intTag(level, "showTimeScaleBeatNumbers", MusEGlobal::config.showTimeScaleBeatNumbers);
+      MusEGlobal::config.noteNameList.write(level, xml);
+      xml.intTag(level, "globalOctaveSuffixOffset", MusEGlobal::config.globalOctaveSuffixOffset);
+      xml.intTag(level, "globalShowPiano", MusEGlobal::config.globalShowPiano);
+      xml.intTag(level, "pianoShowNoteColors", MusEGlobal::config.pianoShowNoteColors);
+
       xml.intTag(level, "noPluginScaling", MusEGlobal::config.noPluginScaling);
 //      xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
       xml.intTag(level, "keepTransportWindowOnTop", MusEGlobal::config.keepTransportWindowOnTop);
@@ -2320,7 +2344,7 @@ void MusE::configMidiFile()
 //   configGlobalSettings
 //---------------------------------------------------------
 
-void MusE::configGlobalSettings()
+void MusE::configGlobalSettings(int startTab)
       {
       if (!globalSettingsConfig)
           // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
@@ -2332,8 +2356,9 @@ void MusE::configGlobalSettings()
           }
       else
           globalSettingsConfig->show();
+      if(startTab >= 0)
+        globalSettingsConfig->selectTab(startTab);
       }
-
 
 //---------------------------------------------------------
 //   MidiFileConfig
