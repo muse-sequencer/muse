@@ -16832,7 +16832,7 @@ Probablement parce que la piste sélectionnée est du mauvais type.</numerusform
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+573"/>
+        <location line="+602"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>

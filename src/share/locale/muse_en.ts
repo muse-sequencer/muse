@@ -13164,7 +13164,7 @@ Likely the selected track is the wrong type.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/piano.cpp" line="776"/>
+        <location filename="../../muse/midiedit/piano.cpp" line="805"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>

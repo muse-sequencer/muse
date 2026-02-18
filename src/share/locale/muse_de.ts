@@ -17029,7 +17029,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+573"/>
+        <location line="+602"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>

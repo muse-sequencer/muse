@@ -16609,7 +16609,7 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+573"/>
+        <location line="+602"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>

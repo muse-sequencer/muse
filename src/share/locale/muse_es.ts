@@ -15950,7 +15950,7 @@ Probablemente la pista seleccionada es del tipo incorrecto.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+573"/>
+        <location line="+602"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>

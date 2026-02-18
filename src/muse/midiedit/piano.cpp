@@ -359,9 +359,17 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
               if(note == 0)
                 s += QLocale().toString(oct + MusEGlobal::config.noteNameList.startingMidiOctave() +
                                      MusEGlobal::config.globalOctaveSuffixOffset);
-              // For text, y is the top of the font.
-              const QRect rect(3, y, pianoWidth - 6, KH_MT);
-              p.drawText(rect, Qt::AlignRight | Qt::AlignVCenter, s);
+
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            const int tw = fm.horizontalAdvance(s);
+#else
+            const int tw = fm.size(s);
+#endif
+            // Avoid fooling around with Qt alignment. Force right alignment.
+            // For text, y is the baseline of the font.
+            p.drawText(pianoWidth - 3 - tw, y + KH_MT - 1, s);
+
             }
         }
     }
@@ -522,9 +530,16 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
             const QString s = octnotename +
                       QLocale().toString(MusEGlobal::config.noteNameList.startingMidiOctave() +
                         MusEGlobal::config.globalOctaveSuffixOffset + oct + octoff);
-            // For text, y is the top of the font.
-            const QRect rect(3, y - 1, pianoWidth - 6, KH);
-            p.drawText(rect, Qt::AlignRight | Qt::AlignVCenter, s);
+
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            const int tw = fm.horizontalAdvance(s);
+#else
+            const int tw = fm.size(s);
+#endif
+            // Avoid fooling around with Qt alignment. Force right alignment.
+            // For text, y is the baseline of the font.
+            p.drawText(pianoWidth - 3 - tw, y + KH - 4, s);
 
             y -= octaveHeight;
         }
