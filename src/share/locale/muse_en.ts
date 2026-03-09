@@ -8412,62 +8412,62 @@ Synth track: Right-click to show GUI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="299"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="297"/>
         <source>Traditional Order</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="305"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="303"/>
         <source>Arranger Order</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="311"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="309"/>
         <source>User Order</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="321"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="319"/>
         <source>Hide Selected Strips</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="334"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="332"/>
         <source>Show All Hidden Strips</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="342"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="340"/>
         <source>Unhide Strip: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="1556"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="1561"/>
         <source>Track Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="1557"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="1562"/>
         <source>Enter track name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="1577"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="1582"/>
         <source>MusE: bad trackname</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="1578"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="1583"/>
         <source>The track name is already used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="1579"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="1584"/>
         <source>Do you really want to use the name again?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="349"/>
+        <location filename="../../muse/mixer/amixer.cpp" line="347"/>
         <source>(no hidden strips)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13164,7 +13164,7 @@ Likely the selected track is the wrong type.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/piano.cpp" line="805"/>
+        <location filename="../../muse/midiedit/piano.cpp" line="791"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>

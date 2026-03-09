@@ -9814,7 +9814,7 @@ Synth track: Right-click to show GUI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+72"/>
         <source>Traditional Order</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9844,7 +9844,7 @@ Synth track: Right-click to show GUI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1214"/>
+        <location line="+1221"/>
         <source>Track Name</source>
         <translation type="unfinished">Nombre de pista</translation>
     </message>
@@ -9869,7 +9869,7 @@ Synth track: Right-click to show GUI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1230"/>
+        <location line="-1237"/>
         <source>(no hidden strips)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15950,7 +15950,7 @@ Probablemente la pista seleccionada es del tipo incorrecto.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+602"/>
+        <location line="+588"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>

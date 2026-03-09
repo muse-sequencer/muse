@@ -1,3 +1,8 @@
+09.03.2026
+    - FIX issue 1321: Segfault when enabling "Open mixers in docks" (Tim)
+      Broken at 13.05.2025. Can't add undoRedo to mixer menus in ctor since undoRedo
+       hasn't been created yet because the main window hasn't been created.
+      Add undoRedo in the menu's aboutToShow handler instead.
 17.02.2026
     - Relating to issue 1308: Feat req "[Adjustable] Middle C (C3 or C4)". (Tim)
     - FIXED: Broken pitch edit on toolbar on pianoroll and drum edit for at least 12 years.

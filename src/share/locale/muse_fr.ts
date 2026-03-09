@@ -10466,7 +10466,7 @@ Pour appliquer ces changements, veuillez redémarrer MusE. Désolé.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+72"/>
         <source>Traditional Order</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10496,7 +10496,7 @@ Pour appliquer ces changements, veuillez redémarrer MusE. Désolé.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1214"/>
+        <location line="+1221"/>
         <source>Track Name</source>
         <translation type="unfinished">Nom de Piste</translation>
     </message>
@@ -10521,7 +10521,7 @@ Pour appliquer ces changements, veuillez redémarrer MusE. Désolé.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1230"/>
+        <location line="-1237"/>
         <source>(no hidden strips)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16832,7 +16832,7 @@ Probablement parce que la piste sélectionnée est du mauvais type.</numerusform
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+602"/>
+        <location line="+588"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>
