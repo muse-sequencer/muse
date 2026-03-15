@@ -4748,7 +4748,7 @@ Certain operations will also force them to be resent,
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+381"/>
+        <location line="+388"/>
         <source>Show a piano (if there are 12 notes)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4782,12 +4782,12 @@ Certain operations will also force them to be resent,
         <translation type="vanished">Velocidad de refresco de la interfáz</translation>
     </message>
     <message>
-        <location line="-755"/>
+        <location line="-762"/>
         <source>Warn if timer frequency is inadequate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+989"/>
+        <location line="+996"/>
         <source>Track height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4863,7 +4863,7 @@ el botón del medio.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1359"/>
+        <location line="-1366"/>
         <source>Sample rate conversion, time stretching and pitch shifting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5102,7 +5102,7 @@ Adjusts responsiveness of audio controls and
         <translation type="obsolete">Nota</translation>
     </message>
     <message>
-        <location line="+81"/>
+        <location line="+88"/>
         <source>Add Note</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5134,7 +5134,7 @@ Some plugins ignore this settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1078"/>
+        <location line="-1085"/>
         <source>Send Null parameters</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5159,7 +5159,12 @@ Some plugins ignore this settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+87"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Note list: Example: First names: Sharp scale (C, C#, D, D# etc.)
 Second names: Flats (Db, Eb, Gb etc.), or the flat scale (C, Db, D, Eb, E etc.), or blank</source>
         <translation type="unfinished"></translation>
@@ -5441,7 +5446,7 @@ This hack forces a frame to be drawn, but may interfere with other styles.</sour
         <translation type="vanished">Comportamiento similar a Borland/Mac</translation>
     </message>
     <message>
-        <location line="-2394"/>
+        <location line="-2401"/>
         <source>&amp;Apply</source>
         <translation>&amp;Aplicar</translation>
     </message>
@@ -5665,18 +5670,18 @@ This hack forces a frame to be drawn, but may interfere with other styles.</sour
     </message>
     <message>
         <location line="+45"/>
-        <location line="+1036"/>
+        <location line="+1043"/>
         <source>Move up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1023"/>
-        <location line="+1030"/>
+        <location line="-1030"/>
+        <location line="+1037"/>
         <source>Move down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1017"/>
+        <location line="-1024"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5909,7 +5914,7 @@ Ajusta la sensibilidad de los controles de audio y
         <translation type="vanished">Atajo antiguo para detener</translation>
     </message>
     <message>
-        <location line="+852"/>
+        <location line="+859"/>
         <source>Move single armed track with selection</source>
         <translation>Armar la pista con la selección (Grabar)</translation>
     </message>
@@ -12239,7 +12244,7 @@ Double-click a slot to insert FX</source>
 <context>
     <name>MusEGui::GlobalSettingsConfig</name>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="+231"/>
+        <location filename="../../muse/components/genset.cpp" line="+232"/>
         <source>Load Note Names</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12259,7 +12264,12 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
+        <source>New note name list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>Add Note Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12279,7 +12289,17 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+11"/>
+        <source>Delete Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>There should be at least one note in the list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <location line="+16"/>
         <source>Move Note Names</source>
         <translation type="unfinished"></translation>
@@ -15950,7 +15970,7 @@ Probablemente la pista seleccionada es del tipo incorrecto.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+588"/>
+        <location line="+592"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -15963,7 +15983,7 @@ Probablemente la pista seleccionada es del tipo incorrecto.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1975"/>
+        <location line="+1981"/>
         <source>Note: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -19849,7 +19869,7 @@ falló: %2</translation>
         <translation>No hay nada seleccionado!</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+1942"/>
+        <location filename="../../muse/helper.cpp" line="+1945"/>
         <source>Instrument-defined</source>
         <translation type="unfinished">Definición de instrumento</translation>
     </message>

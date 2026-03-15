@@ -119,6 +119,7 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       
       connect(noteNamesLoad,    &QPushButton::clicked, [this]() { loadNoteNames(); } );
       connect(noteNamesSave,    &QPushButton::clicked, [this]() { saveNoteNames(); } );
+      connect(noteNamesNew,     &QPushButton::clicked, [this]() { newNoteNames(); } );
       connect(noteNameAdd,      &QPushButton::clicked, [this]() { addNoteName(); } );
       connect(noteNameInsert,   &QPushButton::clicked, [this]() { insertNoteName(); } );
       connect(noteNameDel,      &QPushButton::clicked, [this]() { delNoteName(); } );
@@ -250,6 +251,21 @@ void GlobalSettingsConfig::saveNoteNames()
     QMessageBox::critical(this, tr("Save Note Names"), tr("Error saving note name list."));
 }
 
+void GlobalSettingsConfig::newNoteNames()
+{
+  _noteNamesBackup.clear();
+
+  noteNameListName->setText(tr("New note name list"));
+
+  // Prevent notification.
+  noteNameTable->blockSignals(true);
+  // Clear all non-header rows.
+  noteNameTable->setRowCount(0);
+  noteNameTable->blockSignals(false);
+
+  newNoteNameRow();
+}
+
 void GlobalSettingsConfig::addNoteName()
 {
   if(!newNoteNameRow(noteNameTable->rowCount()))
@@ -271,6 +287,12 @@ void GlobalSettingsConfig::delNoteName()
   const int row = noteNameTable->currentRow();
   if(row < 0)
     return;
+
+  if(noteNameTable->rowCount() == 1)
+  {
+    QMessageBox::critical(this, tr("Delete Note Name"), tr("There should be at least one note in the list."));
+    return;
+  }
 
   noteNameTable->removeRow(row);
 
@@ -1108,7 +1130,7 @@ bool GlobalSettingsConfig::newNoteNameRow(int row)
   // More than 128 notes not allowed.
   if(rows >= 128)
     return false;
-  if(row >= rows)
+  if(row < 0 || row >= rows)
     row = rows;
 
   const QString newname = newNoteName();

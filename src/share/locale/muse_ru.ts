@@ -4885,6 +4885,10 @@ Second names: Flats (Db, Eb, Gb etc.), or the flat scale (C, Db, D, Eb, E etc.),
         <source>Show note colors (in list mode only)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Новый</translation>
+    </message>
 </context>
 <context>
     <name>LegatoBase</name>
@@ -10412,6 +10416,18 @@ PLUGIN IS UNAVAILABLE!</source>
     </message>
     <message>
         <source>Note first name cannot be blank. Try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New note name list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There should be at least one note in the list.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

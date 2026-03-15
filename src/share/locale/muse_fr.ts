@@ -5070,7 +5070,7 @@ Certain operations will also force them to be resent,
         <translation type="obsolete">Note</translation>
     </message>
     <message>
-        <location line="+81"/>
+        <location line="+88"/>
         <source>Add Note</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5122,12 +5122,12 @@ Some plugins ignore this settings.</source>
 l&apos;interface</translation>
     </message>
     <message>
-        <location line="-1211"/>
+        <location line="-1218"/>
         <source>Warn if timer frequency is inadequate</source>
         <translation>Avertir si la fréquence du timer n&apos;est pas adaptée</translation>
     </message>
     <message>
-        <location line="+989"/>
+        <location line="+996"/>
         <source>Track height</source>
         <translation>Hauteur de piste</translation>
     </message>
@@ -5148,7 +5148,7 @@ Otherwise, hold Ctrl to keep them open.</source>
 Autrement, appuyer sur Ctrl pour les laisser ouvert.</translation>
     </message>
     <message>
-        <location line="-1907"/>
+        <location line="-1914"/>
         <source>Editors</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5228,7 +5228,12 @@ Autrement, appuyer sur Ctrl pour les laisser ouvert.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+87"/>
+        <source>New</source>
+        <translation type="unfinished">Nouveau</translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Note list: Example: First names: Sharp scale (C, C#, D, D# etc.)
 Second names: Flats (Db, Eb, Gb etc.), or the flat scale (C, Db, D, Eb, E etc.), or blank</source>
         <translation type="unfinished"></translation>
@@ -5450,7 +5455,7 @@ This hack forces a frame to be drawn, but may interfere with other styles.</sour
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-2201"/>
+        <location line="-2208"/>
         <source>Program start</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5475,7 +5480,7 @@ This hack forces a frame to be drawn, but may interfere with other styles.</sour
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1951"/>
+        <location line="+1958"/>
         <source>GUI refresh rate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5639,7 +5644,7 @@ standard.</translation>
 Borland/Mac MDI</translation>
     </message>
     <message>
-        <location line="-2510"/>
+        <location line="-2517"/>
         <source>&amp;Apply</source>
         <translation>&amp;Appliquer</translation>
     </message>
@@ -5880,18 +5885,18 @@ Borland/Mac MDI</translation>
     </message>
     <message>
         <location line="+45"/>
-        <location line="+1036"/>
+        <location line="+1043"/>
         <source>Move up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1023"/>
-        <location line="+1030"/>
+        <location line="-1030"/>
+        <location line="+1037"/>
         <source>Move down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1017"/>
+        <location line="-1024"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6039,7 +6044,7 @@ une valeur élevée. </translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+881"/>
+        <location line="+888"/>
         <source>GUI</source>
         <translation type="unfinished">GUI</translation>
     </message>
@@ -6064,7 +6069,7 @@ une valeur élevée. </translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1642"/>
+        <location line="-1649"/>
         <location line="+274"/>
         <source>32</source>
         <translation>32</translation>
@@ -6188,7 +6193,7 @@ une valeur élevée. </translation>
         <translation type="vanished">Utilise l&apos;ancien style de raccourci d&apos;arrêt:</translation>
     </message>
     <message>
-        <location line="+852"/>
+        <location line="+859"/>
         <source>Move single armed track with selection</source>
         <translation>Déplacer la piste armée avec la sélection</translation>
     </message>
@@ -13062,7 +13067,7 @@ Double-click a slot to insert FX</source>
 <context>
     <name>MusEGui::GlobalSettingsConfig</name>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="+231"/>
+        <location filename="../../muse/components/genset.cpp" line="+232"/>
         <source>Load Note Names</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13082,7 +13087,12 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
+        <source>New note name list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>Add Note Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13102,7 +13112,17 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+11"/>
+        <source>Delete Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>There should be at least one note in the list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <location line="+16"/>
         <source>Move Note Names</source>
         <translation type="unfinished"></translation>
@@ -16832,7 +16852,7 @@ Probablement parce que la piste sélectionnée est du mauvais type.</numerusform
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+588"/>
+        <location line="+592"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -16845,7 +16865,7 @@ Probablement parce que la piste sélectionnée est du mauvais type.</numerusform
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1975"/>
+        <location line="+1981"/>
         <source>Note: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -20888,7 +20908,7 @@ a échoué: %2</translation>
         <translation>Pas de sélection. On ignore</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+1942"/>
+        <location filename="../../muse/helper.cpp" line="+1945"/>
         <source>Instrument-defined</source>
         <translation>Instrument-défini</translation>
     </message>

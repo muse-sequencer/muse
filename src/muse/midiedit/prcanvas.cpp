@@ -450,9 +450,12 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
                   break;
               case MidiEventColorMode::pitchColorEvents:
                   {
-                  color = MusECore::noteColorScrambled(
-                    (event.pitch() + MusEGlobal::config.noteNameList.startingMidiNote()) %
-                     MusEGlobal::config.noteNameList.size());
+                    if(!MusEGlobal::config.noteNameList.isEmpty())
+                    {
+                      color = MusECore::noteColorScrambled(
+                        (event.pitch() + MusEGlobal::config.noteNameList.startingMidiNote()) %
+                         MusEGlobal::config.noteNameList.size());
+                    }
                   }
                   break;
               case MidiEventColorMode::velocityColorEvents:
@@ -1513,82 +1516,85 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       //  horizontal lines
       //---------------------------------------------------
 
-      if(nopiano)
+      if(sclsz > 0)
       {
-        int pitch = y2pitch(uy);
-        // Rasterize.
-        int uyy = pitch2y(pitch);
-
-        //fprintf(stderr, "PianoCanvas::drawCanvas: uy:%d pitch:%d uyy:%d uy_2:%d\n", uy, pitch, uyy, uy_2);
-
-        while(uyy < uy_2)
+        if(nopiano)
         {
-          const bool isoctave = (pitch + snote) % sclsz == 0;
+          int pitch = y2pitch(uy);
+          // Rasterize.
+          int uyy = pitch2y(pitch);
 
-          // Alternate line?
-          if((pitch + snote) % 2 == 0)
-          {
-            p.fillRect(ux, uyy, uw, KH_MT, MusEGlobal::config.midiCanvasBg.darker(110));
-          }
+          //fprintf(stderr, "PianoCanvas::drawCanvas: uy:%d pitch:%d uyy:%d uy_2:%d\n", uy, pitch, uyy, uy_2);
 
-          // Octave start?
-          if(isoctave)
+          while(uyy < uy_2)
           {
-            if (MusEGlobal::config.canvasShowGrid || MusEGlobal::config.canvasShowGridHorizontalAlways)
+            const bool isoctave = (pitch + snote) % sclsz == 0;
+
+            // Alternate line?
+            if((pitch + snote) % 2 == 0)
             {
-              // Draw at the bottom, ie the NEXT note's y.
-              p.drawLine(ux, uyy + KH_MT, ux_2, uyy + KH_MT);
+              p.fillRect(ux, uyy, uw, KH_MT, MusEGlobal::config.midiCanvasBg.darker(110));
             }
-          }
 
-          uyy += KH_MT;
-          pitch = y2pitch(uyy);
-        }
-      }
-      else
-      {
-        const int sn = snote % 12;
-        const int KH2 = KH / 2;
-        const int st [] { KH2, 0, KH2, 0, KH2, KH2, 0, KH2, 0, KH2, KH2, 0 };
-        const int starty = st[sn];
-        const int yoff = KH2 - starty;
-
-        int kuyy  = ((uy + starty) / KH) * KH;
-        // Skip over top key, to avoid drawing half a lane.
-        if(kuyy + yoff == 0)
-          kuyy = KH;
-        int uyy  = kuyy + yoff;
-
-        int kuyy_2  = ((uy_2 + starty) / KH) * KH;
-        // Skip over bottom key, to avoid drawing half a lane.
-        if(kuyy_2 + yoff >= pianoHeight)
-          kuyy_2 = pianoHeight - KH2 - 1;
-        const int uyy_2  = kuyy_2 + yoff;
-
-        const int ks [] { 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 6, 6 };
-
-        int key = 75 - (kuyy / KH) + ks[sn];
-        if(key < 0)
-          key = 0;
-
-// For testing.
-//        fprintf(stderr, "PianoCanvas::drawCanvas: uy:%d starty:%d kuyy:%d"
-//                        " uyy:%d key:%d uy_2:%d kuyy_2:%d uyy_2:%d yoff:%d pianoHeight:%d\n",
-//                uy, starty, kuyy, uyy, key, uy_2, kuyy_2, uyy_2, yoff, pianoHeight);
-
-        for (; uyy <= uyy_2; uyy += KH) {
-              switch (key % 7) {
-                    case 0:
-                    case 3:
-                          if (MusEGlobal::config.canvasShowGrid || MusEGlobal::config.canvasShowGridHorizontalAlways)
-                            p.drawLine(ux, uyy, ux_2, uyy);
-                          break;
-                    default:
-                            p.fillRect(ux, uyy-3, uw, 6, MusEGlobal::config.midiCanvasBg.darker(110));
-                          break;
-                    }
-              --key;
+            // Octave start?
+            if(isoctave)
+            {
+              if (MusEGlobal::config.canvasShowGrid || MusEGlobal::config.canvasShowGridHorizontalAlways)
+              {
+                // Draw at the bottom, ie the NEXT note's y.
+                p.drawLine(ux, uyy + KH_MT, ux_2, uyy + KH_MT);
               }
+            }
+
+            uyy += KH_MT;
+            pitch = y2pitch(uyy);
+          }
+        }
+        else
+        {
+          const int sn = snote % 12;
+          const int KH2 = KH / 2;
+          const int st [] { KH2, 0, KH2, 0, KH2, KH2, 0, KH2, 0, KH2, KH2, 0 };
+          const int starty = st[sn];
+          const int yoff = KH2 - starty;
+
+          int kuyy  = ((uy + starty) / KH) * KH;
+          // Skip over top key, to avoid drawing half a lane.
+          if(kuyy + yoff == 0)
+            kuyy = KH;
+          int uyy  = kuyy + yoff;
+
+          int kuyy_2  = ((uy_2 + starty) / KH) * KH;
+          // Skip over bottom key, to avoid drawing half a lane.
+          if(kuyy_2 + yoff >= pianoHeight)
+            kuyy_2 = pianoHeight - KH2 - 1;
+          const int uyy_2  = kuyy_2 + yoff;
+
+          const int ks [] { 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 6, 6 };
+
+          int key = 75 - (kuyy / KH) + ks[sn];
+          if(key < 0)
+            key = 0;
+
+  // For testing.
+  //        fprintf(stderr, "PianoCanvas::drawCanvas: uy:%d starty:%d kuyy:%d"
+  //                        " uyy:%d key:%d uy_2:%d kuyy_2:%d uyy_2:%d yoff:%d pianoHeight:%d\n",
+  //                uy, starty, kuyy, uyy, key, uy_2, kuyy_2, uyy_2, yoff, pianoHeight);
+
+          for (; uyy <= uyy_2; uyy += KH) {
+                switch (key % 7) {
+                      case 0:
+                      case 3:
+                            if (MusEGlobal::config.canvasShowGrid || MusEGlobal::config.canvasShowGridHorizontalAlways)
+                              p.drawLine(ux, uyy, ux_2, uyy);
+                            break;
+                      default:
+                              p.fillRect(ux, uyy-3, uw, 6, MusEGlobal::config.midiCanvasBg.darker(110));
+                            break;
+                      }
+                --key;
+                }
+        }
       }
 
       if (MusEGlobal::config.canvasShowGrid)

@@ -4647,13 +4647,13 @@ Certain operations will also force them to be resent,
     </message>
     <message>
         <location filename="../../muse/components/gensetbase.ui" line="672"/>
-        <location filename="../../muse/components/gensetbase.ui" line="1708"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1715"/>
         <source>Move up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/components/gensetbase.ui" line="685"/>
-        <location filename="../../muse/components/gensetbase.ui" line="1715"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1722"/>
         <source>Move down</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4855,44 +4855,49 @@ Adjusts responsiveness of audio controls and
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1735"/>
-        <source>Add Note</source>
+        <location filename="../../muse/components/gensetbase.ui" line="1661"/>
+        <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/components/gensetbase.ui" line="1742"/>
-        <source>Insert Note</source>
+        <source>Add Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/components/gensetbase.ui" line="1749"/>
+        <source>Insert Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/components/gensetbase.ui" line="1756"/>
         <source>Remove Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1905"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1912"/>
         <source>Show a piano (if there are 12 notes)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1932"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1939"/>
         <source>Show note colors (in list mode only)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2577"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2584"/>
         <source>Can be overridden for individual plugins
 (see Settings in the generic GUI dialog).
 Some plugins ignore this settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2582"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2589"/>
         <source>Revert plugin native GUI window scaling on HiDPI screens</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2592"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2599"/>
         <source>Keep Transport control window always on top (requires restart)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4912,27 +4917,27 @@ Some plugins ignore this settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2079"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2086"/>
         <source>GUI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2158"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2165"/>
         <source>LV2 UI open behavior</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2198"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2205"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2222"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2229"/>
         <source>Show status bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2435"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2442"/>
         <source>GUI Tweaks</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4942,59 +4947,59 @@ Some plugins ignore this settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2370"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2377"/>
         <source>Track height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2136"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2143"/>
         <source>/sec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2251"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2258"/>
         <source>Move single armed track with selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2238"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2245"/>
         <source>Use project save dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2492"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2499"/>
         <source>Allow adding hidden tracks in track list menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2499"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2506"/>
         <source>Unhide tracks when adding hidden tracks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2518"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2525"/>
         <source>Smart focus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2525"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2532"/>
         <source>Show newly created midi velocity graphs per-note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2100"/>
-        <location filename="../../muse/components/gensetbase.ui" line="2383"/>
-        <location filename="../../muse/components/gensetbase.ui" line="2416"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2107"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2390"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2423"/>
         <source> px</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2540"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2547"/>
         <source>Borderless zoom/pan mouse (else use alternate method)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2551"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2558"/>
         <source>Scrollable submenus</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5009,254 +5014,254 @@ Some plugins ignore this settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1663"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1670"/>
         <source>Note list: Example: First names: Sharp scale (C, C#, D, D# etc.)
 Second names: Flats (Db, Eb, Gb etc.), or the flat scale (C, Db, D, Eb, E etc.), or blank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1680"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1687"/>
         <source>First name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1685"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1692"/>
         <source>Second name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1773"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1780"/>
         <source>Together with the Global octave suffix offset, these determine which note name and
  octave are shown for a MIDI note (MIDI 60 middle C showing C4 for example)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1790"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1797"/>
         <source>MIDI Starting note number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1824"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1831"/>
         <source>MIDI Starting octave suffix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1849"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1856"/>
         <source>Global settings (available for quick access in the piano roll)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1855"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1862"/>
         <source>This offset is added to the note list&apos;s MIDI Starting octave suffix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1874"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1881"/>
         <source>Global octave suffix offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1896"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1903"/>
         <source>Draw a piano or a list (it will shift with the note list&apos;s MIDI Starting note number)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1958"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1965"/>
         <source>Latency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1970"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1977"/>
         <source>Enable latency correction/compensation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1977"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1984"/>
         <source>Project latency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1983"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1990"/>
         <source>Whether completely independent branches share a common project-wide latency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1993"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2000"/>
         <source>Project-wide latency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2003"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2010"/>
         <source>Unterminated branches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2009"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2016"/>
         <source>Whether unterminated branches participate in latency correction/compensation:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2019"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2026"/>
         <source>Unterminated input branches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2026"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2033"/>
         <source>Unterminated output branches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2036"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2043"/>
         <source>Track monitoring</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2042"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2049"/>
         <source>Whether track monitor buttons affect latency correction/compensation:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2052"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2059"/>
         <source>Monitoring affects latency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2558"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2565"/>
         <source>Live update wave parts while recording</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2301"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2308"/>
         <source>Whether to show knob and slider values in certain places, for example mixer strips.
 Turn off to reduce clutter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2305"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2312"/>
         <source>Show knob and slider values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2291"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2298"/>
         <source>Whether to show knobs or sliders in certain places, for example mixer strips</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2258"/>
-        <location filename="../../muse/components/gensetbase.ui" line="2269"/>
-        <location filename="../../muse/components/gensetbase.ui" line="2280"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2265"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2276"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2287"/>
         <source>Whether record-arming a track
  automatically activates monitoring.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2273"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2280"/>
         <source>Momentary track mute buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2284"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2291"/>
         <source>Momentary track solo buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2315"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2322"/>
         <source>Prefer midi volume as decibels instead of 0-127</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2329"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2336"/>
         <source>Show note and control value tooltips in midi editors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2336"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2343"/>
         <source>Show beat numbers in time scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2403"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2410"/>
         <source>Audio automation graph point radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2468"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2475"/>
         <source>Allows custom popup menus to stay open when clicked.
 When disabled, hold Ctrl to achieve the same effect.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2512"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2519"/>
         <source>After editing, controls will return focus to their respective canvas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2532"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2539"/>
         <source>Enable borderless mouse.
 For certain functions like zoom/pan.
 Disable to use an alternate standard method.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2547"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2554"/>
         <source>Oversized menus will be displayed in one scrollable column.
 Doesn&apos;t work on some Desktops and with some themes/styles.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2565"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2572"/>
         <source>Force line edit widgets to draw a frame at small sizes.
 Some styles refuse to draw the frame.
 This hack forces a frame to be drawn, but may interfere with other styles.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2570"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2577"/>
         <source>Style hack: Force line edit widgets to draw a frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2294"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2301"/>
         <source>Prefer knobs instead of sliders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="1964"/>
+        <location filename="../../muse/components/gensetbase.ui" line="1971"/>
         <source>Latency (experimental)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2087"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2094"/>
         <source>Alternate Track height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2120"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2127"/>
         <source>GUI refresh rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2172"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2179"/>
         <source>Use first available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2177"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2184"/>
         <source>Ask once</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2182"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2189"/>
         <source>Ask always</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2262"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2269"/>
         <source>Monitor on record-arm automatically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/gensetbase.ui" line="2322"/>
+        <location filename="../../muse/components/gensetbase.ui" line="2329"/>
         <source>Show note names on notes in pianoroll</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10290,106 +10295,121 @@ Double-click a slot to insert FX</source>
 <context>
     <name>MusEGui::GlobalSettingsConfig</name>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="231"/>
+        <location filename="../../muse/components/genset.cpp" line="232"/>
         <source>Load Note Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="231"/>
+        <location filename="../../muse/components/genset.cpp" line="232"/>
         <source>Error reading note name list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="250"/>
+        <location filename="../../muse/components/genset.cpp" line="251"/>
         <source>Save Note Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="250"/>
+        <location filename="../../muse/components/genset.cpp" line="251"/>
         <source>Error saving note name list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="256"/>
+        <location filename="../../muse/components/genset.cpp" line="258"/>
+        <source>New note name list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/components/genset.cpp" line="272"/>
         <source>Add Note Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="256"/>
+        <location filename="../../muse/components/genset.cpp" line="272"/>
         <source>Error appending new row.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="266"/>
+        <location filename="../../muse/components/genset.cpp" line="282"/>
         <source>Insert Note Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="266"/>
+        <location filename="../../muse/components/genset.cpp" line="282"/>
         <source>Error inserting new row.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="295"/>
-        <location filename="../../muse/components/genset.cpp" line="311"/>
+        <location filename="../../muse/components/genset.cpp" line="293"/>
+        <source>Delete Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/components/genset.cpp" line="293"/>
+        <source>There should be at least one note in the list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/components/genset.cpp" line="317"/>
+        <location filename="../../muse/components/genset.cpp" line="333"/>
         <source>Move Note Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="295"/>
+        <location filename="../../muse/components/genset.cpp" line="317"/>
         <source>Error moving note names up.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="311"/>
+        <location filename="../../muse/components/genset.cpp" line="333"/>
         <source>Error moving note names down.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="336"/>
-        <location filename="../../muse/components/genset.cpp" line="354"/>
+        <location filename="../../muse/components/genset.cpp" line="358"/>
+        <location filename="../../muse/components/genset.cpp" line="376"/>
         <source>Edit Note Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="336"/>
+        <location filename="../../muse/components/genset.cpp" line="358"/>
         <source>Note first name cannot be blank. Try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="355"/>
+        <location filename="../../muse/components/genset.cpp" line="377"/>
         <source>The note name entered already exists in another row. Try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="1030"/>
+        <location filename="../../muse/components/genset.cpp" line="1052"/>
         <source>MusE: Choose start template or song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="1045"/>
+        <location filename="../../muse/components/genset.cpp" line="1067"/>
         <source>NewNote</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="1117"/>
-        <location filename="../../muse/components/genset.cpp" line="1131"/>
-        <location filename="../../muse/components/genset.cpp" line="1140"/>
+        <location filename="../../muse/components/genset.cpp" line="1139"/>
+        <location filename="../../muse/components/genset.cpp" line="1153"/>
+        <location filename="../../muse/components/genset.cpp" line="1162"/>
         <source>Note Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="1117"/>
+        <location filename="../../muse/components/genset.cpp" line="1139"/>
         <source>Error creating new unique note name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="1131"/>
+        <location filename="../../muse/components/genset.cpp" line="1153"/>
         <source>Error setting up note name row.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="1140"/>
+        <location filename="../../muse/components/genset.cpp" line="1162"/>
         <source>Error setting up new note name row.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13164,7 +13184,7 @@ Likely the selected track is the wrong type.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/piano.cpp" line="791"/>
+        <location filename="../../muse/midiedit/piano.cpp" line="795"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -13177,42 +13197,42 @@ Likely the selected track is the wrong type.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/prcanvas.cpp" line="2087"/>
+        <location filename="../../muse/midiedit/prcanvas.cpp" line="2093"/>
         <source>Note: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/prcanvas.cpp" line="2088"/>
+        <location filename="../../muse/midiedit/prcanvas.cpp" line="2094"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/prcanvas.cpp" line="2089"/>
+        <location filename="../../muse/midiedit/prcanvas.cpp" line="2095"/>
         <source>Start (bar): </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/prcanvas.cpp" line="2090"/>
+        <location filename="../../muse/midiedit/prcanvas.cpp" line="2096"/>
         <source>Start (time): </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/prcanvas.cpp" line="2091"/>
+        <location filename="../../muse/midiedit/prcanvas.cpp" line="2097"/>
         <source>Length (ticks): </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/prcanvas.cpp" line="2118"/>
+        <location filename="../../muse/midiedit/prcanvas.cpp" line="2124"/>
         <source>LMB: Select/Move | CTRL+LMB: Multi select/Move&amp;copy | SHIFT+LMB: Select pitch | MMB: Delete | CTRL+RMB: Trim length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/prcanvas.cpp" line="2120"/>
+        <location filename="../../muse/midiedit/prcanvas.cpp" line="2126"/>
         <source>LMB: Resize | CTRL+LMB: Multi select | CTRL+SHIFT+LMB: Multi pitch select | MMB: Delete | RMB: Select exclusive | CTRL+RMB: Trim length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/prcanvas.cpp" line="2122"/>
+        <location filename="../../muse/midiedit/prcanvas.cpp" line="2128"/>
         <source>LMB: Delete | RMB: Select exclusive | CTRL+RMB: Trim length</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16470,7 +16490,7 @@ failed: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="1942"/>
+        <location filename="../../muse/helper.cpp" line="1945"/>
         <source>Instrument-defined</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16481,62 +16501,62 @@ failed: %2</source>
     </message>
     <message>
         <location filename="../../muse/instruments/minstrument.cpp" line="1155"/>
-        <location filename="../../muse/helper.cpp" line="1956"/>
+        <location filename="../../muse/helper.cpp" line="1959"/>
         <source>Edit Instrument...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="1697"/>
+        <location filename="../../muse/helper.cpp" line="1700"/>
         <source>Current Note Name List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="1699"/>
+        <location filename="../../muse/helper.cpp" line="1702"/>
         <source>Open Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="1700"/>
+        <location filename="../../muse/helper.cpp" line="1703"/>
         <source>Global Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="1702"/>
+        <location filename="../../muse/helper.cpp" line="1705"/>
         <source>Show Piano</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="1707"/>
+        <location filename="../../muse/helper.cpp" line="1710"/>
         <source>Show Note Colors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="1712"/>
+        <location filename="../../muse/helper.cpp" line="1715"/>
         <source>Octave Suffix Adjust</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="1854"/>
+        <location filename="../../muse/helper.cpp" line="1857"/>
         <source>Mapped To Audio Controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="1974"/>
+        <location filename="../../muse/helper.cpp" line="1977"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="2140"/>
+        <location filename="../../muse/helper.cpp" line="2143"/>
         <source>Others</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="2152"/>
+        <location filename="../../muse/helper.cpp" line="2155"/>
         <source>Common Controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="2172"/>
+        <location filename="../../muse/helper.cpp" line="2175"/>
         <source>Velocity</source>
         <translation type="unfinished"></translation>
     </message>

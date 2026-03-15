@@ -4719,7 +4719,7 @@ Certain operations will also force them to be resent,
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+440"/>
+        <location line="+447"/>
         <source>Latency (experimental)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4738,12 +4738,12 @@ Certain operations will also force them to be resent,
         <translation type="vanished">Częstotliwość odświeżania interfejsu użytkownika</translation>
     </message>
     <message>
-        <location line="-755"/>
+        <location line="-762"/>
         <source>Warn if timer frequency is inadequate</source>
         <translation>Ostrzegaj, jeśli częstotliwość zegara jest nieodpowiednia</translation>
     </message>
     <message>
-        <location line="+989"/>
+        <location line="+996"/>
         <source>Track height</source>
         <translation>Wysokość śladu</translation>
     </message>
@@ -4888,7 +4888,7 @@ Wyłączenie tej opcji implikuje
         <translation type="vanished">MDI w stylu Borland/Mac</translation>
     </message>
     <message>
-        <location line="-2281"/>
+        <location line="-2288"/>
         <source>&amp;Apply</source>
         <translation>&amp;Zastosuj</translation>
     </message>
@@ -5156,18 +5156,18 @@ w przeciwnym razie konfiguruj automatycznie</translation>
     </message>
     <message>
         <location line="+45"/>
-        <location line="+1036"/>
+        <location line="+1043"/>
         <source>Move up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1023"/>
-        <location line="+1030"/>
+        <location line="-1030"/>
+        <location line="+1037"/>
         <source>Move down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1017"/>
+        <location line="-1024"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5320,7 +5320,7 @@ Wpływa na czułość nastaw audio i szczegółowość
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+520"/>
+        <location line="+527"/>
         <source>GUI</source>
         <translation type="unfinished">GUI</translation>
     </message>
@@ -5345,7 +5345,7 @@ Wpływa na czułość nastaw audio i szczegółowość
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1642"/>
+        <location line="-1649"/>
         <location line="+274"/>
         <source>32</source>
         <translation>32</translation>
@@ -5665,6 +5665,11 @@ Adjusts responsiveness of audio controls and
         <translation type="unfinished">Zapisz...</translation>
     </message>
     <message>
+        <location line="+7"/>
+        <source>New</source>
+        <translation type="unfinished">Nowy</translation>
+    </message>
+    <message>
         <location line="+81"/>
         <source>Add Note</source>
         <translation type="unfinished"></translation>
@@ -5707,7 +5712,7 @@ Some plugins ignore this settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1078"/>
+        <location line="-1085"/>
         <source>Send Null parameters</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5727,7 +5732,7 @@ Some plugins ignore this settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+96"/>
         <source>Note list: Example: First names: Sharp scale (C, C#, D, D# etc.)
 Second names: Flats (Db, Eb, Gb etc.), or the flat scale (C, Db, D, Eb, E etc.), or blank</source>
         <translation type="unfinished"></translation>
@@ -12670,7 +12675,7 @@ Double-click a slot to insert FX</source>
 <context>
     <name>MusEGui::GlobalSettingsConfig</name>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="+231"/>
+        <location filename="../../muse/components/genset.cpp" line="+232"/>
         <source>Load Note Names</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12690,7 +12695,12 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
+        <source>New note name list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>Add Note Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12710,7 +12720,17 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+11"/>
+        <source>Delete Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>There should be at least one note in the list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <location line="+16"/>
         <source>Move Note Names</source>
         <translation type="unfinished"></translation>
@@ -16609,7 +16629,7 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+588"/>
+        <location line="+592"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -16622,7 +16642,7 @@ Najprawdopodobniej wybrany ślad ma niewłaściwy typ.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1975"/>
+        <location line="+1981"/>
         <source>Note: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -20697,7 +20717,7 @@ nie powiodło się: %2</translation>
         <translation>Niczego nie zaznaczono. Pomijam.</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+1942"/>
+        <location filename="../../muse/helper.cpp" line="+1945"/>
         <source>Instrument-defined</source>
         <translation>Zdefiniowane w instrumencie</translation>
     </message>

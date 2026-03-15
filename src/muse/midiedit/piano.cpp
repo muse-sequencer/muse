@@ -247,31 +247,34 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
         }
         else
         {
-          // Draw a slight gradient from the top to the bottom of each octave
-          //  to help distinguish where each octave starts.
-          // (Note that drawing a repeating gradient all the way from piano top to bottom
-          //  doesn't work precisely. The border slowy wanders as it's drawn. Same result as
-          //  using relative mode (0.0 - 1.0). So we draw by octave instead.)
-          const int topnote = (127 + snote) % sclsz;
-          const int gradoff = sclsz - topnote - 1;
-          QLinearGradient g(0.0, -gradoff * KH_MT, 0.0, (sclsz - gradoff) * KH_MT);
-          g.setSpread(QGradient::RepeatSpread);
-          g.setColorAt(0.0, colKeyW.darker(118));
-          g.setColorAt(1.0, colKeyW);
-          p.setBrush(g);
-          int starty = 0;
-          int endy = (topnote + 1) * KH_MT;
-
-          while(endy < pianoH)
+          if(sclsz > 0)
           {
-            p.fillRect(0, starty, pianoWidth, endy - starty, g);
-            starty = endy;
-            endy += sclsz * KH_MT;
-          }
+            // Draw a slight gradient from the top to the bottom of each octave
+            //  to help distinguish where each octave starts.
+            // (Note that drawing a repeating gradient all the way from piano top to bottom
+            //  doesn't work precisely. The border slowy wanders as it's drawn. Same result as
+            //  using relative mode (0.0 - 1.0). So we draw by octave instead.)
+            const int topnote = (127 + snote) % sclsz;
+            const int gradoff = sclsz - topnote - 1;
+            QLinearGradient g(0.0, -gradoff * KH_MT, 0.0, (sclsz - gradoff) * KH_MT);
+            g.setSpread(QGradient::RepeatSpread);
+            g.setColorAt(0.0, colKeyW.darker(118));
+            g.setColorAt(1.0, colKeyW);
+            p.setBrush(g);
+            int starty = 0;
+            int endy = (topnote + 1) * KH_MT;
 
-          // Fill remainder at bottom.
-          if(pianoH - starty > 0)
-            p.fillRect(0, starty, pianoWidth, pianoH - starty, g);
+            while(endy < pianoH)
+            {
+              p.fillRect(0, starty, pianoWidth, endy - starty, g);
+              starty = endy;
+              endy += sclsz * KH_MT;
+            }
+
+            // Fill remainder at bottom.
+            if(pianoH - starty > 0)
+              p.fillRect(0, starty, pianoWidth, pianoH - starty, g);
+          }
         }
 
         int y = 0;
@@ -284,7 +287,7 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
                 p.setBrush(colKeySel);
                 p.fillRect(0, y, pianoWidth, KH_MT, p.brush());
             }
-            else if(MusEGlobal::config.pianoShowNoteColors)
+            else if(sclsz > 0 && MusEGlobal::config.pianoShowNoteColors)
             {
               QColor c = MusECore::noteColorScrambled((i + snote) % sclsz);
               c.setAlpha(MusEGlobal::config.globalAlphaBlend);
@@ -293,7 +296,7 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 
             p.setRenderHint(QPainter::Antialiasing, false);
             // Octave divider? Draw solid line, else draw broken line.
-            if(((i + snote + 1) % sclsz) == 0)
+            if(sclsz > 0 && ((i + snote + 1) % sclsz) == 0)
               pen.setStyle(Qt::SolidLine);
             else
               pen.setStyle(Qt::DotLine);
@@ -323,6 +326,7 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
     }
 
     // draw note names
+    if(sclsz > 0)
     {
         QFont f(MusEGlobal::config.fonts[0].family(), 7);
         QFontMetrics fm(f);

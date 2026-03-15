@@ -72,6 +72,7 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void applyNoteNames(MusECore::NoteNameList &nnl);
       void loadNoteNames();
       void saveNoteNames();
+      void newNoteNames();
       void addNoteName();
       void insertNoteName();
       void delNoteName();
@@ -89,7 +90,7 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       QString newNoteName() const;
       // Sets up a row. Returns true on success.
       bool setupNoteNameRow(int row, const QString &sharpName, const QString &flatName);
-      // If row is past the end, this appends. Returns true on success.
+      // If row is past the end or -1, this appends. Returns true on success.
       bool newNoteNameRow(int row = -1);
       // Updates the note number column starting at startRow.
       void updateNoteNumbers(int startRow = 0);

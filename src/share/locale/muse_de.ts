@@ -5118,7 +5118,7 @@ Certain operations will also force them to be resent,
         <translation type="obsolete">Note</translation>
     </message>
     <message>
-        <location line="+81"/>
+        <location line="+88"/>
         <source>Add Note</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5179,12 +5179,12 @@ Some plugins ignore this settings.</source>
         <translation type="vanished">GUI Aktualisierungsrate</translation>
     </message>
     <message>
-        <location line="-1211"/>
+        <location line="-1218"/>
         <source>Warn if timer frequency is inadequate</source>
         <translation>Warnen falls Timerfrequenz nicht adäquat</translation>
     </message>
     <message>
-        <location line="+877"/>
+        <location line="+884"/>
         <location line="+11"/>
         <location line="+11"/>
         <source>Whether record-arming a track
@@ -5293,7 +5293,7 @@ den Fokus zur jeweilgen Canvas zurückgeben</translation>
         <translation type="vanished">Zuletzt &amp;bearbeitetes Lied</translation>
     </message>
     <message>
-        <location line="-1054"/>
+        <location line="-1061"/>
         <source>Midi controller behaviour</source>
         <translation>Verhalten des Midi-Controllers</translation>
     </message>
@@ -5328,7 +5328,12 @@ den Fokus zur jeweilgen Canvas zurückgeben</translation>
         <translation>Alle Instrumente au&amp;fnehmen</translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+87"/>
+        <source>New</source>
+        <translation type="unfinished">Neu</translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Note list: Example: First names: Sharp scale (C, C#, D, D# etc.)
 Second names: Flats (Db, Eb, Gb etc.), or the flat scale (C, Db, D, Eb, E etc.), or blank</source>
         <translation type="unfinished"></translation>
@@ -5632,7 +5637,7 @@ Turn off to reduce clutter.</source>
         <translation type="vanished">Zuletzt &amp;bearbeitetes Lied</translation>
     </message>
     <message>
-        <location line="-2142"/>
+        <location line="-2149"/>
         <source>Start with &amp;template</source>
         <translation>Mit &amp;Vorlage starten</translation>
     </message>
@@ -5989,18 +5994,18 @@ Sonst können eventuell nicht alle Plugins korrekt geladen werden.</translation>
     </message>
     <message>
         <location line="+45"/>
-        <location line="+1036"/>
+        <location line="+1043"/>
         <source>Move up</source>
         <translation>Nach oben bewegen</translation>
     </message>
     <message>
-        <location line="-1023"/>
-        <location line="+1030"/>
+        <location line="-1030"/>
+        <location line="+1037"/>
         <source>Move down</source>
         <translation>Nach unten bewegen</translation>
     </message>
     <message>
-        <location line="-1017"/>
+        <location line="-1024"/>
         <source>Add...</source>
         <translation>Hinzufügen ...</translation>
     </message>
@@ -6235,7 +6240,7 @@ einen höheren Wert.</translation>
         <translation type="vanished">Benutze altes Stopp-Kürzel:</translation>
     </message>
     <message>
-        <location line="+852"/>
+        <location line="+859"/>
         <source>Move single armed track with selection</source>
         <translation>Bewege &quot;für Aufnahme scharfschalten&quot; mit Auswahl</translation>
     </message>
@@ -13037,7 +13042,7 @@ Double-click a slot to insert FX</source>
 <context>
     <name>MusEGui::GlobalSettingsConfig</name>
     <message>
-        <location filename="../../muse/components/genset.cpp" line="+231"/>
+        <location filename="../../muse/components/genset.cpp" line="+232"/>
         <source>Load Note Names</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13057,7 +13062,12 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
+        <source>New note name list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>Add Note Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13077,7 +13087,17 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+11"/>
+        <source>Delete Note Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>There should be at least one note in the list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <location line="+16"/>
         <source>Move Note Names</source>
         <translation type="unfinished"></translation>
@@ -17029,7 +17049,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+588"/>
+        <location line="+592"/>
         <source>Velocity: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -17042,7 +17062,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1975"/>
+        <location line="+1981"/>
         <source>Note: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -21164,7 +21184,7 @@ failed: %2</source>
         <translation>Keine Auswahl. Ignoriert</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+1942"/>
+        <location filename="../../muse/helper.cpp" line="+1945"/>
         <source>Instrument-defined</source>
         <translation>Instrumenten-definiert</translation>
     </message>

@@ -1,3 +1,5 @@
+14.03.2026
+    - Add 'New' button to note name list feature in Settings. (Tim)
 09.03.2026
     - FIX issue 1321: Segfault when enabling "Open mixers in docks" (Tim)
       Broken at 13.05.2025. Can't add undoRedo to mixer menus in ctor since undoRedo

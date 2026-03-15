@@ -1655,6 +1655,13 @@ Certain operations will also force them to be resent,
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QPushButton" name="noteNamesNew">
+              <property name="text">
+               <string>New</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>

@@ -118,6 +118,9 @@ QValidator::State parseBiDirectional(
     int& outIndex,
     int& outNumber)
 {
+    if(list.isEmpty())
+        return QValidator::Intermediate;
+
     QString input = stripDirectionMarks(s).trimmed();
     if (input.isEmpty())
         return QValidator::Intermediate;
