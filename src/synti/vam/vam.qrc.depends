@@ -1,0 +1,10 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+   <qresource>
+      <file>eraser.svg</file>
+      <file>fileopen.svg</file>      
+      <file>filesave.svg</file>      
+      <file>filesaveas.svg</file>      
+   </qresource>
+</RCC>
+

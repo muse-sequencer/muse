@@ -1,0 +1,40 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/mixer.dir/link.d"
+  "CMakeFiles/mixer.dir/amixer.cpp.o"
+  "CMakeFiles/mixer.dir/amixer.cpp.o.d"
+  "CMakeFiles/mixer.dir/astrip.cpp.o"
+  "CMakeFiles/mixer.dir/astrip.cpp.o.d"
+  "CMakeFiles/mixer.dir/auxknob.cpp.o"
+  "CMakeFiles/mixer.dir/auxknob.cpp.o.d"
+  "CMakeFiles/mixer.dir/moc_amixer.cpp.o"
+  "CMakeFiles/mixer.dir/moc_amixer.cpp.o.d"
+  "CMakeFiles/mixer.dir/moc_astrip.cpp.o"
+  "CMakeFiles/mixer.dir/moc_astrip.cpp.o.d"
+  "CMakeFiles/mixer.dir/moc_auxknob.cpp.o"
+  "CMakeFiles/mixer.dir/moc_auxknob.cpp.o.d"
+  "CMakeFiles/mixer.dir/moc_mstrip.cpp.o"
+  "CMakeFiles/mixer.dir/moc_mstrip.cpp.o.d"
+  "CMakeFiles/mixer.dir/moc_rack.cpp.o"
+  "CMakeFiles/mixer.dir/moc_rack.cpp.o.d"
+  "CMakeFiles/mixer.dir/moc_strip.cpp.o"
+  "CMakeFiles/mixer.dir/moc_strip.cpp.o.d"
+  "CMakeFiles/mixer.dir/mstrip.cpp.o"
+  "CMakeFiles/mixer.dir/mstrip.cpp.o.d"
+  "CMakeFiles/mixer.dir/rack.cpp.o"
+  "CMakeFiles/mixer.dir/rack.cpp.o.d"
+  "CMakeFiles/mixer.dir/strip.cpp.o"
+  "CMakeFiles/mixer.dir/strip.cpp.o.d"
+  "libmuse_mixer.pdb"
+  "libmuse_mixer.so"
+  "moc_amixer.cpp"
+  "moc_astrip.cpp"
+  "moc_auxknob.cpp"
+  "moc_mstrip.cpp"
+  "moc_rack.cpp"
+  "moc_strip.cpp"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/mixer.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()
