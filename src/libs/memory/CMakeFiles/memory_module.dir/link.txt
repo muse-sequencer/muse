@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -Werror=format-security -Wextra -Winvalid-pch -fexceptions -Wall -fPIC -O2 -g -DNDEBUG -fomit-frame-pointer -ffast-math -fno-finite-math-only -shared -Wl,--dependency-file=CMakeFiles/memory_module.dir/link.d -Wl,-soname,libmuse_memory_module.so -o libmuse_memory_module.so CMakeFiles/memory_module.dir/memory.cpp.o  -Wl,-rpath,/usr/local/lib/muse-4.2/modules
