@@ -1,2 +1,0 @@
-
-cmake . -DENABLE_ZITA_RESAMPLER=ON
