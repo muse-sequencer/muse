@@ -21,6 +21,10 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
+if (COMMAND cmake_policy)
+    cmake_policy(SET CMP0177 NEW)
+endif()
+
 install( FILES pdf/documentation.pdf pdf/developer_docs.pdf
       DESTINATION ${MusE_DOC_DIR}/muse_pdf
       )

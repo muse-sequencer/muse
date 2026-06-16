@@ -21,6 +21,11 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
+if (COMMAND cmake_policy)
+    cmake_policy(SET CMP0177 NEW)
+endif()
+
+
 QT5_WRAP_CPP ( simpler_plugingui_mocs
       simpler_plugingui.h
       )
