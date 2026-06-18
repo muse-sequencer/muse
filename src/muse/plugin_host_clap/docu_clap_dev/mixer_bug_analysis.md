@@ -1,116 +1,138 @@
-# **Analyse der Mixer-Speicherung im Quellcode (MusE DAW)**
 
-Nach der genauen Analyse des C++ Quellcodes (track.cpp, audiotrack.cpp, wavetrack.cpp, amixer.cpp, xml.cpp und der MIDI-Logik) zeigt sich, wie die DAW die Daten verarbeitet. Dabei löst sich das Rätsel um die "falschen" Werte beim Speichern auf – gleichzeitig wird klar, warum das **Wiederherstellen beim Laden** scheitert.
 
-## **1\. Das Rätsel um die "fehlende" MidiTrack-Datei**
+---
 
-In der Architektur von MusE ist der Code für MIDI-Spuren historisch gewachsen und aufgeteilt:
+# **Analysis of Mixer Storage in the Source Code (MusE DAW)**
 
-* **Die Deklaration (Header):** Befindet sich typischerweise in track.h oder einer dedizierten miditrack.h.  
-* **Die Implementierung (C++):** Die meisten grundlegenden Methoden der Klasse MidiTrack (wie das Lesen und Schreiben der XML-Eigenschaften oder das Verwalten der Drum-Maps) befinden sich als monolithischer Block direkt in der Datei **track.cpp**. Spezifischere Sequenzer-Befehle sind in **midi.cpp** ausgelagert.
+After closely analyzing the C++ source code (track.cpp, audiotrack.cpp, wavetrack.cpp, amixer.cpp, xml.cpp, and the MIDI logic), it becomes clear how the DAW processes the data. This resolves the mystery of the “incorrect” values during saving — and at the same time explains why **restoring them during loading** fails.
 
-## **2\. Wo werden die XML-Werte geladen? (Dateien & Funktionen)**
 
-Der Ladevorgang wird durch den XML-Parser in xml.cpp und die Deserialisierungs-Methoden der Spuren gesteuert.
+## **1. The mystery of the “missing” MidiTrack file**
 
-### **A) Der Lade-Ablauf für Audio-Spuren**
+In MusE’s architecture, the code for MIDI tracks has grown historically and is split across multiple files:
 
-1. **song.cpp / Datei-Loader:** Öffnet das XML-Projekt und startet die Schleife.  
-2. **wavetrack.cpp (WaveTrack::read):** Sobald der Parser auf \<wavetrack\> stößt, wird ein neues WaveTrack-Objekt instanziiert und read(Xml& xml) aufgerufen.  
-3. **audiotrack.cpp (AudioTrack::readProperties):** Liest die XML-Subtags und reicht sie an AudioTrack::readProperties(xml, name) weiter.  
-4. **Controller-Wiederherstellung (audiotrack.cpp):**  
-   if (name \== "controller") {  
-         int id \= xml.intAttribute("id");  
-         double cur \= xml.parseDouble();          // Reading the hex-float  
-         \_controller\[id\]-\>setVal(cur);            // Applying to backend  
+* **The declaration (header):** Typically located in track.h or a dedicated miditrack.h.  
+* **The implementation (C++):** Most core methods of the MidiTrack class (such as reading and writing XML properties or managing drum maps) exist as a monolithic block directly inside **track.cpp**. More specific sequencer commands are moved into **midi.cpp**.
+
+
+## **2. Where are the XML values loaded? (Files & functions)**
+
+The loading process is controlled by the XML parser in xml.cpp and the deserialization methods of the tracks.
+
+### **A) The loading sequence for audio tracks**
+
+1. **song.cpp / file loader:** Opens the XML project and starts the parsing loop.  
+2. **wavetrack.cpp (WaveTrack::read):** When the parser encounters \<wavetrack\>, a new WaveTrack object is instantiated and read(Xml& xml) is called.  
+3. **audiotrack.cpp (AudioTrack::readProperties):** Reads the XML subtags and forwards them to AudioTrack::readProperties(xml, name).  
+4. **Controller restoration (audiotrack.cpp):**  
+   ```
+   if (name == "controller") {
+         int id = xml.intAttribute("id");
+         double cur = xml.parseDouble();      // Reading the hex-float
+         _controller[id]->setVal(cur);        // Applying to backend
    }
+   ```
 
-### **B) Der Lade-Ablauf für MIDI-Spuren**
+### **B) The loading sequence for MIDI tracks**
 
-1. **Port-Wiederherstellung (midi.cpp):** Die MIDI-Ports werden beim Parsen des \<sequencer\>-Blocks geladen.  
-2. **Controller-Zuweisung:** Der Parser liest unter \<midiport\> \-\> \<channel\> den Controller 7 (Volume) aus und weist dem Port-Treiber den Wert zu.
+1. **Port restoration (midi.cpp):** MIDI ports are loaded when parsing the \<sequencer\> block.  
+2. **Controller assignment:** The parser reads controller 7 (Volume) under \<midiport\> → \<channel\> and assigns the value to the port driver.
 
-## **3\. Warum werden die Werte nicht korrekt angewendet? (Die Fehlerursachen)**
 
-Die Analyse des Codes zeigt zwei kritische Schwachstellen:
+## **3. Why are the values not applied correctly? (Root causes)**
 
-### **Fehlerursache A: Die ungewollte Rückwärtssynchronisation (GUI-Feedback-Loop)**
+The code analysis reveals two critical weaknesses:
 
-Wenn der Mixer aufgebaut wird, passiert folgendes:
+### **Root cause A: Unwanted reverse synchronization (GUI feedback loop)**
 
-1. Das Strip- (Audio) oder MidiStrip-Widget (MIDI) für die Spur wird erstellt.  
-2. **Das Problem:** Wenn das GUI-Element initialisiert wird (oder ein update() läuft), setzt es Werte auf der Oberfläche. Das löst oft ein Qt-Signal (valueChanged) aus.  
-3. Dieses Signal überschreibt den soeben aus der XML-Datei korrekt geladenen Wert wieder mit einem fehlerhaften Standard-Wert der GUI. **Die GUI überschreibt die geladenen Daten.**
+When the mixer is built, the following happens:
 
-### **Fehlerursache B: Das Hex-Float-Parsing-Problem in xml.cpp**
+1. The Strip (audio) or MidiStrip (MIDI) widget for the track is created.  
+2. **The problem:** When the GUI element is initialized (or an update() runs), it sets values on the interface. This often triggers a Qt signal (valueChanged).  
+3. This signal overwrites the value that was correctly loaded from the XML file with a faulty GUI default.  
+   **The GUI overwrites the loaded data.**
 
-MusE schreibt double-Werte hochpräzise als Hex-Floats (z. B. 0x1.0137987dd704bp-2). Standardmäßige Qt-Konvertierungsfunktionen unterstützen das C99-Hex-Float-Format jedoch nicht nativ. Sie brechen beim Lesen des Buchstabens x ab und liefern fehlerhaft 0.0 zurück.
+### **Root cause B: The hex-float parsing issue in xml.cpp**
 
-## **4\. Erweiterte Gegenüberstellung: Wer speichert und wer lädt?**
+MusE writes double values with high precision as hex floats (e.g., 0x1.0137987dd704bp‑2).  
+However, Qt’s standard conversion functions do not natively support the C99 hex-float format. They stop parsing at the letter `x` and incorrectly return 0.0.
 
-| Parameter | Datei | Funktion / Klasse | Aktion |
+
+## **4. Extended comparison: Who saves and who loads?**
+
+| Parameter | File | Function / Class | Action |
 | :---- | :---- | :---- | :---- |
-| **Allg. Spur-Daten** | track.cpp | Track::writeProperties / readProperties | Speichern/Laden von Mute, Solo, Name |
-| **Midi Spur-Logik** | track.cpp | MidiTrack::... (div. Methoden) | MIDI-spezifisches (DrumMaps, etc.) |
-| **Audio Volume/Pan** | audiotrack.cpp | AudioTrack::writeProperties / readProperties | Speichern/Laden der ID 0 & 1 Controller |
-| **MIDI Volume (CC7)** | midi.cpp | MidiPort::writeProperties / readProperties | Speichern/Laden der Port-Controller |
-| **Audio Strip GUI** | strip.cpp | Strip::Strip oder update() | Erstellen & Sync der Audio Slider |
-| **Midi Strip GUI** | mstrip.cpp | MidiStrip::MidiStrip oder update() | Erstellen & Sync der Midi Slider |
-| **XML Float Parsing** | xml.cpp | Xml::parseDouble | Einlesen der Hex-Floats |
+| **General track data** | track.cpp | Track::writeProperties / readProperties | Save/load mute, solo, name |
+| **MIDI track logic** | track.cpp | MidiTrack::… (various methods) | MIDI-specific (drum maps, etc.) |
+| **Audio volume/pan** | audiotrack.cpp | AudioTrack::writeProperties / readProperties | Save/load controller IDs 0 & 1 |
+| **MIDI volume (CC7)** | midi.cpp | MidiPort::writeProperties / readProperties | Save/load port controllers |
+| **Audio strip GUI** | strip.cpp | Strip::Strip or update() | Create & sync audio sliders |
+| **MIDI strip GUI** | mstrip.cpp | MidiStrip::MidiStrip or update() | Create & sync MIDI sliders |
+| **XML float parsing** | xml.cpp | Xml::parseDouble | Read hex floats |
 
-## **5\. Konkreter Code-Austausch zur Fehlerbehebung (Search & Replace)**
 
-Suche in deinen Dateien nach den exakten "SUCHE"-Blöcken und ersetze sie durch die "ERSETZE"-Blöcke.
+## **5. Concrete code replacements to fix the issue (Search & Replace)**
 
-### **Patch 1: Robustes Hex-Float Parsing (in xml.cpp)**
+Search for the exact “SEARCH” blocks in your files and replace them with the “REPLACE” blocks.
 
-Dieser Fehler ist die Hauptursache dafür, dass Audio-Fader auf "Null" geparkt werden.  
-**Datei:** xml.cpp  
-**SUCHE EXAKT NACH DIESEM BLOCK:**  
-//---------------------------------------------------------  
-//   parseDouble  
+### **Patch 1: Robust hex-float parsing (in xml.cpp)**
+
+This bug is the main reason audio faders get stuck at “zero.”  
+**File:** xml.cpp  
+**SEARCH EXACTLY FOR THIS BLOCK:**  
+```cpp
+//---------------------------------------------------------
+//   parseDouble
 //---------------------------------------------------------
 
-double Xml::parseDouble()  
-      {  
-      QString s(parse1().simplified());  
-      return s.toDouble();  
+double Xml::parseDouble()
+      {
+      QString s(parse1().simplified());
+      return s.toDouble();
       }
+```
 
-**ERSETZE DURCH DIESEN BLOCK:**  
-//---------------------------------------------------------  
-//   parseDouble  
-//---------------------------------------------------------  
-\#include \<cstdlib\> // Ensure this include is available
+**REPLACE WITH THIS BLOCK:**  
+```cpp
+//---------------------------------------------------------
+//   parseDouble
+//---------------------------------------------------------
+#include <cstdlib> // Ensure this include is available
 
-double Xml::parseDouble()  
-      {  
-      QString s(parse1().simplified());  
-      // Parse C99 hexadecimal floating-point numbers correctly.  
-      // Standard Qt methods fail on 'x' and return 0.0.  
-      char\* endptr;  
-      return std::strtod(s.toLocal8Bit().constData(), \&endptr);  
+double Xml::parseDouble()
+      {
+      QString s(parse1().simplified());
+      // Parse C99 hexadecimal floating-point numbers correctly.
+      // Standard Qt methods fail on 'x' and return 0.0.
+      char* endptr;
+      return std::strtod(s.toLocal8Bit().constData(), &endptr);
       }
+```
 
-### **Patch 2: Die GUI-Rückkopplung stoppen (in strip.cpp & mstrip.cpp)**
+### **Patch 2: Stop the GUI feedback loop (in strip.cpp & mstrip.cpp)**
 
-Wenn die Regler-Werte des Tracks auf die GUI (Slider oder Drehregler) übertragen werden, feuert Qt ungewollt ein Signal ab, welches den Track sofort wieder überschreibt.  
-**Datei:** strip.cpp (Audio) und mstrip.cpp (MIDI)  
-**SUCHE NACH WERT-ZUWEISUNGEN WIE DIESEN:**  
-*(Die genauen Variablennamen können leicht abweichen, z.B. \_volume, volSlider, \_pan)*  
-      \_volume-\>setValue(track-\>volume());  
-      \_pan-\>setValue(track-\>pan());
+When track values are applied to the GUI (sliders or knobs), Qt unintentionally fires a signal that immediately overwrites the track again.  
+**Files:** strip.cpp (audio) and mstrip.cpp (MIDI)  
+**SEARCH FOR VALUE ASSIGNMENTS LIKE:**  
+```cpp
+_volume->setValue(track->volume());
+_pan->setValue(track->pan());
+```
 
-**ERSETZE SIE DURCH:**  
-      // Block signals to prevent the UI from overriding the backend  
-      \_volume-\>blockSignals(true);  
-      \_pan-\>blockSignals(true);
+**REPLACE WITH:**  
+```cpp
+// Block signals to prevent the UI from overriding the backend
+_volume->blockSignals(true);
+_pan->blockSignals(true);
 
-      \_volume-\>setValue(track-\>volume());  
-      \_pan-\>setValue(track-\>pan());
+_volume->setValue(track->volume());
+_pan->setValue(track->pan());
 
-      // Unblock signals so user interaction works normally again  
-      \_volume-\>blockSignals(false);  
-      \_pan-\>blockSignals(false);
+// Unblock signals so user interaction works normally again
+_volume->blockSignals(false);
+_pan->blockSignals(false);
+```
 
-*(Hinweis: Passe die Namen \_volume und \_pan entsprechend der tatsächlichen Variablennamen an, die du in der Datei beim Suchen gefunden hast.)*
+*(Note: Adjust the names `_volume` and `_pan` to match the actual variable names you find in your file.)*
+
+---

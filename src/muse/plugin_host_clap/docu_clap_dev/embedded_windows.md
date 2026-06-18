@@ -26,24 +26,26 @@ If a user really wants embedded plugin windows on a Wayland desktop, they have t
 
 
 
-Auf einer reinen Betriebssystem-Ebene: 
-Ein `hide()` (unter X11 ein `Unmap`) zerstört das Fenster nicht, es wird nur unsichtbar gemacht.
 
-Dass das Plugin beim erneuten Anzeigen (`Map`) trotzdem einen schwarzen Bildschirm zeigt, liegt an der Kombination aus **X11-Reparenting (Einbetten)** und der Art, wie moderne **Plugin-UI-Frameworks (wie JUCE, VSTGUI oder IPlug2)** rendern.
+On a pure operating‑system level:  
+A `hide()` (an `Unmap` under X11) does not destroy the window; it only makes it invisible.
 
-Hier sind die drei Hauptgründe, warum der Kontext bei Plugins in diesem Szenario oft verloren geht oder kaputtgeht:
+The reason the plugin still shows a black screen when it is shown again (`Map`) is the combination of **X11 reparenting (embedding)** and the way modern **plugin UI frameworks (such as JUCE, VSTGUI, or IPlug2)** render.
 
-**1. Hardwarebeschleunigung (OpenGL / Vulkan)**
-Moderne Plugins nutzen für ihre GUIs oft die Grafikkarte. Wenn ein Host-Fenster (Qt) unter X11 unsichtbar gemacht wird (`Unmap`), wird das eingebettete Plugin-Fenster mitgerissen. Dabei invalidiert der X-Server oder der Grafiktreiber häufig die daran gebundene "Swapchain" (die Bildpuffer für OpenGL/Vulkan) oder den Surface-Context. Wenn das Fenster wieder angezeigt wird, rendert das Plugin oft fleißig weiter in den alten, nun ungültigen Puffer ("Dead Surface") oder der Treiber verweigert das Rendern, was zu einem rein schwarzen Bildschirm führt.
+Here are the three main reasons why the context is often lost or broken for plugins in this scenario:
 
-**2. Schlechtes Event-Handling in den Plugins**
-Wenn das Fenster unsichtbar wird, feuert der X11-Server ein `UnmapNotify`-Event. Beim erneuten Anzeigen kommt ein `MapNotify` und ein `Expose`-Event (die Aufforderung: "Zeichne dich neu!"). Viele Plugin-Frameworks fangen diese Events bei *eingebetteten* (reparented) Fenstern nicht sauber ab. Das Plugin denkt intern "Ich bin ja noch da und initialisiert", ignoriert das `Expose`-Event und weigert sich, seine UI-Elemente neu aufzubauen.
+**1. Hardware acceleration (OpenGL / Vulkan)**  
+Modern plugins often use the GPU for their GUIs. When a host window (Qt) is made invisible under X11 (`Unmap`), the embedded plugin window is affected as well. In this process, the X server or the graphics driver frequently invalidates the associated “swapchain” (the image buffers for OpenGL/Vulkan) or the surface context. When the window is shown again, the plugin often continues rendering into the old, now invalid buffer (“dead surface”), or the driver refuses to render at all — resulting in a completely black screen.
 
-**3. Lebenszyklus-Diskrepanz zwischen Host und Plugin**
-Wenn der Host (MusE) das Eltern-Fenster (`_editorWindow`) einfach via Qt versteckt, ändert sich der Zustand auf X11-Ebene, aber das Plugin erfährt über die CLAP/VST-API nicht zwingend, dass es aufhören soll, Frames zu generieren. Timers und File-Deskriptoren (wie X11-Events) laufen weiter, laufen aber ins Leere. Das führt zu desynchronisierten Zuständen.
+**2. Poor event handling inside plugins**  
+When the window becomes invisible, the X11 server fires an `UnmapNotify` event. When it becomes visible again, a `MapNotify` and an `Expose` event follow (the request: “Redraw yourself!”). Many plugin frameworks do not correctly handle these events for *embedded* (reparented) windows. The plugin internally thinks “I’m still here and initialized,” ignores the `Expose` event, and refuses to rebuild its UI elements.
 
-**Warum `destroy()` der Industrie-Standard unter Linux ist:**
-Weil der DAW-Entwickler (Host) keinen Einfluss auf den unsauberen Code hunderter verschiedener Plugins hat, haben sich DAWs unter Linux (wie Bitwig Studio, Reaper, Ardour) darauf geeinigt, sehr defensiv vorzugehen. Es hat sich in der Praxis als wesentlich robuster erwiesen, die GUI bei einem "Schließen" des Fensters komplett via `gui->destroy()` aus dem Speicher zu werfen und die Ressourcen freizugeben. Bei einem Klick auf "Anzeigen" wird sie frisch via `gui->create()` initialisiert. Das dauert zwar ein paar Millisekunden länger, garantiert aber, dass das Plugin seinen Grafik-Kontext und seine internen State-Machines zu 100% sauber neu aufbaut.
+**3. Lifecycle mismatch between host and plugin**  
+When the host (MusE) simply hides the parent window (`_editorWindow`) via Qt, the state changes on the X11 level, but the plugin does not necessarily receive a CLAP/VST API notification telling it to stop generating frames. Timers and file descriptors (such as X11 events) continue running but lead nowhere. This results in desynchronized internal states.
 
+**Why instead close() mostly `destroy()` is used for integrated plugin-GUI :**  
 
+Because the DAW developer (host) has no control over the messy code of hundreds of different plugins, Linux DAWs (such as Bitwig Studio, Reaper, Ardour) have agreed to take a very defensive approach. In practice, it has proven far more robust to completely remove the GUI from memory via `gui->destroy()` when the window is “closed,” and release all resources. When the user clicks “Show,” the GUI is freshly initialized via `gui->create()`. This takes a few milliseconds longer but guarantees that the plugin rebuilds its graphics context and internal state machines 100% cleanly.
+
+---
 
