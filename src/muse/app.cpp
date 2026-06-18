@@ -5824,7 +5824,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
           sf_count_t szBufInFrames = szBuf / sChannels;
           sf_count_t szFInFrames = f.samples();
           sf_count_t nFramesRead = 0;
-          sf_count_t nFramesWrote = 0;
+          sf_count_t nFramesWrote [[maybe_unused]] = 0; //TODO?:unused var
           sd.end_of_input = 0;
           bool bEndOfInput = false;
           pDlg.setValue(0);

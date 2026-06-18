@@ -1140,6 +1140,11 @@ void initMidiSynth()
       case MusEPlugin::PluginTypeDSSIVST:
       case MusEPlugin::PluginTypeVST:
       case MusEPlugin::PluginTypeLV2:
+      #ifdef CLAP_SUPPORT
+      case MusEPlugin::PluginTypeCLAP:
+          // Registered via initCLAP(), not here.
+          break;
+      #endif
       case MusEPlugin::PluginTypeLinuxVST:
       case MusEPlugin::PluginTypeMETRONOME:
       case MusEPlugin::PluginTypeUnknown:

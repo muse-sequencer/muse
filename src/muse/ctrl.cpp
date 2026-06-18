@@ -796,7 +796,7 @@ double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp) 
     return val1;
   }
 
-  double rv;
+  double rv=0.0;
   switch(_valueType)
   {
     case VAL_LOG:
@@ -862,8 +862,8 @@ double CtrlList::value(unsigned int frame, bool cur_val_only, unsigned int* next
     return _curVal;
   }
 
-  double rv;
-  unsigned int nframe;
+  double rv=0.0;
+  unsigned int nframe=0;
 
   ciCtrl i = upper_bound(frame); // get the index after current frame
   // if we are past all items just return the last value
@@ -1551,11 +1551,11 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
 bool CtrlList::read(Xml& xml)
       {
       QLocale loc = QLocale::c();
-      bool ok;
+      bool ok=true;
       int id = -1;
-      bool idOk;
-      double min;
-      double max;
+      bool idOk = true;
+      double min=0;
+      double max=0;
       bool minOk = false;
       bool maxOk = false;
       int valType = VAL_LINEAR;

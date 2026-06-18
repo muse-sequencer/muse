@@ -1033,6 +1033,9 @@ void PluginConfiguration::writeProperties(int level, Xml& xml, bool isCopy, bool
     case MusEPlugin::PluginTypeLV2:
     case MusEPlugin::PluginTypeMESS:
     case MusEPlugin::PluginTypeMETRONOME:
+#ifdef CLAP_SUPPORT
+    case MusEPlugin::PluginTypeCLAP:
+#endif
       xml.strTag(level, "type", MusEPlugin::pluginTypeToString(_pluginType));
     break;
 
@@ -1628,6 +1631,9 @@ int Plugin::release()
     case MusEPlugin::PluginTypeMETRONOME:
     case MusEPlugin::PluginTypeNone:
     case MusEPlugin::PluginTypeUnknown:
+    #ifdef CLAP_SUPPORT
+    case MusEPlugin::PluginTypeCLAP:
+    #endif
       fprintf(stderr, "Error: Plugin::release(): Plugin type:%d is not LADSPA or DSSI or DSSIVST. "
              "_references:%d\n", pluginType(), _references);
       return 0;
@@ -1887,8 +1893,16 @@ void initPlugins()
           }
         }
 #endif
+
       }
       break;
+
+
+      #ifdef CLAP_SUPPORT
+      case MusEPlugin::PluginTypeCLAP:
+        // Registered via initCLAP() into synthis, not plugins.
+      break;
+      #endif
       
       case MusEPlugin::PluginTypeVST:
       case MusEPlugin::PluginTypeLV2:
@@ -4158,6 +4172,9 @@ void PluginI::configure(const PluginConfiguration& config, ConfigureOptions_t op
       case MusEPlugin::PluginTypeLinuxVST:
       case MusEPlugin::PluginTypeMESS:
       case MusEPlugin::PluginTypeMETRONOME:
+      #ifdef CLAP_SUPPORT
+      case MusEPlugin::PluginTypeCLAP:
+      #endif
       break;
 
       // Special for LV2: We never stored the port values with the state data like we do with the synths.

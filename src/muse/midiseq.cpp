@@ -553,7 +553,7 @@ void MidiSeq::processTimerTick()
       //---------------------------------------------------
 
       // This is required otherwise it freezes.
-      unsigned long nn;
+      unsigned long nn  [[maybe_unused]] = 0;
       if (timerFd != -1) {
             nn = timer->getTimerTicks();
             nn >>= 8;

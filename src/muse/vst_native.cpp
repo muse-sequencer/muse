@@ -441,6 +441,9 @@ void initVST_Native()
       case MusEPlugin::PluginTypeLV2:
       case MusEPlugin::PluginTypeMESS:
       case MusEPlugin::PluginTypeMETRONOME:
+#ifdef CLAP_SUPPORT
+      case MusEPlugin::PluginTypeCLAP:   // handled by initCLAP(), ignore here
+#endif
       case MusEPlugin::PluginTypeUnknown:
       case MusEPlugin::PluginTypeNone:
       break;

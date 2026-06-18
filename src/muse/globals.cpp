@@ -110,6 +110,7 @@ bool loadMESS = true;
 bool loadVST = true;
 bool loadNativeVST = true;
 bool loadDSSI = true;
+bool loadCLAP = true;
 bool loadLV2 = true;
 bool usePythonBridge = false;
 QString pythonBridgePyroNSHostname;

@@ -23,6 +23,7 @@
 //=========================================================
 
 #include <stdarg.h>
+#include <cstdlib>
 
 #include "xml.h"
 
@@ -656,11 +657,23 @@ float Xml::parseFloat()
 //   parseDouble
 //---------------------------------------------------------
 
+// OLD CODE , trouble with hex-style values, see below 
+// double Xml::parseDouble()
+//       {
+//       QString s(parse1().simplified());
+//       return s.toDouble();
+//       }
+
 double Xml::parseDouble()
-      {
-      QString s(parse1().simplified());
-      return s.toDouble();
-      }
+{
+    QString s(parse1().simplified());
+    
+    // Parse C99 hexadecimal floating-point numbers correctly (e.g. 0x1.0137p-2).
+    // Standard Qt string-to-double methods (s.toDouble()) fail on 'x' and return 0.0.
+    char* endptr;
+    return std::strtod(s.toLocal8Bit().constData(), &endptr);
+}
+
 
 //---------------------------------------------------------
 //   Xml::skip

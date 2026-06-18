@@ -359,7 +359,7 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
 //             else
 //               fprintf(stderr, "...item found\n");
             
-            int ii = 0;
+            int ii [[maybe_unused]]  = 0;
             for(iCItem i = items.begin(); i != to; ++i, ++ii)
             { 
               CItem* ci = i->second;

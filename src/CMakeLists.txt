@@ -683,6 +683,28 @@ else (ENABLE_ZITA_RESAMPLER)
       message("Zita resampler disabled")
 endif (ENABLE_ZITA_RESAMPLER)
 
+
+
+##
+## check for CLAP
+##
+
+option ( ENABLE_CLAP  "Enable CLAP (CLever Audio Plugin) support" ON)
+
+
+if (ENABLE_CLAP)
+      CHECK_INCLUDE_FILE_CXX(clap/clap.h HAVE_CLAP_H)
+      if (HAVE_CLAP_H)
+            set(CLAP_SUPPORT ON CACHE INTERNAL "")
+            message("CLAP support enabled")
+      else (HAVE_CLAP_H)
+            message("CLAP support disabled (clap/clap.h not found - install clap-dev or clap headers)")
+      endif (HAVE_CLAP_H)
+else (ENABLE_CLAP)
+      message("CLAP disabled")
+endif (ENABLE_CLAP)
+
+
 ##
 ## check for libinstpatch
 ##
@@ -948,6 +970,11 @@ if (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
         message("** HINT: Check the VST_HEADER_PATH variable. Points to ./vestige by default.")
 endif (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
 
+if (ENABLE_CLAP AND (NOT CLAP_SUPPORT))
+        message("** WARNING: CLAP was enabled, but clap/clap.h was not found.")
+        message("** HINT: Install clap development headers (e.g. 'clap-dev' or 'clap' package).")
+endif (ENABLE_CLAP AND (NOT CLAP_SUPPORT))
+
 if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
         message("** WARNING: fluidsynth (>= 1.1.9) was enabled, but development files were not found.")
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
@@ -995,6 +1022,7 @@ if(LV2_SUPPORT)
 endif(LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)
+summary_add("CLAP support" CLAP_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
 summary_add("RubberBand support" RUBBERBAND_SUPPORT)
 #~ summary_add("Zita Resampler support" ZITA_RESAMPLER_SUPPORT)

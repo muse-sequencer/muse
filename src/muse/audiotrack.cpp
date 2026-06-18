@@ -1909,7 +1909,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
 void AudioTrack::readAuxSend(Xml& xml)
       {
       unsigned idx = 0;
-      double val;
+      double val = 0.0; 
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();

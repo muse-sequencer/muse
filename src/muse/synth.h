@@ -264,6 +264,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       friend class SynthIF;
       friend class MessSynthIF;
       friend class DssiSynthIF;
+      friend class ClapSynthIF;
 	    friend class LV2SynthIF;
       friend class VstSynthIF;
       friend class VstNativeSynthIF;

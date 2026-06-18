@@ -7208,8 +7208,8 @@ LADSPA_PortRangeHint LV2PluginWrapper::range(unsigned long i) const
     hint.LowerBound = _synth->_pluginControlsMin [i];
     hint.UpperBound = _synth->_pluginControlsMax [i];
 
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7258,8 +7258,8 @@ LADSPA_PortRangeHint LV2PluginWrapper::range(unsigned long i) const
 }
 void LV2PluginWrapper::range(unsigned long i, float *min, float *max) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7324,8 +7324,8 @@ const char *LV2PluginWrapper::portName(unsigned long i) const
 
 const CtrlVal::CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7357,8 +7357,8 @@ CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 {
     CtrlValueType vt = VAL_LINEAR;
 
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7398,8 +7398,8 @@ CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 }
 CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7430,8 +7430,8 @@ CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
 
 QString LV2PluginWrapper::unitSymbol(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7460,8 +7460,8 @@ QString LV2PluginWrapper::unitSymbol(unsigned long i) const
 
 int LV2PluginWrapper::valueUnit(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())

@@ -708,9 +708,9 @@ void LCDPatchEdit::resizeEvent(QResizeEvent* e)
   _sectionSpacing = spacing;
   const int indent = aRect.width() / 2 - w / 2;
 
-  int x0, x1, x2;
+  int x0=0, x1=0, x2=0;
   int recty1 = 0, recty2 = 0, recty3 = 0, recth = 0;
-  int frecty1, frecty2, frecty3, frecth;
+  int frecty1=0, frecty2=0, frecty3=0, frecth=0;
 
   switch(_orient)
   {

@@ -49,7 +49,9 @@ int Rasterizer::columnCount() const
 
 void Rasterizer::updateColumn(Column col)
 {
-  int div, row, d;
+  int div = 0;
+  int row = 0;
+  int d = 0;
 
   const int col_num = col;
   const int col_offset = col_num * _rows;

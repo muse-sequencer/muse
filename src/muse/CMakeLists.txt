@@ -98,6 +98,8 @@ file (GLOB core_source_files
       ctrl.cpp
       dialogs.cpp
       dssihost.cpp
+      plugin_host_clap/clap_host.cpp
+      plugin_host_clap/clap_host_gui.cpp
       event.cpp
       eventlist.cpp
       event_tag_list.cpp
@@ -209,6 +211,7 @@ set (FILES_TO_TRANSLATE
 ## Directories that will be passed to the compiler with -I flag
 ##
 include_directories (
+      ${CMAKE_CURRENT_SOURCE_DIR}
       arranger
       cliplist
       components
@@ -223,7 +226,16 @@ include_directories (
       waveedit
       widgets
       lv2Support
+      plugin_host_clap
       )
+
+
+if(CLAP_SUPPORT)
+      include_directories(${CLAP_INCLUDE_DIR})
+      # CLAP_SUPPORT itself is delivered through config.h (#cmakedefine), so we
+      # do NOT add it as a compile definition here — doing so would redefine the
+      # macro and trigger a "CLAP_SUPPORT redefined" warning.
+endif(CLAP_SUPPORT)
 
 # Make sure to include the uic generated headers paths.
 include_directories(
@@ -386,6 +398,7 @@ if(LV2_SUPPORT)
       target_link_libraries(lv2host_module midi_controller_module)
       target_link_libraries(core lv2host_module)
 endif(LV2_SUPPORT)
+
 
 
 

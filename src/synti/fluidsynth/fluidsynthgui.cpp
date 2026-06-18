@@ -526,7 +526,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
             ppt += QPoint(40, listView->horizontalHeader()->height());
             ppt = listView->mapToGlobal(ppt);
 
-            int i = 0;
+            int i [[maybe_unused]] = 0;
             int lastindex = 0;
             for (std::list<FluidGuiSoundFont>::reverse_iterator it = stack.rbegin(); it != stack.rend(); it++) {
                 i++;
