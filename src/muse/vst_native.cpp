@@ -27,6 +27,8 @@
 
 #include <QDir>
 #include <QMenu>
+#include <QApplication>
+#include <QMessageBox>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -94,6 +96,8 @@
 #endif
 
 namespace MusECore {
+
+static void showPluginAllocError(const QString &pluginName); // forward decl.
 
 extern JackAudioDevice* jackAudio;
 
@@ -620,17 +624,33 @@ bool VstNativeSynth::openPlugin(AEffect* plugin)
 //   createSIF
 //---------------------------------------------------------
 
+
 SynthIF* VstNativeSynth::createSIF(SynthI* s)
       {
-      VstNativeSynthIF* sif = new VstNativeSynthIF(s);
-      if(!sif->init(this))
+      VstNativeSynthIF* sif = nullptr;
+      try
       {
+          sif = new VstNativeSynthIF(s);
+          if(!sif->init(this))
+          {
+              delete sif;
+              sif = nullptr;
+          }
+      }
+      catch(const std::bad_alloc &e)
+      {
+          // Out of (lockable) memory: skip this synth instead of aborting MusE.
+          // SynthI::initInstance() tolerates a nullptr SIF (track still loads).
+          fprintf(stderr, "VstNativeSynth::createSIF: out of memory - "
+                          "skipping synth. Check memlock/'ulimit -l'. (%s)\n", e.what());
+          showPluginAllocError(name());
           delete sif;
           sif = nullptr;
       }
 
       return sif;
       }
+
 
 //---------------------------------------------------------
 //   VstNativeSynthIF
@@ -3495,20 +3515,54 @@ VstNativePluginWrapper::~VstNativePluginWrapper()
    delete [] _fakePds;
 }
 
+
+//---------------------------------------------------------
+//   showPluginAllocError
+//    Inform the user via GUI popup that a plugin was skipped due to
+//    memory/memlock exhaustion. Safe to call from any thread: the
+//    message box is marshalled to the GUI thread and never blocks the caller.
+//---------------------------------------------------------
+
+static void showPluginAllocError(const QString &pluginName)
+{
+   if(!MusEGlobal::muse)   // GUI not up yet? -> silent (only pointer compare, no full type needed)
+      return;
+   const QString msg = QObject::tr(
+      "Out of lockable memory while loading plugin:\n  %1\n\n"
+      "The plugin was skipped so MusE can keep running.\n\n"
+      "Raise the memlock limit: set 'memlock unlimited' for the audio group "
+      "in /etc/security/limits.conf, then re-login.").arg(pluginName);
+   // Marshal to GUI thread via qApp (QApplication lives in the main thread).
+   // Avoids needing the full MusEGui::MusE type here.
+   QMetaObject::invokeMethod(qApp, [msg]() {
+         QMessageBox::critical(QApplication::activeWindow(), QString("MusE"), msg);
+      }, Qt::QueuedConnection);
+}
+
+
 LADSPA_Handle VstNativePluginWrapper::instantiate(PluginI *pluginI)
 {
-  VstNativePluginWrapper_State *state = new VstNativePluginWrapper_State;
-  if(!state)
+  VstNativePluginWrapper_State *state = nullptr;
+  try
   {
-    abort();
+    state = new VstNativePluginWrapper_State;
+    state->plugin = _synth->instantiate(&state->userData);
   }
-  state->plugin = _synth->instantiate(&state->userData);
+  catch(const std::bad_alloc &e)
+  {
+    // Was: abort(). Inform the user and skip the plugin instead of killing MusE.
+    fprintf(stderr, "VstNativePluginWrapper::instantiate: out of memory - "
+                    "skipping plugin. Check memlock/'ulimit -l'. (%s)\n", e.what());
+    showPluginAllocError(name());
+    delete state;
+    return 0;
+  }
   if(!state->plugin)
   {
     delete state;
     return 0;
   }
-
+  
   if(!_synth->openPlugin(state->plugin))
   {
     delete state;
