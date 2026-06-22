@@ -113,7 +113,9 @@ signed int AlsaTimer::initTimer(unsigned long desiredFrequency)
       subdevice = snd_timer_id_get_subdevice(id);
       if(subdevice < 0)
         subdevice = 0;
+
       snprintf(timername, sizeof(timername) - 1, "hw:CLASS=%i,SCLASS=%i,CARD=%i,DEV=%i,SUBDEV=%i", devclass, sclass, card, device, subdevice);
+
       if(snd_timer_open(&handle, timername, SND_TIMER_OPEN_NONBLOCK) >= 0)
       {
         if(snd_timer_info(handle, info) >= 0)
@@ -123,8 +125,14 @@ signed int AlsaTimer::initTimer(unsigned long desiredFrequency)
           {
             unsigned long freq = setTimerFreq(desiredFrequency);
           
-            if(MusEGlobal::debugMsg)
-              fprintf(stderr, "AlsaTimer::initTimer(): Checked timer:%s got frequency:%lu Hz\n", snd_timer_info_get_name(info), freq);
+            // if(MusEGlobal::debugMsg)
+            {
+              const long res_ns = snd_timer_info_get_resolution(info);
+              fprintf(stderr,
+                      "AlsaTimer: candidate: \"%s\"  resolution: %ld ns  achieved: %lu Hz%s\n",
+                      snd_timer_info_get_name(info), res_ns, freq,
+                      snd_timer_info_is_slave(info) ? "  [slave, skipped]" : "");
+            }
             
             if(freq > best_freq)
             {
@@ -155,7 +163,20 @@ signed int AlsaTimer::initTimer(unsigned long desiredFrequency)
     }
 
   //if(debugMsg)
-    fprintf(stderr, "AlsaTimer::initTimer(): best available ALSA timer: %s\n", snd_timer_info_get_name(info));
+  {
+    // print - used alsa timer info
+    const long res_ns  = snd_timer_info_get_resolution(info);
+    const long max_hz  = (res_ns > 0) ? (1000000000L / res_ns) : 0;
+    fprintf(stderr,
+            "AlsaTimer: selected timer: \"%s\"  resolution: %ld ns  (max %ld Hz)\n",
+            snd_timer_info_get_name(info), res_ns, max_hz);
+    if (res_ns > 10000L) // worse than 10 us — system jiffies timer, warn
+      fprintf(stderr,
+              "AlsaTimer: WARNING: timer resolution %ld us is low. "
+              "MIDI timing may suffer. HR timer not available or not selected.\n",
+              res_ns / 1000L);
+  }
+    
 
   count = snd_timer_poll_descriptors_count(handle);
   fds = (pollfd *)calloc(count, sizeof(pollfd));

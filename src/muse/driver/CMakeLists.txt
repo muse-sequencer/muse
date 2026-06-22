@@ -33,6 +33,7 @@ file (GLOB driver_source_files
        jackmidi.cpp
        posixtimer.cpp
        rtctimer.cpp
+       timer_mono.cpp
        )
 if (HAVE_RTAUDIO)
        file (GLOB driver_source_files

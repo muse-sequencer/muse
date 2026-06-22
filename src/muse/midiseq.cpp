@@ -43,6 +43,7 @@
 #include "driver/qttimer.h"
 #else
 #include "driver/alsatimer.h"
+#include "driver/timer_mono.h" // uses hi-freq MONOTONIC clock, with RT-PRIO, if possible
 #include "driver/rtctimer.h"
 //#include "driver/posixtimer.h"
 #endif
@@ -228,6 +229,19 @@ signed int MidiSeq::selectTimer()
     }
     delete timer;
 #else
+
+  // first Linux timer 
+  //#ifndef _WIN32   // we are already in else branch 
+      fprintf(stderr, "Trying Monotonic timer...\n");
+      timer = new MonoTimer();
+      int mono_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+      if (mono_tmrFd != -1) {
+          fprintf(stderr, "got timer = %d\n", mono_tmrFd);
+          return mono_tmrFd;
+      }
+      delete timer;
+  //#endif
+  
   #ifdef ALSA_SUPPORT
     fprintf(stderr, "Trying RTC timer...\n");
     timer = new RtcTimer();

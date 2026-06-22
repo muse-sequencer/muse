@@ -47,6 +47,7 @@
 #include <QtGui/QWindow>
 #include <QVBoxLayout>
 #include <QStringList>
+#include <QMessageBox>
 
 #include "pluglist.h"
 #include "lv2host.h"
@@ -126,9 +127,23 @@
 #define LV2_WRK_FIFO_SIZE 8192
 
 #define LV2_RT_FIFO_SIZE 128
-#define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16)))
-#define LV2_EVBUF_SIZE (2*LV2_RT_FIFO_ITEM_SIZE)
+
+#define LV2_RT_FIFO_ITEM_SIZE (size_t(4096)) 
+// #define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16))) // too big, may cause issue
+
+
+// Output atom buffers (notify/automate) must hold large bursts. e.g. sfizz emits
+// the full CC/description list after loading an instrument, which overflows an
+// 8 KiB buffer and trips the plugin's internal forge:
+//   assert(frame == forge->stack) in lv2_atom_forge_pop().
+// Give output ports much more headroom than input ports.
+#define LV2_EVBUF_OUT_SIZE (size_t(1024 * 1024))   // 1 MiB
+
+#define LV2_EVBUF_SIZE (2*LV2_RT_FIFO_ITEM_SIZE) 
+
 #define OPERATIONS_FIFO_SIZE 256 // ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(1024)) )
+
+
 
 namespace MusECore
 {
@@ -1621,41 +1636,43 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state,
       uint8_t   pos_buf[1024];
       memset(pos_buf, 0, sizeof(pos_buf));
       LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
+
       /* Build an LV2 position object to report change to plugin */
-      LV2_Atom_Forge* atomForge = &state->atomForge;
-      lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
+      // FIX: use local Forge, independent of shared state->atomForge
+      LV2_Atom_Forge localForge;
+      lv2_atom_forge_init(&localForge, &synth->_lv2_urid_map);
+      lv2_atom_forge_set_buffer(&localForge, pos_buf, sizeof(pos_buf));
       LV2_Atom_Forge_Frame frame;
-      lv2_atom_forge_object(atomForge, &frame, 1, synth->_uTime_Position);
+      lv2_atom_forge_object(&localForge, &frame, 1, synth->_uTime_Position);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_frame);
-      lv2_atom_forge_long(atomForge, cur_frame);
+      lv2_atom_forge_key(&localForge, synth->_uTime_frame);
+      lv2_atom_forge_long(&localForge, cur_frame);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_framesPerSecond);
-      lv2_atom_forge_float(atomForge, frames_per_second);
+      lv2_atom_forge_key(&localForge, synth->_uTime_framesPerSecond);
+      lv2_atom_forge_float(&localForge, frames_per_second);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_speed);
-      lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0f : 0.0f);
+      lv2_atom_forge_key(&localForge, synth->_uTime_speed);
+      lv2_atom_forge_float(&localForge, curIsPlaying ? 1.0f : 0.0f);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_beatsPerMinute);
-      lv2_atom_forge_float(atomForge, curBpm);
+      lv2_atom_forge_key(&localForge, synth->_uTime_beatsPerMinute);
+      lv2_atom_forge_float(&localForge, curBpm);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_beatsPerBar);
-      lv2_atom_forge_float(atomForge, z);
+      lv2_atom_forge_key(&localForge, synth->_uTime_beatsPerBar);
+      lv2_atom_forge_float(&localForge, z);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_beat);
-      lv2_atom_forge_double(atomForge, lin_beat);
+      lv2_atom_forge_key(&localForge, synth->_uTime_beat);
+      lv2_atom_forge_double(&localForge, lin_beat);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_bar);
-      lv2_atom_forge_long(atomForge, bar);
+      lv2_atom_forge_key(&localForge, synth->_uTime_bar);
+      lv2_atom_forge_long(&localForge, bar);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_barBeat);
-      lv2_atom_forge_float(atomForge, bar_beat);
+      lv2_atom_forge_key(&localForge, synth->_uTime_barBeat);
+      lv2_atom_forge_float(&localForge, bar_beat);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_beatUnit);
-      lv2_atom_forge_int(atomForge, n);
+      lv2_atom_forge_key(&localForge, synth->_uTime_beatUnit);
+      lv2_atom_forge_int(&localForge, n);
 
-      // REMOVE Tim. lv2. Added. TESTING. This should be required. Seems OK so far.
-      lv2_atom_forge_pop(atomForge, &frame);
+      lv2_atom_forge_pop(&localForge, &frame);
 
 #ifdef LV2_EVENT_BUFFER_SUPPORT
       buffer->write(sample, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
@@ -1700,7 +1717,8 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
 #endif
             synth->_uAtom_Sequence,
             synth->_uAtom_Chunk,
-            LV2_EVBUF_SIZE);
+            LV2_EVBUF_OUT_SIZE);
+            // was: LV2_EVBUF_SIZE); // OLD
         if(!newEvBuffer)
         {
             abort();
@@ -5741,6 +5759,28 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
               }
   #endif
 
+
+
+              // FIX: Drain any pending work responses BEFORE run().
+              // Some plugins (e.g. sfizz) schedule work during state restore/activate
+              // and leave an unfinished internal forge stack until work_response is called.
+              // Calling run() before draining those responses causes an assertion failure.
+              {
+                  const unsigned int pre_rsp_sz = _state->wrkRespDataBuffer->getSize(false);
+                  for(unsigned int i_sz = 0; i_sz < pre_rsp_sz; ++i_sz)
+                  {
+                      if(_state->wrkIface && _state->wrkIface->work_response)
+                      {
+                          void *wrk_data = nullptr;
+                          size_t wrk_data_sz = 0;
+                          if(_state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz))
+                              _state->wrkIface->work_response(lilv_instance_get_handle(_handle), wrk_data_sz, wrk_data);
+                      }
+                      _state->wrkRespDataBuffer->remove();
+                  }
+              }
+
+
               lilv_instance_run(_handle, slice_samps);
           }
 
@@ -7030,20 +7070,65 @@ LV2PluginWrapper::~LV2PluginWrapper()
 
 LV2Synth *LV2PluginWrapper::synth() const { return _synth; }
 
+
+
+//---------------------------------------------------------
+//   showPluginAllocError
+//    Inform the user via GUI popup that a plugin was skipped due to
+//    memory/memlock exhaustion. Safe to call from any thread: the
+//    message box is marshalled to the GUI thread and never blocks the caller.
+//---------------------------------------------------------
+
+
+static void showPluginAllocError(const QString &pluginName)
+{
+   if(!MusEGlobal::muse)   // GUI not up yet? -> silent (only pointer compare, no full type needed)
+      return;
+   const QString msg = QObject::tr(
+      "Out of lockable memory while loading plugin:\n  %1\n\n"
+      "The plugin was skipped so MusE can keep running.\n\n"
+      "Raise the memlock limit: set 'memlock unlimited' for the audio group "
+      "in /etc/security/limits.conf, then re-login.").arg(pluginName);
+   // Marshal to GUI thread via qApp (QApplication lives in the main thread).
+   // Avoids needing the full MusEGui::MusE type here.
+   QMetaObject::invokeMethod(qApp, [msg]() {
+         QMessageBox::critical(QApplication::activeWindow(), QString("MusE"), msg);
+      }, Qt::QueuedConnection);
+}
+
+
 LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
 {
-    LV2PluginWrapper_State *state = new LV2PluginWrapper_State;
-    state->inst = this;
-    state->widget = nullptr;
-    state->uiInst = nullptr;
-    state->plugInst = plugi;
-    state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
-    state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
-    state->sif = nullptr;
-    state->synth = _synth;
-    state->wrkDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
-    state->wrkRespDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
+    LV2PluginWrapper_State *state = nullptr;
+    try
+    {
+        state = new LV2PluginWrapper_State;
+        state->inst = this;
+        state->widget = nullptr;
+        state->uiInst = nullptr;
+        state->plugInst = plugi;
+        state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
+        state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
+        state->sif = nullptr;
+        state->synth = _synth;
+        state->wrkDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
+        state->wrkRespDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
+    }
+    catch(const std::bad_alloc &e)
+    {
+        // Do not abort the whole app: report and skip this plugin instead.
+        // state is either nullptr (ctor threw, already unwound) or partially
+        // built (delete runs ~LV2PluginWrapper_State for cleanup; delete nullptr is safe).
+        fprintf(stderr,
+           "LV2PluginWrapper::instantiate: out of memory creating plugin state - "
+           "skipping plugin. Check memlock/'ulimit -l'. (%s)\n", e.what());
+           
+        showPluginAllocError(name()); // popup info for user
+        delete state;
+        return nullptr;
+    }
 
+    
     LV2Synth::lv2state_FillFeatures(state);
 
     state->handle = lilv_plugin_instantiate(_synth->_handle, (double)MusEGlobal::sampleRate, state->_ppifeatures);
@@ -7630,15 +7715,25 @@ void LV2PluginWrapper_Worker::makeWork()
 }
 
 #ifdef LV2_EVENT_BUFFER_SUPPORT
-LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t /*size*/)
+//LV2EvBuf::LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size) // OLD
+LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size)
     :_isInput(isInput), _oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 #else
-LV2EvBuf::LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t /*size*/)
+//LV2EvBuf::LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t /*size*/) // OLD
+LV2EvBuf::LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size)
     :_isInput(isInput), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 #endif
 {
     // Resize and fill with initial value.
-    _buffer.resize(LV2_EVBUF_SIZE, 0);
+    // _buffer.resize(LV2_EVBUF_SIZE, 0); // OLD , fix below
+
+    // Honor the requested size. Floor it so the atom/event header always fits;
+    // output ports need a large buffer (see LV2_EVBUF_OUT_SIZE).
+    const size_t min_sz = sizeof(LV2_Atom_Sequence) + sizeof(LV2_Atom_Event) + 64;
+    if(size < min_sz)
+        size = LV2_EVBUF_SIZE;
+    _buffer.resize(size, 0);
+    
 
 #ifdef LV2_DEBUG
     std::cerr << "LV2EvBuf ctor: _buffer size:" << _buffer.size() << " capacity:" << _buffer.capacity() << std::endl;
@@ -7884,11 +7979,30 @@ LV2SimpleRTFifo::LV2SimpleRTFifo(size_t size):
     eventsBuffer.resize(fifoSize);
     assert(eventsBuffer.size() == fifoSize);
     readIndex = writeIndex = 0;
+
+
     for(size_t i = 0; i < fifoSize; ++i)
     {
-        eventsBuffer [i].port_index = 0;
-        eventsBuffer [i].buffer_size = 0;
-        eventsBuffer [i].data = new char [itemSize];
+        eventsBuffer[i].port_index = 0;
+        eventsBuffer[i].buffer_size = 0;
+        eventsBuffer[i].data = nullptr;  // secure init , else bad_alloc 
+    }
+
+
+    for(size_t i = 0; i < fifoSize; ++i)
+    {
+        // Use nothrow so we can emit a meaningful diagnostic identifying the
+        // exhausted resource before unwinding (caught in LV2PluginWrapper::instantiate()).
+        eventsBuffer[i].data = new (std::nothrow) char[itemSize];
+        if(eventsBuffer[i].data == nullptr)
+        {
+            fprintf(stderr,
+               "LV2SimpleRTFifo: allocation FAILED at item %zu/%zu (itemSize=%zu). "
+               "Out of lockable memory? Check 'ulimit -l' / memlock limit "
+               "(mlockall(MCL_FUTURE) is active). - LV2SimpleRTFifo()\n",
+               i, fifoSize, itemSize);
+            throw std::bad_alloc();
+        }
     }
 
 }
