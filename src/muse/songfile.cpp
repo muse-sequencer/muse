@@ -649,24 +649,24 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                               const int curDivision  = MusEGlobal::config.division;
                               if(fileDivision > 0 && fileDivision != curDivision)
                               {
-                                // Ask the user whether to adopt the song file's PPQN.
+                                // Auto-apply the song file's PPQN silently.
                                 // Note: changing division after tracks/events are loaded
                                 // would require rescaling all tick positions, which is not
                                 // done here — this only affects newly created events going
                                 // forward (export, new parts). The song file was composed
-                                // at 'fileDivision' so applying it is usually correct.
-                                const int answer = QMessageBox::question(
-                                  nullptr,
-                                  QObject::tr("MIDI Division (PPQN)"),
-                                  QObject::tr(
-                                    "MIDI division (PPQN) is currently <b>%1</b>.<br>"
-                                    "The loaded song file was created with <b>%2</b>.<br><br>"
-                                    "Apply the song file value?")
-                                    .arg(curDivision).arg(fileDivision),
-                                  QMessageBox::Yes | QMessageBox::No,
-                                  QMessageBox::Yes);
-                                if(answer == QMessageBox::Yes)
-                                  MusEGlobal::config.division = fileDivision;
+                                // at 'fileDivision' so applying it is almost always correct.
+                                //
+                                // A user-facing popup was considered but is too disruptive
+                                // on every load. Auto-apply and log instead.
+                                //
+                                // TODO: rescale existing tick positions similarly to how
+                                //  sampleRate differences are handled in loadProjectFile1().
+                                MusEGlobal::config.division = fileDivision;
+                                AL::division = fileDivision;
+                                fprintf(stdout,
+                                  "INFO: MIDI division (PPQN) applied from song file:"
+                                  " changed from %d to %d\n",
+                                  curDivision, fileDivision);
                               }
                             }
                         else if (tag == "sampleRate") {
