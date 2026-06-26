@@ -346,7 +346,19 @@ bool ClapSynthIF::hostTimerRegister(uint32_t period_ms, clap_id* timer_id)
 
   const clap_plugin_t* plug = _plugin;
   const clap_plugin_timer_support_t* ext = _extTimer;
-  QObject::connect(t, &QTimer::timeout, t, [plug, ext, id]() { ext->on_timer(plug, id); });
+
+  // Guard with a shared alive-flag. clearGuiEventSources() resets it to false
+  // before stopping timers, so any in-flight timeout fires safely as a no-op
+  // rather than calling into a plugin that is mid-teardown.
+  auto alive = std::make_shared<bool>(true);
+  _timerAlive.insert(id, alive);
+
+  QObject::connect(t, &QTimer::timeout, t,
+    [plug, ext, id, alive]()
+    {
+      if(*alive)
+        ext->on_timer(plug, id);
+    });
 
   t->start();
   _timers.insert(id, t);
@@ -359,8 +371,22 @@ bool ClapSynthIF::hostTimerUnregister(clap_id timer_id)
   const auto it = _timers.find(timer_id);
   if(it == _timers.end())
   {
-    fprintf(stderr, "ClapSynthIF::hostTimerUnregister: unknown timer id %u\n", timer_id);
+    // This normally means the plugin called unregister_timer() from its own
+    // destructor or shutdown path after the host already cleared _timers in
+    // clearGuiEventSources(). The timer is gone and the alive-flag is already
+    // false, so no on_timer() call will fire. This is harmless.
+    fprintf(stderr,
+      "ClapSynthIF::hostTimerUnregister: timer id %u not found "
+      "(plugin called unregister after host teardown — harmless)\n", timer_id);
     return false;
+  }
+  // Disarm the alive-flag first so any queued timeout that fires before
+  // deleteLater() is processed becomes a safe no-op.
+  const auto ait = _timerAlive.find(timer_id);
+  if(ait != _timerAlive.end())
+  {
+    *ait.value() = false;
+    _timerAlive.erase(ait);
   }
   it.value()->stop();
   it.value()->deleteLater();
@@ -440,6 +466,14 @@ bool ClapSynthIF::hostFdUnregister(int fd)
 
 void ClapSynthIF::clearGuiEventSources()
 {
+  // Disarm all alive-flags FIRST, before stopping timers.
+  // This ensures any QTimer::timeout that fires between here and deleteLater()
+  // being processed will see *alive == false and skip the on_timer() call,
+  // preventing calls into a plugin that is being torn down.
+  for(auto& flag : _timerAlive)
+    *flag = false;
+  _timerAlive.clear();
+
   for(QTimer* t : _timers)           { t->stop();            t->deleteLater(); }
   _timers.clear();
 

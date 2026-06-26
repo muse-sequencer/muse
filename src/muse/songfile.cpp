@@ -645,10 +645,29 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                         else if (tag == "follow")
                               _follow  = FollowMode(xml.parseInt());
                         else if (tag == "midiDivision") {
-                              // TODO: Compare with current global setting and convert the
-                              //  song if required - similar to how the song vs. global
-                              //  sample rate ratio is handled. Ignore for now.
-                              xml.parseInt();
+                              const int fileDivision = xml.parseInt();
+                              const int curDivision  = MusEGlobal::config.division;
+                              if(fileDivision > 0 && fileDivision != curDivision)
+                              {
+                                // Ask the user whether to adopt the song file's PPQN.
+                                // Note: changing division after tracks/events are loaded
+                                // would require rescaling all tick positions, which is not
+                                // done here — this only affects newly created events going
+                                // forward (export, new parts). The song file was composed
+                                // at 'fileDivision' so applying it is usually correct.
+                                const int answer = QMessageBox::question(
+                                  nullptr,
+                                  QObject::tr("MIDI Division (PPQN)"),
+                                  QObject::tr(
+                                    "MIDI division (PPQN) is currently <b>%1</b>.<br>"
+                                    "The loaded song file was created with <b>%2</b>.<br><br>"
+                                    "Apply the song file value?")
+                                    .arg(curDivision).arg(fileDivision),
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::Yes);
+                                if(answer == QMessageBox::Yes)
+                                  MusEGlobal::config.division = fileDivision;
+                              }
                             }
                         else if (tag == "sampleRate") {
                               // Ignore. Sample rate setting is handled by the

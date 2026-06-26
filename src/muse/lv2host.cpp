@@ -128,8 +128,10 @@
 
 #define LV2_RT_FIFO_SIZE 128
 
-#define LV2_RT_FIFO_ITEM_SIZE (size_t(4096)) 
-// #define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16))) // too big, may cause issue
+#define LV2_RT_FIFO_ITEM_SIZE (size_t(4096 * 2)) 
+// note: sizeof(LV2_Atom_Event)==16 bytes .
+// note: segmentSize is runtime-variable, not compile-time var
+// // invalid, remove:  #define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16))) 
 
 
 // Output atom buffers (notify/automate) must hold large bursts. e.g. sfizz emits
@@ -139,9 +141,12 @@
 // Give output ports much more headroom than input ports.
 #define LV2_EVBUF_OUT_SIZE (size_t(1024 * 1024))   // 1 MiB
 
-#define LV2_EVBUF_SIZE (2*LV2_RT_FIFO_ITEM_SIZE) 
+#define LV2_EVBUF_SIZE (LV2_RT_FIFO_ITEM_SIZE * 2)   // EVENT IN BUF 
 
-#define OPERATIONS_FIFO_SIZE 256 // ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(1024)) )
+#define OPERATIONS_FIFO_SIZE 256 
+// note: operationsFifo is a LockFreeMPSCRingBuffer<LV2OperationMessage> with 256 entries, 
+//       a notification channel from Plugin → to GUI, no Audio-data path.
+// // invalid, remove: ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(1024)) )
 
 
 

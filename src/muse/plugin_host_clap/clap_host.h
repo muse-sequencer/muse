@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <memory>
 #include <cstdint>
 
 #include <QLibrary>
@@ -249,6 +250,7 @@ private:
   // _fd*:    one QSocketNotifier per (fd, direction) for clap.posix-fd-support.
   clap_id                      _nextTimerId = 0;
   QHash<clap_id, QTimer*>      _timers;
+  QHash<clap_id, std::shared_ptr<bool>> _timerAlive; ///< alive-flags for in-flight timer lambdas
   QHash<int, QSocketNotifier*> _fdRead;   ///< CLAP_POSIX_FD_READ
   QHash<int, QSocketNotifier*> _fdWrite;  ///< CLAP_POSIX_FD_WRITE
   QHash<int, QSocketNotifier*> _fdError;  ///< CLAP_POSIX_FD_ERROR

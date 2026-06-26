@@ -764,7 +764,32 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
 
       const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
       if(e.time() != 0 && e.time() < syncFrame)
-        fprintf(stderr, "MidiJackDevice::queueEvent() evTime:%u < syncFrame:%u!!\n", e.time(), syncFrame);
+      {
+      const unsigned int delta = syncFrame - e.time();
+        // Stale-event suppression: events with time near 0 arrive here after song load
+        // because _outUserEvents is intentionally preserved across stop/load (it may hold
+        // crucial events such as soundfont loads). Those events carry timestamps from the
+        // previous Jack session, so their time is tiny while syncFrame is already millions
+        // of frames in. The delta is enormous (hours), not a real timing error.
+        // We silence the warning for deltas > 10 seconds; the event is still clamped to
+        // frame 0 and sent immediately, which is the correct behaviour for "as soon as
+        // possible" user events. For genuine late-by-jitter cases (delta < 10 s) we
+        // still warn, rate-limited to once per second.
+        const unsigned int oneSecFrames = static_cast<unsigned int>(MusEGlobal::sampleRate);
+        if(delta < oneSecFrames * 10)
+        {
+          static unsigned int _lastWarnFrame = 0;
+          if(syncFrame - _lastWarnFrame > oneSecFrames)
+          {
+            _lastWarnFrame = syncFrame;
+            fprintf(stderr,
+              "MidiJackDevice::queueEvent() evTime:%u < syncFrame:%u"
+              " (late by %u frames = %.1f ms) — event clamped to frame 0\n",
+              e.time(), syncFrame, delta,
+              1000.0 * double(delta) / double(MusEGlobal::sampleRate));
+          }
+        }
+      }
       unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
       if (ft >= MusEGlobal::segmentSize) {
             fprintf(stderr, "MidiJackDevice::queueEvent: Event time:%d out of range. syncFrame:%d ft:%d (seg=%d)\n", 
@@ -1360,6 +1385,44 @@ void MidiJackDevice::processMidi(unsigned int curFrame)
   // Don't bother if not 'running'.
   if(port_buf)
   {
+    // Reschedule any user events whose timestamps predate the current sync frame by
+    // more than one segment. This happens after song load: _outUserEvents is kept
+    // alive across stop/load to preserve crucial events (soundfont loads, program
+    // changes), but their timestamps are from the previous session and appear
+    // "billions of frames in the past". Reset them to curFrame so they fire
+    // immediately this cycle rather than producing a large spurious delta in queueEvent.
+    if(!_outUserEvents.empty())
+    {
+      const unsigned int staleThresh =
+        curFrame > (unsigned int)MusEGlobal::segmentSize
+          ? curFrame - (unsigned int)MusEGlobal::segmentSize
+          : 0;
+      // Rebuild with corrected timestamps if any are stale.
+      // MPEventList is a sorted set so we cannot update in place.
+      bool hasStale = false;
+      for(ciMPEvent it = _outUserEvents.cbegin(); it != _outUserEvents.cend(); ++it)
+      {
+        if(it->time() < staleThresh) { hasStale = true; break; }
+      }
+      if(hasStale)
+      {
+        // Note: _outUserEvents uses a custom RT allocator (audioMPEventRTalloc) that
+        // does not implement operator!=, so copy-assignment is not available in GCC 16+.
+        // Rebuild in place: collect corrected events, clear, re-insert.
+        std::vector<MidiPlayEvent> fixed;
+        fixed.reserve(_outUserEvents.size());
+        for(ciMPEvent it = _outUserEvents.cbegin(); it != _outUserEvents.cend(); ++it)
+        {
+          MidiPlayEvent ev(*it);
+          if(ev.time() < staleThresh)
+            ev.setTime(curFrame);
+          fixed.push_back(ev);
+        }
+        _outUserEvents.clear();
+        for(const MidiPlayEvent& ev : fixed)
+          _outUserEvents.insert(ev);
+      }
+    }
 
     iMPEvent impe_pb = _outPlaybackEvents.begin();
     iMPEvent impe_us = _outUserEvents.begin();

@@ -37,7 +37,13 @@
 namespace MusELib {
 
 #ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
-QString hexfloatDecimalPoint = QString('.');
+// NOTE: hexfloatDecimalPoint is no longer used for decimal-point replacement.
+// strtod/strtof handle hex-float literals with '.' correctly regardless of system locale
+// (the hex-float format is defined in C99 and the '.' is part of the literal syntax,
+//  not the locale decimal separator). Left here only for ABI/symbol compatibility.
+// The Qt6-incompatible QString('.') constructor (resolved to QString(int=46,QChar()))
+//  was the original source of the bug.
+QString hexfloatDecimalPoint = QString(QChar('.'));
 #endif
 
 QString museStringFromDouble(double v)
@@ -95,12 +101,9 @@ double museStringToDouble(const QString &s, bool *ok)
     // Therefore in case of hexfloats, the decimal point should be the only thing requiring alteration here.
     // Note that our hexfloatDecimalPoint is a QString.
     //
-    // Replace the known '.' decimal point with the current locale decimal point:
-
-    QString s2(s);
-    s2.replace(QChar('.'), hexfloatDecimalPoint);
-    const QByteArray ba = s2.toUtf8();
-
+    // strtod handles hex-float literals (0x...) with '.' correctly in all C99+ implementations,
+    // regardless of the system locale's decimal separator. No translation needed.
+    const QByteArray ba = s.toLatin1();
     const char *sc = ba.constData();
     char *end;
     const double rv = std::strtod(sc, &end);
@@ -174,12 +177,9 @@ float museStringToFloat(const QString &s, bool *ok)
     // Therefore in case of hexfloats, the decimal point should be the only thing requiring alteration here.
     // Note that our hexfloatDecimalPoint is a QString.
     //
-    // Replace the known '.' decimal point with the current locale decimal point:
-
-    QString s2(s);
-    s2.replace(QChar('.'), hexfloatDecimalPoint);
-    const QByteArray ba = s2.toUtf8();
-
+    // strtof handles hex-float literals (0x...) with '.' correctly in all C99+ implementations,
+    // regardless of the system locale's decimal separator. No translation needed.
+    const QByteArray ba = s.toLatin1();
     const char *sc = ba.constData();
     char *end;
     const float rv = std::strtof(sc, &end);
@@ -199,4 +199,3 @@ float museStringToFloat(const QString &s, bool *ok)
 }
 
 } // namespace MusELib
-
