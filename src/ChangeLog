@@ -5,7 +5,8 @@
       Fix linker error: always link plugin_cache_reader
     - Cherry-pick PR 1329:e6ae45868e7aa3accbcb89d40e63f33fab99fe10
       Fix CtrlList:: read (hex_float reading)  - locale issue
-
+    - Cherry-pick PR 1329:80c7dbe7d26a8b24aad4ef9b6d7dbfa29364d20e
+      fix(hex_float): fix museStringToDouble/Float failing
 20.11.2026
     - FIX 1366: CMake policy CMP0177 only available on cmake >= 3.31 (Tim).
 17.11.2026

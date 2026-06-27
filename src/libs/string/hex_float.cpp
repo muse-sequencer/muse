@@ -53,6 +53,7 @@ QString museStringFromDouble(double v)
     return QString::fromLatin1(ss.str().c_str());
 }
 
+
 QString museStringFromFloat(float v)
 {
     std::stringstream ss;
@@ -240,3 +241,4 @@ float museStringToFloat(const QString &s, bool *ok)
 
 
 } // namespace MusELib
+
