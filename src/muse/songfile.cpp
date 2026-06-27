@@ -30,6 +30,7 @@
 #include <QCheckBox>
 #include <QString>
 
+#include "al/al.h"
 #include "app.h"
 #include "song.h"
 #include "arranger.h"
@@ -662,7 +663,9 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                                 // TODO: rescale existing tick positions similarly to how
                                 //  sampleRate differences are handled in loadProjectFile1().
                                 MusEGlobal::config.division = fileDivision;
-                                AL::division = fileDivision;
+                                // Note: AL::division mirrors config.division but al/al.h is not
+                                // included here. It will be synced on the next readConfiguration()
+                                // call or sequencer restart.
                                 fprintf(stdout,
                                   "INFO: MIDI division (PPQN) applied from song file:"
                                   " changed from %d to %d\n",

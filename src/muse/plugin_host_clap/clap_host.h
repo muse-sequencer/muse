@@ -125,6 +125,8 @@ public:
   void deactivate3() override;
   QString getPatchName(int, int, bool) const override;
   void populatePatchPopup(MusEGui::PopupMenu*, int, bool) override;
+
+  void read(Xml& xml);          // restore plugin state from song file
   void write(int level, Xml& xml) const override;
   double getParameter(unsigned long n) const override;
   void   setParameter(unsigned long n, double v) override;
