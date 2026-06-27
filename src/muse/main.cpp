@@ -1196,15 +1196,6 @@ int main(int argc, char* argv[])
         // However, in case Qt did not call setlocale(LC_ALL, "") on non-Unix/Linux, do it now before gtk_init() does it:
         std::setlocale(LC_ALL, "");
 
-#ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
-        // If C++ istringstream does not support hexfloat, grab the locale decimal point for use later in a workaround.
-        const std::lconv *lc = std::localeconv();
-        MusELib::hexfloatDecimalPoint = QString(lc->decimal_point);
-        // Locale diagnostics.
-        if(MusEGlobal::debugMsg)
-          fprintf(stderr, "c locale decimal point: %s\n", MusELib::hexfloatDecimalPoint.toLocal8Bit().constData());
-#endif
-
         QApplication::addLibraryPath(MusEGlobal::museGlobalLib + "/qtplugins");
         if (MusEGlobal::debugMsg) {
               QStringList list = app.libraryPaths();
