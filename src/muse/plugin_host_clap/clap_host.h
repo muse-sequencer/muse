@@ -128,6 +128,14 @@ public:
 
   void read(Xml& xml);          // restore plugin state from song file
   void write(int level, Xml& xml) const override;
+
+  // CLAP state persistence goes through MusE's custom-data framework (same as
+  // LV2/VST): the blob is base64-encoded into <customData> and applied AFTER
+  // initInstance() via configure()/setCustomData(). This is required because
+  // _sif does not exist yet while SynthI::read() parses the section.
+  std::vector<QString> getCustomData() const override;
+  bool setCustomData(const std::vector<QString>&) override;
+  
   double getParameter(unsigned long n) const override;
   void   setParameter(unsigned long n, double v) override;
   int    getControllerInfo(int id, QString* name,
@@ -247,6 +255,12 @@ private:
   // Stays nullptr for floating GUIs, which own their own window.
   QWidget* _editorWindow = nullptr;
 
+
+  // Alive-flag for queued hostRequestCallback() main-thread lambdas. Reset to
+  // false in the destructor so any in-flight queued on_main_thread() call that
+  // runs after this instance is gone becomes a safe no-op.
+  std::shared_ptr<bool> _instanceAlive = std::make_shared<bool>(true);
+  
   // GUI event sources, created on the main thread from the host callbacks above.
   // _timers: one QTimer per clap.timer-support registration.
   // _fd*:    one QSocketNotifier per (fd, direction) for clap.posix-fd-support.

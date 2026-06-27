@@ -29,6 +29,8 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QCoreApplication>   // qApp, for marshalling on_main_thread() to GUI thread
+#include <QMetaObject>
 
 #include <clap/clap.h>
 #include <clap/ext/params.h>
@@ -320,6 +322,9 @@ ClapSynthIF::~ClapSynthIF()
   printf("ClapSynthIF::~ClapSynthIF\n");
   #endif
 
+  // Disarm any queued on_main_thread() lambdas before we tear anything down.
+  *_instanceAlive = false;
+  
   // Clear events explicitly here before GUI destruction to avoid memory leaks.
   clearGuiEventSources();
 
@@ -468,12 +473,25 @@ void ClapSynthIF::hostRequestRestart()
   // TODO: post restart request to MusE main event queue
 }
 
+
 void ClapSynthIF::hostRequestCallback()
 {
   #ifdef CLAP_DEBUG
   printf("ClapSynthIF::hostRequestCallback\n");
   #endif
-  // TODO: schedule _plugin->on_main_thread() from main thread
+  // CLAP: request_callback may be called from any thread (incl. audio). Marshal
+  // _plugin->on_main_thread() onto the Qt main thread. Surge XT defers the bulk
+  // of its patch application (e.g. updating the displayed preset name) into this
+  // callback, so skipping it leaves a stale preset label after state load.
+  const clap_plugin_t* plug = _plugin;
+  auto alive = _instanceAlive;
+  QMetaObject::invokeMethod(qApp,
+    [plug, alive]()
+    {
+      if(*alive && plug)
+        plug->on_main_thread(plug);
+    },
+    Qt::QueuedConnection);
 }
 
 void ClapSynthIF::hostParamsRescan(clap_param_rescan_flags flags)
@@ -813,52 +831,18 @@ MidiPlayEvent ClapSynthIF::receiveEvent() { return MidiPlayEvent(); }
 //   write — save plugin state 
 //---------------------------------------------------------
 
-void ClapSynthIF::write(int level, Xml& xml) const
+void ClapSynthIF::write(int /*level*/, Xml& /*xml*/) const   // empty, unused !!!
 {
-  // Save plugin state blob via CLAP_EXT_STATE (covers all params + preset).
-  // The blob is base64-encoded so it survives XML text-node restrictions.
-  if(_extState && _plugin)
-  {
-    QByteArray blob;
-
-    clap_ostream_t ostream{};
-    ostream.ctx = &blob;
-    ostream.write = [](const clap_ostream_t* s, const void* buf, uint64_t size) -> int64_t {
-      QByteArray* ba = static_cast<QByteArray*>(s->ctx);
-      ba->append(static_cast<const char*>(buf), static_cast<int>(size));
-      return static_cast<int64_t>(size);
-    };
-
-    if(_extState->save(_plugin, &ostream) && !blob.isEmpty())
-    {
-      xml.tag(level++, "clapstate");
-      xml.strTag(level, "data", blob.toBase64().constData());
-      xml.etag(--level, "clapstate");
-    }
-    else
-    {
-      fprintf(stderr, "ClapSynthIF::write: state save failed or empty for '%s'\n",
-              _synth ? _synth->name().toLocal8Bit().constData() : "?");
-    }
-    return; // state blob supersedes per-param fallback
-  }
-
-  // Fallback: no CLAP_EXT_STATE — save individual param values.
-  // Plugins without state ext can at least restore sliders on reload.
-  if(!_synth || !_controls || !_extParams) return;
-
-  xml.tag(level++, "clapparams");
-  for(unsigned long i = 0; i < _synth->_controlInPorts; ++i)
-  {
-    const clap_param_info_t& pi = _synth->paramInfo[i];
-    double val = _controls[i].val;
-    // Re-query from plugin for freshest value
-    _extParams->get_value(_plugin, pi.id, &val);
-    xml.tag(level, "param id=\"%u\" val=\"%.10g\"/", (unsigned)pi.id, val);
-  }
-  xml.etag(--level, "clapparams");
+  // superseded by setCustomData()
+  //
+  // State now persists via getCustomData()/setCustomData() (the <customData>
+  // framework), so this per-SIF write() emits nothing. The old <clapstate>/
+  // <clapparams> path is superseded — the loader never dispatched into it.
+  //
+  // unused??? — kept for reference, do not re-enable (produced unreadable tags):
+  //   if(_extState && _plugin) { ... <clapstate><data>base64</data> ... }
+  //   else { ... <clapparams> per-param fallback ... }
 }
-
 
 
 
@@ -866,119 +850,110 @@ void ClapSynthIF::write(int level, Xml& xml) const
 //   read — load plugin state 
 //---------------------------------------------------------
 
-void ClapSynthIF::read(Xml& xml)
+void ClapSynthIF::read( Xml& /*xml*/ ) // empty, unused !!!
 {
-  // Matches write(): try to restore a state blob first, then fall back to
-  // per-param values. Called by MusE's song loader after init() + activate().
-  for(;;)
-  {
-    Xml::Token token = xml.parse();
-    const QString& tag = xml.s1();
-    if(token == Xml::Error || token == Xml::End)
-      break;
-
-    if(token == Xml::TagStart)
-    {
-      if(tag == "clapstate")
-      {
-        // Blob path
-        QString b64;
-        for(;;)
-        {
-          Xml::Token t2 = xml.parse();
-          if(t2 == Xml::Error || t2 == Xml::End) break;
-          if(t2 == Xml::TagStart && xml.s1() == "data")
-            b64 = xml.parse1(); // reads inner text + closing </data>
-          else if(t2 == Xml::TagEnd && xml.s1() == "clapstate")
-            break;
-        }
-        if(!b64.isEmpty() && _extState && _plugin)
-        {
-          const QByteArray blob = QByteArray::fromBase64(b64.toUtf8());
-          struct ReadCtx { const char* p; int64_t rem; };
-          ReadCtx rc{ blob.constData(), blob.size() };
-
-          clap_istream_t istream{};
-          istream.ctx = &rc;
-          istream.read = [](const clap_istream_t* s, void* buf, uint64_t size) -> int64_t {
-            ReadCtx* c = static_cast<ReadCtx*>(s->ctx);
-            int64_t n = std::min((int64_t)size, c->rem);
-            if(n <= 0) return 0;
-            memcpy(buf, c->p, (size_t)n);
-            c->p  += n;
-            c->rem -= n;
-            return n;
-          };
-
-          // Plugin must be deactivated for state load per CLAP spec.
-          const bool wasActive = _curActiveState;
-          if(wasActive) deactivate();
-
-          if(!_extState->load(_plugin, &istream))
-            fprintf(stderr, "ClapSynthIF::read: state load failed for '%s'\n",
-                    _synth ? _synth->name().toLocal8Bit().constData() : "?");
-
-          if(wasActive) activate();
-
-          // Resync our _controls[] cache from the plugin after state load
-          if(_extParams && _controls)
-          {
-            for(unsigned long i = 0; i < _synth->_controlInPorts; ++i)
-            {
-              double val = _controls[i].val;
-              if(_extParams->get_value(_plugin, _synth->paramInfo[i].id, &val))
-                _controls[i].val = static_cast<float>(val);
-            }
-          }
-        }
-        else if(!_extState)
-          fprintf(stderr, "ClapSynthIF::read: clapstate in XML but plugin has no state ext\n");
-      }
-
-      else if(tag == "clapparams")
-      {
-        for(;;)
-        {
-          Xml::Token t2 = xml.parse();
-          if(t2 == Xml::Error || t2 == Xml::End) break;
-          if(t2 == Xml::TagEnd && xml.s1() == "clapparams") break;
-          if(t2 == Xml::TagStart && xml.s1() == "param")
-          {
-            // read <id> and <val> as child tags
-            clap_id pid = CLAP_INVALID_ID;
-            double  val = 0.0;
-            for(;;)
-            {
-              Xml::Token t3 = xml.parse();
-              if(t3 == Xml::Error || t3 == Xml::End) break;
-              if(t3 == Xml::TagEnd && xml.s1() == "param") break;
-              if(t3 == Xml::TagStart)
-              {
-                if(xml.s1() == "id")  pid = (clap_id)xml.parseUInt();
-                else if(xml.s1() == "val") val = xml.parseDouble();
-                else xml.unknown("ClapSynthIF/param");
-              }
-            }
-            if(pid == CLAP_INVALID_ID) continue;
-            const auto it = _synth->paramIdToIndex.find(pid);
-            if(it != _synth->paramIdToIndex.end())
-            {
-              const unsigned long idx = it->second;
-              if(_controls && idx < _synth->_controlInPorts)
-                _controls[idx].val = static_cast<float>(val);
-              addScheduledControlEvent(idx, val, 0);
-            }
-          }
-        }
-      }
-      
-      else
-        xml.unknown("ClapSynthIF");
-    }
-    else if(token == Xml::TagEnd && tag == "clap") // enclosing synth tag
-      break;
-  }
+  // superseded by getCustomData()
 }
+
+
+
+
+
+
+
+//---------------------------------------------------------
+//   getCustomData — save CLAP state blob (base64) for <customData>
+//---------------------------------------------------------
+
+std::vector<QString> ClapSynthIF::getCustomData() const
+{
+  std::vector<QString> out;
+  if(!_extState || !_plugin)
+    return out;
+
+  QByteArray blob;
+  clap_ostream_t ostream{};
+  ostream.ctx = &blob;
+  ostream.write = [](const clap_ostream_t* s, const void* buf, uint64_t size) -> int64_t {
+    QByteArray* ba = static_cast<QByteArray*>(s->ctx);
+    ba->append(static_cast<const char*>(buf), static_cast<int>(size));
+    return static_cast<int64_t>(size);
+  };
+
+  if(_extState->save(_plugin, &ostream) && !blob.isEmpty())
+  {
+    fprintf(stderr, "ClapSynthIF::getCustomData: saved %d bytes for '%s'\n",
+            int(blob.size()), _synth ? _synth->name().toLocal8Bit().constData() : "?");
+    out.push_back(QString::fromLatin1(blob.toBase64()));
+  }
+  else
+    fprintf(stderr, "ClapSynthIF::getCustomData: state save failed/empty for '%s'\n",
+            _synth ? _synth->name().toLocal8Bit().constData() : "?");
+  return out;
+}
+
+//---------------------------------------------------------
+//   setCustomData — restore CLAP state blob, applied after initInstance()
+//---------------------------------------------------------
+
+bool ClapSynthIF::setCustomData(const std::vector<QString>& d)
+{
+  if(d.empty() || !_extState || !_plugin)
+    return false;
+
+  // We store exactly one base64 blob (the CLAP state stream).
+  const QByteArray blob = QByteArray::fromBase64(d.front().toLatin1());
+  if(blob.isEmpty())
+  {
+    fprintf(stderr, "ClapSynthIF::setCustomData: empty/invalid blob for '%s'\n",
+            _synth ? _synth->name().toLocal8Bit().constData() : "?");
+    return false;
+  }
+  fprintf(stderr, "ClapSynthIF::setCustomData: decoded %d bytes for '%s'\n",
+          int(blob.size()), _synth ? _synth->name().toLocal8Bit().constData() : "?");
+
+  struct ReadCtx { const char* p; int64_t rem; };
+  ReadCtx rc{ blob.constData(), blob.size() };
+  clap_istream_t istream{};
+  istream.ctx = &rc;
+  istream.read = [](const clap_istream_t* s, void* buf, uint64_t size) -> int64_t {
+    ReadCtx* c = static_cast<ReadCtx*>(s->ctx);
+    int64_t n = std::min((int64_t)size, c->rem);
+    if(n <= 0) return 0;
+    memcpy(buf, c->p, (size_t)n);
+    c->p += n; c->rem -= n;
+    return n;
+  };
+
+  // Plugin must be deactivated for state load per CLAP spec.
+  const bool wasActive = _curActiveState;
+  if(wasActive) deactivate();
+
+  const bool ok = _extState->load(_plugin, &istream);
+  fprintf(stderr, "ClapSynthIF::setCustomData: state->load=%d rem=%lld\n",
+          ok, (long long)rc.rem);
+  if(ok)
+    // Song load runs on the main thread; finish Surge's deferred patch apply
+    // (preset name/category) so the displayed preset matches the restored state.
+    _plugin->on_main_thread(_plugin);
+
+  if(wasActive) activate();
+
+  // Resync our _controls[] cache from the plugin after state load.
+  if(ok && _extParams && _controls && _synth)
+  {
+    for(unsigned long i = 0; i < _synth->_controlInPorts; ++i)
+    {
+      double val = _controls[i].val;
+      if(_extParams->get_value(_plugin, _synth->paramInfo[i].id, &val))
+        _controls[i].val = static_cast<float>(val);
+    }
+  }
+  return ok;
+}
+
+
+
 
 
 //---------------------------------------------------------

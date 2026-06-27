@@ -356,9 +356,24 @@ static SynthI* createSynthInstance(
       SynthI* si = nullptr;
       if (s) {
             si = new SynthI();
+
             QString n;
             n.setNum(s->references());
-            QString instance_name = s->label() + "-" + n;
+            // NEW: 
+            // Use the human-friendly plugin name for the instance/device name.
+            // s->label() is the formal id (for CLAP a reverse-DNS string like
+            // "org.surge-synth-team.surge-xt"), which is fine for matching but
+            // ugly as a track/port name. Fall back to label() if name() is empty.
+            QString base = s->name().isEmpty() ? s->label() : s->name();
+            QString instance_name = base + "-" + n;
+
+            if(s->pluginType() == MusEPlugin::PluginTypeCLAP)
+                base += "-[CLAP]";  // add plugin suffix (?)
+            
+            // OLD, REMOVE LATER: 
+            //QString instance_name = s->label() + "-" + n;
+
+
             //Andrew Deryabin: check si->_sif for NULL as synth instance may not be created.
                if (si->initInstance(s, instance_name)) {
                   delete si;
