@@ -934,9 +934,9 @@ void ClapSynthIF::read(Xml& xml)
         else if(!_extState)
           fprintf(stderr, "ClapSynthIF::read: clapstate in XML but plugin has no state ext\n");
       }
+
       else if(tag == "clapparams")
       {
-        // Fallback per-param path
         for(;;)
         {
           Xml::Token t2 = xml.parse();
@@ -944,20 +944,34 @@ void ClapSynthIF::read(Xml& xml)
           if(t2 == Xml::TagEnd && xml.s1() == "clapparams") break;
           if(t2 == Xml::TagStart && xml.s1() == "param")
           {
-            clap_id pid = (clap_id)xml.s2().toUInt(); // id="..."
-            double  val = xml.s3().toDouble();          // val="..."
+            // read <id> and <val> as child tags
+            clap_id pid = CLAP_INVALID_ID;
+            double  val = 0.0;
+            for(;;)
+            {
+              Xml::Token t3 = xml.parse();
+              if(t3 == Xml::Error || t3 == Xml::End) break;
+              if(t3 == Xml::TagEnd && xml.s1() == "param") break;
+              if(t3 == Xml::TagStart)
+              {
+                if(xml.s1() == "id")  pid = (clap_id)xml.parseUInt();
+                else if(xml.s1() == "val") val = xml.parseDouble();
+                else xml.unknown("ClapSynthIF/param");
+              }
+            }
+            if(pid == CLAP_INVALID_ID) continue;
             const auto it = _synth->paramIdToIndex.find(pid);
             if(it != _synth->paramIdToIndex.end())
             {
               const unsigned long idx = it->second;
               if(_controls && idx < _synth->_controlInPorts)
                 _controls[idx].val = static_cast<float>(val);
-              // Push to plugin via param flush event at next process()
               addScheduledControlEvent(idx, val, 0);
             }
           }
         }
       }
+      
       else
         xml.unknown("ClapSynthIF");
     }
