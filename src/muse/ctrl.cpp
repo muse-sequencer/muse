@@ -1578,9 +1578,18 @@ bool CtrlList::read(Xml& xml)
                         else if (tag == "cur")
                         {
                               // Accept either decimal or hex value strings.
-                              _curVal = MusELib::museStringToDouble(xml.s2(), &ok);
+                              // (Hex-floats like "0x1.aaaaaap-1" are parsed in the
+                              //  "C" locale by museStringToDouble(); see hex_float.cpp.)
+                              const QString cv = xml.s2();
+                              _curVal = MusELib::museStringToDouble(cv, &ok);
                               if(!ok)
-                                fprintf(stderr, "CtrlList::read failed reading _curVal string: %s\n", xml.s2().toLocal8Bit().constData());
+                                // On failure dump the raw bytes too: exposes stray
+                                // leading/trailing space(0x20)/newline(0x0a)/null(0x00).
+                                fprintf(stderr,
+                                  "CtrlList::read: failed parsing _curVal=[%s] (len=%lld bytes=%s)\n",
+                                  cv.toLocal8Bit().constData(),
+                                  static_cast<long long>(cv.size()),
+                                  cv.toLatin1().toHex(' ').constData());
                         }
                         else if (tag == "visible")
                         {

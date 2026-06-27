@@ -146,8 +146,13 @@ void Xml::token(int cc)
             i++;
             next();
             }
-      buffer.append(char(0));
-      _s2 = buffer;     // deep copy !?
+
+
+      // // buffer.append(char(0)); // NO !
+      
+      // No trailing '\0': QByteArray->QString keeps full size(), which would embed
+      // a null char into _s2 and break strict length checks (e.g. hex-float parsing).
+      _s2 = QString::fromUtf8(buffer);
       }
 
 //---------------------------------------------------------
@@ -218,8 +223,9 @@ void Xml::stoken()
                   break;
             next();
             }
-      buffer.append(char(0));
-      _s2 = buffer;
+      // // buffer.append(char(0));  // NO !
+      // See note in token(): do not append a trailing '\0' here.
+      _s2 = QString::fromUtf8(buffer);
       }
 
 //---------------------------------------------------------
