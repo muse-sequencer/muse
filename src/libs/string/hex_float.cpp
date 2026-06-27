@@ -103,7 +103,10 @@ double museStringToDouble(const QString &s, bool *ok)
     //
     // strtod handles hex-float literals (0x...) with '.' correctly in all C99+ implementations,
     // regardless of the system locale's decimal separator. No translation needed.
-    const QByteArray ba = s.toLatin1();
+    // Trim whitespace first: xml.s2() can carry a trailing space or newline from
+    // the XML tokeniser, which would make (end - sc) < ba.size() and set ok=false
+    // even though the value was parsed correctly.
+    const QByteArray ba = s.trimmed().toLatin1();
     const char *sc = ba.constData();
     char *end;
     const double rv = std::strtod(sc, &end);
@@ -179,7 +182,8 @@ float museStringToFloat(const QString &s, bool *ok)
     //
     // strtof handles hex-float literals (0x...) with '.' correctly in all C99+ implementations,
     // regardless of the system locale's decimal separator. No translation needed.
-    const QByteArray ba = s.toLatin1();
+    // Trim whitespace: xml.s2() can carry trailing spaces/newlines from the XML tokeniser.
+    const QByteArray ba = s.trimmed().toLatin1();
     const char *sc = ba.constData();
     char *end;
     const float rv = std::strtof(sc, &end);
@@ -199,3 +203,4 @@ float museStringToFloat(const QString &s, bool *ok)
 }
 
 } // namespace MusELib
+
