@@ -21,9 +21,13 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-if (COMMAND cmake_policy)
+
+if(POLICY CMP0177)
+    # CMP0177 controls how CMake > 4.0 interprets generator expressions inside target_sources()
+    # for older cmake versions, we discard it using if condition. 
     cmake_policy(SET CMP0177 NEW)
 endif()
+
 
 install( FILES pdf/documentation.pdf pdf/developer_docs.pdf
       DESTINATION ${MusE_DOC_DIR}/muse_pdf
