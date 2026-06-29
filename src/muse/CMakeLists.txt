@@ -311,6 +311,7 @@ target_link_libraries(core
       muse_string
       plugin_scan_module
       plugin_cache_writer_module
+      plugin_cache_reader_module
       Threads::Threads
       synti
       sysex_helper_module
@@ -334,9 +335,13 @@ target_link_libraries(core
       dl
       )
 
-if(NOT LV2_USE_PLUGIN_CACHE)
-      target_link_libraries(core plugin_cache_reader_module)
-endif(NOT LV2_USE_PLUGIN_CACHE)
+
+# # condition removed, always link reader module, else linker error likely
+# if(NOT LV2_USE_PLUGIN_CACHE)
+#       target_link_libraries(core plugin_cache_reader_module)
+# endif(NOT LV2_USE_PLUGIN_CACHE)
+
+
 
 if(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB OR NOT HAVE_CXX_ATOMICS64_WITHOUT_LIB)
       message("Warning: HAVE_CXX_ATOMICS_WITHOUT_LIB or HAVE_CXX_ATOMICS64_WITHOUT_LIB are false. Linking core with required libatomic.")
