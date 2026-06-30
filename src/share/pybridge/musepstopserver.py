@@ -24,7 +24,7 @@
 This file stops the muse Pyro server
 """
 
-import Pyro4.core
+from Pyro5.compatibility import Pyro4
 
 muse=Pyro4.core.Proxy('PYRONAME:muse')
 
