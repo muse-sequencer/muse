@@ -25,9 +25,7 @@ This file is used by MusE for launching a Pyro name service and connecting a rem
 """
 
 from __future__ import print_function
-import Pyro4.core
-import Pyro4.naming
-from Pyro4.errors import PyroError,NamingError
+from Pyro5.compatibility import Pyro4
 import socket
 import select
 import time

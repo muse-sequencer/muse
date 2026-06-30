@@ -21,7 +21,7 @@
 //=========================================================
 """
 
-import Pyro4.core
+from Pyro5.compatibility import Pyro4
 import time
 
 muse=Pyro4.core.Proxy("PYRONAME:muse")

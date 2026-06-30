@@ -26,7 +26,7 @@ from PyQt5.QtWidgets import QApplication
 
 from parter import ParterMainwidget
 import sys, os
-import Pyro4.core
+from Pyro5.compatibility import Pyro4
 
 #import musemock
 #muse = musemock.MusEMock()
