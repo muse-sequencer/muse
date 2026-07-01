@@ -487,9 +487,19 @@ bool ClapSynthIF::hostIsMainThread() const
 
 bool ClapSynthIF::hostIsAudioThread() const
 {
-  // True only on MusE's real RT audio thread, whichever backend owns it.
-  return MusEGlobal::audio && MusEGlobal::audio->isAudioThread();
+  // // OLD, REMOVE: return MusEGlobal::audio && MusEGlobal::audio->isAudioThread();
+  // NEW: 
+  // When the audio engine is not running (e.g. during shutdown/teardown), no
+  // RT thread is executing process(), so audio-thread calls are race-free from
+  // whatever thread performs teardown. Report true so strict plugins (u-he
+  // Diva) allow stop_processing() at that point. While audio IS running, only
+  // the real captured RT thread qualifies.
+  if(!MusEGlobal::audio || !MusEGlobal::audio->isRunning())
+      return true;
+  //else: 
+  return MusEGlobal::audio->isAudioThread();
 }
+
 
 //---------------------------------------------------------
 //   Host callback implementations
@@ -802,6 +812,7 @@ bool ClapSynthIF::init(ClapSynth* s)
 //   activate / deactivate
 //---------------------------------------------------------
 
+
 void ClapSynthIF::activate()
 {
   if(_curActiveState) return;
@@ -817,12 +828,12 @@ void ClapSynthIF::activate()
     fprintf(stderr, "ClapSynthIF::activate: plugin->activate() failed\n");
     return;
   }
-  if(!_plugin->start_processing(_plugin))
-  {
-    fprintf(stderr, "ClapSynthIF::activate: start_processing() failed\n");
-    _plugin->deactivate(_plugin);
-    return;
-  }
+  // Do NOT call start_processing() here: this runs on the main thread and CLAP
+  // requires it on the audio thread. Flag it; getData() starts it next cycle.
+  _clapProcessing.store(false, std::memory_order_release);
+  _stopProcessingReq.store(false, std::memory_order_release);
+  _startProcessingReq.store(true, std::memory_order_release);
+
   SynthIF::activate();
 }
 
@@ -834,12 +845,37 @@ void ClapSynthIF::deactivate()
     printf("ClapSynthIF::deactivate: _plugin is nullptr\n");
     return;
   }
-  _plugin->stop_processing(_plugin);
+  // stop_processing() must run on the audio thread. If the plugin is currently
+  // processing and audio is running, ask getData() to stop it and wait briefly
+  // for the audio thread to acknowledge. If audio is not running, no audio
+  // thread will act, but then no cycle is in flight either, so it is safe to
+  // stop here directly (nothing races with us).
+  _startProcessingReq.store(false, std::memory_order_release);
+  if(_clapProcessing.load(std::memory_order_acquire))
+  {
+    if(MusEGlobal::audio && MusEGlobal::audio->isRunning())
+    {
+      _stopProcessingReq.store(true, std::memory_order_release);
+      // Bounded wait for the audio thread to run one cycle and clear the flag.
+      for(int i = 0; i < 1000 && _clapProcessing.load(std::memory_order_acquire); ++i)
+        usleep(1000); // up to ~1s
+      if(_clapProcessing.load(std::memory_order_acquire))
+        fprintf(stderr, "ClapSynthIF::deactivate: timed out waiting for audio-thread stop_processing()\n");
+    }
+    else
+    {
+      // No audio thread active — safe to stop directly.
+      _plugin->stop_processing(_plugin);
+      _clapProcessing.store(false, std::memory_order_release);
+    }
+  }
   _plugin->deactivate(_plugin);
   SynthIF::deactivate();
 }
 
 void ClapSynthIF::deactivate3() { deactivate(); }
+
+
 
 //---------------------------------------------------------
 //   getParameter / setParameter
@@ -1297,6 +1333,27 @@ bool ClapSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports,
                           unsigned nframes, float** buffer)
 {
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
+
+
+  // Perform CLAP start/stop_processing here — this is the audio thread, which
+  // is what CLAP requires. Driven by flags set from activate()/deactivate().
+  if(_startProcessingReq.load(std::memory_order_acquire) &&
+     !_clapProcessing.load(std::memory_order_relaxed) && _plugin)
+  {
+    if(_plugin->start_processing(_plugin))
+      _clapProcessing.store(true, std::memory_order_release);
+    else
+      fprintf(stderr, "ClapSynthIF::getData: start_processing() failed\n");
+    _startProcessingReq.store(false, std::memory_order_release);
+  }
+  if(_stopProcessingReq.load(std::memory_order_acquire) &&
+     _clapProcessing.load(std::memory_order_relaxed) && _plugin)
+  {
+    _plugin->stop_processing(_plugin);
+    _clapProcessing.store(false, std::memory_order_release);
+    _stopProcessingReq.store(false, std::memory_order_release);
+  }
+
 
   #ifdef CLAP_DEBUG_PROCESS
   fprintf(stderr, "ClapSynthIF::getData: pos:%u ports:%d nframes:%u\n", pos, ports, nframes);

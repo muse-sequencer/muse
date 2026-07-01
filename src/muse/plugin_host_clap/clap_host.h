@@ -258,6 +258,15 @@ private:
   bool _isGuiCreated  = false;
   bool _isGuiVisible  = false;
   bool _isGuiFloating = false;
+
+  // CLAP requires start_processing()/stop_processing() to run on the AUDIO
+  // thread, while activate()/deactivate() run on the MAIN thread. So activate()
+  // only flags a request; getData() (audio thread) performs the actual
+  // start/stop. Diva (u-he) enforces this and aborts otherwise.
+  std::atomic<bool> _clapProcessing        { false }; ///< plugin is in processing state
+  std::atomic<bool> _startProcessingReq    { false }; ///< audio thread should start_processing
+  std::atomic<bool> _stopProcessingReq     { false }; ///< audio thread should stop_processing
+  
   // Host-owned native window the plugin draws into when embedded (X11/Win32/Cocoa).
   // Stays nullptr for floating GUIs, which own their own window.
   QWidget* _editorWindow = nullptr;
