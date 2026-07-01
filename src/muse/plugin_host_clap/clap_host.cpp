@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
+#include <QThread>
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>   // qApp, for marshalling on_main_thread() to GUI thread
@@ -41,6 +43,8 @@
 #include <clap/ext/timer-support.h>
 #include <clap/ext/posix-fd-support.h>
 #include <clap/factory/plugin-factory.h>
+#include <clap/ext/thread-check.h>
+
 
 #include "clap_host.h"
 #include "synth.h"
@@ -78,6 +82,25 @@ union ClapEventSlot {
   clap_event_param_value_t param;
 };
 static constexpr uint32_t kClapEventSlotSize = sizeof(ClapEventSlot);
+
+
+
+
+//---------------------------------------------------------
+//   Clap - Thread Check - extension
+//---------------------------------------------------------
+
+static bool CLAP_ABI clapHostIsMainThread(const clap_host_t* host)
+{ return hostFromClap(host)->hostIsMainThread(); }
+
+static bool CLAP_ABI clapHostIsAudioThread(const clap_host_t* host)
+{ return hostFromClap(host)->hostIsAudioThread(); }
+
+static const clap_host_thread_check_t s_hostThreadCheckExt = {
+  clapHostIsMainThread,
+  clapHostIsAudioThread,
+};
+
 
 //---------------------------------------------------------
 //   initCLAP
@@ -120,6 +143,8 @@ void initCLAP()
     }
   }
 }
+
+
 
 //---------------------------------------------------------
 //   ClapSynth
@@ -451,6 +476,20 @@ static const clap_host_posix_fd_support_t s_hostPosixFdExt = {
 
 
 
+//---------------------------------------------------------
+//   clap - Thread Check - extension 
+//---------------------------------------------------------
+
+bool ClapSynthIF::hostIsMainThread() const
+{
+  return QThread::currentThread() == qApp->thread();
+}
+
+bool ClapSynthIF::hostIsAudioThread() const
+{
+  // True only on MusE's real RT audio thread, whichever backend owns it.
+  return MusEGlobal::audio && MusEGlobal::audio->isAudioThread();
+}
 
 //---------------------------------------------------------
 //   Host callback implementations
@@ -463,6 +502,7 @@ const void* ClapSynthIF::hostGetExtension(const char* ext_id)
   if(strcmp(ext_id, CLAP_EXT_GUI)    == 0) return clapGuiHostExt();
   if(strcmp(ext_id, CLAP_EXT_TIMER_SUPPORT)    == 0) return &s_hostTimerExt;
   if(strcmp(ext_id, CLAP_EXT_POSIX_FD_SUPPORT) == 0) return &s_hostPosixFdExt;
+  if(strcmp(ext_id, CLAP_EXT_THREAD_CHECK) == 0) return &s_hostThreadCheckExt;
   return nullptr;
 }
 

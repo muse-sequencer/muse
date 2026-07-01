@@ -91,6 +91,8 @@ public:
   std::vector<unsigned long> iIdx;
   std::vector<unsigned long> oIdx;
 
+
+
 private:
   const clap_plugin_entry_t*      _entry;   ///< resolved 'clap_entry' symbol
   const clap_plugin_factory_t*    _factory; ///< from _entry->get_factory()
@@ -196,6 +198,11 @@ public:
   bool hostFdRegister(int fd, clap_posix_fd_flags_t flags);
   bool hostFdModify(int fd, clap_posix_fd_flags_t flags);
   bool hostFdUnregister(int fd);
+
+
+  // clap - thread check - extension
+  bool hostIsMainThread() const;
+  bool hostIsAudioThread() const;
 
 private:
   void buildHostVtable();
