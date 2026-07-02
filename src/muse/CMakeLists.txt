@@ -98,8 +98,10 @@ file (GLOB core_source_files
       ctrl.cpp
       dialogs.cpp
       dssihost.cpp
-      plugin_host_clap/clap_host.cpp
-      plugin_host_clap/clap_host_gui.cpp
+      plugin_host_clap/clap_host_lib_core.cpp
+      plugin_host_clap/clap_host_lib_gui.cpp
+      plugin_host_clap/clap_host_synth.cpp
+      plugin_host_clap/clap_host_effect.cpp
       event.cpp
       eventlist.cpp
       event_tag_list.cpp

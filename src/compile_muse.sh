@@ -22,13 +22,13 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-if [ -d build ]; then
+if [ -d ../build ]; then
         echo "Build dir already exists"
 else
 	echo "Create build dir"
-	mkdir build
+	mkdir ../build    # compile outside src directory ! 
 fi
-cd build
+cd ../build
 
 # to put the resulting binary in a specific location add -DCMAKE_INSTALL_PREFIX=<some location>
 cmake -DCMAKE_BUILD_TYPE=release -DMODULES_BUILD_STATIC=ON .. && make clean all && echo "Build was OK, now enter the 'build' dir and run 'make install' as root"

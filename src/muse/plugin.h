@@ -746,6 +746,9 @@ class PluginI : public PluginIBase {
     friend class VstNativeSynth;
     friend class VstNativePluginWrapper;
 #endif
+#ifdef CLAP_SUPPORT
+    friend class ClapPluginWrapper;
+#endif
       Plugin* _plugin;
       int instances;
       AudioTrack* _track;

@@ -66,6 +66,10 @@
 #include "vst_native.h"
 #endif
 
+#ifdef CLAP_SUPPORT
+#include "clap_host_effect.h"
+#endif
+
 #include "audio.h"
 #include "al/dsp.h"
 
@@ -2409,6 +2413,11 @@ bool Pipeline::hasNativeGui(int idx) const
       return ((VstNativePluginWrapper *)p->plugin())->hasNativeGui();
 #endif
 
+#ifdef CLAP_SUPPORT
+    if(p->pluginType() == MusEPlugin::PluginTypeCLAP)
+      return ((ClapPluginWrapper *)p->plugin())->hasNativeGui();
+#endif
+
 
       return !p->dssi_ui_filename().isEmpty();
   }
@@ -2431,7 +2440,7 @@ void Pipeline::showGui(int idx, bool flag)
 //   showNativeGui
 //---------------------------------------------------------
 
-#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT) || defined(CLAP_SUPPORT)
 void Pipeline::showNativeGui(int idx, bool flag)
       {
          PluginI* p = (*this)[idx];
@@ -2454,16 +2463,25 @@ void Pipeline::showNativeGui(int idx, bool flag)
            }
 
 #endif
+
+#ifdef CLAP_SUPPORT
+           if(p->plugin() && p->pluginType() == MusEPlugin::PluginTypeCLAP)
+           {
+              ((ClapPluginWrapper *)p->plugin())->showNativeGui(p, flag);
+              return;
+           }
+
+#endif
       #ifdef OSC_SUPPORT
             p->oscIF().oscShowGui(flag);
       #endif
          }
       }
-#else // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+#else // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT) || defined(CLAP_SUPPORT)
 void Pipeline::showNativeGui(int /*idx*/, bool /*flag*/)
       {
       }
-#endif // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+#endif // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT) || defined(CLAP_SUPPORT)
 
 //---------------------------------------------------------
 //   deleteGui
@@ -2489,6 +2507,13 @@ void Pipeline::deleteGui(int idx)
          if(p->plugin() && p->pluginType() == MusEPlugin::PluginTypeLinuxVST)
          {
             ((VstNativePluginWrapper *)p->plugin())->showNativeGui(p, false);
+         }
+#endif
+
+#ifdef CLAP_SUPPORT
+         if(p->plugin() && p->pluginType() == MusEPlugin::PluginTypeCLAP)
+         {
+            ((ClapPluginWrapper *)p->plugin())->showNativeGui(p, false);
          }
 #endif
   }
@@ -4461,6 +4486,17 @@ PluginIBase::showNativeGui();
     return;
   }
 #endif
+
+#ifdef CLAP_SUPPORT
+  if(pluginType() == MusEPlugin::PluginTypeCLAP)
+  {
+    if(((ClapPluginWrapper *)plugin())->nativeGuiVisible(this))
+       ((ClapPluginWrapper *)plugin())->showNativeGui(this, false);
+    else
+       ((ClapPluginWrapper *)plugin())->showNativeGui(this, true);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
   if (_plugin)
   {
@@ -4491,6 +4527,14 @@ void PluginI::showNativeGui(bool flag)
     return;
   }
 #endif
+
+#ifdef CLAP_SUPPORT
+  if(pluginType() == MusEPlugin::PluginTypeCLAP)
+  {
+    ((ClapPluginWrapper *)plugin())->showNativeGui(this, flag);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
   if(_plugin)
   {
@@ -4512,6 +4556,10 @@ bool PluginI::nativeGuiVisible() const
 #ifdef VST_NATIVE_SUPPORT
     if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
       return ((VstNativePluginWrapper *)plugin())->nativeGuiVisible(this);
+#endif
+#ifdef CLAP_SUPPORT
+    if(pluginType() == MusEPlugin::PluginTypeCLAP)
+      return ((ClapPluginWrapper *)plugin())->nativeGuiVisible(this);
 #endif
   #ifdef OSC_SUPPORT
   return _oscif.oscGuiVisible();

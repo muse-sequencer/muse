@@ -2,12 +2,13 @@
 //  MusE
 //  Linux Music Editor
 //
-//  clap_host_gui.cpp
-//  CLAP host GUI integration for MusE (window embedding + size negotiation).
-//  Split out of clap_host.cpp so the audio/host core stays free of Qt-widget
-//  dependencies. All definitions here are members of ClapSynthIF (declared in
-//  clap_host.h) plus the clap_host_gui vtable used by the core's
-//  hostGetExtension().
+//  clap_host_lib_gui.cpp
+//  CLAP host GUI integration (window embedding + size negotiation) for the
+//  shared ClapInstanceCore. See clap_host_lib.h for the class contract and
+//  clap_host_lib_core.cpp for the non-GUI half. All definitions here are
+//  members of ClapInstanceCore, plus the three host-extension vtables
+//  (clap.gui / clap.timer-support / clap.posix-fd-support) that core's
+//  hostGetExtension() returns.
 //
 //  (C) Copyright 2024 MusE contributors
 //
@@ -36,15 +37,13 @@
 #include <clap/ext/timer-support.h>
 #include <clap/ext/posix-fd-support.h>
 
-#include "clap_host.h"
-#include "synth.h"
-#include "plugin.h"
+#include "clap_host_lib.h"
 
 namespace MusECore {
 
 //---------------------------------------------------------
 //   clap_host_gui vtable + accessor
-//   (trampolines forward into the per-instance ClapSynthIF)
+//   (trampolines forward into the per-instance ClapInstanceCore)
 //---------------------------------------------------------
 
 static void CLAP_ABI clapHostGuiResizeHintsChanged(const clap_host_t* /*host*/)
@@ -54,16 +53,16 @@ static void CLAP_ABI clapHostGuiResizeHintsChanged(const clap_host_t* /*host*/)
 
 static bool CLAP_ABI clapHostGuiRequestResize(const clap_host_t* host,
                                               uint32_t w, uint32_t h)
-{ return hostFromClap(host)->hostGuiRequestResize(w, h); }
+{ return coreFromClap(host)->hostGuiRequestResize(w, h); }
 
 static bool CLAP_ABI clapHostGuiRequestShow(const clap_host_t* host)
-{ hostFromClap(host)->showNativeGui(true);  return true; }
+{ coreFromClap(host)->showNativeGui(true);  return true; }
 
 static bool CLAP_ABI clapHostGuiRequestHide(const clap_host_t* host)
-{ hostFromClap(host)->showNativeGui(false); return true; }
+{ coreFromClap(host)->showNativeGui(false); return true; }
 
 static void CLAP_ABI clapHostGuiClosed(const clap_host_t* host, bool was_destroyed)
-{ hostFromClap(host)->hostGuiClosed(was_destroyed); }
+{ coreFromClap(host)->hostGuiClosed(was_destroyed); }
 
 static const clap_host_gui_t s_hostGuiExt = {
   clapHostGuiResizeHintsChanged,
@@ -73,15 +72,56 @@ static const clap_host_gui_t s_hostGuiExt = {
   clapHostGuiClosed,
 };
 
-const clap_host_gui_t* clapGuiHostExt() { return &s_hostGuiExt; }
+const clap_host_gui_t* clapCoreGuiHostExt() { return &s_hostGuiExt; }
+
+//---------------------------------------------------------
+//   clap_host_timer_support vtable + accessor
+//---------------------------------------------------------
+
+static bool CLAP_ABI clapHostTimerRegister(const clap_host_t* host,
+                                           uint32_t period_ms, clap_id* timer_id)
+{ return coreFromClap(host)->hostTimerRegister(period_ms, timer_id); }
+
+static bool CLAP_ABI clapHostTimerUnregister(const clap_host_t* host, clap_id timer_id)
+{ return coreFromClap(host)->hostTimerUnregister(timer_id); }
+
+static const clap_host_timer_support_t s_hostTimerExt = {
+  clapHostTimerRegister,
+  clapHostTimerUnregister,
+};
+
+const clap_host_timer_support_t* clapCoreTimerHostExt() { return &s_hostTimerExt; }
+
+//---------------------------------------------------------
+//   clap_host_posix_fd_support vtable + accessor
+//---------------------------------------------------------
+
+static bool CLAP_ABI clapHostFdRegister(const clap_host_t* host,
+                                        int fd, clap_posix_fd_flags_t flags)
+{ return coreFromClap(host)->hostFdRegister(fd, flags); }
+
+static bool CLAP_ABI clapHostFdModify(const clap_host_t* host,
+                                      int fd, clap_posix_fd_flags_t flags)
+{ return coreFromClap(host)->hostFdModify(fd, flags); }
+
+static bool CLAP_ABI clapHostFdUnregister(const clap_host_t* host, int fd)
+{ return coreFromClap(host)->hostFdUnregister(fd); }
+
+static const clap_host_posix_fd_support_t s_hostPosixFdExt = {
+  clapHostFdRegister,
+  clapHostFdModify,
+  clapHostFdUnregister,
+};
+
+const clap_host_posix_fd_support_t* clapCorePosixFdHostExt() { return &s_hostPosixFdExt; }
 
 //---------------------------------------------------------
 //   destroyGui
-//   Full teardown: cleanly detach from X11, destroy plugin GUI, 
+//   Full teardown: cleanly detach from X11, destroy plugin GUI,
 //   then delete the host window.
 //---------------------------------------------------------
 
-void ClapSynthIF::destroyGui()
+void ClapInstanceCore::destroyGui()
 {
   // WE MUST NOT CALL clearGuiEventSources() HERE!
   // In Linux X11, many CLAP plugins (e.g. u-he) open their X11 display
@@ -113,25 +153,21 @@ void ClapSynthIF::destroyGui()
 }
 
 //---------------------------------------------------------
-//   nativeGuiVisible
-//---------------------------------------------------------
-
-bool ClapSynthIF::nativeGuiVisible() const { return _isGuiVisible; }
-
-//---------------------------------------------------------
 //   showNativeGui
 //   v == true  : create (if needed) + show
-//   v == false : hide and destroy (prevents X11 black-screen on re-show)
+//   v == false : hide only (keep created; destroy happens in closeNativeGui())
+//   NOTE: unlike the old ClapSynthIF::showNativeGui(), this does NOT call
+//   PluginIBase::showNativeGui(v) — ClapInstanceCore doesn't know about
+//   PluginIBase/Plugin. Callers (ClapSynthIF, ClapPluginWrapper_State) do
+//   that bookkeeping themselves before/after calling this.
 //---------------------------------------------------------
 
-void ClapSynthIF::showNativeGui(bool v)
+void ClapInstanceCore::showNativeGui(bool v)
 {
-  PluginIBase::showNativeGui(v);
-
   if(!_extGui || !_plugin)
   {
     #ifdef CLAP_DEBUG
-    printf("ClapSynthIF::showNativeGui: no GUI extension\n");
+    printf("ClapInstanceCore::showNativeGui: no GUI extension\n");
     #endif
     return;
   }
@@ -155,7 +191,7 @@ void ClapSynthIF::showNativeGui(bool v)
       const bool floatOk = _extGui->is_api_supported(_plugin, api, true);
 
       fprintf(stderr,
-        "ClapSynthIF::showNativeGui: platform='%s' api='%s' embeddable=%d floatable=%d\n",
+        "ClapInstanceCore::showNativeGui: platform='%s' api='%s' embeddable=%d floatable=%d\n",
         QGuiApplication::platformName().toLocal8Bit().constData(), api, embedOk, floatOk);
 
       // Decide embedded vs floating.
@@ -167,10 +203,10 @@ void ClapSynthIF::showNativeGui(bool v)
         else
         {
           fprintf(stderr,
-            "ClapSynthIF::showNativeGui: plugin '%s' only supports embedded X11, "
+            "ClapInstanceCore::showNativeGui: plugin '%s' only supports embedded X11, "
             "which does not work on native Wayland. Run MusE under XWayland "
             "(QT_QPA_PLATFORM=xcb) to embed its GUI.\n",
-            _synth->name().toLocal8Bit().constData());
+            _displayName.toLocal8Bit().constData());
           return;
         }
       }
@@ -180,13 +216,13 @@ void ClapSynthIF::showNativeGui(bool v)
         floating = true;
       else
       {
-        fprintf(stderr, "ClapSynthIF::showNativeGui: no supported GUI api '%s'\n", api);
+        fprintf(stderr, "ClapInstanceCore::showNativeGui: no supported GUI api '%s'\n", api);
         return;
       }
 
       if(!_extGui->create(_plugin, api, floating))
       {
-        fprintf(stderr, "ClapSynthIF::showNativeGui: gui->create(floating=%d) failed\n", floating);
+        fprintf(stderr, "ClapInstanceCore::showNativeGui: gui->create(floating=%d) failed\n", floating);
         return;
       }
       _isGuiCreated  = true;
@@ -194,15 +230,15 @@ void ClapSynthIF::showNativeGui(bool v)
 
       if(floating)
       {
-        _extGui->suggest_title(_plugin, _synth->name().toUtf8().constData());
-        fprintf(stderr, "ClapSynthIF::showNativeGui: using floating window\n");
+        _extGui->suggest_title(_plugin, _displayName.toUtf8().constData());
+        fprintf(stderr, "ClapInstanceCore::showNativeGui: using floating window\n");
       }
       else
       {
         _editorWindow = new QWidget(nullptr);
-        _editorWindow->setWindowTitle(_synth->name());
+        _editorWindow->setWindowTitle(_displayName);
         _editorWindow->setAttribute(Qt::WA_NativeWindow, true);
-        
+
         // Prevent Qt from aggressively repainting the background and erasing the plugin
         _editorWindow->setAttribute(Qt::WA_OpaquePaintEvent, true);
         _editorWindow->setAttribute(Qt::WA_NoSystemBackground, true);
@@ -222,14 +258,14 @@ void ClapSynthIF::showNativeGui(bool v)
         cw.x11   = static_cast<clap_xwnd>(_editorWindow->winId());
 #endif
         const bool parented = _extGui->set_parent(_plugin, &cw);
-        fprintf(stderr, "ClapSynthIF::showNativeGui: set_parent=%d xid=0x%lx\n",
+        fprintf(stderr, "ClapInstanceCore::showNativeGui: set_parent=%d xid=0x%lx\n",
                 parented, (unsigned long)_editorWindow->winId());
         if(!parented)
-          fprintf(stderr, "ClapSynthIF::showNativeGui: set_parent() failed\n");
+          fprintf(stderr, "ClapInstanceCore::showNativeGui: set_parent() failed\n");
 
         uint32_t w = 0, h = 0;
         const bool gotSize = _extGui->get_size(_plugin, &w, &h);
-        fprintf(stderr, "ClapSynthIF::showNativeGui: embedded; get_size=%d w=%u h=%u\n",
+        fprintf(stderr, "ClapInstanceCore::showNativeGui: embedded; get_size=%d w=%u h=%u\n",
                 gotSize, w, h);
         if(gotSize && w > 0 && h > 0)
         {
@@ -251,12 +287,21 @@ void ClapSynthIF::showNativeGui(bool v)
   }
   else
   {
+    // Hide only — do NOT destroy the plugin GUI on hide. Destroying on every
+    // hide (a) crashes GL plugins like Cardinal, whose destroy() unbinds its GL
+    // context against an already-gone drawable (glXMakeCurrent draw=0 -> SIGSEGV
+    // in the GLX driver), and (b) forces a full embed/GL-surface recreate on
+    // re-show that leaves several plugins black. Keeping the GUI created and
+    // just hiding the window is the CLAP-idiomatic model and keeps the plugin's
+    // render surface + event sources alive across show/hide. Full teardown is
+    // done in closeNativeGui()/destroyGui() at actual close/shutdown.
     if(_isGuiVisible)
     {
-      // Destroying the GUI completely on hide is the most reliable approach for Linux.
-      // It prevents "pure black" screens caused by X11 embedding losing
-      // its graphics context or child window mappings across unmap/map cycles.
-      destroyGui();
+      if(_extGui && _plugin)
+        _extGui->hide(_plugin);
+      if(_editorWindow)
+        _editorWindow->hide();
+      _isGuiVisible = false;
     }
   }
 }
@@ -266,7 +311,7 @@ void ClapSynthIF::showNativeGui(bool v)
 //   Full teardown (unlike showNativeGui(false) which only hides).
 //---------------------------------------------------------
 
-void ClapSynthIF::closeNativeGui()
+void ClapInstanceCore::closeNativeGui()
 {
   destroyGui();
 }
@@ -276,26 +321,30 @@ void ClapSynthIF::closeNativeGui()
 //   Plugin/window-manager told us the GUI window was closed.
 //---------------------------------------------------------
 
-void ClapSynthIF::hostGuiClosed(bool was_destroyed)
+void ClapInstanceCore::hostGuiClosed(bool was_destroyed)
 {
   #ifdef CLAP_DEBUG
-  printf("ClapSynthIF::hostGuiClosed was_destroyed:%d\n", was_destroyed);
+  printf("ClapInstanceCore::hostGuiClosed was_destroyed:%d\n", was_destroyed);
   #endif
+
   if(was_destroyed)
   {
-    // Do NOT clearGuiEventSources() here for the same reason as in destroyGui().
-    _isGuiCreated = false;
-    _isGuiVisible = false;
-    if(_editorWindow)
-    {
-      delete _editorWindow;
-      _editorWindow = nullptr;
-    }
+    // Route through destroyGui() rather than tearing down _editorWindow
+    // directly here: destroyGui() calls _extGui->destroy(_plugin) BEFORE
+    // deleting the parent window. Skipping that step left the plugin's own
+    // GUI object holding a stale drawable/render handle into our already-
+    // deleted window — the next create() on the same instance then hits
+    // "xcb_copy_area: BadDrawable" and shows a black window.
+    destroyGui();
   }
   else
   {
     _isGuiVisible = false;
-    showNativeGuiPending(false);
+    // Owner (ClapSynthIF / ClapPluginWrapper_State) does its own
+    // "native gui pending" bookkeeping via this callback — see
+    // setGuiClosedCallback() in clap_host_lib.h.
+    if(_onGuiHiddenByPlugin)
+      _onGuiHiddenByPlugin();
   }
 }
 
@@ -304,10 +353,10 @@ void ClapSynthIF::hostGuiClosed(bool was_destroyed)
 //   Plugin asked the host to resize its embedding window.
 //---------------------------------------------------------
 
-bool ClapSynthIF::hostGuiRequestResize(uint32_t width, uint32_t height)
+bool ClapInstanceCore::hostGuiRequestResize(uint32_t width, uint32_t height)
 {
   #ifdef CLAP_DEBUG
-  printf("ClapSynthIF::hostGuiRequestResize w:%u h:%u\n", width, height);
+  printf("ClapInstanceCore::hostGuiRequestResize w:%u h:%u\n", width, height);
   #endif
   if(!_editorWindow)
     return false;
@@ -323,7 +372,7 @@ bool ClapSynthIF::hostGuiRequestResize(uint32_t width, uint32_t height)
 //   hostTimerRegister / hostTimerUnregister
 //---------------------------------------------------------
 
-bool ClapSynthIF::hostTimerRegister(uint32_t period_ms, clap_id* timer_id)
+bool ClapInstanceCore::hostTimerRegister(uint32_t period_ms, clap_id* timer_id)
 {
   // Re-query dynamically in case the extension is only exposed during GUI creation
   if(!_extTimer)
@@ -334,11 +383,11 @@ bool ClapSynthIF::hostTimerRegister(uint32_t period_ms, clap_id* timer_id)
 
   if(!_extTimer)
   {
-    fprintf(stderr, "ClapSynthIF::hostTimerRegister: plugin has no timer-support ext\n");
+    fprintf(stderr, "ClapInstanceCore::hostTimerRegister: plugin has no timer-support ext\n");
     return false;
   }
   if(period_ms < 16)
-    period_ms = 16; 
+    period_ms = 16;
 
   const clap_id id = _nextTimerId++;
   QTimer* t = new QTimer();
@@ -366,7 +415,7 @@ bool ClapSynthIF::hostTimerRegister(uint32_t period_ms, clap_id* timer_id)
   return true;
 }
 
-bool ClapSynthIF::hostTimerUnregister(clap_id timer_id)
+bool ClapInstanceCore::hostTimerUnregister(clap_id timer_id)
 {
   const auto it = _timers.find(timer_id);
   if(it == _timers.end())
@@ -376,7 +425,7 @@ bool ClapSynthIF::hostTimerUnregister(clap_id timer_id)
     // clearGuiEventSources(). The timer is gone and the alive-flag is already
     // false, so no on_timer() call will fire. This is harmless.
     fprintf(stderr,
-      "ClapSynthIF::hostTimerUnregister: timer id %u not found "
+      "ClapInstanceCore::hostTimerUnregister: timer id %u not found "
       "(plugin called unregister after host teardown — harmless)\n", timer_id);
     return false;
   }
@@ -398,7 +447,7 @@ bool ClapSynthIF::hostTimerUnregister(clap_id timer_id)
 //   hostFdRegister / hostFdModify / hostFdUnregister
 //---------------------------------------------------------
 
-bool ClapSynthIF::hostFdRegister(int fd, clap_posix_fd_flags_t flags)
+bool ClapInstanceCore::hostFdRegister(int fd, clap_posix_fd_flags_t flags)
 {
   // Re-query dynamically in case the extension is only exposed during GUI creation
   if(!_extPosixFd)
@@ -409,7 +458,7 @@ bool ClapSynthIF::hostFdRegister(int fd, clap_posix_fd_flags_t flags)
 
   if(!_extPosixFd)
   {
-    fprintf(stderr, "ClapSynthIF::hostFdRegister: plugin has no posix-fd-support ext\n");
+    fprintf(stderr, "ClapInstanceCore::hostFdRegister: plugin has no posix-fd-support ext\n");
     return false;
   }
 
@@ -434,13 +483,13 @@ bool ClapSynthIF::hostFdRegister(int fd, clap_posix_fd_flags_t flags)
   return true;
 }
 
-bool ClapSynthIF::hostFdModify(int fd, clap_posix_fd_flags_t flags)
+bool ClapInstanceCore::hostFdModify(int fd, clap_posix_fd_flags_t flags)
 {
   hostFdUnregister(fd);
   return hostFdRegister(fd, flags);
 }
 
-bool ClapSynthIF::hostFdUnregister(int fd)
+bool ClapInstanceCore::hostFdUnregister(int fd)
 {
   bool found = false;
   for(QHash<int, QSocketNotifier*>* map : { &_fdRead, &_fdWrite, &_fdError })
@@ -454,17 +503,19 @@ bool ClapSynthIF::hostFdUnregister(int fd)
       found = true;
     }
   }
-  if(!found)
-    fprintf(stderr, "ClapSynthIF::hostFdUnregister: unknown fd %d\n", fd);
+
+  if(!found && !_teardown)
+      fprintf(stderr, "ClapInstanceCore::hostFdUnregister: unknown fd %d\n", fd);
+  //
   return found;
 }
 
 //---------------------------------------------------------
 //   clearGuiEventSources
-//   Defensive teardown: ONLY call this on plugin destruction!
+//   Defensive teardown: ONLY call this from destroyGui()/shutdown()!
 //---------------------------------------------------------
 
-void ClapSynthIF::clearGuiEventSources()
+void ClapInstanceCore::clearGuiEventSources()
 {
   // Disarm all alive-flags FIRST, before stopping timers.
   // This ensures any QTimer::timeout that fires between here and deleteLater()

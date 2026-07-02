@@ -174,6 +174,14 @@ extern void exitRtAudio();
 #endif
 }
 
+
+#ifdef CLAP_SUPPORT
+namespace MusECore {
+    extern void clapDeactivateAllBeforeAudioShutdown(); 
+}
+#endif
+
+
 namespace MusEGui {
 
 extern void deleteIcons();
@@ -2793,6 +2801,22 @@ void MusE::closeEvent(QCloseEvent* event)
             return;
         }
     }
+
+
+    #ifdef CLAP_SUPPORT
+        if(MusEGlobal::debugMsg)
+            fprintf(stderr, "MusE: Deactivating CLAP plugins before audio shutdown\n");
+        // MUST run BEFORE seqStop(): Diva/u-he require plugin->stop_processing()
+        // on MusE's real audio thread and abort otherwise. seqStop() stops the
+        // audio engine (Audio::_running == false), after which the JACK/RtAudio
+        // callback no longer calls Audio::process() -> runProcess(), so there'd
+        // be no live audio thread left to drive the stop. Called here (engine
+        // still ticking), each instance's stop_processing() is serviced on the
+        // audio thread and deactivate() on this (main) thread, so the later
+        // ~ClapSynthIF/shutdown() only has to destroy() an already-inactive
+        // plugin.
+        MusECore::clapDeactivateAllBeforeAudioShutdown();
+    #endif
 
 
     seqStop();

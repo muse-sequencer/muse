@@ -115,7 +115,8 @@ extern void initVST();
 extern void initVST_Native();
 //extern void initPlugins();
 extern void initDSSI();
-extern void initCLAP();
+extern void initCLAP();  // clap synths
+extern void initCLAPEffects();   // clap effects 
 #ifdef LV2_SUPPORT
 extern void initLV2();
 extern void deinitLV2();
@@ -1591,12 +1592,15 @@ int main(int argc, char* argv[])
   #endif
 
 
-  #ifdef CLAP_SUPPORT
-        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
-                 << "Init CLAP plugins...";
-        if(MusEGlobal::loadCLAP)
-              MusECore::initCLAP();
-  #endif
+#ifdef CLAP_SUPPORT
+      qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+               << "Init CLAP plugins...";
+      if(MusEGlobal::loadCLAP)
+      {
+            MusECore::initCLAP();          // clap synths 
+            MusECore::initCLAPEffects();   // clap effects
+      }
+#endif
 
         // Now that all the plugins are done loading from the global plugin cache list,
         //  we are done with it. Clear it to free up memory.

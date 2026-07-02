@@ -60,6 +60,10 @@
 #include "undo.h"
 #include "operations.h"
 
+#ifdef CLAP_SUPPORT
+#include "clap_host_lib.h"
+#endif
+
 #ifdef _WIN32
 #define pipe(fds) _pipe(fds, 4096, _O_BINARY)
 #endif
@@ -1592,6 +1596,16 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_WAIT:
                   // Do nothing.
                   break;
+
+#ifdef CLAP_SUPPORT
+            case AUDIO_CLAP_STOP_PROCESSING:
+                  // Runs on the audio thread (processMsg is called at the top of
+                  // Audio::process(), so is_audio_thread() is satisfied and no
+                  // graph process() is concurrent). Diva/u-he require
+                  // stop_processing() exactly here.
+                  ClapInstanceCore::stopAllProcessingOnAudioThread();
+                  break;
+#endif
 
             default:
                   MusEGlobal::song->processMsg(msg);

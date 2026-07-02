@@ -77,7 +77,8 @@ enum {
       AUDIO_SET_SEND_METRONOME,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
       SEQM_IDLE, SEQM_SEEK,
-      AUDIO_WAIT  // Do nothing. Just wait for an audio cycle to pass.
+      AUDIO_WAIT,  // Do nothing. Just wait for an audio cycle to pass.
+      AUDIO_CLAP_STOP_PROCESSING  // Call stop_processing() on all live CLAP instances (audio-thread only).
       };
 
 extern const char* seqMsgList[];  // for debug
@@ -305,6 +306,13 @@ class Audio {
       void msgResetMidiDevices();
       void msgIdle(bool);
       void msgAudioWait();
+#ifdef CLAP_SUPPORT
+      // Runs stop_processing() on every live CLAP instance ON THE AUDIO THREAD
+      // (via processMsg). Needed at shutdown: Diva/u-he require stop_processing()
+      // on the real audio thread, and the passive getData()->runProcess() path
+      // can't be relied on when the engine is idle at quit.
+      void msgClapStopProcessing();
+#endif
       void msgBounce();
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);
