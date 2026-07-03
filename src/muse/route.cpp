@@ -172,6 +172,7 @@ Route::Route(const Route& a)
       channel       = a.channel;
       channels      = a.channels;
       remoteChannel = a.remoteChannel;
+      audioLatencyOut = a.audioLatencyOut;
       persistentJackPortName[0] = 0;
       strcpy(persistentJackPortName, a.persistentJackPortName);
 }
@@ -184,6 +185,7 @@ Route& Route::operator=(const Route& a)
       channel       = a.channel;
       channels      = a.channels;
       remoteChannel = a.remoteChannel;
+      audioLatencyOut = a.audioLatencyOut;
       persistentJackPortName[0] = 0;
       strcpy(persistentJackPortName, a.persistentJackPortName);
       return *this;

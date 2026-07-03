@@ -503,6 +503,39 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
 #else
     sl.append(messPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
 #endif
+
+  // MESS covers two plugin kinds: effects ("muse plugin", conventionally
+  // in a "plugins" dir) and synths ("muse synth", conventionally in a
+  // "synthi" dir). These extra fallback locations are unconditional/
+  // hardcoded and, unlike pluginGetLinuxVstDirectories(), not guarded by
+  // Q_OS_WIN — MESS itself only ships a Linux build at present, so there
+  // is no equivalent Windows path scheme defined here yet.
+  const QStringList defaultMessDirs
+  {
+    // /usr/local preferred over /usr, effects before synths.
+    QString("/usr/local/lib/muse/plugins"),
+    QString("/usr/lib/muse/plugins"),
+    QString("/usr/local/lib/muse/synthi"),
+    QString("/usr/lib/muse/synthi"),
+  };
+  for(const QString& dir : defaultMessDirs)
+  {
+    const QDir qdir(dir);
+    if(!qdir.exists())
+      std::fprintf(stderr, "INFO: could not find MESS type plugins (linux only) : %s - does not exist.\n",
+                   dir.toLocal8Bit().constData());
+    else if(qdir.entryList(QDir::Files | QDir::NoDotAndDotDot).isEmpty())
+      std::fprintf(stderr, "INFO: could not find MESS type plugins (linux only) : %s - is empty.\n",
+                   dir.toLocal8Bit().constData());
+    else
+    {
+      // Previously silent on success — added so /usr/local vs /usr/lib
+      // outcomes are both visible in the log, not just failures.
+      std::fprintf(stderr, "INFO: found MESS type plugins in : %s\n", dir.toLocal8Bit().constData());
+      sl.append(dir);
+    }
+  }
+
   return sl;
 }
 
@@ -549,10 +582,18 @@ QStringList pluginGetLinuxVstDirectories()
 #endif
   if(vstPath.isEmpty())
   {
+    // NOTE: this used to redeclare a new local `vstPath` here, shadowing the
+    // outer one above. Any fallback value computed further down in this
+    // block was then discarded once the block ended, so the outer vstPath
+    // checked below always stayed empty unless LXVST_PATH was literally set
+    // in the environment — silently disabling the built-in fallback search
+    // paths (e.g. /usr/lib/vst, /usr/local/lib/vst) whenever neither
+    // LXVST_PATH nor VST_PATH were set. Fixed by reassigning the same outer
+    // variable instead of shadowing it.
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
-    QString vstPath = qEnvironmentVariable("VST_PATH");
+    vstPath = qEnvironmentVariable("VST_PATH");
 #else
-    QString vstPath = QString::fromLocal8Bit(qgetenv("VST_PATH"));
+    vstPath = QString::fromLocal8Bit(qgetenv("VST_PATH"));
 #endif
     if(vstPath.isEmpty())
     {

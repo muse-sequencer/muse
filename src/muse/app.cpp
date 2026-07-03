@@ -5331,7 +5331,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
           if(MusEGlobal::heavyDebugMsg) 
             fprintf(stderr, "  removing sharer's toolbar '%s'\n", tb->windowTitle().toLocal8Bit().data());
           removeToolBar(tb); // this does not delete *it, which is good
-          tb->setParent(nullptr);
+          // tb->setParent(nullptr);  // DO NOT !
         }
       }
         
@@ -5370,7 +5370,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
           if (MusEGlobal::heavyDebugMsg) 
             fprintf(stderr, "  removing optional toolbar '%s'\n", tb->windowTitle().toLocal8Bit().data());
           removeToolBar(tb); // this does not delete *it, which is good
-          tb->setParent(nullptr);
+          // tb->setParent(nullptr); // DO NOT !
         }
       }
     }

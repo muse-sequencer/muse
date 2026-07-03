@@ -1381,6 +1381,39 @@ int main(int argc, char* argv[])
         if(do_rescan)
           MusEGlobal::config.pluginCacheTriggerRescan = false;
 
+        // DIAGNOSTIC: confirm what actually made it into pluginList after the
+        // cache read/scan above, broken down by type. Distinguishes "not
+        // scanned" (missing here too) vs "scanned but not read from cache"
+        // (file has data, count here is 0) vs "read but filtered downstream"
+        // (count here is >0, but still reported missing later e.g. in
+        // MusEGui::MissingPluginsDialog / initMidiSynth()).
+        // Unconditional (not gated behind MusEGlobal::debugMsg) while this
+        // is being actively debugged — remove the gate-removal once done.
+        {
+          int n_mess = 0, n_ladspa = 0, n_linuxvst = 0, n_vst = 0, n_dssi = 0, n_clap = 0, n_unknown = 0, n_other = 0;
+          for(MusEPlugin::ciPluginScanList it = MusEPlugin::pluginList.begin();
+              it != MusEPlugin::pluginList.end(); ++it)
+          {
+            switch((*it)->info()._type)
+            {
+              case MusEPlugin::PluginTypeMESS:     ++n_mess;     break;
+              case MusEPlugin::PluginTypeLADSPA:   ++n_ladspa;   break;
+              case MusEPlugin::PluginTypeLinuxVST: ++n_linuxvst; break;
+              case MusEPlugin::PluginTypeVST:      ++n_vst;      break;
+              case MusEPlugin::PluginTypeDSSI:
+              case MusEPlugin::PluginTypeDSSIVST:  ++n_dssi;     break;
+              #ifdef CLAP_SUPPORT
+              case MusEPlugin::PluginTypeCLAP:     ++n_clap;     break;
+              #endif
+              case MusEPlugin::PluginTypeUnknown:  ++n_unknown;  break;
+              default:                             ++n_other;    break;
+            }
+          }
+          fprintf(stderr,
+            "pluginList after scan (total:%zu): MESS:%d LADSPA:%d LinuxVST:%d VST:%d DSSI:%d CLAP:%d Unknown:%d Other:%d\n",
+            MusEPlugin::pluginList.size(), n_mess, n_ladspa, n_linuxvst, n_vst, n_dssi, n_clap, n_unknown, n_other);
+        }
+
         //-------------------------------------------------------
         //   END Plugin scanning
         //-------------------------------------------------------
@@ -1807,22 +1840,34 @@ int main(int argc, char* argv[])
         if(MusEGlobal::debugMsg)
           fprintf(stderr, "app.exec() returned:%d\nDeleting main MusE object\n", rv);
 
+        fprintf(stderr, "DEBUG main shutdown: reached (rv:%d)\n", rv);
+
         if (MusEGlobal::loadPlugins)
         {
           for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
               delete (*i);
           MusEGlobal::plugins.clear();
         }
+        fprintf(stderr, "DEBUG main shutdown: plugins deleted\n");
 
         MusECore::exitWavePreview();
+        fprintf(stderr, "DEBUG main shutdown: exitWavePreview done\n");
+
+        // Free the global list of loaded instrument templates (.idf files).
+        // initMidiInstruments() (called again on restart, above the loop)
+        // clears it defensively too, but on a final exit nothing else does.
+        MusECore::freeMidiInstrumentTemplates();
+        fprintf(stderr, "DEBUG main shutdown: freeMidiInstrumentTemplates done\n");
 
   #ifdef LV2_SUPPORT
         if(MusEGlobal::loadLV2)
               MusECore::deinitLV2();
   #endif
+        fprintf(stderr, "DEBUG main shutdown: deinitLV2 (if any) done\n");
 
         // In case the sequencer object is still alive, make sure to destroy it now.
         MusECore::exitMidiSequencer();
+        fprintf(stderr, "DEBUG main shutdown: exitMidiSequencer done\n");
 
         // Grab the restart flag before deleting muse.
         is_restarting = MusEGlobal::muse->restartingApp();
@@ -1855,8 +1900,10 @@ int main(int argc, char* argv[])
         }
 
         // Now delete the application.
+        fprintf(stderr, "DEBUG main shutdown: about to delete MusEGlobal::muse\n");
         delete MusEGlobal::muse;
         MusEGlobal::muse = nullptr;
+        fprintf(stderr, "DEBUG main shutdown: MusEGlobal::muse deleted\n");
 
         // These are owned by muse and deleted above. Reset to zero now.
         MusEGlobal::undoRedo = nullptr;
@@ -1920,6 +1967,7 @@ int main(int argc, char* argv[])
 #endif
 #endif
 
+      fprintf(stderr, "DEBUG main(): about to return rv:%d - if tempomap/sigmap DEBUG dtor lines never appear after this, main() itself never truly finished (crash/abort) rather than the destructors being skipped\n", rv);
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "Finished! Exiting main, return value:%d\n", rv);
       return rv;

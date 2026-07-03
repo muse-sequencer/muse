@@ -261,11 +261,43 @@ loadIDF_end:
       }
 
 //---------------------------------------------------------
+//   freeMidiInstrumentTemplates
+//   Deletes every MidiInstrument currently in the global midiInstruments
+//   list (~MidiInstrument() already frees its own _controller/_midiInit/
+//   _midiReset/_midiState/pg contents correctly) and resets
+//   genericMidiInstrument. Must run before midiInstruments is repopulated,
+//   and again at final shutdown - main.cpp's restart loop calls
+//   initMidiInstruments() again on every restart without ever having
+//   cleared the previous run's list, and nothing at all cleared it at
+//   final exit (see valgrind: MidiInstrument::read(), minstrument.cpp:982,
+//   leaking one "Program" MidiController per loaded .idf file, because the
+//   MidiInstrument holding it was simply never destroyed).
+//---------------------------------------------------------
+
+void freeMidiInstrumentTemplates()
+      {
+      fprintf(stderr, "DEBUG freeMidiInstrumentTemplates() called, midiInstruments.size():%zu\n", midiInstruments.size());
+      for(iMidiInstrument i = midiInstruments.begin(); i != midiInstruments.end(); ++i)
+      {
+            fprintf(stderr, "DEBUG   deleting MidiInstrument:%p iname:%s\n", (void*)(*i), (*i)->iname().toLocal8Bit().constData());
+            delete *i;
+      }
+      midiInstruments.clear();
+      genericMidiInstrument = nullptr;
+      fprintf(stderr, "DEBUG freeMidiInstrumentTemplates() done\n");
+      }
+
+//---------------------------------------------------------
 //   initMidiInstruments
 //---------------------------------------------------------
 
 void initMidiInstruments()
       {
+      // Clear out any instruments left over from a previous call (app restart
+      //  goes through this function again - see main.cpp) before rebuilding,
+      //  otherwise midiInstruments only ever grows.
+      freeMidiInstrumentTemplates();
+
       genericMidiInstrument = new MidiInstrument(QWidget::tr("Generic midi"));
       midiInstruments.push_back(genericMidiInstrument);
 
@@ -994,7 +1026,18 @@ void MidiInstrument::read(Xml& xml)
                                           }
                                     }
 
-                              _controller->add(mc);
+                              if(!_controller->add(mc))
+                              {
+                                    // add() silently fails (no overwrite) if mc->num() already exists in
+                                    //  the list, e.g. a non-"Program" controller overriding one of the
+                                    //  instrument's default controllers. Don't delete the pre-existing
+                                    //  entry here - MidiControllerList can hold shared global controllers
+                                    //  (see midi_controller.h) that must not be freed per-instrument. Just
+                                    //  avoid leaking mc, which was never shared.
+                                    fprintf(stderr, "MidiInstrument::read(): Controller '%s' num:%d already exists - discarding duplicate\n",
+                                            mc->name().toLocal8Bit().constData(), mc->num());
+                                    delete mc;
+                                    }
                               }
                         else if (tag == "Drummaps") {
                               readDrummaps(xml);

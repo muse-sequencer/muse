@@ -52,8 +52,8 @@ read -r answer
 
 case "$answer" in
     [Yy]) echo "Starting installation. " && sudo make -C../build install  ;;
-    [Nn]) echo "NO installation. Ending. " ;;
-    *)    echo "Invalid Input." ;;
+    [Nn]) echo "==> NO installation. Ending. " ;;
+    *)    echo "==> Invalid Input. NOT installed. " ;;
 esac
 
 

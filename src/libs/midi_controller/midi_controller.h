@@ -172,9 +172,24 @@ class MidiControllerList : public MidiControllerList_t
       // Manual check and update of the flag. For convenience, returns the flag.
       bool update_RPN_Ctrls_Reserved();
       
-      // NOTICE: If update is false or these are bypassed by using insert, erase, clear etc. for speed, 
+
+      // ==== NOTICE - add(mc) method - check return value ====
+      //
+      // If update is false or these are bypassed by using insert, erase, clear etc. for speed, 
       //          then BE SURE to call update_RPN_Ctrls_Reserved() later. 
       // Returns true if add is successful.
+      // 
+      // OWNERSHIP: On success, this list takes ownership of mc (it will be deleted along with the
+      //  rest of the list's contents, typically by ~MidiInstrument() - this list itself has no
+      //  destructor, see the class comment above).
+      //  
+      // On FAILURE (false, meaning mc->num() already exists in the list - insert() does not
+      //  overwrite), mc is NOT stored anywhere and ownership is NOT taken. 
+      //  ============================================================
+      //  ==>>>  The caller must then delete mc (param object) itself 
+      //  ============================================================
+      //  to avoid a leak, or otherwise dispose of it - do not simply discard the return
+      //  value. See MidiInstrument::read() for the pattern.
       bool add(MidiController* mc, bool update = true);
       void del(iterator ictl, bool update = true);
       size_type del(int num, bool update = true);

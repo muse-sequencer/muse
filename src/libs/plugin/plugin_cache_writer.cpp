@@ -3324,12 +3324,19 @@ bool checkPluginCacheFiles(
 
     //-------------------------------------------------------------------------
     // Gather the unique (non-duplicate) plugin file paths found in our cache.
+    // Only entries matching this call's own 'types' — 'list' is shared
+    // across multiple checkPluginCacheFiles() calls (see the list->erase()
+    // comment below), so unfiltered this would pull in paths for types we
+    // aren't even scanning here, none of which could ever be found in
+    // 'fpset' above, permanently forcing cache_dirty true.
     //-------------------------------------------------------------------------
 
     for(iPluginScanList ips = list->begin(); ips != list->end(); ++ips)
     {
       PluginScanInfoRef inforef = *ips;
       const PluginScanInfoStruct& infos = inforef->info();
+      if(!(infos._type & types))
+        continue;
       cache_fpset.insert(filepath_set_pair(PLUGIN_GET_QSTRING(infos.filePath()), infos._fileTime));
     }
 
@@ -3389,7 +3396,23 @@ bool checkPluginCacheFiles(
     if(debugStdErr)
       std::fprintf(stderr, "Re-scanning and creating plugin cache files...\n");
 
-    list->clear();
+    // NOTE: 'list' (MusEPlugin::pluginList) is shared across multiple
+    //  checkPluginCacheFiles() calls from main.cpp — one for
+    //  LADSPA/MESS/VST/LinuxVST/DSSI/LV2/Unknown, a separate one for CLAP
+    //  (since CLAP needs writePorts=true unconditionally, see main.cpp).
+    //  A blanket list->clear() here would silently discard every entry a
+    //  previous call already added for types NOT in this call's own
+    //  'types' bitmask (e.g. the CLAP-only call wiping out all previously
+    //  scanned LADSPA/MESS/VST/LinuxVST/DSSI entries). Only erase entries
+    //  matching the types we're about to rescan; leave everything else in
+    //  the list untouched.
+    for(iPluginScanList ips = list->begin(); ips != list->end(); )
+    {
+      if((*ips)->info()._type & types)
+        ips = list->erase(ips);
+      else
+        ++ips;
+    }
     if(!createPluginCacheFiles(path, list, writePorts, museGlobalLib, types, debugStdErr))
     {
       res = false;

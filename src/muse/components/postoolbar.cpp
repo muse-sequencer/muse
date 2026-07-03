@@ -105,7 +105,7 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     timeSmpte->setStatusTip(tr("Current position in SMPTE time"));
     addWidget(timeSmpte);
 
-    toggleTickFrame = new QAction(*showFieldsSVGIcon, "Toggle ticks/frames");
+    toggleTickFrame = new QAction(*showFieldsSVGIcon, "Toggle ticks/frames", this);
     toggleTickFrame->setCheckable(true);
     toggleTickFrame->setChecked(false);
     toggleTickFrame->setToolTip(tr("Show/Hide position in ticks and audio frames"));

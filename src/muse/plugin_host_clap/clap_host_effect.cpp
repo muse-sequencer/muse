@@ -209,6 +209,8 @@ ClapPluginWrapper::~ClapPluginWrapper()
   // here to avoid the false "plugin is not NULL" leak warning (and any future
   // delete of a non-heap pointer).
   plugin = nullptr;
+  delete _synth; 
+  _synth = nullptr;
 }
 
 //---------------------------------------------------------

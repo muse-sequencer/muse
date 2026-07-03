@@ -38,7 +38,7 @@ unsigned fifoLength =  128;       // 131072/segmentSize
 int segmentCount = 2;
 
 
-bool suppressPluginDuplicateWarnings = true; // for less debug output, set false if output required
+bool suppressPluginDuplicateWarnings = false; // for less debug output, set false if output required
 
 
 //   NOTE: For now, this is TEMPORARILY set to the project sample rate during song loading,
