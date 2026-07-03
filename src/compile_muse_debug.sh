@@ -20,17 +20,47 @@
 #  along with this program; if not, write to the
 #  Free Software Foundation, Inc.,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-#
 #=============================================================================
 
-if [ -d ../build ]; then
-        echo "Build dir already exists"
-else
-	echo "Create build dir"
-	mkdir ../build   # compile outside src/ dir !
-fi
-cd ../build
 
+echo ""
+echo " ==================================== "
+echo "   Running cmake (configuration)"
+echo " ==================================== "
+cmake -B ../build  -DCMAKE_BUILD_TYPE=RelWithDebInfo -DMODULES_BUILD_STATIC=ON 
 # to put the resulting binary in a specific location add -DCMAKE_INSTALL_PREFIX=<some location>
-cmake -DCMAKE_BUILD_TYPE=release -G "MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -Wno-dev .. && ../src/fix_make_paths.pl && mingw32-make clean && ../src/compile_components_ui.pl && mingw32-make -j1 all && echo "Build was OK, now enter the 'build' dir and run 'make install' as root"
 
+
+echo ""
+echo " ==================================== "
+echo "     Starting the build process"
+echo " ==================================== "
+
+cmake --build ../build -j4
+
+
+echo ""
+echo " ==================================== "
+# echo "   # after successful compilation, install with: "
+# echo "   sudo  make -C../build  install  "
+# echo " ==================================== "
+
+
+
+echo -n "Do you want to run 'make install' command ? (/usr/local/ by default) Y/N: "
+read -r answer
+
+case "$answer" in
+    [Yy]) echo "Starting installation. " && sudo make -C../build install  ;;
+    [Nn]) echo "NO installation. Ending. " ;;
+    *)    echo "Invalid Input." ;;
+esac
+
+
+echo ""
+echo " Finished."
+echo " ==================================== "
+
+
+# REMOVE:
+# && make clean all && echo "Build was OK, now enter the 'build' dir and run 'make install' as root"

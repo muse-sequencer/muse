@@ -40,6 +40,11 @@
 
 #include <cstdio>
 #include <cstring>
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 //#include <cstdint>
 #include "muse_math.h"
 
@@ -2583,6 +2588,65 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
 
 
 //---------------------------------------------------------
+//   ScopedStderrSuppressor
+//   RAII helper: while alive (and constructed with active=true),
+//   temporarily redirects stderr to the null device, then restores it on
+//   destruction. Used around lilv_world_load_all() to optionally silence
+//   lilv's own internal warnings (e.g. lilv_world_compare_versions()
+//   "Ignoring duplicate version..." when the same LV2 bundle is reachable
+//   from two paths, such as /usr/lib and /usr/lib64) — lilv provides no
+//   log-callback/option to control those specific messages, only
+//   LILV_OPTION_FILTER_LANG / LILV_OPTION_DYN_MANIFEST / LILV_OPTION_LV2_PATH.
+//   NOTE: this suppresses ALL stderr output during its lifetime, including
+//   any genuine lilv errors (e.g. malformed manifests) — that's the
+//   necessary tradeoff of not having a targeted lilv API. Pass
+//   active=!debugStdErr so turning on MusE's own debug messages always
+//   shows everything, including these.
+//---------------------------------------------------------
+
+class ScopedStderrSuppressor
+{
+public:
+  explicit ScopedStderrSuppressor(bool active) : _active(active)
+  {
+    if(!_active)
+      return;
+    std::fflush(stderr);
+#ifdef _WIN32
+    _savedFd = _dup(_fileno(stderr));
+    if(!freopen("NUL", "w", stderr))
+      std::fprintf(stdout, "ScopedStderrSuppressor: freopen(NUL) failed\n");
+#else
+    _savedFd = dup(fileno(stderr));
+    if(!freopen("/dev/null", "w", stderr))
+      std::fprintf(stdout, "ScopedStderrSuppressor: freopen(/dev/null) failed\n");
+#endif
+  }
+
+  ~ScopedStderrSuppressor()
+  {
+    if(!_active || _savedFd < 0)
+      return;
+    std::fflush(stderr);
+#ifdef _WIN32
+    _dup2(_savedFd, _fileno(stderr));
+    _close(_savedFd);
+#else
+    dup2(_savedFd, fileno(stderr));
+    close(_savedFd);
+#endif
+  }
+
+  // Not copyable/movable — it owns a raw saved fd and a global side effect.
+  ScopedStderrSuppressor(const ScopedStderrSuppressor&) = delete;
+  ScopedStderrSuppressor& operator=(const ScopedStderrSuppressor&) = delete;
+
+private:
+  bool _active;
+  int  _savedFd = -1;
+};
+
+//---------------------------------------------------------
 //   scanLv2Plugins
 //---------------------------------------------------------
 
@@ -2643,7 +2707,12 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
   lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, ORGANIZATION_URL "lv2host#lv2_actionUpdatePresets");
   lv2CacheNodes.end                    = nullptr;
 
-  lilv_world_load_all(lilvWorld);
+  {
+    // Optionally silence lilv's own internal warnings (see
+    // ScopedStderrSuppressor above) — only when debugStdErr is off.
+    ScopedStderrSuppressor suppressLilvWarnings(!debugStdErr);
+    lilv_world_load_all(lilvWorld);
+  }
   const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
   LilvIter *pit = lilv_plugins_begin(plugins);
 
@@ -2973,7 +3042,12 @@ static void findLv2PluginFiles(filepath_set& fplist, bool debugStdErr)
   if(!lilvWorld)
     return;
 
-  lilv_world_load_all(lilvWorld);
+  {
+    // Optionally silence lilv's own internal warnings (see
+    // ScopedStderrSuppressor above) — only when debugStdErr is off.
+    ScopedStderrSuppressor suppressLilvWarnings(!debugStdErr);
+    lilv_world_load_all(lilvWorld);
+  }
   const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
   LilvIter *pit = lilv_plugins_begin(plugins);
 
@@ -3183,7 +3257,14 @@ bool createPluginCacheFiles(
 
 #ifdef CLAP_SUPPORT
   if(types & MusEPlugin::PluginTypeCLAP)
-    createPluginCacheFile(path, MusEPlugin::PluginTypeCLAP, list, writePorts,
+    // Hardcoded true, ignoring the writePorts argument: CLAP's port/param
+    // counts are ONLY knowable by instantiating the plugin (unlike LADSPA's
+    // LADSPA_Descriptor or VST's AEffect struct, both cheap to re-read live),
+    // so the cache is the only place ClapPluginWrapper can get them without
+    // probing every plugin live on every MusE startup. See
+    // queryClapPortCounts() in plugin_cache_writer_clap.cpp and
+    // ClapPluginWrapper::ClapPluginWrapper() in clap_host_effect.cpp.
+    createPluginCacheFile(path, MusEPlugin::PluginTypeCLAP, list, /*writePorts=*/true,
       museGlobalLib, MusEPlugin::PluginTypeCLAP, debugStdErr);
 #endif
 
@@ -3217,7 +3298,15 @@ bool checkPluginCacheFiles(
   // Read whatever we've got in our current cache files.
   //-----------------------------------------------------
 
-  if(!readPluginCacheFiles(path, list, false, false, types))
+  // readPorts/readEnums true: for types that never wrote port data (their
+  //  writePorts stayed false — LADSPA/VST/etc get port layout cheaply from
+  //  the live descriptor instead), this just finds no <port> tags to parse —
+  //  harmless. For CLAP, which now always writes real counts (see
+  //  createPluginCacheFiles() above), this is required — without it the
+  //  cached counts would never make it into the in-memory list, and
+  //  ClapPluginWrapper would keep falling back to a live probe regardless
+  //  of what's actually in the cache file.
+  if(!readPluginCacheFiles(path, list, true, true, types))
   {
     cache_dirty = true;
     std::fprintf(stderr, "checkPluginCacheFiles: readAllPluginCacheFiles() failed\n");

@@ -52,6 +52,8 @@ namespace MusEGlobal {
 
 extern const float denormalBias;
 
+extern bool suppressPluginDuplicateWarnings; // for less debug output
+
 extern int sampleRate;
 extern unsigned segmentSize;
 extern unsigned fifoLength; // inversely proportional to segmentSize

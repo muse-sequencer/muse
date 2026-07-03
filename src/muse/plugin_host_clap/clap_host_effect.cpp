@@ -65,12 +65,13 @@ void initCLAPEffects()
 
     if(const Plugin* pl = MusEGlobal::plugins.find(info._type, inf_cbname, inf_uri, inf_label))
     {
-      fprintf(stderr,
-        "Ignoring CLAP effect label:%s uri:%s path:%s duplicate of path:%s\n",
-        inf_label.toLocal8Bit().constData(),
-        inf_uri.toLocal8Bit().constData(),
-        inf_filepath.toLocal8Bit().constData(),
-        pl->filePath().toLocal8Bit().constData());
+      if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+        fprintf(stderr,
+          "Ignoring CLAP effect label:%s uri:%s path:%s duplicate of path:%s\n",
+          inf_label.toLocal8Bit().constData(),
+          inf_uri.toLocal8Bit().constData(),
+          inf_filepath.toLocal8Bit().constData(),
+          pl->filePath().toLocal8Bit().constData());
       continue;
     }
 
@@ -96,16 +97,35 @@ ClapPluginWrapper::ClapPluginWrapper(ClapSynth* s, MusEPlugin::PluginFeatures_t 
 
   // CLAP's real port/param counts are only knowable from a live plugin
   // instance (unlike LV2's static RDF metadata, or VST's lightweight AEffect
-  // struct) — plugin_cache_writer_clap.cpp explicitly defers them, leaving
-  // _synth->inPorts()/outPorts()/inControls() at 0 until something
-  // instantiates. Since the fake LADSPA port array built below is frozen for
-  // this wrapper's whole lifetime, and PluginI relies on ports()/portd()
-  // (which read that frozen array) to decide how many ports exist, we must
-  // learn the real counts BEFORE building it — a disposable probe instance,
-  // torn down immediately after. Without this, _fakePds ends up sized 0 and
-  // portd() reads out of bounds, which is what corrupted port classification
-  // and crashed inside plugins like ZamDelay/ZamCompX2.
+  // struct). plugin_cache_writer_clap.cpp's writeClapInfo() now instantiates
+  // each descriptor once, offline, inside the sandboxed muse_plugin_scan
+  // process, and writes the real counts into the scan cache. ClapSynth's
+  // constructor already copies info._inports/_outports/_controlInPorts/
+  // _controlOutPorts into its own members (clap_host_synth.cpp), so at this
+  // point — before anything has called _synth->reference() — those values
+  // already hold whatever the cache recorded, with zero extra dlopen/
+  // instantiate/destroy work needed for the common case.
+  //
+  // This used to run a disposable probe instance (dlopen + create_plugin +
+  // init + destroy + dlclose) for EVERY scanned CLAP plugin on EVERY MusE
+  // startup, regardless of whether the current project even used it — the
+  // dominant source of dlopen/init noise (and dlopen-time "definitely lost"
+  // reports from third-party plugins' own static init) seen under valgrind.
+  //
+  // Fallback: if the cache has nothing for this plugin (stale cache from
+  // before this fix, plugin file changed since the last scan, or the scan
+  // tool's port query itself failed and legitimately left them at 0 — see
+  // queryClapPortCounts() in plugin_cache_writer_clap.cpp), fall back to the
+  // old disposable-probe behavior so _fakePds doesn't end up sized 0, which
+  // previously corrupted port classification and crashed inside plugins
+  // like ZamDelay/ZamCompX2 (see portd()/ports() below).
+  if(_synth->inPorts() == 0 && _synth->outPorts() == 0 && _synth->inControls() == 0)
   {
+    fprintf(stderr, "ClapPluginWrapper::ClapPluginWrapper: '%s' has no cached port/param "
+            "counts (stale or missing scan cache?) — falling back to a live probe. "
+            "Consider re-running the plugin scan.\n",
+            _synth->name().toLocal8Bit().constData());
+
     ClapInstanceCore probe;
     if(_synth->reference())
     {

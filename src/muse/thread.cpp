@@ -49,6 +49,7 @@ namespace MusECore {
 
 Thread::~Thread()
       {
+      delete[] pfd;
       }
 
 //---------------------------------------------------------
@@ -221,7 +222,11 @@ void Thread::addPollFd(int fd, int action, void (*handler)(void*,void*), void* p
 
       if (npfd == maxpfd) {
             int n = (maxpfd == 0) ? 4 : maxpfd * 2;
-            //TODO: delete old pfd
+            // Old pfd array must be freed before replacing it — every entry
+            //  gets rewritten from plist right below, so nothing here is
+            //  still needed. Was leaked on every growth (valgrind: definitely
+            //  lost, traced to this allocation).
+            delete[] pfd;
             pfd   = new struct pollfd[n];
             maxpfd = n;
             }

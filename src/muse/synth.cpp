@@ -1136,11 +1136,12 @@ void initMidiSynth()
               uri,
               PLUGIN_GET_QSTRING(info._label)))
           {
-            fprintf(stderr, "Ignoring MESS synth name:%s uri:%s path:%s duplicate of path:%s\n",
-                    PLUGIN_GET_QSTRING(info._name).toLocal8Bit().constData(),
-                    uri.toLocal8Bit().constData(),
-                    PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
-                    sy->filePath().toLocal8Bit().constData());
+            if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+              fprintf(stderr, "Ignoring MESS synth name:%s uri:%s path:%s duplicate of path:%s\n",
+                      PLUGIN_GET_QSTRING(info._name).toLocal8Bit().constData(),
+                      uri.toLocal8Bit().constData(),
+                      PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+                      sy->filePath().toLocal8Bit().constData());
           }
           else
           {

@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <cstdio>
+
 #include "sig.h"
 #include "rasterizer.h"
 #include "globals.h"
@@ -307,6 +309,16 @@ RasterizerModel::RasterizerModel(
     connect(_rasterizer, &Rasterizer::dataAboutToBeReset, [this]() { beginResetModel(); } );
   _dataResetConnection = 
     connect(_rasterizer, &Rasterizer::dataReset, [this]() { endResetModelHandler(); } );
+  // If the Rasterizer we point to is destroyed before we are (e.g. it's a
+  //  QObject child of some other widget's lifetime, not ours), detach
+  //  instead of leaving a dangling pointer for rowCount()/data()/etc. to
+  //  read later — this is what caused the use-after-free seen in valgrind
+  //  (RasterizerModel::rowCount/textAt/rasterAt reading freed Rasterizer
+  //  memory during ~MusE()'s child-widget teardown).
+  connect(_rasterizer, &QObject::destroyed, this, [this]() {
+    fprintf(stderr, "RasterizerModel: underlying Rasterizer destroyed while model still alive - detaching (expected)\n");
+    _rasterizer = nullptr;
+  });
 }
 
 RasterizerModel::~RasterizerModel()
@@ -326,6 +338,13 @@ void RasterizerModel::updateRows()
 {
   _modelToRasterRowList.clear();
   _rasterToModelRowMap.clear();
+
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::updateRows: _rasterizer is nullptr (expected)\n");
+    return;
+  }
+
   const int mdl_row_count = rowCount();
   const int rast_row_count = _rasterizer->rowCount();
   if(mdl_row_count <= 0 || rast_row_count <= 0)
@@ -359,6 +378,12 @@ Rasterizer::Column RasterizerModel::modelToRasterCol(int col) const
 
 QString RasterizerModel::textAt(int row, int col) const
 {
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::textAt: _rasterizer is nullptr (expected)\n");
+    return QString();
+  }
+
   const int rast_row = modelToRasterRow(row);
   if(rast_row < 0)
     return QString();
@@ -408,6 +433,12 @@ QString RasterizerModel::textAt(int row, int col) const
 
 int RasterizerModel::rasterAt(int row, int col) const
 {
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::rasterAt: _rasterizer is nullptr (expected)\n");
+    return -1;
+  }
+
   const int rast_row = modelToRasterRow(row);
   if(rast_row < 0)
     return -1;
@@ -438,10 +469,19 @@ void RasterizerModel::setRasterizer(const Rasterizer *r)
     connect(_rasterizer, &Rasterizer::dataAboutToBeReset, [this]() { beginResetModel(); } );
   _dataResetConnection = 
     connect(_rasterizer, &Rasterizer::dataReset, [this]() { endResetModelHandler(); } );
+  connect(_rasterizer, &QObject::destroyed, this, [this]() {
+    fprintf(stderr, "RasterizerModel: underlying Rasterizer destroyed while model still alive - detaching (expected)\n");
+    _rasterizer = nullptr;
+  });
 }
 
 int RasterizerModel::division() const
 { 
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::division: _rasterizer is nullptr (expected)\n");
+    return 0;
+  }
   return _rasterizer->division();
 }
 
@@ -762,6 +802,11 @@ int RasterizerModel::pickRaster(int raster, RasterPick pick) const
 
 int RasterizerModel::rowCount(const QModelIndex &/*parent*/) const
 {
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::rowCount: _rasterizer is nullptr (expected)\n");
+    return 0;
+  }
   const int rast_rows = _rasterizer->rowCount();
   // Ignore _maxRows if -1.
   if(_maxRows >= 0 && rast_rows > _maxRows)

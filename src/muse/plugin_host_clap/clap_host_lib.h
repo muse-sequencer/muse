@@ -32,6 +32,7 @@
 #include <cstdint>
 #include <memory>
 #include <atomic>
+#include <chrono>
 #include <functional>
 
 #include <QString>
@@ -54,6 +55,25 @@ namespace MusECore {
 class ClapSynth; // Existing shared descriptor: factory/entry/desc + paramIds/paramInfo.
                   // Reused as-is by both the synth and effect wrappers (same role
                   // as VstNativeSynth is reused by VstNativePluginWrapper).
+
+//---------------------------------------------------------
+//   clapDebugGateReady
+//   Rate-limits a debug print so a misbehaving/chatty plugin (repeated
+//   request_restart(), log(), or a sustained process() overrun) can't turn
+//   an RT-thread fprintf into RT-thread fprintf *spam*. Atomics + steady_clock
+//   only — no locks, no allocation, safe to call from the audio thread.
+//   Returns true (and claims the slot) at most once per minIntervalMs.
+//---------------------------------------------------------
+
+inline bool clapDebugGateReady(std::atomic<int64_t>& lastPrintUs, int64_t minIntervalMs)
+{
+  const int64_t now = std::chrono::duration_cast<std::chrono::microseconds>(
+                         std::chrono::steady_clock::now().time_since_epoch()).count();
+  int64_t prev = lastPrintUs.load(std::memory_order_relaxed);
+  if(now - prev < minIntervalMs * 1000)
+    return false;
+  return lastPrintUs.compare_exchange_strong(prev, now, std::memory_order_relaxed);
+}
 
 //---------------------------------------------------------
 //   ClapInstanceCore
@@ -100,6 +120,10 @@ public:
   void activate();
   void deactivate();
   bool isActive() const { return _curActiveState; }
+
+  // Debug-print throttle for the clap_host_log passthrough (called from the
+  // static clapHostLogLog() free function, which only has public access).
+  bool logPrintGateReady() { return clapDebugGateReady(_lastLogPrintUs, 1000); }
 
   //--- Input event queue ---
   // Caller fills these before calling runProcess(); the queue is cleared
@@ -227,8 +251,11 @@ private:
   const clap_plugin_posix_fd_support_t* _extPosixFd = nullptr;
 
   clap_host_t _clapHost;
-  std::atomic<bool> _curActiveState { false };
-  
+  std::atomic<bool> _curActiveState { false }; ///< touched from both the audio
+                                                ///< thread (bypass toggle) and
+                                                ///< the main thread (activate()/
+                                                ///< restart lambdas) — must be atomic
+
   // CLAP requires start_processing()/stop_processing() to run on the AUDIO
   // thread, while activate()/deactivate() run on the MAIN thread. So
   // activate()/deactivate() only flag a request; runProcess() (audio thread)
@@ -282,11 +309,10 @@ private:
   // buffer or CPU-load issue.
   std::atomic<bool> _inRunProcess { false };
 
-  // Rolling worst-case process() time, for the periodic budget-overrun log
-  // in runProcess() — lets you see whether a plugin's process() calls are
-  // trending slower over a session rather than just spiking once.
-  std::atomic<double> _maxProcessMs { 0.0 };
-
+  // Debug-print throttles (see clapDebugGateReady()) — not correctness state.
+  std::atomic<int64_t> _lastOverrunPrintUs { 0 }; ///< runProcess() budget-overrun message
+  std::atomic<int64_t> _lastRestartPrintUs { 0 }; ///< hostRequestRestart() message
+  std::atomic<int64_t> _lastLogPrintUs     { 0 }; ///< clap_host_log passthrough
 
   std::vector<uint32_t> _inPortChans;
   std::vector<uint32_t> _outPortChans;

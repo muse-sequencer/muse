@@ -106,7 +106,7 @@ static const clap_host_params_t s_hostParamsExt = {
 };
 
 // clap_host_log
-static void CLAP_ABI clapHostLogLog(const clap_host_t* /*host*/,
+static void CLAP_ABI clapHostLogLog(const clap_host_t* host,
                                     clap_log_severity severity, const char* msg)
 {
   switch(severity)
@@ -604,7 +604,18 @@ bool ClapInstanceCore::pushParamValueEvent(clap_id paramId, double value, uint32
   {
     const auto it = _synth->paramIdToIndex.find(paramId);
     if(it != _synth->paramIdToIndex.end())
-      ev.cookie = _synth->paramInfo[it->second].cookie;
+    {
+      const clap_param_info_t& pi = _synth->paramInfo[it->second];
+      ev.cookie = pi.cookie;
+      if(value < pi.min_value || value > pi.max_value)
+      {
+        fprintf(stderr,
+          "ClapInstanceCore::pushParamValueEvent: '%s' param %u value %.6f out of "
+          "range [%.6f, %.6f] — clamping\n",
+          _displayName.toLocal8Bit().constData(), paramId, value, pi.min_value, pi.max_value);
+        ev.value = value < pi.min_value ? pi.min_value : pi.max_value;
+      }
+    }
   }
   return appendEvent(&ev, sizeof(ev), sampleOffset);
 }

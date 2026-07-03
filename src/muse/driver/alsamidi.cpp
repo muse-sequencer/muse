@@ -23,6 +23,8 @@
 
 #include "alsamidi.h"
 
+#include <string>
+
 #ifdef ALSA_SUPPORT
 
 #include <stdio.h>
@@ -1418,14 +1420,19 @@ void setAlsaClientName(const char* name)
 
 struct AlsaPort {
       snd_seq_addr_t adr;
-      char* name;
+      std::string name;
       int flags;
-      AlsaPort(snd_seq_addr_t a, const char* s, int f) {
-            adr = a;
-            name = strdup(s);
-            flags = f;
-            }
-      //~AlsaPort() { if(name) free(name); }       
+      AlsaPort(snd_seq_addr_t a, const char* s, int f)
+        : adr(a), name(s ? s : ""), flags(f) { }
+      // No custom destructor/copy/move needed: std::string manages its own
+      // memory correctly through all of those. The previous char*+strdup()
+      // version had no copy constructor, so portList.push_back(AlsaPort(...))
+      // shallow-copied the raw pointer from the temporary into the list's
+      // stored copy; the temporary's (then-commented-out) destructor was
+      // supposed to free it, and when later re-enabled that caused a double
+      // free at portList's own destruction (both copies freeing the same
+      // pointer) — confirmed by the "double free or corruption" crash in
+      // ~AlsaPort() at program exit.
       };
 
 static std::list<AlsaPort> portList;
@@ -1540,7 +1547,7 @@ void alsaScanMidiPorts()
                         break;
                         }
                   // Search by name if either of the client or port are 0.
-                  if(strcmp(k->name, d->name().toUtf8().constData()) == 0 &&
+                  if(k->name == d->name().toUtf8().constData() &&
                      ((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) || 
                       (d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == k->adr.port) ||
                       (d->adr.port == SND_SEQ_ADDRESS_UNKNOWN && d->adr.client == k->adr.client)))
@@ -1582,20 +1589,20 @@ void alsaScanMidiPorts()
                   if (d == 0)
                         continue;
                   DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts add: checking port:%s client:%d port:%d device:%p %s client:%d port:%d\n", 
-                          k->name, k->adr.client, k->adr.port, d, d->name().toLocal8Bit().constData(), d->adr.client, d->adr.port);
+                          k->name.c_str(), k->adr.client, k->adr.port, d, d->name().toLocal8Bit().constData(), d->adr.client, d->adr.port);
                   if (k->adr.client == d->adr.client && k->adr.port == d->adr.port)
                         break;
                   
-                  if((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN || d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) && strcmp(k->name, d->name().toUtf8().constData()) == 0)
+                  if((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN || d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) && k->name == d->name().toUtf8().constData())
                   {
                     if(d->adr.client != SND_SEQ_ADDRESS_UNKNOWN && d->adr.client != k->adr.client)
                     {
-                      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts: k->name:%s d->adr.client:%u != k->adr.client:%u", k->name, d->adr.client, k->adr.client);
+                      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts: k->name:%s d->adr.client:%u != k->adr.client:%u", k->name.c_str(), d->adr.client, k->adr.client);
                       //continue;
                     }
                     if(d->adr.port != SND_SEQ_ADDRESS_UNKNOWN && d->adr.port != k->adr.port)
                     {
-                      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts: k->name:%s d->adr.port:%u != k->adr.port:%u", k->name, d->adr.port, k->adr.port);
+                      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts: k->name:%s d->adr.port:%u != k->adr.port:%u", k->name.c_str(), d->adr.port, k->adr.port);
                       //continue;
                     }
                     //if(d->adr.client == SND_SEQ_ADDRESS_UNKNOWN)
@@ -1639,7 +1646,7 @@ void alsaScanMidiPorts()
 
                   // add device
                   
-                  const QString dev_name(k->name);
+                  const QString dev_name(QString::fromUtf8(k->name.c_str()));
                   MidiDevice* dev = MusEGlobal::midiDevices.find(dev_name, MidiDevice::ALSA_MIDI);
                   const bool dev_found = dev;
                   if(dev_found)

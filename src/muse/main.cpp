@@ -396,6 +396,9 @@ CommandLineParseResult parseCommandLine(
   QCommandLineOption option_D("D", QCoreApplication::translate("main",
     "Debug mode: enable some debug messages specify twice for lots of debug messages this may slow down MusE massively!"));
   parser.addOption(option_D);
+  QCommandLineOption option_noPluginDupWarn("no-plugin-duplicate-warnings", QCoreApplication::translate("main",
+    "Suppress LADSPA/DSSI/VST/CLAP/MESS 'Ignoring ... duplicate' scan warnings, even with -D debug messages on."));
+  parser.addOption(option_noPluginDupWarn);
   QCommandLineOption option_m("m", QCoreApplication::translate("main", "Debug mode: trace midi Input"));
   parser.addOption(option_m);
   QCommandLineOption option_M("M", QCoreApplication::translate("main", "Debug mode: trace midi Output"));
@@ -483,6 +486,9 @@ CommandLineParseResult parseCommandLine(
     else
       MusEGlobal::heavyDebugMsg=true;
   }
+
+  if(parser.isSet(option_noPluginDupWarn))
+    MusEGlobal::suppressPluginDuplicateWarnings = true;
 
   if(parser.isSet(option_m))
     MusEGlobal::midiInputTrace = true;
@@ -1323,10 +1329,6 @@ int main(int argc, char* argv[])
                     MusEPlugin::PluginTypeDSSIVST);
         if(MusEGlobal::loadLV2)
           types |= MusEPlugin::PluginTypeLV2;
-        #ifdef CLAP_SUPPORT
-                if(MusEGlobal::loadCLAP)
-                  types |= MusEPlugin::PluginTypeCLAP;
-        #endif
 
         types |= MusEPlugin::PluginTypeUnknown;
         
@@ -1334,6 +1336,10 @@ int main(int argc, char* argv[])
                                         // List of plugins to scan into and write to cache files from.
                                         &MusEPlugin::pluginList,
                                         // Don't bother reading any port information that might exist in the cache.
+                                        // (LADSPA/VST/DSSI/LV2/etc get their real port layout cheaply and
+                                        //  directly from the live descriptor/AEffect struct once actually
+                                        //  loaded, so caching it here isn't worth a slower full-instantiation
+                                        //  scan. CLAP is the opposite case and is handled separately below.)
                                         false,
                                         // Whether to force recreation.
                                         do_rescan,
@@ -1345,6 +1351,31 @@ int main(int argc, char* argv[])
                                         types,
                                         // Debug messages.
                                         MusEGlobal::debugMsg);
+
+        #ifdef CLAP_SUPPORT
+        // CLAP port/param counts are ONLY knowable by instantiating the
+        //  plugin (see queryClapPortCounts() in plugin_cache_writer_clap.cpp),
+        //  so unlike the types above we DO want them read from / written to
+        //  the cache here — ClapPluginWrapper::ClapPluginWrapper()
+        //  (clap_host_effect.cpp) trusts these cached counts and only falls
+        //  back to a live probe if they come back all zero (stale/missing
+        //  cache entry), which is what was happening before this call
+        //  existed: writePorts was always false, so the cache never carried
+        //  real counts and every scanned CLAP plugin got probed live on
+        //  every startup regardless of project usage.
+        if(MusEGlobal::loadCLAP)
+        {
+          MusEPlugin::checkPluginCacheFiles(new_plugin_cache_path,
+                                          &MusEPlugin::pluginList,
+                                          // DO read/write port information for CLAP.
+                                          true,
+                                          do_rescan,
+                                          dont_plugin_rescan,
+                                          MusEGlobal::museGlobalLib,
+                                          MusEPlugin::PluginTypeCLAP,
+                                          MusEGlobal::debugMsg);
+        }
+        #endif
 
         // Done with rescan trigger. Reset it now.
         if(do_rescan)

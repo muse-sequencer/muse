@@ -161,7 +161,12 @@ void AudioPrefetch::msgTick(bool isRecTick, bool isPlayTick)
               isRecTick, isPlayTick, isRunning(), seekCount.load());
       #endif
 
-      PrefetchMsg msg;
+      // Zero-init: PrefetchMsg has tail padding after the two bools that
+      //  member-by-member assignment never touches. sendMsg1() writes
+      //  sizeof(msg) raw bytes through the pipe, so leftover stack garbage
+      //  in that padding was going out uninitialised (valgrind: Thread::
+      //  sendMsg1 write(buf) uninitialised, traced back to this stack alloc).
+      PrefetchMsg msg{};
       msg.id  = PREFETCH_TICK;
       msg.pos = 0; // seems to be unused, was uninitialized.
       msg._isRecTick = isRecTick;
@@ -192,7 +197,10 @@ void AudioPrefetch::msgSeek(unsigned samplePos, bool force)
       fprintf(stderr, " ... seekCount incremented:%d\n", seekCount.load());
       #endif
       
-      PrefetchMsg msg;
+      // Zero-init: this message type doesn't use _isPlayTick/_isRecTick at
+      //  all, so without {} those two bools (plus tail padding) went out
+      //  over sendMsg1() completely uninitialised on every seek message.
+      PrefetchMsg msg{};
       msg.id  = PREFETCH_SEEK;
       msg.pos = samplePos;
       while (sendMsg1(&msg, sizeof(msg))) {

@@ -37,6 +37,10 @@ unsigned fifoLength =  128;       // 131072/segmentSize
                                   // 131072 - magic number that gives a sufficient buffer size
 int segmentCount = 2;
 
+
+bool suppressPluginDuplicateWarnings = true; // for less debug output, set false if output required
+
+
 //   NOTE: For now, this is TEMPORARILY set to the project sample rate during song loading,
 //          then at the END of song loading is immediately set to the real current rate.
 //         See comments in Song::read() at the "samplerate" tag section.

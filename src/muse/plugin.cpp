@@ -1849,11 +1849,12 @@ void initPlugins()
             inf_uri,
             inf_label))
           {
-            fprintf(stderr, "Ignoring LADSPA effect label:%s uri:%s path:%s duplicate of path:%s\n",
-                    inf_label.toLocal8Bit().constData(),
-                    inf_uri.toLocal8Bit().constData(),
-                    inf_filepath.toLocal8Bit().constData(),
-                    pl->filePath().toLocal8Bit().constData());
+            if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+              fprintf(stderr, "Ignoring LADSPA effect label:%s uri:%s path:%s duplicate of path:%s\n",
+                      inf_label.toLocal8Bit().constData(),
+                      inf_uri.toLocal8Bit().constData(),
+                      inf_filepath.toLocal8Bit().constData(),
+                      pl->filePath().toLocal8Bit().constData());
           }
           else
           {
@@ -1882,11 +1883,12 @@ void initPlugins()
               inf_uri,
               inf_label))
             {
-              fprintf(stderr, "Ignoring DSSI effect label:%s uri:%s path:%s duplicate of path:%s\n",
-                      inf_label.toLocal8Bit().constData(),
-                      inf_uri.toLocal8Bit().constData(),
-                      inf_filepath.toLocal8Bit().constData(),
-                      pl->filePath().toLocal8Bit().constData());
+              if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+                fprintf(stderr, "Ignoring DSSI effect label:%s uri:%s path:%s duplicate of path:%s\n",
+                        inf_label.toLocal8Bit().constData(),
+                        inf_uri.toLocal8Bit().constData(),
+                        inf_filepath.toLocal8Bit().constData(),
+                        pl->filePath().toLocal8Bit().constData());
             }
             else
             {

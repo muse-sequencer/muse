@@ -87,12 +87,13 @@ void initCLAP()
          PLUGIN_GET_QSTRING(info._completeBaseName),
          inf_uri, inf_label))
     {
-      fprintf(stderr,
-        "Ignoring CLAP synth label:%s uri:%s path:%s duplicate of path:%s\n",
-        inf_label.toLocal8Bit().constData(),
-        inf_uri.toLocal8Bit().constData(),
-        PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
-        sy->filePath().toLocal8Bit().constData());
+      if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+        fprintf(stderr,
+          "Ignoring CLAP synth label:%s uri:%s path:%s duplicate of path:%s\n",
+          inf_label.toLocal8Bit().constData(),
+          inf_uri.toLocal8Bit().constData(),
+          PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+          sy->filePath().toLocal8Bit().constData());
     }
     else
     {

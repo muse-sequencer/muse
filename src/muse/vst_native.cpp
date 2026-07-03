@@ -382,21 +382,24 @@ void initVST_Native()
 
           if(plug_found)
           {
-            fprintf(stderr, "Ignoring LinuxVST effect name:%s uri:%s path:%s duplicate of path:%s\n",
-                    inf_name.toLocal8Bit().constData(),
-                    inf_uri.toLocal8Bit().constData(),
-                    PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
-                    plug_found->filePath().toLocal8Bit().constData());
+            if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+              fprintf(stderr, "Ignoring LinuxVST effect name:%s uri:%s path:%s duplicate of path:%s\n",
+                      inf_name.toLocal8Bit().constData(),
+                      inf_uri.toLocal8Bit().constData(),
+                      PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+                      plug_found->filePath().toLocal8Bit().constData());
           }
           if(synth_found)
           {
-            fprintf(stderr, "Ignoring LinuxVST synth name:%s uri:%s path:%s duplicate of path:%s\n",
-                    inf_name.toLocal8Bit().constData(),
-                    inf_uri.toLocal8Bit().constData(),
-                    PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
-                    synth_found->filePath().toLocal8Bit().constData());
+            if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+              fprintf(stderr, "Ignoring LinuxVST synth name:%s uri:%s path:%s duplicate of path:%s\n",
+                      inf_name.toLocal8Bit().constData(),
+                      inf_uri.toLocal8Bit().constData(),
+                      PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+                      synth_found->filePath().toLocal8Bit().constData());
           }
-          
+
+                    
           const bool is_effect = info._class & MusEPlugin::PluginClassEffect;
           const bool is_synth  = info._class & MusEPlugin::PluginClassInstrument;
           
