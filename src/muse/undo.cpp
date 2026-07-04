@@ -23,9 +23,6 @@
 
 #include "assert.h"
 
-#include <cstring>  // memset
-#include <cstddef>  // offsetof
-
 #include "sig.h"  
 #include "keyevent.h"
 
@@ -2333,10 +2330,43 @@ UndoOp::UndoOp()
   // push_back/insert) read every member regardless of 'type', an
   // uninitialized arm can be read as e.g. an indeterminate bool - which
   // is UB and trips UBSan ("load of invalid value for type bool").
-  // Zero the raw union storage (type .. end of 2nd union) up front so
-  // there's always a well-defined baseline. This does NOT touch oEvent/
-  // nEvent, which are already default-constructed by the time we get here.
-  memset(this, 0, offsetof(UndoOp, oEvent));
+  // Explicitly zero every member of every arm so there's always a
+  // well-defined baseline. (NOTE: memset/offsetof was tried here first,
+  // but UndoOp is not standard-layout, so both are rejected by
+  // -Werror=invalid-offsetof / -Werror=class-memaccess. Writing to a
+  // union member is always well-defined, unlike reading an inactive one,
+  // so explicit per-member assignment is the correct fix, not a
+  // workaround.)
+  a = 0; b = 0; c = 0; d = 0; e = 0;
+  oldTrack = nullptr; old_partlen_or_pos = 0; new_partlen_or_pos = 0; old_partlen = 0; new_partlen = 0;
+  channel = 0; ctrl = 0; oVal = 0; nVal = 0;
+  startframe = 0; endframe = 0; tmpwavfile = nullptr;
+  oldMarker = nullptr; newMarker = nullptr;
+  _oldPropValue = 0; _newPropValue = 0;
+  _audioCtrlIdModify = 0; _eraseCtrlList = nullptr; _addCtrlList = nullptr;
+  _recoverableEraseCtrlList = nullptr; _recoverableAddCtrlList = nullptr; _doNotEraseCtrlList = nullptr;
+  _pluginI = nullptr; _pluginConfiguration = nullptr; _ctrlListList = nullptr; _midiAudioCtrlMap = nullptr;
+  _effectRackPos = 0; _newEffectRackPos = 0;
+  _plugMoveSrcTrack = nullptr; _plugMoveDstConfiguration = nullptr; _plugMoveDstCtrlListList = nullptr;
+  _plugMoveDstMidiAudioCtrlMap = nullptr; _plugMoveSrcEffectRackPos = 0; _plugMoveDstEffectRackPos = 0;
+  _audioCtrlID = 0; _audioCtrlFrame = 0; _audioNewCtrlFrame = 0; _audioCtrlVal = 0.0; _audioNewCtrlVal = 0.0;
+  _midiPort = nullptr; _oldMidiInstrument = nullptr; _newMidiInstrument = nullptr;
+  _audioCtrlListSelect = nullptr; _audioCtrlSelectFrame = 0;
+  _audioCtrlIdStruct = 0; _audioCtrlFrameStruct = 0; _audioCtrlValStruct = nullptr;
+  _audioCtrlIdAddDel = 0; _audioCtrlFrameAddDel = 0; _audioCtrlValAddDel = 0.0;
+  _audioCtrlValFlagsAddDel = static_cast<CtrlVal::CtrlValueFlags>(0);
+  _oldAudCtrlMoveMode = false; _newAudCtrlMoveMode = false;
+  _audioCtrlOldPasteEraseOpts = static_cast<CtrlList::PasteEraseOptions>(0);
+  _audioCtrlNewPasteEraseOpts = static_cast<CtrlList::PasteEraseOptions>(0);
+  routeFrom = nullptr; routeTo = nullptr;
+  _oldName = nullptr; _newName = nullptr;
+  trackno = 0;
+
+  // Second (smaller) anonymous union.
+  events_offset = 0;
+  events_offset_time_type = static_cast<Pos::TType>(0);
+  _noEndAudioCtrlMoveMode = false;
+
   type = UndoOp::DoNothing;
   selected = false;
   selected_old = false;

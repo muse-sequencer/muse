@@ -833,7 +833,11 @@ void AudioTrack::copyData(unsigned pos,
   //  JACK/PipeWire buffer-size change), reallocate them now, before anything
   //  below writes into them at the new (larger) segmentSize.
   // Cheap no-op in the common case - just one int compare.
-  if(_allocatedSegmentSize != (int)MusEGlobal::segmentSize)
+  // Grow-only: MusEGlobal::segmentSize is the CURRENT cycle's frame count and can
+  //  fluctuate cycle-to-cycle (e.g. PipeWire adaptive quantum). Only reallocate when
+  //  it's genuinely bigger than what we have - reallocating on every '!=' mismatch
+  //  would call posix_memalign() on every RT callback (RT thread livelock/hang).
+  if(_allocatedSegmentSize < (int)MusEGlobal::segmentSize)
     initBuffers();
 
   // Protection for pre-allocated _dataBuffers.

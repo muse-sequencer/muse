@@ -110,13 +110,17 @@ void AudioTrack::initBuffers()
   if(chans < MusECore::MAX_CHANNELS)
     chans = MusECore::MAX_CHANNELS;
 
-  // If the audio driver's buffer size changed since our buffers were allocated
-  //  (e.g. a live JACK/PipeWire buffer-size change), the existing buffers below
-  //  are too small for the new MusEGlobal::segmentSize. Free them so the
+  // Grow-only: if a bigger MusEGlobal::segmentSize has been requested than what
+  //  our buffers were allocated for (e.g. a live JACK/PipeWire buffer-size
+  //  increase), the existing buffers below are too small. Free them so the
   //  '!outBuffers' etc. guards below reallocate at the correct new size.
   // Without this, getData()/memset() calls sized for the new segmentSize
   //  overflow these buffers (heap-buffer-overflow).
-  if(_allocatedSegmentSize != 0 && _allocatedSegmentSize != (int)MusEGlobal::segmentSize)
+  // NOTE: intentionally '>' not '!=' - MusEGlobal::segmentSize mirrors the
+  //  CURRENT cycle's frame count and can fluctuate cycle-to-cycle (e.g.
+  //  PipeWire adaptive quantum). Reallocating on every mismatch would call
+  //  posix_memalign() on every RT audio callback - an RT thread livelock/hang.
+  if(_allocatedSegmentSize != 0 && (int)MusEGlobal::segmentSize > _allocatedSegmentSize)
   {
     if(outBuffers)
     {

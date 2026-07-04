@@ -459,7 +459,7 @@ void TList::paint(const QRect& r)
                     }
                     else {
                         // show number of ports
-                        n = ((MusECore::WaveTrack*)track)->channels();
+                        n = track->channels();
                     }
                     s.setNum(n);
                     p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, s);
