@@ -27,7 +27,7 @@ echo ""
 echo " ==================================== "
 echo "   Running cmake (configuration)"
 echo " ==================================== "
-cmake -B ../build  -DCMAKE_BUILD_TYPE=RelWithDebInfo -DMODULES_BUILD_STATIC=ON 
+cmake -B ../build  -DCMAKE_BUILD_TYPE=Debug  -DMODULES_BUILD_STATIC=ON  -DMUSE_ENABLE_ASAN=ON
 # to put the resulting binary in a specific location add -DCMAKE_INSTALL_PREFIX=<some location>
 
 
@@ -36,7 +36,7 @@ echo " ==================================== "
 echo "     Starting the build process"
 echo " ==================================== "
 
-cmake --build ../build -j4
+cmake --build ../build -j7
 
 
 echo ""

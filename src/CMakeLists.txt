@@ -814,6 +814,25 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fomit-fra
 # Debug usually has no -O setting. Let's give it a default one.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DQT_DEBUG -Werror")
 
+#
+#  Sanitizers (ASan/UBSan). Usage: cmake -DMUSE_ENABLE_ASAN=ON ..
+#  Build as Debug (or at least with -O0/-O1) for useful stack traces.
+#
+option(MUSE_ENABLE_ASAN "Build with AddressSanitizer + UndefinedBehaviorSanitizer" OFF)
+if(MUSE_ENABLE_ASAN)
+    if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message(WARNING "MUSE_ENABLE_ASAN is ON but CMAKE_BUILD_TYPE is '${CMAKE_BUILD_TYPE}', not Debug. Consider -DCMAKE_BUILD_TYPE=Debug for readable stack traces.")
+    endif()
+    set(MUSE_SANITIZER_FLAGS "-fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MUSE_SANITIZER_FLAGS}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MUSE_SANITIZER_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address,undefined")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address,undefined")
+    message("ASan/UBSan enabled: ${MUSE_SANITIZER_FLAGS}")
+else(MUSE_ENABLE_ASAN)
+    message("ASan/UBSan disabled (-DMUSE_ENABLE_ASAN=ON to enable)")
+endif(MUSE_ENABLE_ASAN)
+
 message("Final CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 message("Final CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
 message("Final CMAKE_CXX_FLAGS_RELWITHDEBINFO: ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")

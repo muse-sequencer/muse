@@ -109,6 +109,57 @@ void AudioTrack::initBuffers()
   // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less.
   if(chans < MusECore::MAX_CHANNELS)
     chans = MusECore::MAX_CHANNELS;
+
+  // If the audio driver's buffer size changed since our buffers were allocated
+  //  (e.g. a live JACK/PipeWire buffer-size change), the existing buffers below
+  //  are too small for the new MusEGlobal::segmentSize. Free them so the
+  //  '!outBuffers' etc. guards below reallocate at the correct new size.
+  // Without this, getData()/memset() calls sized for the new segmentSize
+  //  overflow these buffers (heap-buffer-overflow).
+  if(_allocatedSegmentSize != 0 && _allocatedSegmentSize != (int)MusEGlobal::segmentSize)
+  {
+    if(outBuffers)
+    {
+      for(int i = 0; i < chans; ++i)
+      {
+        if(outBuffers[i])
+          free(outBuffers[i]);
+      }
+      delete[] outBuffers;
+      outBuffers = nullptr;
+    }
+    if(outBuffersExtraMix)
+    {
+      for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
+      {
+        if(outBuffersExtraMix[i])
+          free(outBuffersExtraMix[i]);
+      }
+      delete[] outBuffersExtraMix;
+      outBuffersExtraMix = nullptr;
+    }
+    if(_dataBuffers)
+    {
+      for(int i = 0; i < _totalOutChannels; ++i)
+      {
+        if(_dataBuffers[i])
+          free(_dataBuffers[i]);
+      }
+      delete[] _dataBuffers;
+      _dataBuffers = nullptr;
+    }
+    if(audioInSilenceBuf)
+    {
+      free(audioInSilenceBuf);
+      audioInSilenceBuf = nullptr;
+    }
+    if(audioOutDummyBuf)
+    {
+      free(audioOutDummyBuf);
+      audioOutDummyBuf = nullptr;
+    }
+  }
+
   if(!outBuffers)
   {
     outBuffers = new float*[chans];
@@ -281,6 +332,8 @@ void AudioTrack::initBuffers()
       _controls[k].enCtrl = true;
     }
   }
+
+  _allocatedSegmentSize = MusEGlobal::segmentSize;
 }
 
 //---------------------------------------------------------
@@ -324,6 +377,7 @@ AudioTrack::AudioTrack(TrackType t, int channels)
       audioInSilenceBuf = 0;
       audioOutDummyBuf = 0;
       _dataBuffers = 0;
+      _allocatedSegmentSize = 0;
 
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
@@ -367,6 +421,7 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       audioInSilenceBuf = 0;
       audioOutDummyBuf = 0;
       _dataBuffers = 0;
+      _allocatedSegmentSize = 0;
 
       _totalOutChannels = 0;
 

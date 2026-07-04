@@ -23,6 +23,9 @@
 
 #include "assert.h"
 
+#include <cstring>  // memset
+#include <cstddef>  // offsetof
+
 #include "sig.h"  
 #include "keyevent.h"
 
@@ -2324,11 +2327,28 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
 
 UndoOp::UndoOp()
 {
-  type=UndoOp::DoNothing;
+  // Every UndoType only sets the union arm(s) and members it actually
+  // uses. Since all the arms of the two anonymous unions alias the same
+  // bytes, and copies of UndoOp (e.g. into std::list<UndoOp> via
+  // push_back/insert) read every member regardless of 'type', an
+  // uninitialized arm can be read as e.g. an indeterminate bool - which
+  // is UB and trips UBSan ("load of invalid value for type bool").
+  // Zero the raw union storage (type .. end of 2nd union) up front so
+  // there's always a well-defined baseline. This does NOT touch oEvent/
+  // nEvent, which are already default-constructed by the time we get here.
+  memset(this, 0, offsetof(UndoOp, oEvent));
+  type = UndoOp::DoNothing;
+  selected = false;
+  selected_old = false;
+  doCtrls = false;
+  doClones = false;
+  track = nullptr;
+  part = nullptr;
   _noUndo = true;
 }
 
 UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==AddKey || type_==DeleteKey || type_== ModifyKey ||
              type_==AddTempo || type_==DeleteTempo || type_==ModifyTempo || 
@@ -2466,7 +2486,8 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
       }
 
 UndoOp::UndoOp(UndoType type_, int tick, const MusECore::TimeSignature old_sig, const MusECore::TimeSignature new_sig, bool noUndo)
-{
+: UndoOp()
+      {
       assert(type_==ModifySig);
       type    = type_;
       a  = tick;
@@ -2478,6 +2499,7 @@ UndoOp::UndoOp(UndoType type_, int tick, const MusECore::TimeSignature old_sig, 
 }
 
 UndoOp::UndoOp(UndoType type_, int n, const Track* track_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==AddTrack || type_==DeleteTrack);
       assert(track_);
@@ -2489,6 +2511,7 @@ UndoOp::UndoOp(UndoType type_, int n, const Track* track_, bool noUndo)
       }
 
 UndoOp::UndoOp(UndoType type_, const Part* part_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==AddPart || type_==DeletePart);
       assert(part_);
@@ -2499,7 +2522,8 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool noUndo)
       }
       
 UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_, bool noUndo)
-{
+: UndoOp()
+      {
     assert(type_==SelectPart);
     assert(part_);
     
@@ -2512,7 +2536,8 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_,
 
 UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, unsigned int new_len_or_pos,
                Pos::TType new_time_type_, const Track* oTrack, const Track* nTrack, bool noUndo)
-{
+: UndoOp()
+      {
     assert(type_== MovePart);
     assert(part_);
 
@@ -2563,7 +2588,8 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, u
 
 UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_pos, unsigned int new_pos, unsigned int old_len, unsigned int new_len,
                int64_t events_offset_, Pos::TType new_time_type_, bool noUndo)
-{
+: UndoOp()
+      {
     assert(type_ == ModifyPartStart);
     assert(part_);
 
@@ -2580,7 +2606,8 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_pos, unsigned
 
 UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len, unsigned int new_len,
                int64_t events_offset_, Pos::TType new_time_type_, bool noUndo)
-{
+: UndoOp()
+      {
     assert(type_== ModifyPartLength);
     assert(part_);
 
@@ -2594,6 +2621,7 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len, unsigned
 }
 
 UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* part_, bool doCtrls_, bool doClones_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==ModifyEvent);
       assert(part_);
@@ -2608,6 +2636,7 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* p
       }
 
 UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, bool b_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==DeleteEvent || type_==AddEvent || type_==SelectEvent);
       assert(part_);
@@ -2629,6 +2658,7 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, boo
       }
       
 UndoOp::UndoOp(UndoType type_, const Marker& oldMarker_, const Marker& newMarker_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==ModifyMarker);
       type    = type_;
@@ -2638,6 +2668,7 @@ UndoOp::UndoOp(UndoType type_, const Marker& oldMarker_, const Marker& newMarker
       }
 
 UndoOp::UndoOp(UndoType type_, const Marker& marker_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==AddMarker || type_==DeleteMarker);
       type    = type_;
@@ -2652,6 +2683,7 @@ UndoOp::UndoOp(UndoType type_, const Marker& marker_, bool noUndo)
       }
 
 UndoOp::UndoOp(UndoType type_, const Marker& marker_, unsigned int new_pos, Pos::TType new_time_type, bool noUndo)
+      : UndoOp()
       {
       assert(type_==SetMarkerPos);
       type    = type_;
@@ -2662,6 +2694,7 @@ UndoOp::UndoOp(UndoType type_, const Marker& marker_, unsigned int new_pos, Pos:
       }
 
 UndoOp::UndoOp(UndoType type_, const Event& changedEvent, const QString& changeData, int startframe_, int endframe_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==ModifyClip);
       
@@ -2674,7 +2707,8 @@ UndoOp::UndoOp(UndoType type_, const Event& changedEvent, const QString& changeD
       }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_name, const QString& new_name, bool noUndo)
-{
+: UndoOp()
+      {
     assert(type_==ModifyPartName);
     assert(part_);
     
@@ -2686,7 +2720,8 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_nam
 }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_name, const QString& new_name, bool noUndo)
-{
+: UndoOp()
+      {
   assert(type_==ModifyTrackName);
   assert(track_);
     
@@ -2698,7 +2733,8 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_n
 }
 
 UndoOp::UndoOp(UndoType type_, int ctrlID, unsigned int frame, const CtrlVal& cv, const Track* track_, bool noUndo)
-{
+: UndoOp()
+      {
   assert(type_== AddAudioCtrlValStruct);
   assert(track_);
 
@@ -2713,7 +2749,8 @@ UndoOp::UndoOp(UndoType type_, int ctrlID, unsigned int frame, const CtrlVal& cv
 UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int ctrlID_, CtrlList* eraseCtrlList, CtrlList* addCtrlList,
                CtrlList* recoverableEraseCtrlList, CtrlList* recoverableAddCtrlList, CtrlList* doNotEraseCtrlList,
                bool noEndAudioCtrlMoveMode, bool noUndo)
-{
+: UndoOp()
+      {
   assert(type_== ModifyAudioCtrlValList);
   assert(track_);
   assert(eraseCtrlList || addCtrlList || recoverableEraseCtrlList || recoverableAddCtrlList || doNotEraseCtrlList);
@@ -2732,7 +2769,8 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int ctrlID_, CtrlLis
 
 UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
   double c_, double d_, double e_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_ == ModifyTrackChannel || type_ == DeleteAudioCtrlVal ||
     type_ == SetTrackRecord || type_ == SetTrackMute || type_ == SetTrackSolo ||
     type_ == SetTrackRecMonitor || type_ == SetTrackOff || type_ == AddAudioCtrlVal || type_ == ModifyAudioCtrlVal ||
@@ -2786,7 +2824,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
 
 UndoOp::UndoOp(UndoType type_, const Track *track_, PluginConfiguration *pluginConfiguration_,
              int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== ChangeRackEffectPlugin);
   assert(track_);
   assert(pluginConfiguration_);
@@ -2803,7 +2842,8 @@ UndoOp::UndoOp(UndoType type_, const Track *track_, PluginConfiguration *pluginC
 
 UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &pluginConfiguration_,
              int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== ChangeRackEffectPlugin);
   assert(track_);
   type = type_;
@@ -2819,7 +2859,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &p
 
 UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_,
                int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== ChangeRackEffectPlugin);
   assert(track_);
   type = type_;
@@ -2835,7 +2876,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_,
 
 UndoOp::UndoOp(UndoType type_, const Track* srcTrack_, const Track* dstTrack_,
                int srcEffectRackPos_, int dstEffectRackPos_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== MoveRackEffectPlugin);
   assert(srcTrack_);
   assert(dstTrack_);
@@ -2851,7 +2893,8 @@ UndoOp::UndoOp(UndoType type_, const Track* srcTrack_, const Track* dstTrack_,
 }
 
 UndoOp::UndoOp(UndoType type_, CtrlList* ctrlList_, unsigned int frame_, bool oldSelected_, bool newSelected_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== SelectAudioCtrlVal);
   type = type_;
   _noUndo = noUndo_;
@@ -2862,7 +2905,8 @@ UndoOp::UndoOp(UndoType type_, CtrlList* ctrlList_, unsigned int frame_, bool ol
 }
 
 UndoOp::UndoOp(UndoType type_, CtrlList::PasteEraseOptions newOpts_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== SetAudioCtrlPasteEraseMode);
   type = type_;
   _noUndo = noUndo_;
@@ -2871,7 +2915,8 @@ UndoOp::UndoOp(UndoType type_, CtrlList::PasteEraseOptions newOpts_, bool noUndo
 }
 
 UndoOp::UndoOp(UndoType type_, MidiPort* mp, MidiInstrument* instr, bool noUndo)
-{
+: UndoOp()
+      {
   assert(type_== SetInstrument);
   assert(mp);
   assert(instr);
@@ -2883,7 +2928,8 @@ UndoOp::UndoOp(UndoType type_, MidiPort* mp, MidiInstrument* instr, bool noUndo)
 }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, bool noUndo)
-{
+: UndoOp()
+      {
   assert(type_== EnableAllAudioControllers || type_ == BeginAudioCtrlMoveMode || type_ == EndAudioCtrlMoveMode);
   type = type_;
   _noUndo = noUndo;
@@ -2892,6 +2938,7 @@ UndoOp::UndoOp(UndoOp::UndoType type_, bool noUndo)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 UndoOp::UndoOp(UndoOp::UndoType type_, const Route& route_from_, const Route& route_to_, bool noUndo)
+      : UndoOp()
       {
       assert(type_ == AddRoute || type_ == DeleteRoute);
       _noUndo = noUndo;

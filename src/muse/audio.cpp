@@ -1489,9 +1489,9 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       //  is 'turned on', if there was a backlog of events while it was off, then they all happen at once.  Tim.
       for(TrackList::size_type it = 0; it < tl_sz; ++it) 
       {
-        atrack = static_cast<AudioTrack*>(tl[it]);
-        if(atrack->isMidiTrack())
+        if(tl[it]->isMidiTrack())
           continue;
+        atrack = static_cast<AudioTrack*>(tl[it]);
         if(!atrack->processed() && (atrack->type() != Track::AUDIO_OUTPUT))
         {
           channels = atrack->channels();

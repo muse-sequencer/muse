@@ -828,6 +828,14 @@ void AudioTrack::copyData(unsigned pos,
 
   int i;
 
+  // Protection for pre-allocated buffers: if the audio driver's buffer size
+  //  changed since outBuffers/_dataBuffers were allocated (e.g. a live
+  //  JACK/PipeWire buffer-size change), reallocate them now, before anything
+  //  below writes into them at the new (larger) segmentSize.
+  // Cheap no-op in the common case - just one int compare.
+  if(_allocatedSegmentSize != (int)MusEGlobal::segmentSize)
+    initBuffers();
+
   // Protection for pre-allocated _dataBuffers.
   if(nframes > MusEGlobal::segmentSize)
   {
