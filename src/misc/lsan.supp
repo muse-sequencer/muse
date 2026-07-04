@@ -1,0 +1,4 @@
+
+leak:QtWaylandClient
+leak:wl_proxy_marshal
+leak:wl_display_read_events
