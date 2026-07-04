@@ -1816,6 +1816,11 @@ void scanLadspaPlugins(const QString& museGlobalLib, PluginScanList* list, bool 
 
 void scanMessPlugins(const QString& museGlobalLib, PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
+  // scan_2: the expensive pass — actually dlopen()s/instantiates each MESS
+  // plugin found below to query its ports, then (re)writes the cache file.
+  // Only reached if scan_1 (findMessPluginFiles(), above) determined the
+  // cache is dirty, or a full rescan was forced (see checkPluginCacheFiles()).
+  std::fprintf(stderr, "INFO: [scan_2: cache rebuild] gathering MESS plugin directories...\n");
   QStringList sl = pluginGetMessDirectories(museGlobalLib);
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
     scanPluginDir(*it, MusEPlugin::PluginTypesAll, list, scanPorts, debugStdErr);
@@ -2878,6 +2883,10 @@ static void findLadspaPluginFiles(const QString& museGlobalLib, filepath_set& fp
 
 static void findMessPluginFiles(const QString& museGlobalLib, filepath_set& fplist, bool debugStdErr)
 {
+  // scan_1: cheap directory/file-list pass, used only to decide whether the
+  // cache is dirty (see checkPluginCacheFiles()). No plugin library is
+  // opened here, files are just stat()'d for path + mtime.
+  std::fprintf(stderr, "INFO: [scan_1: cache dirty-check] gathering MESS plugin directories...\n");
   const QStringList sl = pluginGetMessDirectories(museGlobalLib);
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
     findPluginFilesDir(*it, MusEPlugin::PluginTypesAll, fplist, debugStdErr);

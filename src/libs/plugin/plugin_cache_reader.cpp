@@ -27,6 +27,7 @@
 #include <QFileInfo>
 #include <QDateTime>
 #include <QStandardPaths>
+#include <QSet>
 
 // For sorting port enum values.
 #include <map>
@@ -481,8 +482,30 @@ QStringList pluginGetLadspaDirectories(const QString& museGlobalLib)
 QStringList pluginGetMessDirectories(const QString& museGlobalLib)
 {
   QStringList sl;
+  // De-dupe by canonical (symlink-resolved) path. Distros commonly symlink
+  // an unversioned /usr/local/lib/muse -> /usr/local/lib/muse-X.Y, and
+  // without this, adding both the versioned museGlobalLib path AND a
+  // hardcoded unversioned fallback below made the exact same files show up
+  // under two different path strings — which the cache dirty-check (string-
+  // keyed, not inode/realpath-aware) then saw as 'new' plugins on every
+  // single startup, forcing a full rescan every time. QDir::canonicalPath()
+  // returns empty for a non-existent directory, so non-existent dirs never
+  // collide with each other here — the existence/empty check below still
+  // runs on those.
+  QSet<QString> seenCanonical;
+  auto addDirUnlessAlias = [&](const QString& dir) -> bool
+  {
+    const QString canon = QDir(dir).canonicalPath();
+    const QString key = canon.isEmpty() ? dir : canon;
+    if(seenCanonical.contains(key))
+      return false;
+    seenCanonical.insert(key);
+    sl.append(dir);
+    return true;
+  };
+
   // Add our own MESS plugin directory...
-  sl.append(museGlobalLib + QString("/synthi"));
+  addDirUnlessAlias(museGlobalLib + QString("/synthi"));
   // Now add other directories...
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
   QString messPath = qEnvironmentVariable("MESS_PATH");
@@ -497,24 +520,39 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
     messPath = homePath + QString("/usr/local/lib64/MESS:/usr/lib64/MESS:/usr/local/lib/MESS:/usr/lib/MESS");
   }
   if(!messPath.isEmpty())
+  {
 // QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
 #if QT_VERSION >= 0x050e00
-    sl.append(messPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
+    const QStringList envDirs = messPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive);
 #else
-    sl.append(messPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
+    const QStringList envDirs = messPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive);
 #endif
+    for(const QString& dir : envDirs)
+      addDirUnlessAlias(dir);
+  }
 
-  // MESS covers two plugin kinds: effects ("muse plugin", conventionally
-  // in a "plugins" dir) and synths ("muse synth", conventionally in a
-  // "synthi" dir). These extra fallback locations are unconditional/
-  // hardcoded and, unlike pluginGetLinuxVstDirectories(), not guarded by
+  // MESS synths conventionally live in a "synthi" dir (see museGlobalLib
+  // above). Unlike pluginGetLinuxVstDirectories(), not guarded by
   // Q_OS_WIN — MESS itself only ships a Linux build at present, so there
   // is no equivalent Windows path scheme defined here yet.
+  //
+  // NOTE: there used to be an additional "plugins" (effect) entry here
+  // too, but MESS has no such directory convention — that only ever
+  // duplicated LADSPA's own museGlobalLib+"/plugins" directory (see
+  // pluginGetLadspaDirectories()) under a second, unversioned path. Since
+  // that's a *different function's* directory list, our own addDirUnlessAlias()
+  // dedup above can't see it, so the duplicate files kept looking 'new' to
+  // the cache dirty-check on every single startup. Removed rather than
+  // attempting cross-function dedup.
+  //
+  // IMPORTANT: this does NOT mean the "plugins" effect directory goes
+  // unscanned — museGlobalLib+"/plugins" is still scanned every run, just
+  // via pluginGetLadspaDirectories()/scanLadspaPlugins() instead of here.
+  // Nothing was dropped; this function simply no longer scans it a second
+  // time under a different type.
   const QStringList defaultMessDirs
   {
-    // /usr/local preferred over /usr, effects before synths.
-    QString("/usr/local/lib/muse/plugins"),
-    QString("/usr/lib/muse/plugins"),
+    // /usr/local preferred over /usr.
     QString("/usr/local/lib/muse/synthi"),
     QString("/usr/lib/muse/synthi"),
   };
@@ -527,12 +565,14 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
     else if(qdir.entryList(QDir::Files | QDir::NoDotAndDotDot).isEmpty())
       std::fprintf(stderr, "INFO: could not find MESS type plugins (linux only) : %s - is empty.\n",
                    dir.toLocal8Bit().constData());
+    else if(!addDirUnlessAlias(dir))
+      std::fprintf(stderr, "INFO: skipping MESS type plugin dir : %s - alias of an already-added directory.\n",
+                   dir.toLocal8Bit().constData());
     else
     {
       // Previously silent on success — added so /usr/local vs /usr/lib
       // outcomes are both visible in the log, not just failures.
       std::fprintf(stderr, "INFO: found MESS type plugins in : %s\n", dir.toLocal8Bit().constData());
-      sl.append(dir);
     }
   }
 
