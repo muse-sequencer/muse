@@ -613,11 +613,12 @@ void populateMidiPorts()
     for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
     {
       dev = *i;
-      if(dev)
-      {
-        ++jack_midis_found;
-        MidiPort* mp = &MusEGlobal::midiPorts[port_num];
-        MusEGlobal::audio->msgSetMidiDevice(mp, dev);
+      if(!dev || dev->deviceType() != MusECore::MidiDevice::JACK_MIDI)
+        continue; // not a Jack midi device - skip (previously unfiltered, mixed in Alsa devices too)
+
+      ++jack_midis_found;
+      MidiPort* mp = &MusEGlobal::midiPorts[port_num];
+      MusEGlobal::audio->msgSetMidiDevice(mp, dev);
 
 // robert: removing the default init on several places to allow for the case
 // where you rather want the midi track to default to the last created port
@@ -630,21 +631,21 @@ void populateMidiPorts()
 //          def_out_found = true;
 //        }
 //        else
-          mp->setDefaultOutChannels(0);
+        mp->setDefaultOutChannels(0);
 
-        if(!def_in_found && dev->rwFlags() & 0x2)
-        {
-          mp->setDefaultInChannels(1);
-          def_in_found = true;
-        }
-        else
-          mp->setDefaultInChannels(0);
+      if(!def_in_found && dev->rwFlags() & 0x2)
+      {
+        mp->setDefaultInChannels(1);
+        def_in_found = true;
+      }
+      else
+        mp->setDefaultInChannels(0);
 
-        if(++port_num == MusECore::MIDI_PORTS)
-          return;
-      }  
-    }
+      if(++port_num == MusECore::MIDI_PORTS)
+        return;
+    }// end for
   }
+
   //else
   // If Jack is not running, use ALSA devices.
   // Try to do the user a favour: If we still have no Jack devices, even if Jack is running, fill with ALSA.
