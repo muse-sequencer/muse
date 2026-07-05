@@ -67,6 +67,7 @@
 #include "audiodev.h"
 #include "gconfig.h"
 #include "globals.h"
+#include "driver/jackaudio.h"
 #include "helper.h"
 #include "sync.h"
 #include "functions.h"
@@ -344,6 +345,9 @@ CommandLineParseResult parseCommandLine(
   parser.addOption(option_F);
   QCommandLineOption option_A("A", QCoreApplication::translate("main", "Force inclusion of ALSA midi even if using Jack"));
   parser.addOption(option_A);
+  QCommandLineOption option_B("B", QCoreApplication::translate("main",
+    "Use plain Jack midi connection labels (\"Device - N\") instead of the categorized \"sys -\"/\"blue -\" style"));
+  parser.addOption(option_B);
   QCommandLineOption option_P("P", QCoreApplication::translate("main",
     "Set audio driver real time priority to n (Dummy only, default 40. Else fixed by Jack.)"), "n");
   parser.addOption(option_P);
@@ -472,6 +476,9 @@ CommandLineParseResult parseCommandLine(
 
   if(parser.isSet(option_A))
     MusEGlobal::useAlsaWithJack = true;
+
+  if(parser.isSet(option_B))
+    MusEGlobal::useSimplePortLabels = true;
 
   if(parser.isSet(option_d))
   {

@@ -104,6 +104,12 @@ class MidiJackDevice : public MidiDevice {
 
 extern bool initMidiJack();
 
+// Scans currently available Jack midi ports and auto-creates/pairs MidiJackDevice
+//  instances for them (matching capture/playback port name suffixes where possible).
+// Actual implementation lives here in jackmidi.cpp; enumerateJackMidiDevices() in
+//  helper.cpp/helper.h is kept as a thin forwarder for existing callers (main.cpp, song.cpp).
+extern void enumerateJackMidiDevicesImpl();
+
 } // namespace MusECore
 
 #endif

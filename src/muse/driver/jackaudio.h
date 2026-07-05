@@ -33,6 +33,13 @@ class QString;
 
 namespace MusEGlobal {
 bool checkAudioDevice();
+// If true, Midi connection labels (see MusECore::JackAudioDevice::setMidiConnectionAlias())
+//  use a plain "<device> <suffix>" style closer to a traditional port alias, instead of
+//  the categorized "sys - .../blue - .../<device> - ..." style. Off by default.
+// Set via the -B command line switch (see main.cpp). Ideally belongs in globals.h
+//  alongside the other MusEGlobal flags - declared here for now since jackaudio.h is
+//  already shared between jack.cpp and jackmidi.cpp.
+extern bool useSimplePortLabels;
 }
 
 namespace MusECore {
@@ -48,6 +55,14 @@ struct JackCallbackEvent
 };
 typedef std::list<JackCallbackEvent> JackCallbackEventList;
 typedef std::list<JackCallbackEvent>::iterator iJackCallbackEvent;
+
+// Internal helpers, implemented in jack.cpp, also used by jackmidi.cpp for building
+//  Midi connection labels (see JackAudioDevice::setMidiConnectionAlias()). Not part
+//  of the public driver API - just split across files by topic.
+bool isOwnBridgedMidiPort(const QString& name_or_alias, const QString& own_client_name);
+QString rawJackPortName(jack_port_t* port);
+QString jackPortPrettyName(jack_port_t* port);
+QString midiPortFriendlyName(jack_port_t* port);
 
 //---------------------------------------------------------
 //   JackAudioDevice
@@ -75,7 +90,7 @@ class JackAudioDevice : public AudioDevice {
       
       void processGraphChanges();
       void processJackCallbackEvents(const Route& our_node, jack_port_t* our_port, RouteList* route_list, bool is_input);
-      void checkNewRouteConnections(jack_port_t* our_port, int channel, RouteList* route_list);
+      void checkNewRouteConnections(jack_port_t* our_port, int channel, RouteList* route_list, bool is_input);
       // Return 0: Neither disconnect nor unregister found
       //        1: Disconnect found followed later by unregister
       //        2: Disconnect found (with no unregister later)
@@ -134,6 +149,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void setPortName(void* p, const char* n);
       // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
       virtual char* portName(void* port, char* str, int str_size, int preferred_name_or_alias = -1);
+      virtual void setMidiConnectionAlias(void* our_port, bool is_input, void* remote_port);
       virtual const char* canonicalPortName(void* port) { if(!port) return nullptr; return jack_port_name((jack_port_t*)port); }
       virtual void* findPort(const char* name);
       virtual unsigned int portLatency(void* port, bool capture) const;

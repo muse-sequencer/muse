@@ -789,10 +789,16 @@ QString Route::name(int preferred_name_or_alias) const
       else
       if(type == JACK_ROUTE) 
       {
-        if(MusEGlobal::checkAudioDevice() && jackPort)
+        if(MusEGlobal::checkAudioDevice())
         {
-          char s[ROUTE_PERSISTENT_NAME_SIZE];
-          return QString(MusEGlobal::audioDevice->portName(jackPort, s, ROUTE_PERSISTENT_NAME_SIZE, preferred_name_or_alias));
+          void* jp = jackPort;
+          if(!jp)
+            jp = MusEGlobal::audioDevice->findPort(persistentJackPortName);
+          if(jp)
+          {
+            char s[ROUTE_PERSISTENT_NAME_SIZE];
+            return QString(MusEGlobal::audioDevice->portName(jp, s, ROUTE_PERSISTENT_NAME_SIZE, preferred_name_or_alias));
+          }
         }
         return QString(persistentJackPortName);
         
@@ -817,8 +823,14 @@ char* Route::name(char* str, int str_size, int preferred_name_or_alias) const
       else
       if(type == JACK_ROUTE) 
       {
-        if(MusEGlobal::checkAudioDevice() && jackPort)
-          return MusEGlobal::audioDevice->portName(jackPort, str, str_size, preferred_name_or_alias);
+        if(MusEGlobal::checkAudioDevice())
+        {
+          void* jp = jackPort;
+          if(!jp)
+            jp = MusEGlobal::audioDevice->findPort(persistentJackPortName);
+          if(jp)
+            return MusEGlobal::audioDevice->portName(jp, str, str_size, preferred_name_or_alias);
+        }
         return MusELib::strntcpy(str, persistentJackPortName, str_size);
       }
       else
@@ -847,10 +859,16 @@ QString Route::displayName(int preferred_name_or_alias) const
       else
       if(type == JACK_ROUTE) 
       {
-        if(MusEGlobal::checkAudioDevice() && jackPort)
+        if(MusEGlobal::checkAudioDevice())
         {
-          char s[ROUTE_PERSISTENT_NAME_SIZE];
-          return QString(MusEGlobal::audioDevice->portName(jackPort, s, ROUTE_PERSISTENT_NAME_SIZE, preferred_name_or_alias));
+          void* jp = jackPort;
+          if(!jp)
+            jp = MusEGlobal::audioDevice->findPort(persistentJackPortName);
+          if(jp)
+          {
+            char s[ROUTE_PERSISTENT_NAME_SIZE];
+            return QString(MusEGlobal::audioDevice->portName(jp, s, ROUTE_PERSISTENT_NAME_SIZE, preferred_name_or_alias));
+          }
         }
         return QString(persistentJackPortName);
         

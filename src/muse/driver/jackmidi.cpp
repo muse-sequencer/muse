@@ -22,11 +22,13 @@
 //=========================================================
 
 #include <QByteArray>
+#include <QRegularExpression>
 
 #include <stdio.h>
 #include <string.h>
 
 #include <jack/jack.h>
+#include <jack/metadata.h>
 
 #include "jackmidi.h"
 #include "jackaudio.h"
@@ -120,6 +122,365 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
 }
 
 //---------------------------------------------------------
+//   enumerateJackMidiDevicesImpl
+//   Attempts to pair together Jack midi inputs and outputs into single MidiDevices,
+//    similar to how ALSA presents pairs of inputs and outputs.
+//   Moved here from helper.cpp - this is Jack-midi-only logic. The unpaired-ports
+//    variant that used to live alongside this one (behind #if 0) was dead code and
+//    has been removed rather than moved.
+//---------------------------------------------------------
+
+void enumerateJackMidiDevicesImpl()
+{
+  if(!MusEGlobal::checkAudioDevice())
+    return;
+
+  PendingOperationList operations;
+
+  // If Jack is running.
+  if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO)
+  {
+    MidiDevice* dev = 0;
+    char w_good_name[ROUTE_PERSISTENT_NAME_SIZE];
+    char r_good_name[ROUTE_PERSISTENT_NAME_SIZE];
+    std::list<QString> wsl;
+    std::list<QString> rsl;
+    wsl = MusEGlobal::audioDevice->inputPorts(true);
+    rsl = MusEGlobal::audioDevice->outputPorts(true);
+
+    for(std::list<QString>::iterator wi = wsl.begin(); wi != wsl.end(); ++wi)
+    {
+      QByteArray w_ba = (*wi).toUtf8();
+      const char* w_port_name = w_ba.constData();
+
+      bool match_found = false;
+      void* const w_port = MusEGlobal::audioDevice->findPort(w_port_name);
+      if(w_port)
+      {
+        // Get a good routing name.
+        MusEGlobal::audioDevice->portName(w_port, w_good_name, ROUTE_PERSISTENT_NAME_SIZE);
+
+        for(std::list<QString>::iterator ri = rsl.begin(); ri != rsl.end(); ++ri)
+        {
+          QByteArray r_ba = (*ri).toUtf8();
+          const char* r_port_name = r_ba.constData();
+
+          void* const r_port = MusEGlobal::audioDevice->findPort(r_port_name);
+          if(r_port)
+          {
+            // Get a good routing name.
+            MusEGlobal::audioDevice->portName(r_port, r_good_name, ROUTE_PERSISTENT_NAME_SIZE);
+
+            const size_t w_sz = strlen(w_good_name);
+            const size_t r_sz = strlen(r_good_name);
+            size_t start_c = 0;
+            size_t w_end_c = w_sz;
+            size_t r_end_c = r_sz;
+
+            while(start_c < w_sz && start_c < r_sz &&
+                  w_good_name[start_c] == r_good_name[start_c])
+              ++start_c;
+
+            while(w_end_c > 0 && r_end_c > 0)
+            {
+              if(w_good_name[w_end_c - 1] != r_good_name[r_end_c - 1])
+                break;
+              --w_end_c;
+              --r_end_c;
+            }
+
+            if(w_end_c > start_c && r_end_c > start_c)
+            {
+              const char* w_str = w_good_name + start_c;
+              const char* r_str = r_good_name + start_c;
+              const size_t w_len = w_end_c - start_c;
+              const size_t r_len = r_end_c - start_c;
+
+              // Do we have a matching pair?
+              if((w_len == 7 && r_len == 8 &&
+                  strncasecmp(w_str, "capture", w_len) == 0 &&
+                  strncasecmp(r_str, "playback", r_len) == 0) ||
+
+                 (w_len == 8 && r_len == 7 &&
+                  strncasecmp(w_str, "playback", w_len) == 0 &&
+                  strncasecmp(r_str, "capture", r_len) == 0) ||
+
+                 (w_len == 5 && r_len == 6 &&
+                  strncasecmp(w_str, "input", w_len) == 0 &&
+                  strncasecmp(r_str, "output", r_len) == 0) ||
+
+                 (w_len == 6 && r_len == 5 &&
+                  strncasecmp(w_str, "output", w_len) == 0 &&
+                  strncasecmp(r_str, "input", r_len) == 0) ||
+
+                 (w_len == 2 && r_len == 3 &&
+                  strncasecmp(w_str, "in", w_len) == 0 &&
+                  strncasecmp(r_str, "out", r_len) == 0) ||
+
+                 (w_len == 3 && r_len == 2 &&
+                  strncasecmp(w_str, "out", w_len) == 0 &&
+                  strncasecmp(r_str, "in", r_len) == 0) ||
+
+                 (w_len == 1 && r_len == 1 &&
+                  strncasecmp(w_str, "p", w_len) == 0 &&
+                  strncasecmp(r_str, "c", r_len) == 0) ||
+
+                 (w_len == 1 && r_len == 1 &&
+                  strncasecmp(w_str, "c", w_len) == 0 &&
+                  strncasecmp(r_str, "p", r_len) == 0))
+              {
+                dev = MidiJackDevice::createJackMidiDevice(QString(), 3); // Let it pick the name
+                if(dev)
+                {
+                  const Route srcRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, r_good_name); // Persistent route.
+                  const Route dstRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, w_good_name); // Persistent route.
+                  if(!dev->inRoutes()->contains(srcRoute))
+                    operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
+                  if(!dev->outRoutes()->contains(dstRoute))
+                    operations.add(MusECore::PendingOperationItem(dev->outRoutes(), dstRoute, MusECore::PendingOperationItem::AddRouteNode));
+                }
+
+                rsl.erase(ri);  // Done with this read port. Remove.
+                match_found = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      if(!match_found)
+      {
+        // No match was found. Create a single writeable device.
+        dev = MidiJackDevice::createJackMidiDevice(QString(), 1); // Let it pick the name
+        if(dev)
+        {
+          const Route dstRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, w_good_name); // Persistent route.
+          if(!dev->outRoutes()->contains(dstRoute))
+            operations.add(MusECore::PendingOperationItem(dev->outRoutes(), dstRoute, MusECore::PendingOperationItem::AddRouteNode));
+        }
+      }
+    }
+
+    // Create the remaining readable ports as single readable devices.
+    for(std::list<QString>::iterator ri = rsl.begin(); ri != rsl.end(); ++ri)
+    {
+      dev = MidiJackDevice::createJackMidiDevice(QString(), 2); // Let it pick the name
+      if(dev)
+      {
+        QByteArray r_ba = (*ri).toUtf8();
+        const char* r_port_name = r_ba.constData();
+
+        void* const r_port = MusEGlobal::audioDevice->findPort(r_port_name);
+        if(r_port)
+        {
+          MusEGlobal::audioDevice->portName(r_port, r_good_name, ROUTE_PERSISTENT_NAME_SIZE);
+          const Route srcRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, r_good_name); // Persistent route.
+          if(!dev->inRoutes()->contains(srcRoute))
+            operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
+        }
+      }
+    }
+  }
+
+  if(!operations.empty())
+    MusEGlobal::audio->msgExecutePendingOperations(operations); // Don't update here.
+}
+
+
+//---------------------------------------------------------
+//   buildFriendlyPortLabel
+//   Extracts a device identity and a distinguishing trailing suffix from a raw
+//    port name/alias/pretty-name. The exact format is inconsistent in practice -
+//    a2jmidid and PipeWire's Midi-Bridge both bridge the same Alsa devices
+//    simultaneously, and which one MusE ends up reading pretty-name/alias from
+//    can differ between the capture and playback side of the very same device,
+//    so we normalize before parsing rather than assuming one fixed shape:
+//     1) Strip a trailing " (capture)"/" (playback)" - direction is already
+//        shown by the Muse >>/<< arrow, no need to repeat it in the label.
+//     2) Strip a leading "a2j:"/"Midi-Bridge:" bridge tag, if present (it isn't
+//        always - PipeWire sometimes already omits it from the pretty-name).
+//     3) Then split what's left into device + port-local tail:
+//         "<device> [<id>]: <port>"   (a2jmidid, id bracket still present)
+//         "<device>: <port>"          (Midi-Bridge, or a plain "<client>:<port>")
+//         "<port>"                    (bare label, e.g. a lone "out") - falls
+//                                      back to the port's real Jack client name.
+//   Then applies a short category prefix for the common ~80% cases (virtual
+//    "Midi Through" ports, Bluetooth MIDI) and otherwise uses the device's own
+//    name directly (e.g. "Impact GXP61 - MIDI 1") - we can't recognize every
+//    possible Midi device by name, this is best-effort.
+//---------------------------------------------------------
+
+static QString buildFriendlyPortLabel(const QString& rawIn, const QString& client_name)
+{
+  QString raw = rawIn;
+
+  // 1) Direction is already shown by the arrow - drop it from the text.
+  raw.remove(QRegularExpression("\\s*\\((capture|playback)\\)\\s*$", QRegularExpression::CaseInsensitiveOption));
+
+  // 2) Drop a known bridge tag prefix, regardless of whether this particular
+  //    pretty-name/alias happened to include one or not.
+  for(const QString& tag : { QStringLiteral("a2j:"), QStringLiteral("Midi-Bridge:") })
+  {
+    if(raw.startsWith(tag))
+    {
+      raw = raw.mid(tag.length());
+      break;
+    }
+  }
+
+  QString device;
+  QString tail;
+
+  const int bracket = raw.indexOf(" [");
+  if(bracket >= 0)
+  {
+    // "<device> [<id>] (<dir>): <port>" - the "(<dir>): " part may or may not
+    //  still be here depending on where the bracket sits relative to what we
+    //  already stripped in step 1; handle both.
+    device = raw.left(bracket).trimmed();
+    const int afterParen = raw.indexOf("): ", bracket);
+    const int afterBracket = raw.indexOf("]: ", bracket);
+    const int after = (afterParen >= 0) ? afterParen + 3 : (afterBracket >= 0 ? afterBracket + 3 : -1);
+    tail = (after >= 0) ? raw.mid(after).trimmed() : QString();
+  }
+  else if(raw.contains(':'))
+  {
+    // "<device>: <port>" (Midi-Bridge), or a plain "<client>:<port>".
+    const int firstColon = raw.indexOf(':');
+    device = raw.left(firstColon).trimmed();
+    tail = raw.mid(firstColon + 1).trimmed();
+  }
+  else
+  {
+    // Bare label with no embedded device context (e.g. a lone pretty-name "out") -
+    //  fall back to the port's real Jack client name for identity.
+    device = client_name;
+    tail = raw.trimmed();
+  }
+
+  if(MusEGlobal::useSimplePortLabels)
+  {
+    // Simulate a traditional plain alias: just "<device>[ - <suffix>]", no category
+    //  tag, for people who prefer that over the categorized "sys -"/"blue -" style.
+    if(device.contains("Midi Through", Qt::CaseInsensitive))
+    {
+      QString suffix;
+      int i = tail.length();
+      while(i > 0 && tail.at(i - 1).isDigit())
+        --i;
+      if(i < tail.length())
+        suffix = tail.mid(i);
+      return suffix.isEmpty() ? QString("Midi Through") : QString("Midi Through - %1").arg(suffix);
+    }
+    QString plainTail = tail;
+    plainTail.replace(QRegularExpression("([A-Za-z])(\\d+)$"), "\\1 \\2");
+    return plainTail.isEmpty() ? device : QString("%1 - %2").arg(device, plainTail);
+  }
+
+  if(device.contains("Midi Through", Qt::CaseInsensitive))
+  {
+    // Trailing digits (if any) become the distinguishing suffix, e.g. "Port-0" -> "0".
+    QString suffix;
+    int i = tail.length();
+    while(i > 0 && tail.at(i - 1).isDigit())
+      --i;
+    if(i < tail.length())
+      suffix = tail.mid(i);
+    return suffix.isEmpty() ? QString("sys - midi through") : QString("sys - midi through %1").arg(suffix);
+  }
+
+  if(device.contains("BLE MIDI", Qt::CaseInsensitive))
+    return QString("blue - %1").arg(device);
+
+  // Unrecognized device (hardware controller, synth, etc.) - use its real name
+  //  directly as the prefix, e.g. "Impact GXP61 - MIDI 1", rather than a generic
+  //  "hw" tag; add a space between a trailing number and the preceding letter
+  //  for readability ("MIDI1" -> "MIDI 1").
+  QString hwTail = tail;
+  hwTail.replace(QRegularExpression("([A-Za-z])(\\d+)$"), "\\1 \\2");
+  if(hwTail.isEmpty())
+    return device;
+  return QString("%1 - %2").arg(device, hwTail);
+}
+
+//---------------------------------------------------------
+//   midiPortFriendlyName
+//   Human-readable label for ANY midi port (ours or a remote candidate): prefers
+//    the JACK Metadata pretty-name if set (e.g. what PipeWire/WirePlumber or a2j
+//    provide), else alias/canonical name, then runs it through
+//    buildFriendlyPortLabel() for a short "<category> - <device> [<suffix>]" result.
+//   Declared in jackaudio.h - also used by JackAudioDevice::portName() (jack.cpp)
+//    so routing popups listing candidate ports show the same friendly style, not
+//    just our own connected ports.
+//   For self-connection detection use rawJackPortName() instead - not this one.
+//---------------------------------------------------------
+
+QString midiPortFriendlyName(jack_port_t* port)
+{
+  if(!port)
+    return QString();
+
+  const QString pretty = jackPortPrettyName(port);
+  const QString source = !pretty.isEmpty() ? pretty : rawJackPortName(port);
+  const QString client(QString(jack_port_name(port)).section(':', 0, 0));
+
+  return buildFriendlyPortLabel(source, client);
+}
+
+//---------------------------------------------------------
+//   Labels our own jack midi port with a human-readable label reflecting what it is
+//    connected to. The real port name ("jack-midi-N in/out") is left untouched -
+//    routing internals rely on it - this is purely cosmetic, for qjackctl etc.
+//   Uses the JACK Metadata "pretty-name" property rather than the legacy port
+//    alias1/alias2 API: aliases are not reliably persisted under PipeWire's Jack
+//    compatibility layer (confirmed via "jack_lsp -A" showing no aliases at all,
+//    on any port, under PipeWire), while Metadata is PipeWire/WirePlumber's own
+//    native mechanism for this and is expected to work there.
+//---------------------------------------------------------
+
+void JackAudioDevice::setMidiConnectionAlias(void* our_port_v, bool is_input, void* remote_port_v)
+{
+  jack_port_t* our_port = (jack_port_t*)our_port_v;
+  if(!our_port)
+  {
+    DEBUG_PRST_ROUTES(stderr, "setMidiConnectionAlias: our_port is null\n");
+    return;
+  }
+
+  // This is called from the shared (audio+midi) route-processing code in jack.cpp
+  //  (processJackCallbackEvents(), checkNewRouteConnections()) - only label actual
+  //  midi ports, an audio port ending up here would just get a pointless "hw - ..."
+  //  label from buildFriendlyPortLabel().
+  if(strcmp(jack_port_type(our_port), JACK_DEFAULT_MIDI_TYPE) != 0)
+    return;
+
+  const jack_uuid_t our_uuid = jack_port_uuid(our_port);
+
+  jack_port_t* remote_port = (jack_port_t*)remote_port_v;
+  if(!remote_port)
+  {
+    // Nothing to connect to (yet) - clear any pretty-name we previously set.
+    jack_remove_property(_client, our_uuid, JACK_METADATA_PRETTY_NAME);
+    return;
+  }
+
+  // Self-connections (MusE-to-MusE, incl. a2j/Midi-Bridge loops) are not labeled -
+  //  see checkNewRouteConnections(), they aren't adopted as routes there either.
+  const QString cname(jack_get_client_name(_client));
+  if(jack_port_is_mine(_client, remote_port) || isOwnBridgedMidiPort(rawJackPortName(remote_port), cname))
+    return;
+
+  const QString remote_name = midiPortFriendlyName(remote_port);
+  const QString label = is_input
+    ? QString("Muse << %1").arg(remote_name)
+    : QString("Muse >> %1").arg(remote_name);
+
+  if(jack_set_property(_client, our_uuid, JACK_METADATA_PRETTY_NAME, label.toUtf8().constData(), "text/plain") != 0)
+    fprintf(stderr, "setMidiConnectionAlias: jack_set_property (pretty-name) failed for %s\n", label.toUtf8().constData());
+}
+
+//---------------------------------------------------------
 //   setName
 //---------------------------------------------------------
 
@@ -192,7 +553,10 @@ QString MidiJackDevice::open()
                 ir->jackPort = MusEGlobal::audioDevice->findPort(route_name);
               //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
               if(ir->jackPort)
+              {
                 MusEGlobal::audioDevice->connect(our_port_name, route_name);
+                MusEGlobal::audioDevice->setMidiConnectionAlias(_out_client_jackport, false, ir->jackPort);
+              }
             }  
           }
         }
@@ -275,7 +639,10 @@ QString MidiJackDevice::open()
                 ir->jackPort = MusEGlobal::audioDevice->findPort(route_name);
               //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
               if(ir->jackPort)
+              {
                 MusEGlobal::audioDevice->connect(route_name, our_port_name);
+                MusEGlobal::audioDevice->setMidiConnectionAlias(_in_client_jackport, true, ir->jackPort);
+              }
             }
           }
         }
