@@ -1323,7 +1323,6 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
 
     uint32_t numAllPorts = lilv_plugin_get_num_ports(synth->_handle);
 
-    state->pluginCVPorts = new float *[numAllPorts];
 #ifdef _WIN32
     state->pluginCVPorts = (float **) _aligned_malloc(16, sizeof(float *) * numAllPorts);
     if(state->pluginCVPorts == nullptr)
@@ -1503,6 +1502,58 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
     {
         delete [] state->lastControlsOut;
         state->lastControlsOut = nullptr;
+    }
+
+    // Per-port CV buffers and the pluginCVPorts array itself were allocated with
+    //  _aligned_malloc()/posix_memalign() in lv2state_PostInstantiate() - never
+    //  freed before, leaking one array plus one buffer per CV port on every
+    //  plugin load (LeakSanitizer-caught).
+    if(state->pluginCVPorts)
+    {
+        const uint32_t numAllPorts = state->synth ? lilv_plugin_get_num_ports(state->synth->_handle) : 0;
+        for(uint32_t i = 0; i < numAllPorts; ++i)
+        {
+            if(state->pluginCVPorts[i])
+            {
+#ifdef _WIN32
+                _aligned_free(state->pluginCVPorts[i]);
+#else
+                free(state->pluginCVPorts[i]);
+#endif
+            }
+        }
+#ifdef _WIN32
+        _aligned_free(state->pluginCVPorts);
+#else
+        free(state->pluginCVPorts);
+#endif
+        state->pluginCVPorts = nullptr;
+    }
+
+    // Midi port event buffers allocated in lv2state_InitMidiPorts() - never
+    //  freed before (LeakSanitizer-caught).
+    for(size_t i = 0; i < state->midiInPorts.size(); ++i)
+    {
+        delete state->midiInPorts[i].buffer;
+        state->midiInPorts[i].buffer = nullptr;
+    }
+    for(size_t i = 0; i < state->midiOutPorts.size(); ++i)
+    {
+        delete state->midiOutPorts[i].buffer;
+        state->midiOutPorts[i].buffer = nullptr;
+    }
+
+    // Feature arrays allocated in LV2SynthIF::init() - never freed before
+    //  (LeakSanitizer-caught).
+    if(state->_ifeatures)
+    {
+        delete [] state->_ifeatures;
+        state->_ifeatures = nullptr;
+    }
+    if(state->_ppifeatures)
+    {
+        delete [] state->_ppifeatures;
+        state->_ppifeatures = nullptr;
     }
 
     LV2Synth::lv2ui_FreeDescriptors(state);
@@ -5327,7 +5378,10 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
         icl_first = cll->lower_bound(genACnum(plug_id, 0));
     }
 
-    bool used_in_chan_array[_inports]; // Don't bother initializing if not 'running'.
+    // Guard against a zero-size VLA (undefined behavior, UBSan-flagged) for
+    //  plugins with no control input ports - the loop below only ever indexes
+    //  up to the real _inports, so this size-1 fallback is never touched.
+    bool used_in_chan_array[_inports > 0 ? _inports : 1]; // Don't bother initializing if not 'running'.
 
     // Don't bother if not 'running'.
     if(_curActiveState)
@@ -6704,6 +6758,17 @@ void LV2PluginWrapper_Worker::setClosing() {_closing = true; _mSem.release();}
 
 void LV2PluginWrapper_Window::hideEvent(QHideEvent *e)
 {
+    // _state can already be null here: closeEvent() nulls it after freeing
+    //  the state when deleteLater was set (see closeEvent() below), and Qt's
+    //  close() sequence can still call hideEvent() afterward in the same
+    //  close/hide chain. Without this guard that was a null-pointer SEGV.
+    if(_state == nullptr)
+    {
+        e->ignore();
+        QMainWindow::hideEvent(e);
+        return;
+    }
+
     if (_state->deleteLater || _closing)
         return;
 
@@ -6718,6 +6783,15 @@ void LV2PluginWrapper_Window::hideEvent(QHideEvent *e)
 
 void LV2PluginWrapper_Window::showEvent(QShowEvent *e)
 {
+    // Same reasoning as hideEvent() above: _state may already have been
+    //  freed and nulled by closeEvent().
+    if(_state == nullptr)
+    {
+        e->ignore();
+        QMainWindow::showEvent(e);
+        return;
+    }
+
     int x = 0, y = 0, w = 0, h = 0;
     if(_state->plugInst != nullptr)
         _state->plugInst->savedNativeGeometry(&x, &y, &w, &h);
@@ -6812,19 +6886,22 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 
     if(_state->deleteLater)
     {
+        // NOTE: lv2state_FreeState() deletes *_state. Nothing may touch
+        //  _state after this call - this used to fall through to
+        //  '_state->uiIsOpening = false;' below unconditionally, writing
+        //  into freed memory (heap-use-after-free).
         LV2Synth::lv2state_FreeState(_state);
-
+        _state = nullptr;
+        return;
     }
-    else
-    {
-        //_state->uiTimer->stopNextTime(false);
-        _state->widget = nullptr;
-        _state->pluginWindow = nullptr;
-        _state->uiDoSelectPrg = false;
-        _state->uiPrgIface = nullptr;
 
-        LV2Synth::lv2ui_FreeDescriptors(_state);
-    }
+    //_state->uiTimer->stopNextTime(false);
+    _state->widget = nullptr;
+    _state->pluginWindow = nullptr;
+    _state->uiDoSelectPrg = false;
+    _state->uiPrgIface = nullptr;
+
+    LV2Synth::lv2ui_FreeDescriptors(_state);
 
     // Reset the flag, just to be sure.
     _state->uiIsOpening = false;
@@ -6888,6 +6965,16 @@ void LV2PluginWrapper_Window::setClosing(bool closing) {_closing = closing; }
 
 void LV2PluginWrapper_Window::updateGui()
 {
+    // Same reasoning as hideEvent()/showEvent(): _state may already have
+    //  been freed and nulled by closeEvent(). updateTimer should normally
+    //  be stopped before that happens, but this is timer-driven and can
+    //  still race it.
+    if(_state == nullptr)
+    {
+        stopUpdateTimer();
+        return;
+    }
+
     if(_state->deleteLater || _closing)
     {
         stopNextTime();

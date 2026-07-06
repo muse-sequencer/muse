@@ -6541,10 +6541,30 @@ bool Song::connectJackRoutes(const MusECore::Route& src, const MusECore::Route& 
         case Route::MIDI_DEVICE_ROUTE:
           if(dst.device && dst.device->deviceType() == MidiDevice::JACK_MIDI && dst.device->inClientPort())
           {
+            void* const our_port = dst.device->inClientPort();
+            const char* const our_port_name = MusEGlobal::audioDevice->canonicalPortName(our_port);
             if(disconnect)
-              return MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, MusEGlobal::audioDevice->canonicalPortName(dst.device->inClientPort()));
+            {
+              const bool ok = MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, our_port_name);
+              // Route removed - clear the "Muse << ..." alias we set on connect.
+              MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, true, nullptr);
+              return ok;
+            }
             else
-              return MusEGlobal::audioDevice->connect(src.persistentJackPortName, MusEGlobal::audioDevice->canonicalPortName(dst.device->inClientPort()));
+            {
+              const bool ok = MusEGlobal::audioDevice->connect(src.persistentJackPortName, our_port_name);
+              // Set/refresh the alias regardless of ok: jack_connect() also
+              //  returns an error (EEXIST) if the ports were already connected
+              //  (e.g. auto-restored by Jack/PipeWire session management before
+              //  we get here) - that case must still refresh a possibly stale
+              //  alias left over from a DIFFERENT previous connection target.
+              void* const remote_port = MusEGlobal::audioDevice->findPort(src.persistentJackPortName);
+              // Loaded from file or added interactively: the pretty-name alias
+              //  is not persisted with the route, only the raw port name is -
+              //  set/restore the "Muse << ..." alias now that we're connected.
+              MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, true, remote_port);
+              return ok;
+            }
           }
         break;
         case Route::TRACK_ROUTE:
@@ -6571,10 +6591,29 @@ bool Song::connectJackRoutes(const MusECore::Route& src, const MusECore::Route& 
         case Route::JACK_ROUTE:
           if(src.device && src.device->deviceType() == MidiDevice::JACK_MIDI && src.device->outClientPort())
           {
+            void* const our_port = src.device->outClientPort();
+            const char* const our_port_name = MusEGlobal::audioDevice->canonicalPortName(our_port);
             if(disconnect)
-              return MusEGlobal::audioDevice->disconnect(MusEGlobal::audioDevice->canonicalPortName(src.device->outClientPort()), dst.persistentJackPortName);
+            {
+              const bool ok = MusEGlobal::audioDevice->disconnect(our_port_name, dst.persistentJackPortName);
+              // Route removed - clear the "Muse >> ..." alias we set on connect.
+              MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, false, nullptr);
+              return ok;
+            }
             else
-              return MusEGlobal::audioDevice->connect(MusEGlobal::audioDevice->canonicalPortName(src.device->outClientPort()), dst.persistentJackPortName);
+            {
+              const bool ok = MusEGlobal::audioDevice->connect(our_port_name, dst.persistentJackPortName);
+              // See comment in the JACK_ROUTE -> MIDI_DEVICE_ROUTE case above:
+              //  refresh the alias even if jack_connect() reports "already
+              //  connected", otherwise a stale alias from a previous, different
+              //  connection target can survive indefinitely.
+              void* const remote_port = MusEGlobal::audioDevice->findPort(dst.persistentJackPortName);
+              // Loaded from file or added interactively: the pretty-name alias
+              //  is not persisted with the route, only the raw port name is -
+              //  set/restore the "Muse >> ..." alias now that we're connected.
+              MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, false, remote_port);
+              return ok;
+            }
           }
         break;
         case Route::MIDI_DEVICE_ROUTE:
@@ -6640,10 +6679,15 @@ void Song::connectMidiPorts()
             if(ir->type != Route::JACK_ROUTE)  
               continue;
             const char* route_name = ir->persistentJackPortName;
-            if(!MusEGlobal::audioDevice->findPort(route_name))
+            void* const remote_port = MusEGlobal::audioDevice->findPort(route_name);
+            if(!remote_port)
               continue;
             //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
             MusEGlobal::audioDevice->connect(our_port_name, route_name);
+            // Loaded from file: the pretty-name alias is not persisted, only the
+            //  raw port name/route is - restore the "Muse >> ..." alias now that
+            //  the connection is re-established, same as a live connect would.
+            MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, false, remote_port);
           }  
         }
       }    
@@ -6664,10 +6708,15 @@ void Song::connectMidiPorts()
             if(ir->type != Route::JACK_ROUTE)  
               continue;
             const char* route_name = ir->persistentJackPortName;
-            if(!MusEGlobal::audioDevice->findPort(route_name))
+            void* const remote_port = MusEGlobal::audioDevice->findPort(route_name);
+            if(!remote_port)
               continue;
             //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
             MusEGlobal::audioDevice->connect(route_name, our_port_name);
+            // Loaded from file: the pretty-name alias is not persisted, only the
+            //  raw port name/route is - restore the "Muse << ..." alias now that
+            //  the connection is re-established, same as a live connect would.
+            MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, true, remote_port);
           }
         }
       }

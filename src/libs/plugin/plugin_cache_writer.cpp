@@ -31,6 +31,7 @@
 //#include <QFileInfoList>
 #include <QFileDevice>
 #include <QProcess>
+#include <QProcessEnvironment>
 #include <QByteArray>
 //#include <QByteArrayList>
 #include <QStringList>
@@ -1614,6 +1615,23 @@ static bool pluginScan(
   if(scanPorts)
     args << QString("-p");
 
+  // NOTE: third-party plugin libraries routinely leave small allocations
+  //  unfreed at process exit (dlopen'd code, static/global state) - normal
+  //  and harmless for a short-lived scan child the OS is about to reap
+  //  anyway. If muse_plugin_scan is built with LeakSanitizer/ASan, its
+  //  default behaviour is to report any such leak and exit(1), which we'd
+  //  otherwise misinterpret below as "scan failed" for the plugin - even
+  //  though the scan itself completed fine and wrote valid output. Force
+  //  leak detection off for the child regardless of what MusE's own build/
+  //  launch environment set. Also strip LD_PRELOAD, in case it points at a
+  //  sanitizer runtime the scan binary itself wasn't built against.
+  QProcessEnvironment scanEnv = QProcessEnvironment::systemEnvironment();
+  scanEnv.remove("LD_PRELOAD");
+  const QString existingAsanOptions = scanEnv.value("ASAN_OPTIONS");
+  scanEnv.insert("ASAN_OPTIONS",
+                (existingAsanOptions.isEmpty() ? QString() : existingAsanOptions + ":") + "detect_leaks=0");
+  process.setProcessEnvironment(scanEnv);
+
   process.start(prog, args);
 
   bool fail = false;
@@ -1683,6 +1701,28 @@ static bool pluginScan(
   {
     std::fprintf(stderr, "\npluginScan FAILED: Scan exit code not 0: file: %s\n\n", filename_ba.constData());
     fail = true;
+  }
+
+  // NOTE: print the child's stdout/stderr on failure UNCONDITIONALLY (not just
+  //  when debugStdErr is set) - otherwise a crashing/aborting scan child gives
+  //  no clue why it failed, only the unhelpful exit-code line above.
+  if(fail)
+  {
+    QByteArray out_array = process.readAllStandardOutput();
+    if(!out_array.isEmpty())
+    {
+      out_array.append(char(0));
+      std::fprintf(stderr, "pluginScan: child stdout for %s:\n%s\n", filename_ba.constData(), out_array.constData());
+    }
+    QByteArray err_array = process.readAllStandardError();
+    if(!err_array.isEmpty())
+    {
+      err_array.append(char(0));
+      std::fprintf(stderr, "pluginScan: child stderr for %s:\n%s\n", filename_ba.constData(), err_array.constData());
+    }
+    if(out_array.isEmpty() && err_array.isEmpty())
+      std::fprintf(stderr, "pluginScan: child produced no output (likely crashed/killed, e.g. segfault) for %s\n",
+                   filename_ba.constData());
   }
 
   if(!fail)
@@ -3344,9 +3384,27 @@ bool checkPluginCacheFiles(
     {
       PluginScanInfoRef inforef = *ips;
       const PluginScanInfoStruct& infos = inforef->info();
-      if(!(infos._type & types))
+      const bool type_matches = (infos._type & types);
+      // A plugin that fails pluginScan() (crashing scan child etc.) is
+      // still recorded, but tagged _type == PluginTypeUnknown (see
+      // pluginScan()'s failure path). That never matches 'types' (a real
+      // plugin type bit), so without this such an entry is invisible to
+      // this type family's dirty-check even though it's genuinely cached.
+      // The file is still found on disk in 'fpset' though, so it looks
+      // permanently "missing" and forces a full rescan on EVERY startup -
+      // forever, for as long as that one plugin keeps failing the same
+      // way. Attribute it back to this type family by checking whether
+      // its path is one 'fpset' already found under this call's own
+      // scan directories, rather than widening the type filter itself
+      // (which would just reintroduce the identical cross-type-family
+      // false-dirty problem the comment below already warns about, since
+      // 'list' is shared across multiple checkPluginCacheFiles() calls).
+      const QString file_path = PLUGIN_GET_QSTRING(infos.filePath());
+      const bool is_attributable_failure =
+        (infos._type == MusEPlugin::PluginTypeUnknown) && fpset.find(file_path) != fpset.end();
+      if(!type_matches && !is_attributable_failure)
         continue;
-      cache_fpset.insert(filepath_set_pair(PLUGIN_GET_QSTRING(infos.filePath()), infos._fileTime));
+      cache_fpset.insert(filepath_set_pair(file_path, infos._fileTime));
     }
 
     //---------------------------------------
@@ -3360,16 +3418,18 @@ bool checkPluginCacheFiles(
       {
         cache_dirty = true;
 
-        if (debugStdErr) {
-            std::fprintf(stderr, "Setting cache to dirty due to missing or modified plugins:\n");
-            if(ifpset == fpset.end())
-                std::fprintf(stderr, "Missing plugin: %s:\n", icfps->first.toLocal8Bit().data());
-            else
-                std::fprintf(stderr, "Modified plugin: %s (Cache ts: %ld / File ts: %ld)\n",
-                             icfps->first.toLocal8Bit().data(),
-                             (long int) icfps->second,
-                             (long int) ifpset->second);
-        }
+        // NOTE: always report this, not just under debugStdErr - this is
+        //  what forces a rescan of ALL requested types (see comment below
+        //  at "If ANY of the cache files..."), so silently hiding the
+        //  trigger makes "why is it rescanning everything?" unanswerable.
+        std::fprintf(stderr, "checkPluginCacheFiles: cache dirty - ");
+        if(ifpset == fpset.end())
+            std::fprintf(stderr, "missing plugin: %s\n", icfps->first.toLocal8Bit().data());
+        else
+            std::fprintf(stderr, "modified plugin: %s (cache ts: %ld / file ts: %ld)\n",
+                         icfps->first.toLocal8Bit().data(),
+                         (long int) icfps->second,
+                         (long int) ifpset->second);
 
         break;
       }
@@ -3383,12 +3443,9 @@ bool checkPluginCacheFiles(
 
     // Any remaining items in fpset must be 'new' plugins.
     if(!cache_dirty && !fpset.empty()) {
-      if(debugStdErr)
-      {
-        std::fprintf(stderr, "Setting cache to dirty due to NEW plugins:\n");
-        for (auto &plug: fpset) {
-            std::fprintf(stderr, "New plugin %s:\n", plug.first.toLocal8Bit().data());
-        }
+      std::fprintf(stderr, "checkPluginCacheFiles: cache dirty - new plugin(s) found:\n");
+      for (auto &plug: fpset) {
+          std::fprintf(stderr, "  %s\n", plug.first.toLocal8Bit().data());
       }
       cache_dirty = true;
     }

@@ -1248,6 +1248,16 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               // Now that the song file has been fully loaded, resolve any references in the file.
                               MusEGlobal::song->resolveSongfileReferences();
 
+                              // Re-establish Jack Midi port connections and pretty-name aliases
+                              //  described by the loaded routes (was previously never called - see
+                              //  Song::connectMidiPorts()/connectJackRoutes() in song.cpp).
+                              MusEGlobal::song->connectMidiPorts();
+
+                              // Prune leftover jack-midi-N devices the file's <mididevice>/<midiport>
+                              //  sections (re)created but that have no routes and no track/port slot
+                              //  pointing at them anymore (was previously never called - see conf.cpp).
+                              MusECore::reconcileMidiDevices();
+
                               // Now that all track and instrument references have been resolved,
                               //  it is safe to add all the midi controller cache values.
                               MusEGlobal::song->changeMidiCtrlCacheEvents(true, true, true, true, true);

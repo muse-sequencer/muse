@@ -150,6 +150,10 @@ class JackAudioDevice : public AudioDevice {
       // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
       virtual char* portName(void* port, char* str, int str_size, int preferred_name_or_alias = -1);
       virtual void setMidiConnectionAlias(void* our_port, bool is_input, void* remote_port);
+      // Overload for a route whose target is not currently a live jack_port_t*
+      //  (external device unplugged / synth not started yet) - labels with the
+      //  INTENDED target name instead. See jackmidi.cpp for details.
+      virtual void setMidiConnectionAlias(void* our_port, bool is_input, const QString& intended_target_name);
       virtual const char* canonicalPortName(void* port) { if(!port) return nullptr; return jack_port_name((jack_port_t*)port); }
       virtual void* findPort(const char* name);
       virtual unsigned int portLatency(void* port, bool capture) const;

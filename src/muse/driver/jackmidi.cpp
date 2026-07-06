@@ -481,6 +481,55 @@ void JackAudioDevice::setMidiConnectionAlias(void* our_port_v, bool is_input, vo
 }
 
 //---------------------------------------------------------
+//   setMidiConnectionAlias (name-hint overload)
+//   Same purpose as above, but for a route whose target is NOT currently a live
+//    Jack port (e.g. an external device is unplugged, or its software - like
+//    fluidsynth - hasn't been started yet). The route/connection itself is kept
+//    (see Song::connectMidiPorts()/reconcileMidiDevices() in song.cpp/conf.cpp -
+//    a persistent route surviving a temporarily-missing target is intentional),
+//    so rather than clearing the alias we still label it with the INTENDED
+//    target's name, e.g. "Muse >> fluidsynth (not connected)" - the user can see
+//    at a glance what to start/plug in to complete the connection.
+//   intended_target_name is the raw persistent Jack port name string (e.g.
+//    "fluidsynth:MIDI 1"), NOT a live jack_port_t* - so unlike the overload
+//    above, we can't query the remote's own pretty-name/aliases here, only
+//    format the raw name itself via buildFriendlyPortLabel().
+//---------------------------------------------------------
+
+void JackAudioDevice::setMidiConnectionAlias(void* our_port_v, bool is_input, const QString& intended_target_name)
+{
+  jack_port_t* our_port = (jack_port_t*)our_port_v;
+  if(!our_port)
+  {
+    DEBUG_PRST_ROUTES(stderr, "setMidiConnectionAlias(hint): our_port is null\n");
+    return;
+  }
+
+  if(strcmp(jack_port_type(our_port), JACK_DEFAULT_MIDI_TYPE) != 0)
+    return;
+
+  if(intended_target_name.isEmpty())
+    return;
+
+  // Don't label a hint that turns out to point at ourselves (shouldn't normally
+  //  occur for a route loaded from file, but stay consistent with the live-port
+  //  overload's self-connection guard above).
+  const QString cname(jack_get_client_name(_client));
+  if(isOwnBridgedMidiPort(intended_target_name, cname) || intended_target_name.startsWith(cname + ":"))
+    return;
+
+  const jack_uuid_t our_uuid = jack_port_uuid(our_port);
+  const QString client(intended_target_name.section(':', 0, 0));
+  const QString remote_name = buildFriendlyPortLabel(intended_target_name, client);
+  const QString label = is_input
+    ? QString("Muse << %1 (not connected)").arg(remote_name)
+    : QString("Muse >> %1 (not connected)").arg(remote_name);
+
+  if(jack_set_property(_client, our_uuid, JACK_METADATA_PRETTY_NAME, label.toUtf8().constData(), "text/plain") != 0)
+    fprintf(stderr, "setMidiConnectionAlias(hint): jack_set_property (pretty-name) failed for %s\n", label.toUtf8().constData());
+}
+
+//---------------------------------------------------------
 //   setName
 //---------------------------------------------------------
 

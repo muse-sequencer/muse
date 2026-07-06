@@ -51,6 +51,7 @@
 #include "pitchedit.h"
 #include "midiport.h"
 #include "mididev.h"
+#include "operations.h"
 #include "instruments/minstrument.h"
 #include "driver/audiodev.h"
 #include "driver/jackmidi.h"
@@ -334,16 +335,21 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                                     idx = 0;
                                     }
                               
-                              MidiDevice* dev = MusEGlobal::midiDevices.find(device, pre_mididevice_ver_found ? type : -1);
-                              
-                              if(!dev && type == MidiDevice::JACK_MIDI)
+                              MidiDevice* dev = device.isEmpty() ? nullptr :
+                                MusEGlobal::midiDevices.find(device, pre_mididevice_ver_found ? type : -1);
+
+                              if(!dev && !device.isEmpty() && type == MidiDevice::JACK_MIDI)
                               {
                                 if(MusEGlobal::debugMsg)
                                   fprintf(stderr, "readConfigMidiPort: creating jack midi device %s with rwFlags:%d\n", device.toLocal8Bit().constData(), rwFlags);
                                 dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
                               }
                               
-                              if(MusEGlobal::debugMsg && !dev)
+                              // NOTE: an empty 'device' just means this port has no device
+                              //  assigned in the song file (a normal, unused port slot) -
+                              //  not an error, so don't warn about it. Only warn when a
+                              //  name was actually specified but couldn't be resolved.
+                              if(MusEGlobal::debugMsg && !dev && !device.isEmpty())
                                 fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLocal8Bit().constData());
                               
                               MidiPort* mp = &MusEGlobal::midiPorts[idx];
@@ -384,8 +390,80 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
       }
 
 //---------------------------------------------------------
-//   loadConfigMetronom
+//   reconcileMidiDevices
+//   Called once after a song file has been fully loaded - routes, tracks, and
+//    midi port device assignments are all resolved by then. The file's
+//    <mididevice> and <midiport> sections (readConfigMidiDevice(),
+//    readConfigMidiPort() above) unconditionally (re)create every named Jack
+//    Midi device they list, even ones left over from years of editing with no
+//    routes and no track pointing at them anymore. Prune those here: a Jack
+//    Midi device is kept only if it has at least one route, OR a track is
+//    actually using its MusEGlobal::midiPorts[] slot - otherwise it's
+//    genuinely orphaned.
+//   NOTE: checking MusEGlobal::midiPorts[p].device()==dev alone is NOT enough -
+//    the file's <midiport> section assigns a device to a slot independent of
+//    whether any track uses that slot, so a stale slot assignment would make
+//    an otherwise-orphaned device look "in use" forever. We additionally
+//    require a MidiTrack whose outPort() actually equals that slot index.
 //---------------------------------------------------------
+
+void reconcileMidiDevices()
+{
+  PendingOperationList operations;
+
+  for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
+  {
+    MidiDevice* dev = *i;
+    if(dev->deviceType() != MidiDevice::JACK_MIDI)
+      continue;
+
+    if(!dev->inRoutes()->empty() || !dev->outRoutes()->empty())
+      continue;
+
+    bool assigned_to_port = false;
+    for(int p = 0; p < MusECore::MIDI_PORTS && !assigned_to_port; ++p)
+    {
+      if(MusEGlobal::midiPorts[p].device() != dev)
+        continue;
+
+      // The slot points at dev - but is any track actually using slot p?
+      for(const auto& t : *MusEGlobal::song->midis())
+      {
+        if(t->outPort() == p)
+        {
+          assigned_to_port = true;
+          break;
+        }
+      }
+    }
+    if(assigned_to_port)
+      continue;
+
+    // IMPORTANT: even though no track uses it, one or more MidiPort slots may
+    //  still hold a raw pointer to dev (assigned by the file's <midiport>
+    //  section independent of any track). If we delete dev below without
+    //  clearing those slots first, MidiPort::_device is left dangling and a
+    //  later call such as MidiPort::sendPendingInitializations() will
+    //  dereference freed memory (heap-buffer-overflow / use-after-free).
+    // Clear every port still referencing dev before queuing its deletion.
+    for(int p = 0; p < MusECore::MIDI_PORTS; ++p)
+    {
+      if(MusEGlobal::midiPorts[p].device() == dev)
+        MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[p], 0);
+    }
+
+    if(MusEGlobal::debugMsg)
+      fprintf(stderr, "reconcileMidiDevices: pruning unused device %s\n",
+              dev->name().toLocal8Bit().constData());
+
+    operations.add(PendingOperationItem(&MusEGlobal::midiDevices, i, PendingOperationItem::DeleteMidiDevice));
+  }
+
+  if(!operations.empty())
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+}
+
+
 
 static void loadConfigMetronom(Xml& xml, MetronomeSettings* metro_settings)
       {

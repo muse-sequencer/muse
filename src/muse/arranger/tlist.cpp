@@ -40,6 +40,7 @@
 #include "tlist.h"
 #include "mididev.h"
 #include "midiport.h"
+#include "driver/jackaudio.h"
 #include "midictrl.h"
 #include "midiseq.h"
 #include "comment.h"
@@ -248,6 +249,35 @@ bool TList::event(QEvent *event)
 //---------------------------------------------------------
 //   paint
 //---------------------------------------------------------
+
+//---------------------------------------------------------
+//   midiPortColumnLabel
+//   Display text for the OPORT column: the friendly connection alias for Jack
+//   midi devices (read as-is via jackPortPrettyName() - it's already the
+//   finished "Muse >>/<<..." text our own setMidiConnectionAlias() wrote, so
+//   it must NOT be re-run through midiPortFriendlyName()'s formatting, which
+//   would double it up). Alsa devices/unassigned ports use portname() as before.
+//---------------------------------------------------------
+
+static QString midiPortColumnLabel(int outport)
+{
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];
+  MusECore::MidiDevice* md = mp->device();
+  QString label = mp->portname();
+  if(md && md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
+  {
+    void* jp = md->outClientPort();
+    if(!jp)
+      jp = md->inClientPort();
+    if(jp)
+    {
+      const QString pretty = MusECore::jackPortPrettyName((jack_port_t*)jp);
+      if(!pretty.isEmpty())
+        label = pretty;
+    }
+  }
+  return label;
+}
 
 void TList::paint(const QRect& r)
 {
@@ -471,7 +501,7 @@ void TList::paint(const QRect& r)
                     QString s;
                     if (track->isMidiTrack()) {
                         int outport = ((MusECore::MidiTrack*)track)->outPort();
-                        s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
+                        s = QString("%1:%2").arg(outport+1).arg(midiPortColumnLabel(outport));
                     }
                     else if(track->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                     {
@@ -480,7 +510,7 @@ void TList::paint(const QRect& r)
                         {
                             int outport = md->midiPort();
                             if((outport >= 0) && (outport < MusECore::MIDI_PORTS))
-                                s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
+                                s = QString("%1:%2").arg(outport+1).arg(midiPortColumnLabel(outport));
                             else
                                 s = tr("<none>");
                         }

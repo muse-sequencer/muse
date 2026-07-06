@@ -31,6 +31,7 @@
 #include "operations.h"
 
 #include "driver/jackmidi.h"
+#include "driver/jackaudio.h"
 #include "route.h"
 #include "mididev.h"
 #include "midiport.h"
@@ -905,9 +906,21 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
           if(port < 0 || port >= MusECore::MIDI_PORTS)
             continue;
           MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+          MusECore::MidiDevice* md = mp->device();
+          QString label = mp->portname();
+          if(md && md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
+          {
+            void* jp = md->outClientPort();
+            if(jp)
+            {
+              const QString friendly = MusECore::jackPortPrettyName((jack_port_t*)jp);
+              if(!friendly.isEmpty())
+                label = friendly;
+            }
+          }
           name = QString("%1:%2")
               .arg(port + 1)
-              .arg(mp->portname());
+              .arg(label);
               
           act = p->addAction(name);
           act->setData(port);

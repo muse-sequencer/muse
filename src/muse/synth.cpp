@@ -1013,11 +1013,11 @@ unsigned int SynthI::pbForwardShiftFrames() const
 
 int MessSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval)
       {
-      int i_ctrl;
-      int i_min;
-      int i_max;
-      int i_initval;
-      const char* s_name;
+      int i_ctrl = 0;
+      int i_min = 0;
+      int i_max = 0;
+      int i_initval = 0;
+      const char* s_name = nullptr;
       
       int ret = _mess->getControllerInfo(id, &s_name, &i_ctrl, &i_min, &i_max, &i_initval);
       
@@ -1030,7 +1030,7 @@ int MessSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, i
       if(initval)
         *initval = i_initval;
       if(name)
-        *name = QString(s_name);
+        *name = s_name ? QString(s_name) : QString();
       
       return ret;
       }

@@ -505,7 +505,21 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
   };
 
   // Add our own MESS plugin directory...
-  addDirUnlessAlias(museGlobalLib + QString("/synthi"));
+  {
+    const QString primaryMessDir = museGlobalLib + QString("/synthi");
+    const QDir qdir(primaryMessDir);
+    if(!qdir.exists())
+      std::fprintf(stderr, "INFO: could not find MESS type plugins (linux only) : %s - does not exist.\n",
+                   primaryMessDir.toLocal8Bit().constData());
+    else if(qdir.entryList(QDir::Files | QDir::NoDotAndDotDot).isEmpty())
+      std::fprintf(stderr, "INFO: could not find MESS type plugins (linux only) : %s - is empty.\n",
+                   primaryMessDir.toLocal8Bit().constData());
+    else if(!addDirUnlessAlias(primaryMessDir))
+      std::fprintf(stderr, "INFO: skipping MESS type plugin dir : %s - alias of an already-added directory.\n",
+                   primaryMessDir.toLocal8Bit().constData());
+    else
+      std::fprintf(stderr, "INFO: found MESS type plugins in : %s\n", primaryMessDir.toLocal8Bit().constData());
+  }
   // Now add other directories...
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
   QString messPath = qEnvironmentVariable("MESS_PATH");

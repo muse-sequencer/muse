@@ -1126,8 +1126,12 @@ bool initMidiAlsa()
             return true;
             }
             
-      const int inCap  = SND_SEQ_PORT_CAP_SUBS_READ;
-      const int outCap = SND_SEQ_PORT_CAP_SUBS_WRITE;
+      // Combine base and SUBS_ capability bits: some ports (observed e.g. ALSA
+      //  "<input>" client ports, capability 0x3) report plain SND_SEQ_PORT_CAP_READ/WRITE
+      //  but no SUBS_ bits. Checking SUBS_ only silently gave them rwFlags()==0,
+      //  making them disappear from BOTH the input and output routing menus.
+      const int readCap  = SND_SEQ_PORT_CAP_READ  | SND_SEQ_PORT_CAP_SUBS_READ;
+      const int writeCap = SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE;
       
       snd_seq_client_info_t *cinfo;
       snd_seq_client_info_alloca(&cinfo);
@@ -1150,7 +1154,7 @@ bool initMidiAlsa()
                   unsigned int capability = snd_seq_port_info_get_capability(pinfo);
                   if (capability & SND_SEQ_PORT_CAP_NO_EXPORT)  // Ignore ports like "qjackctl" or "port".    p4.0.41
                     continue;
-                  if ((capability & outCap) == 0) {
+                  if ((capability & writeCap) == 0) {
                           const char *name = snd_seq_port_info_get_name(pinfo);
                           if (strcmp("Timer", name) == 0 || 
                               strcmp("Announce", name) == 0 || 
@@ -1176,9 +1180,9 @@ bool initMidiAlsa()
                     dev = new MidiAlsaDevice(adr, QString(dev_name));
                   //MidiAlsaDevice* dev = new MidiAlsaDevice(adr, QString(snd_seq_port_info_get_name(pinfo)));
                   int flags = 0;
-                  if (capability & outCap)
+                  if (capability & writeCap)
                         flags |= 1;
-                  if (capability & inCap)
+                  if (capability & readCap)
                         flags |= 2;
                   dev->setrwFlags(flags);
                   if (MusEGlobal::debugMsg) 
@@ -1221,7 +1225,7 @@ bool initMidiAlsa()
                   unsigned int capability = snd_seq_port_info_get_capability(pinfo);
                   if (capability & SND_SEQ_PORT_CAP_NO_EXPORT)  // Ignore ports like "qjackctl" or "port".    p4.0.41
                     continue;
-                  if ((capability & outCap) == 0) {
+                  if ((capability & writeCap) == 0) {
                           const char *name = snd_seq_port_info_get_name(pinfo);
                           if (strcmp("Timer", name) == 0 || 
                               strcmp("Announce", name) == 0 || 
@@ -1246,9 +1250,9 @@ bool initMidiAlsa()
                     dev = new MidiAlsaDevice(adr, dev_name);
                   //MidiAlsaDevice* dev = new MidiAlsaDevice(adr, QString(snd_seq_port_info_get_name(pinfo)));
                   int flags = 0;
-                  if (capability & outCap)
+                  if (capability & writeCap)
                         flags |= 1;
-                  if (capability & inCap)
+                  if (capability & readCap)
                         flags |= 2;
                   dev->setrwFlags(flags);
                   if(is_thru)             // Don't auto-open Midi Through.
@@ -1298,7 +1302,7 @@ bool initMidiAlsa()
       alsaSeqFdi = pfdi[0].fd;
 
       int port  = snd_seq_create_simple_port(alsaSeq, "MusE Port 0",
-         inCap | outCap | SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_WRITE,
+         readCap | writeCap,
          SND_SEQ_PORT_TYPE_APPLICATION);
       if (port < 0) {
             perror("create port");
@@ -1494,8 +1498,9 @@ void alsaScanMidiPorts()
       }
       
       QString state;
-      const int inCap  = SND_SEQ_PORT_CAP_SUBS_READ;
-      const int outCap = SND_SEQ_PORT_CAP_SUBS_WRITE;
+      // Combine base and SUBS_ capability bits - see comment in initMidiAlsa().
+      const int readCap  = SND_SEQ_PORT_CAP_READ  | SND_SEQ_PORT_CAP_SUBS_READ;
+      const int writeCap = SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE;
 
       snd_seq_client_info_t* cinfo;
       snd_seq_client_info_alloca(&cinfo);
@@ -1510,8 +1515,8 @@ void alsaScanMidiPorts()
                   unsigned int capability = snd_seq_port_info_get_capability(pinfo);
                   if (capability & SND_SEQ_PORT_CAP_NO_EXPORT)  // Ignore ports like "qjackctl" or "port".    p4.0.41
                     continue;
-                  if (((capability & outCap) == 0)
-                     && ((capability & inCap) == 0))
+                  if (((capability & writeCap) == 0)
+                     && ((capability & readCap) == 0))
                         continue;
                   snd_seq_addr_t adr;
                   const char* name;
@@ -1520,9 +1525,9 @@ void alsaScanMidiPorts()
                   if (adr.client == musePort.client && adr.port == musePort.port)
                         continue;
                   int flags = 0;
-                  if (capability & outCap)
+                  if (capability & writeCap)
                         flags |= 1;
-                  if (capability & inCap)
+                  if (capability & readCap)
                         flags |= 2;
 // fprintf(stderr, "ALSA port add: <%s>, flags %d\n", name, flags);
                   portList.push_back(AlsaPort(adr, name, flags));

@@ -1296,9 +1296,6 @@ int main(int argc, char* argv[])
           qApp->processEvents();
         }
 
-        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
-                 << "Scan plugins...";
-
         bool do_rescan = false;
         if(force_plugin_rescan)
         {
@@ -1317,6 +1314,24 @@ int main(int argc, char* argv[])
           MusEGlobal::config.pluginCacheTriggerRescan = false;
         }
         
+        // NOTE: the plugin scanner's automatic "is the cache dirty?" check
+        //  (and the rescan it triggers) is disabled by default - it must be
+        //  explicitly requested, either via -R on the command line or via
+        //  MusEGlobal::config.pluginCacheTriggerRescan (e.g. a "rescan
+        //  plugins" UI action), both of which are already folded into
+        //  do_rescan above. Without an explicit request, we still read the
+        //  existing cache file(s) into pluginList (checkPluginCacheFiles()
+        //  does that unconditionally), we just never let it decide on its
+        //  own to rescan. -C (dont_plugin_rescan) still wins outright if
+        //  set, even together with an explicit rescan request.
+        const bool effective_dont_recreate = dont_plugin_rescan || !do_rescan;
+
+        // Reflect what's actually about to happen - previously this said
+        //  "Scan plugins..." unconditionally even when the scanner was
+        //  disabled and only the existing cache was being loaded.
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << (do_rescan ? "Scanning plugins..." : "Loading plugin cache...");
+
         if (MusEGlobal::debugMsg)
             qDebug() << "Cache path for plugin scan:" << new_plugin_cache_path;
 
@@ -1351,7 +1366,7 @@ int main(int argc, char* argv[])
                                         // Whether to force recreation.
                                         do_rescan,
                                         // Whether to NOT recreate.
-                                        dont_plugin_rescan,
+                                        effective_dont_recreate,
                                         // When creating, where to find the application's own plugins.
                                         MusEGlobal::museGlobalLib,
                                         // Plugin types to check.
@@ -1377,7 +1392,7 @@ int main(int argc, char* argv[])
                                           // DO read/write port information for CLAP.
                                           true,
                                           do_rescan,
-                                          dont_plugin_rescan,
+                                          effective_dont_recreate,
                                           MusEGlobal::museGlobalLib,
                                           MusEPlugin::PluginTypeCLAP,
                                           MusEGlobal::debugMsg);

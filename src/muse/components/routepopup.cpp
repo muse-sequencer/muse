@@ -36,6 +36,7 @@
 #include "mididev.h"
 #include "audio.h"
 #include "driver/audiodev.h"
+#include "driver/jackaudio.h"
 #include "song.h"
 #include "synth.h"
 #include "icons.h"
@@ -359,6 +360,42 @@ void RoutePopupMenu::addMidiTracks(MusECore::Track* t, PopupMenu* pup, bool isOu
   }
 }
 
+//---------------------------------------------------------
+//   midiDeviceMenuName
+//   Display name for a MidiDevice in device-listing menus (addMidiPorts()):
+//    for Jack midi devices, the raw Metadata pretty-name our own
+//    setMidiConnectionAlias() already wrote onto this port (e.g.
+//    "Muse >> sys - midi through 1" or "Muse << sys - midi through 1") - read
+//    as-is via jackPortPrettyName(), NOT re-run through
+//    midiPortFriendlyName()/buildFriendlyPortLabel(), since that formatting is
+//    meant for raw/foreign port names and would otherwise double up
+//    ("MusE - Muse >> ..."). Alsa devices already have a descriptive name()
+//    (the discovered Alsa port name itself), returned as-is.
+//   isOutput selects which of the device's two Jack client ports (out/in) to
+//    read the pretty-name from, so an Output Routing menu shows the "Muse >>"
+//    alias and an Input Routing menu shows the "Muse <<" alias - previously
+//    this always checked outClientPort() first, so both menus showed "Muse >>".
+//---------------------------------------------------------
+
+static QString midiDeviceMenuName(MusECore::MidiDevice* md, bool isOutput)
+{
+  if(!md)
+    return QString();
+  if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
+  {
+    void* jp = isOutput ? md->outClientPort() : md->inClientPort();
+    if(!jp)
+      jp = isOutput ? md->inClientPort() : md->outClientPort();
+    if(jp)
+    {
+      const QString pretty = MusECore::jackPortPrettyName((jack_port_t*)jp);
+      if(!pretty.isEmpty())
+        return pretty;
+    }
+  }
+  return md->name();
+}
+
 void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOutput, bool show_synths, bool want_writable)
 {
 
@@ -426,7 +463,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
         //  MusECore::MUSE_MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
         RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
-          MusECore::MUSE_MIDI_CHANNELS, nullptr, nullptr, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+          MusECore::MUSE_MIDI_CHANNELS, nullptr, nullptr, this, QString("%1:%2").arg(i + 1).arg(midiDeviceMenuName(md, isOutput)));
         if(row == 0)
         {
           switch(dtype)
@@ -531,7 +568,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
         //  MusECore::MUSE_MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
         RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
-          MusECore::MUSE_MIDI_CHANNELS, nullptr, nullptr, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+          MusECore::MUSE_MIDI_CHANNELS, nullptr, nullptr, this, QString("%1:%2").arg(i + 1).arg(midiDeviceMenuName(md, isOutput)));
         if(row == 0)
         {
           wa->array()->setCheckBoxTitle(tr("Omni"));
@@ -663,7 +700,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       }
       
       PopupMenu* subp = new PopupMenu(pup, true);
-      subp->setTitle(md->name()); 
+      subp->setTitle(midiDeviceMenuName(md, isOutput)); 
       QAction* act;
       
       for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS; ++ch) 
@@ -721,6 +758,13 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
   int channels = -1;
   std::list<QString> ol;
   MusECore::RouteCapabilitiesStruct rcaps;
+  // Midi ports are labeled via the newer JACK Metadata pretty-name system
+  //  (midiPortFriendlyName(), see jackmidi.cpp) rather than the legacy
+  //  alias1/alias2 mechanism used for audio ports below - aliases are not
+  //  reliably persisted under PipeWire's Jack compatibility layer. Skip the
+  //  "Show names/first/second aliases" picker for midi ports below; it would
+  //  mix the old alias style with the new pretty-name style in the same menu.
+  const bool is_midi = (route.type == MusECore::Route::MIDI_DEVICE_ROUTE);
   switch(route.type)
   {
     case MusECore::Route::TRACK_ROUTE:
@@ -741,10 +785,23 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
     break;
   }
   
+  if(MusEGlobal::debugMsg)
+  {
+    fprintf(stderr, "RoutePopupMenu::addJackPorts(): route.type=%d is_midi=%d _isOutMenu=%d -> ol has %zu port(s):\n",
+            (int)route.type, (int)is_midi, (int)_isOutMenu, ol.size());
+    for(const QString& s : ol)
+      fprintf(stderr, "  %s\n", s.toUtf8().constData());
+  }
+  
   const int sz = ol.size();
   if(sz != 0)
   {
     
+    // Old-style alias1/alias2 picker: meaningless for midi ports, which are
+    //  always labeled via the new pretty-name system below - skip it there
+    //  to avoid mixing the two labeling styles in the same menu.
+    if(!is_midi)
+    {
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
     
     //RoutingMatrixWidgetAction* name_wa = new RoutingMatrixWidgetAction(2, redLedIcon, darkRedLedIcon, this, tr("Show aliases:"));
@@ -793,6 +850,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
     lb->addActions(act_grp->actions());
     lb->addSeparator();
 #endif                
+    }
     
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
     
@@ -827,9 +885,26 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
 
         char good_name[ROUTE_PERSISTENT_NAME_SIZE];
         
-        // Get the preferred display name.
-        MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE, MusEGlobal::config.preferredRouteNameOrAlias);
-        wa->setActionText(good_name);
+        // Get the preferred display name. Midi ports use the new pretty-name
+        //  system (midiPortFriendlyName()) instead of the old alias1/alias2
+        //  preference, falling back to the canonical name if no pretty-name
+        //  is set yet (e.g. a candidate port we've never connected to).
+        if(is_midi)
+        {
+          const QString friendly = MusECore::midiPortFriendlyName((jack_port_t*)port);
+          if(!friendly.isEmpty())
+            wa->setActionText(friendly);
+          else
+          {
+            MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
+            wa->setActionText(good_name);
+          }
+        }
+        else
+        {
+          MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE, MusEGlobal::config.preferredRouteNameOrAlias);
+          wa->setActionText(good_name);
+        }
         
         // Get a good routing name.
         MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
@@ -871,18 +946,26 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
       }
       for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) 
       {
-        act = lb->addAction(*ip);
-        act->setCheckable(true);
-        
         QByteArray ba = (*ip).toUtf8();
         const char* port_name = ba.constData();
         char good_name[ROUTE_PERSISTENT_NAME_SIZE];
         void* const port = MusEGlobal::audioDevice->findPort(port_name);
+        // Label: midi ports use the new pretty-name system, falling back to
+        //  the canonical name; other ports use the raw jack port name as before.
+        QString label = *ip;
         if(port)
         {
           MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
           port_name = good_name;
+          if(is_midi)
+          {
+            const QString friendly = MusECore::midiPortFriendlyName((jack_port_t*)port);
+            if(!friendly.isEmpty())
+              label = friendly;
+          }
         }
+        act = lb->addAction(label);
+        act->setCheckable(true);
         MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, port_name);
         
         act->setData(QVariant::fromValue(dst));   
@@ -3911,33 +3994,43 @@ void RoutePopupMenu::prepare()
 
 void RoutePopupMenu::exec(const MusECore::Route& route, bool isOutput)
 {
+  // _isOutMenu must always reflect the caller's intent, independent of whether
+  //  the route itself is valid/gets updated - previously this was nested inside
+  //  the route.isValid() check, so an invalid route silently left the menu in
+  //  whatever mode (_isOutMenu) it was last in.
+  _isOutMenu = isOutput;
   if(route.isValid())
-  {
     _route = route;
-    _isOutMenu = isOutput;
-  }  
+  else
+  {
+    DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::exec(route, isOutput): route invalid, keeping previous _route\n");
+  }
   prepare();
   PopupMenu::exec();
 }
 
 void RoutePopupMenu::exec(const QPoint& p, const MusECore::Route& route, bool isOutput)
 {
+  _isOutMenu = isOutput;
   if(route.isValid())
-  {
     _route = route;
-    _isOutMenu = isOutput;
-  }  
+  else
+  {
+    DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::exec(p, route, isOutput): route invalid, keeping previous _route\n");
+  }
   prepare();
   PopupMenu::exec(p);
 }
 
 void RoutePopupMenu::popup(const QPoint& p, const MusECore::Route& route, bool isOutput)
 {
+  _isOutMenu = isOutput;
   if(route.isValid())
-  {
     _route = route;
-    _isOutMenu = isOutput;
-  }  
+  else
+  {
+    DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::popup(p, route, isOutput): route invalid, keeping previous _route\n");
+  }
   prepare();
   PopupMenu::popup(p);
 }

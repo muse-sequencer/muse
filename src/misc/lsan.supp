@@ -2,3 +2,18 @@
 leak:QtWaylandClient
 leak:wl_proxy_marshal
 leak:wl_display_read_events
+
+
+# LSan/ASan suppressions — plugin-scan child process only
+leak:loadPluginLib
+leak:queryClapPortCounts
+leak:ipatch_init
+leak:dbus_bus_register
+leak:libnvidia-glcore.so
+leak:libnvidia-glsi.so
+
+leak:Fluida_ui.so
+
+
+leak:lilv_plugin_instantiate
+

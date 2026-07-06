@@ -1924,10 +1924,15 @@ QString jackPortPrettyName(jack_port_t* port)
 void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_list, bool midi, bool physical, int aliases)
       {
       DEBUG_JACK(stderr, "JackAudioDevice::getJackPorts()\n");
-      QString qname;
       QString cname(jack_get_client_name(_client));
       
       for (const char** p = ports; p && *p; ++p) {
+            // Declared fresh each iteration - a port with no alias must not
+            //  inherit the previous port's qname (was causing the mthrough
+            //  physical/non-physical ordering check below to sometimes use
+            //  stale data when jack_port_get_aliases() returns 0, which is
+            //  the normal case under PipeWire's Jack compatibility layer).
+            QString qname;
             // Should be safe and quick search here, we know that the port name is valid.
             jack_port_t* port = jack_port_by_name(_client, *p);
             int port_flags = jack_port_flags(port);
@@ -2041,6 +2046,14 @@ std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
         getJackPorts(ports, clientList, midi, false, aliases);  // Get non-physical ports last.
         jack_free(ports);  
       }
+      
+      if(MusEGlobal::debugMsg)
+      {
+        fprintf(stderr, "JackAudioDevice::outputPorts(midi=%d): requested flag=JackPortIsOutput, got %zu port(s):\n",
+                (int)midi, clientList.size());
+        for(const QString& s : clientList)
+          fprintf(stderr, "  %s\n", s.toUtf8().constData());
+      }
         
       return clientList;
       }
@@ -2063,6 +2076,14 @@ std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
         getJackPorts(ports, clientList, midi, true, aliases);   // Get physical ports first.
         getJackPorts(ports, clientList, midi, false, aliases);  // Get non-physical ports last.
         jack_free(ports);  
+      }
+      
+      if(MusEGlobal::debugMsg)
+      {
+        fprintf(stderr, "JackAudioDevice::inputPorts(midi=%d): requested flag=JackPortIsInput, got %zu port(s):\n",
+                (int)midi, clientList.size());
+        for(const QString& s : clientList)
+          fprintf(stderr, "  %s\n", s.toUtf8().constData());
       }
         
       return clientList;

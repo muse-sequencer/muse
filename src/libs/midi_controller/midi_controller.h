@@ -79,6 +79,15 @@ class MidiController {
 
    public:
       MidiController();
+
+
+      // Virtual: MidiNamCtrl (midnam.h) derives from this and MidiNamCtrls
+      //  deletes its contents via a MidiController* (see MidiControllerList
+      //  comment above) - without this, that delete is undefined behavior
+      //  (ASan: new-delete-type-mismatch).
+      virtual ~MidiController() = default;
+
+
       // If drumInit = -1, it means don't care - use the init val.
       MidiController(const QString& n, int num, int min, int max, int init, int drumInit, int show_in_track = (ShowInDrum | ShowInMidi));
       MidiController(const MidiController& mc);
@@ -139,12 +148,13 @@ class MidiControllerList : public MidiControllerList_t
    public:
       MidiControllerList();
       MidiControllerList(const MidiControllerList& mcl);
-      // NOTE: There is no destructor here, this container does not
-      //        delete its own contents, that is done in ~MidiInstrument
-      //        because some controls are shared (the ones in
-      //        defaultMidiController and defaultManagedMidiController).
-      //       However, an inheritor such as the class MidiNamCtrls
-      //        found in the MidNam module DOES delete its own.
+
+      virtual ~MidiControllerList()
+      {
+        for(const_iterator i = cbegin(); i != cend(); ++i)
+          delete i->second;
+      }
+
 
       // Like find() which finds a verbose ctl number, but this version also finds a per-note
       //  controller if there is one for the given ctl number, if no verbose one was found.
@@ -694,4 +704,3 @@ typedef std::pair<unsigned long int, unsigned long int> MidiCtl2LadspaPortInsert
 } // namespace MusECore
 
 #endif
-

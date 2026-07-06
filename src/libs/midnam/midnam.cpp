@@ -1855,11 +1855,17 @@ MidiNamAvailableForChannels::MidiNamAvailableForChannels(const MidiNamAvailableF
 
 MidiNamAvailableForChannels::~MidiNamAvailableForChannels()
 {
+  clear();
+}
+
+void MidiNamAvailableForChannels::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(i->second)
       delete i->second;
   }
+  std::map<int, MidiNamAvailableChannel*>::clear();
 }
       
 bool MidiNamAvailableForChannels::add(MidiNamAvailableChannel* a)
@@ -2014,11 +2020,17 @@ MidiNamChannelNameSetAssignments::MidiNamChannelNameSetAssignments(const MidiNam
 
 MidiNamChannelNameSetAssignments::~MidiNamChannelNameSetAssignments()
 {
+  clear();
+}
+
+void MidiNamChannelNameSetAssignments::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(i->second)
       delete i->second;
   }
+  std::map<int, MidiNamChannelNameSetAssign*>::clear();
 }
 
 bool MidiNamChannelNameSetAssignments::add(MidiNamChannelNameSetAssign* a)
@@ -2196,11 +2208,17 @@ MidiNamNotes::MidiNamNotes(const MidiNamNotes& m)
 
 MidiNamNotes::~MidiNamNotes()
 {
+  clear();
+}
+
+void MidiNamNotes::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(i->second)
       delete i->second;
   }
+  std::map<int, MidiNamNote*>::clear();
 }
 
 bool MidiNamNotes::add(MidiNamNote* a)
@@ -2523,11 +2541,17 @@ MidiNamValNames& MidiNamValNames::operator=(const MidiNamValNames& m)
 
 MidiNamValNames::~MidiNamValNames()
 {
+  clear();
+}
+
+void MidiNamValNames::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(i->second)
       delete i->second;
   }
+  std::map<int, MidiNamVal*>::clear();
 }
 
 bool MidiNamValNames::add(MidiNamVal* a)
@@ -3063,11 +3087,17 @@ MidiNamPatchNameList::MidiNamPatchNameList(const MidiNamPatchNameList& m) : std:
 
 MidiNamPatchNameList::~MidiNamPatchNameList()
 {
+  clear();
+}
+
+void MidiNamPatchNameList::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(i->second)
       delete i->second;
   }
+  std::map<int, MidiNamPatch*>::clear();
 }
       
 bool MidiNamPatchNameList::add(MidiNamPatch* a)
@@ -3402,11 +3432,17 @@ MidiNamPatchBankList::MidiNamPatchBankList(const MidiNamPatchBankList& m)
 
 MidiNamPatchBankList::~MidiNamPatchBankList()
 {
+  clear();
+}
+
+void MidiNamPatchBankList::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(i->second)
       delete i->second;
   }
+  std::map<int, MidiNamPatchBank*>::clear();
 }
       
 bool MidiNamPatchBankList::add(MidiNamPatchBank* a)
@@ -3627,11 +3663,17 @@ MidiNamChannelNameSetList::MidiNamChannelNameSetList(const MidiNamChannelNameSet
 
 MidiNamChannelNameSetList::~MidiNamChannelNameSetList()
 {
+  clear();
+}
+
+void MidiNamChannelNameSetList::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(i->second)
       delete i->second;
   }
+  std::map<QString, MidNamChannelNameSet*>::clear();
 }
       
 bool MidiNamChannelNameSetList::add(MidNamChannelNameSet* a)
@@ -4027,11 +4069,17 @@ MidNamDeviceModeList::MidNamDeviceModeList(const MidNamDeviceModeList& m)
 
 MidNamDeviceModeList::~MidNamDeviceModeList()
 {
+  clear();
+}
+
+void MidNamDeviceModeList::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(i->second)
       delete i->second;
   }
+  std::map<QString, MidNamDeviceMode*>::clear();
 }
       
 bool MidNamDeviceModeList::add(MidNamDeviceMode* a)
@@ -4151,11 +4199,17 @@ MidiNamModelList::MidiNamModelList(const MidiNamModelList& m)
 
 MidiNamModelList::~MidiNamModelList()
 {
+  clear();
+}
+
+void MidiNamModelList::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(i->second)
       delete i->second;
   }
+  std::map<QString, MidNamModel*>::clear();
 }
       
 bool MidiNamModelList::add(MidNamModel* a)
@@ -4318,11 +4372,17 @@ MidNamExtendingDeviceNamesList::MidNamExtendingDeviceNamesList(const MidNamExten
 
 MidNamExtendingDeviceNamesList::~MidNamExtendingDeviceNamesList()
 {
+  clear();
+}
+
+void MidNamExtendingDeviceNamesList::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(*i)
       delete *i;
   }
+  std::list<MidNamExtendingDeviceNames*>::clear();
 }
       
 void MidNamExtendingDeviceNamesList::write(int level, MusECore::Xml& xml) const
@@ -4482,11 +4542,17 @@ MidNamMasterDeviceNamesList::MidNamMasterDeviceNamesList(const MidNamMasterDevic
 
 MidNamMasterDeviceNamesList::~MidNamMasterDeviceNamesList()
 {
+  clear();
+}
+
+void MidNamMasterDeviceNamesList::clear()
+{
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(*i)
       delete *i;
   }
+  std::list<MidNamMasterDeviceNames*>::clear();
 }
       
 void MidNamMasterDeviceNamesList::write(int level, MusECore::Xml& xml) const

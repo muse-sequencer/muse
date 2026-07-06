@@ -5561,6 +5561,30 @@ void Song::executeOperationGroup1(Undo& operations)
 
 void Song::executeOperationGroup3(Undo& operations)
       {
+      // Close wave event sndfile file handles BEFORE executeNonRTStage() runs -
+      //  that call can actually delete Track/Part objects (e.g. deleting a SynthI
+      //  via a batched DeleteMidiDevice op also frees its Track sub-object, since
+      //  SynthI multiply-inherits MidiDevice). The DeleteTrack/DeletePart cases
+      //  below only get an index/pointer copied from *before* the delete, so by
+      //  the time this function reaches them the object may already be freed -
+      //  confirmed by ASan as a heap-use-after-free at editable_track->closeAllParts().
+      // It should not be the job of the pending operations list to do this.
+      // TODO Coordinate close/open with part mute and/or track off.
+      for (iUndoOp i = operations.begin(); i != operations.end(); ++i) {
+            if(i->type == UndoOp::DeleteTrack)
+            {
+              Track* const t = const_cast<Track*>(i->track);
+              if(t)
+                t->closeAllParts();
+            }
+            else if(i->type == UndoOp::DeletePart)
+            {
+              Part* const p = const_cast<Part*>(i->part);
+              if(p)
+                p->closeAllEvents();
+            }
+      }
+
       pendingOperations.executeNonRTStage();
 #ifdef _UNDO_DEBUG_
       fprintf(stderr, "Song::executeOperationGroup3 *** Calling pendingOperations.clear()\n");
@@ -5570,7 +5594,7 @@ void Song::executeOperationGroup3(Undo& operations)
       for (iUndoOp i = operations.begin(); i != operations.end(); ) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
-            Part* editable_part = const_cast<Part*>(i->part); // uncomment if needed
+// uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
                         // --------------------------------------------------------------------------------
@@ -5667,10 +5691,9 @@ void Song::executeOperationGroup3(Undo& operations)
                         showPendingPluginGuis(i->trackno, -1);
                         updateUiWindowTitles(i->trackno, -1);
 
-                        // Ensure that wave event sndfile file handles are closed.
-                        // It should not be the job of the pending operations list to do this.
-                        // TODO Coordinate close/open with part mute and/or track off.
-                        editable_track->closeAllParts();
+                        // closeAllParts() for this track was already done in the pre-pass
+                        //  above, before pendingOperations.executeNonRTStage() potentially
+                        //  freed it - editable_track may be a dangling pointer here now.
                         break;
                   case UndoOp::ModifyTrackName:
                         showPendingPluginGuis(editable_track);
@@ -5681,10 +5704,9 @@ void Song::executeOperationGroup3(Undo& operations)
                         updateUiWindowTitles(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
                         break;
                   case UndoOp::DeletePart:
-                        // Ensure that wave event sndfile file handles are closed.
-                        // It should not be the job of the pending operations list to do this.
-                        // TODO Coordinate close/open with part mute and/or track off.
-                        editable_part->closeAllEvents();
+                        // closeAllEvents() for this part was already done in the pre-pass
+                        //  above, before pendingOperations.executeNonRTStage() potentially
+                        //  freed it - editable_part may be a dangling pointer here now.
                         break;
                   case UndoOp::DeleteEvent: {
                           if(!i->nEvent.empty())

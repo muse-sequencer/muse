@@ -629,7 +629,10 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
     
     case DeleteMidiDevice:
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteMidiDevice devicelist:%p device:%p\n", _midi_device_list, *_iMidiDevice);
+      // Capture the pointer before erase() invalidates _iMidiDevice - the
+      //  actual delete happens in executeNonRTStage(), never here.
+      _midi_device = *_iMidiDevice;
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteMidiDevice devicelist:%p device:%p\n", _midi_device_list, _midi_device);
       _midi_device_list->erase(_iMidiDevice);
       flags |= SC_CONFIG;
     break;
@@ -1809,6 +1812,19 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
     case DeleteRoute:
       if(MusEGlobal::song->connectJackRoutes(_src_route, _dst_route, true))
         flags |= SC_ROUTE;
+    break;
+
+    case DeleteMidiDevice:
+      // _midi_device was captured in executeRTStage() before the list erase.
+      //  Deleting here (non-RT) runs MidiDevice's virtual destructor, which for
+      //  a MidiJackDevice also unregisters its Jack ports - previously nothing
+      //  ever deleted this, leaking both the object and its Jack ports.
+      if(!_midi_device)
+      {
+        fprintf(stderr, "PendingOperationItem::executeNonRTStage DeleteMidiDevice: _midi_device is null\n");
+        break;
+      }
+      delete _midi_device;
     break;
 
     case ModifyTempoList:
