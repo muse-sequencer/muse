@@ -485,8 +485,11 @@ MidiInstrument::~MidiInstrument()
       delete _midiInit;
       delete _midiReset;
       delete _midiState;
-      for(iMidiController i = _controller->begin(); i != _controller->end(); ++i)
-          delete i->second;
+      // NOTE: Do NOT manually delete i->second here. MidiControllerList's own
+      //  destructor (midi_controller.h) already deletes every element it owns.
+      //  The old loop below caused a double-free / heap-use-after-free (ASan),
+      //  since each MidiController* got deleted here, then deleted again inside
+      //  MidiControllerList::~MidiControllerList() right after.
       delete _controller;
 
       if (_initScript)

@@ -1024,7 +1024,12 @@ MusE::MusE() : QMainWindow()
       cpuLoadToolbar->hide(); // hide as a default, the info is now in status bar too
       connect(cpuLoadToolbar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
 
-      QToolBar* songpos_tb = addToolBar(tr("Timeline"));
+      // NOTE: Previously this toolbar was added twice: once implicitly via the
+      //  plain addToolBar(title) overload (which adds+shows it in the top area),
+      //  then again via addToolBar(area, toolbar). That produced a visible
+      //  duplicate "Timeline" toolbar. Construct it directly and add it to the
+      //  main window exactly once, in its intended area.
+      QToolBar* songpos_tb = new QToolBar(tr("Timeline"), this);
       songpos_tb->setObjectName("Timeline tool");
       songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
       songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -1041,21 +1046,33 @@ MusE::MusE() : QMainWindow()
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
       transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
+      // NOTE: object names below are required. MusE::setCurrentMenuSharingTopwin()
+      //  matches toolbars by objectName() to REPLACE a MusE toolbar with a TopWin's
+      //  equivalent (insertToolBar()). Without a name set here, no match is found and
+      //  the TopWin's toolbar gets appended alongside this one instead - i.e. a
+      //  visible duplicate (same icons twice). This was missing for Recording/Sync/
+      //  Tempo/Position and is the likely cause of the duplicated toolbars reported
+      //  (transport, sync, tempo, position/marker buttons).
       RecToolbar *recToolbar = new RecToolbar(tr("Recording"), this);
+      recToolbar->setObjectName("Recording tool");
       addToolBar(recToolbar);
 
       SyncToolbar *syncToolbar = new SyncToolbar(tr("Sync"), this);
+      syncToolbar->setObjectName("Sync tool");
       addToolBar(syncToolbar);
 
       addToolBarBreak();
 
       TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
+      tempo_tb->setObjectName("Tempo tool");
       addToolBar(tempo_tb);
       
       SigToolbar* sig_tb = new SigToolbar(tr("Signature"), this);
+      sig_tb->setObjectName("Signature tool");
       addToolBar(sig_tb);
       
       PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
+      posToolbar->setObjectName("Position tool");
       addToolBar(posToolbar);
 
       requiredToolbars.push_back(tools);

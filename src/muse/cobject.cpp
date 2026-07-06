@@ -175,21 +175,31 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     transportToolbar->addActions(MusEGlobal::transportAction->actions());
     transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
+    // NOTE: object names below are required (see notice above). Without them,
+    //  MusE::setCurrentMenuSharingTopwin() cannot match these toolbars against
+    //  MusE's own Recording/Sync/Tempo/Signature/Position toolbars by name, so
+    //  instead of being cleanly swapped in, they get appended as a second,
+    //  visibly duplicate toolbar. Names must match the ones set in MusE::MusE().
     RecToolbar *recToolbar = new RecToolbar(tr("Recording"), this);
+    recToolbar->setObjectName("Recording tool");
     addToolBar(recToolbar);
 
     SyncToolbar *syncToolbar = new SyncToolbar(tr("Sync"), this);
+    syncToolbar->setObjectName("Sync tool");
     addToolBar(syncToolbar);
 
     addToolBarBreak();
 
     TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
+    tempo_tb->setObjectName("Tempo tool");
     addToolBar(tempo_tb);
 
     SigToolbar* sig_tb = new SigToolbar(tr("Signature"), this);
+    sig_tb->setObjectName("Signature tool");
     addToolBar(sig_tb);
 
     PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
+    posToolbar->setObjectName("Position tool");
     addToolBar(posToolbar);
 
     connect(tempo_tb, &TempoToolbar::returnPressed, [this]() { focusCanvas(); } );
