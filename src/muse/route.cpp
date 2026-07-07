@@ -58,7 +58,14 @@ Route::Route(void* t, int ch)
       jackPort = t;
       persistentJackPortName[0] = 0;
       if(MusEGlobal::checkAudioDevice())
-        MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
+        // Explicitly request the canonical name (0), not the default "no
+        //  preference" (-1) - persistentJackPortName is used later as the
+        //  literal reconnect/find target (see Song::connectMidiPorts(),
+        //  MidiJackDevice::open()), not a display string. "No preference"
+        //  risks silently picking up a stale alias (e.g. one MusE itself
+        //  set via setMidiConnectionAlias() in a previous session) instead
+        //  of the port's real, stable name.
+        MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE, 0);
       
       midiPort = -1;
       channel  = ch;
@@ -121,7 +128,9 @@ Route::Route(const QString& s, bool dst, int ch, int rtype)
         jackPort = node.jackPort;
         char* res = 0;
         if(jackPort && MusEGlobal::checkAudioDevice())
-          res = MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
+          // See comment in Route::Route(void*, int) above: request canonical
+          //  name (0) explicitly, not the default "no preference" (-1).
+          res = MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE, 0);
         if(!res)
           MusELib::strntcpy(persistentJackPortName, s.toUtf8().constData(), ROUTE_PERSISTENT_NAME_SIZE);
         midiPort = -1;
@@ -1764,11 +1773,22 @@ void Route::read(Xml& xml)
                               jackPort = MusEGlobal::audioDevice->findPort(s.toUtf8().constData());
                               if(jackPort)
                                 // Replace the name with a more appropriate one at this time.
-                                MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
+                                // NOTE: explicitly request the canonical name (0), not the
+                                //  default "no preference" (-1) - persistentJackPortName is
+                                //  the literal reconnect/find target used later (see
+                                //  Song::connectMidiPorts(), MidiJackDevice::open()), not a
+                                //  display string. "No preference" risked silently picking up
+                                //  a stale alias (e.g. one MusE itself set via
+                                //  setMidiConnectionAlias() in a previous session) here,
+                                //  corrupting the persisted route target on every load.
+                                MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE, 0);
                             }
                             // The graph change handler will replace persistentJackPortName with a more appropriate name if necessary.
                             if(!jackPort)
+                            {
+                              fprintf(stderr, "Route::read(): jack port <%s> not found (yet) - keeping persistent name\n", s.toLocal8Bit().constData());
                               MusELib::strntcpy(persistentJackPortName, s.toUtf8().constData(), ROUTE_PERSISTENT_NAME_SIZE);
+                            }
                           }
                           else
                           if(rtype == MIDI_DEVICE_ROUTE)

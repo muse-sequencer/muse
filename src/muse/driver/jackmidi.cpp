@@ -439,6 +439,52 @@ QString midiPortFriendlyName(jack_port_t* port)
 //    native mechanism for this and is expected to work there.
 //---------------------------------------------------------
 
+//---------------------------------------------------------
+//   refreshOurPortAlias
+//   jack_port_set_alias - older jack-audio function (qjackctl "enable alias" ON)
+//   jack_set_property - new jack-audio function, sets meta-data
+//   metadata method: in qjackctl set "enable alias" OFF, metadata ON
+//
+//   Keeps our own port's classic Jack alias (distinct from the Metadata
+//    pretty-name above - see setMidiConnectionAlias()) in sync with it, for
+//    tools like QJackCtl that show the alias instead of Metadata when their
+//    "Enable Alias" option is on ("Enable Metadata" alone already worked
+//    correctly, since that reads what we set via jack_set_property()).
+//   Unlike Metadata, classic aliases have no dedicated key to just overwrite -
+//    a port has up to 2 alias slots, filled in call order - so we must
+//    explicitly unset our own previous alias (if any) first, or repeated
+//    reconnects would eventually fill both slots and start failing.
+//   Only ever called with OUR OWN port, never the remote's.
+//---------------------------------------------------------
+
+static void refreshOurPortAlias(jack_port_t* our_port, const QString& new_label)
+{
+  const int nsz = jack_port_name_size();
+  char a1[nsz];
+  char a2[nsz];
+  char* al[2] = { a1, a2 };
+  const int na = jack_port_get_aliases(our_port, al);
+  for(int i = 0; i < na; ++i)
+  {
+    if(al[i][0] != '\0' && (QString(al[i]).startsWith("Muse << ") || QString(al[i]).startsWith("Muse >> ")))
+    {
+      if(jack_port_unset_alias(our_port, al[i]) != 0)
+        fprintf(stderr, "refreshOurPortAlias: jack_port_unset_alias failed for %s\n", al[i]);
+    }
+  }
+
+  if(!new_label.isEmpty())
+  {
+    // Aliases have a hard length limit (jack_port_name_size()), unlike the
+    //  Metadata pretty-name string - truncate defensively rather than fail.
+    QByteArray label_utf8 = new_label.toUtf8();
+    if(label_utf8.size() >= nsz)
+      label_utf8.truncate(nsz - 1);
+    if(jack_port_set_alias(our_port, label_utf8.constData()) != 0)
+      fprintf(stderr, "refreshOurPortAlias: jack_port_set_alias failed for %s\n", label_utf8.constData());
+  }
+}
+
 void JackAudioDevice::setMidiConnectionAlias(void* our_port_v, bool is_input, void* remote_port_v)
 {
   jack_port_t* our_port = (jack_port_t*)our_port_v;
@@ -460,16 +506,25 @@ void JackAudioDevice::setMidiConnectionAlias(void* our_port_v, bool is_input, vo
   jack_port_t* remote_port = (jack_port_t*)remote_port_v;
   if(!remote_port)
   {
-    // Nothing to connect to (yet) - clear any pretty-name we previously set.
+    // Nothing to connect to (yet) - clear any pretty-name/alias we previously set.
     jack_remove_property(_client, our_uuid, JACK_METADATA_PRETTY_NAME);
+    refreshOurPortAlias(our_port, QString());
     return;
   }
 
   // Self-connections (MusE-to-MusE, incl. a2j/Midi-Bridge loops) are not labeled -
   //  see checkNewRouteConnections(), they aren't adopted as routes there either.
+  // Clear any pretty-name/alias left over from a previous, different (real)
+  //  connection - otherwise a stale label referencing an old remote device
+  //  survives and can confuse tools that group ports by Metadata (e.g.
+  //  QJackCtl showing several of our own ports clustered under that device).
   const QString cname(jack_get_client_name(_client));
   if(jack_port_is_mine(_client, remote_port) || isOwnBridgedMidiPort(rawJackPortName(remote_port), cname))
+  {
+    jack_remove_property(_client, our_uuid, JACK_METADATA_PRETTY_NAME);
+    refreshOurPortAlias(our_port, QString());
     return;
+  }
 
   const QString remote_name = midiPortFriendlyName(remote_port);
   const QString label = is_input
@@ -478,6 +533,8 @@ void JackAudioDevice::setMidiConnectionAlias(void* our_port_v, bool is_input, vo
 
   if(jack_set_property(_client, our_uuid, JACK_METADATA_PRETTY_NAME, label.toUtf8().constData(), "text/plain") != 0)
     fprintf(stderr, "setMidiConnectionAlias: jack_set_property (pretty-name) failed for %s\n", label.toUtf8().constData());
+  // Keep the classic alias in sync too - see refreshOurPortAlias().
+  refreshOurPortAlias(our_port, label);
 }
 
 //---------------------------------------------------------
@@ -527,6 +584,8 @@ void JackAudioDevice::setMidiConnectionAlias(void* our_port_v, bool is_input, co
 
   if(jack_set_property(_client, our_uuid, JACK_METADATA_PRETTY_NAME, label.toUtf8().constData(), "text/plain") != 0)
     fprintf(stderr, "setMidiConnectionAlias(hint): jack_set_property (pretty-name) failed for %s\n", label.toUtf8().constData());
+  // Keep the classic alias in sync too - see refreshOurPortAlias() above.
+  refreshOurPortAlias(our_port, label);
 }
 
 //---------------------------------------------------------
@@ -593,18 +652,49 @@ QString MidiJackDevice::open()
           if(our_port_name)
           {
             // (We just registered the port. At this point, any existing persistent routes' jackPort SHOULD be 0.)
+            const QString own_client_name(MusEGlobal::audioDevice->clientName());
             for(iRoute ir = _outRoutes.begin(); ir != _outRoutes.end(); ++ir)
             {
               if(ir->type != Route::JACK_ROUTE)
                 continue;
               const char* route_name = ir->persistentJackPortName;
+
+              // Never (re-)connect to one of our own ports, including bridged
+              //  loops (a2j/Midi-Bridge) of ourself - a saved song should not
+              //  be able to wire MusE to itself. isOwnBridgedMidiPort() catches
+              //  bridged loops; the plain case-sensitive "MusE" substring
+              //  check catches a direct self-route saved under our own
+              //  client name ("MusE" is more unique than a general,
+              //  case-insensitive "muse" search).
+              const QString route_name_q(route_name);
+              if(route_name_q.contains("MusE") ||
+                 isOwnBridgedMidiPort(route_name_q, own_client_name))
+              {
+                DEBUG_PRST_ROUTES(stderr, "MidiJackDevice::open: skipping muse-to-muse output route to %s\n", route_name);
+                ir->jackPort = 0;
+                continue;
+              }
+
               if(!ir->jackPort)
                 ir->jackPort = MusEGlobal::audioDevice->findPort(route_name);
-              //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
               if(ir->jackPort)
               {
                 MusEGlobal::audioDevice->connect(our_port_name, route_name);
-                MusEGlobal::audioDevice->setMidiConnectionAlias(_out_client_jackport, false, ir->jackPort);
+                // Don't trust connect()'s return value alone - jack_connect()
+                //  also reports "failure" (EEXIST) for a port already
+                //  connected (e.g. auto-restored by Jack/PipeWire session
+                //  management before we get here), which is not a real
+                //  failure. Check actual connection state instead.
+                if(MusEGlobal::audioDevice->portConnectedTo(_out_client_jackport, route_name))
+                  MusEGlobal::audioDevice->setMidiConnectionAlias(_out_client_jackport, false, ir->jackPort);
+                else
+                {
+                  // Connection genuinely failed - do not leave a stale/wrong
+                  //  alias implying it succeeded, and mark the route unresolved.
+                  fprintf(stderr, "MidiJackDevice::open: failed to connect output port to %s\n", route_name);
+                  MusEGlobal::audioDevice->setMidiConnectionAlias(_out_client_jackport, false, nullptr);
+                  ir->jackPort = 0;
+                }
               }
             }  
           }
@@ -679,18 +769,40 @@ QString MidiJackDevice::open()
           if(our_port_name)
           {
             // (We just registered the port. At this point, any existing persistent routes' jackPort SHOULD be 0.)
+            const QString own_client_name(MusEGlobal::audioDevice->clientName());
             for(iRoute ir = _inRoutes.begin(); ir != _inRoutes.end(); ++ir) 
             {  
               if(ir->type != Route::JACK_ROUTE)  
                 continue;
               const char* route_name = ir->persistentJackPortName;
+
+              // Never (re-)connect to one of our own ports, including bridged
+              //  loops (a2j/Midi-Bridge) of ourself - see matching comment in
+              //  the output port loop above.
+              const QString route_name_q(route_name);
+              if(route_name_q.contains("MusE") ||
+                 isOwnBridgedMidiPort(route_name_q, own_client_name))
+              {
+                DEBUG_PRST_ROUTES(stderr, "MidiJackDevice::open: skipping muse-to-muse input route to %s\n", route_name);
+                ir->jackPort = 0;
+                continue;
+              }
+
               if(!ir->jackPort)
                 ir->jackPort = MusEGlobal::audioDevice->findPort(route_name);
-              //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
               if(ir->jackPort)
               {
                 MusEGlobal::audioDevice->connect(route_name, our_port_name);
-                MusEGlobal::audioDevice->setMidiConnectionAlias(_in_client_jackport, true, ir->jackPort);
+                // See comment in the output port loop above: check actual
+                //  connection state, don't trust connect()'s return value alone.
+                if(MusEGlobal::audioDevice->portConnectedTo(_in_client_jackport, route_name))
+                  MusEGlobal::audioDevice->setMidiConnectionAlias(_in_client_jackport, true, ir->jackPort);
+                else
+                {
+                  fprintf(stderr, "MidiJackDevice::open: failed to connect input port to %s\n", route_name);
+                  MusEGlobal::audioDevice->setMidiConnectionAlias(_in_client_jackport, true, nullptr);
+                  ir->jackPort = 0;
+                }
               }
             }
           }

@@ -39,6 +39,7 @@
 
 #include "app.h"
 #include "driver/jackmidi.h"
+#include "driver/jackaudio.h"
 #include "driver/alsamidi.h"
 #include "song.h"
 //#include "key.h"
@@ -6663,6 +6664,8 @@ void Song::connectMidiPorts()
     MidiDevice* md = *i;
     if(md->deviceType() != MidiDevice::JACK_MIDI)
       continue;
+
+    const QString own_client_name(MusEGlobal::audioDevice->clientName());
     
     // Midi outputs...
     if(md->rwFlags() & 1)
@@ -6679,15 +6682,45 @@ void Song::connectMidiPorts()
             if(ir->type != Route::JACK_ROUTE)  
               continue;
             const char* route_name = ir->persistentJackPortName;
+
+            // Never (re-)connect to one of our own ports, incl. bridged loops
+            // (a2j/Midi-Bridge) of ourself - a saved song should not be able
+            //  to wire MusE to itself. Case-sensitive "MusE" substring check -
+            //  more unique than a general, case-insensitive "muse" search.
+            const QString route_name_q(route_name);
+            if(route_name_q.contains("MusE") ||
+               MusECore::isOwnBridgedMidiPort(route_name_q, own_client_name))
+            {
+              fprintf(stderr, "Song::connectMidiPorts: skipping muse-to-muse output route to %s\n", route_name);
+              continue;
+            }
+
             void* const remote_port = MusEGlobal::audioDevice->findPort(route_name);
             if(!remote_port)
+            {
+              fprintf(stderr, "Song::connectMidiPorts: output route target not found: %s\n", route_name);
               continue;
+            }
             //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
             MusEGlobal::audioDevice->connect(our_port_name, route_name);
-            // Loaded from file: the pretty-name alias is not persisted, only the
-            //  raw port name/route is - restore the "Muse >> ..." alias now that
-            //  the connection is re-established, same as a live connect would.
-            MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, false, remote_port);
+            // Don't trust connect()'s return value alone - jack_connect() also
+            //  reports "failure" (EEXIST) for a port already connected (e.g.
+            //  auto-restored by Jack/PipeWire session management before we get
+            //  here), which is not a real failure. Check actual connection
+            //  state instead (same reasoning as connectJackRoutes() above).
+            if(MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
+            {
+              // Loaded from file: the pretty-name alias is not persisted, only the
+              //  raw port name/route is - restore the "Muse >> ..." alias now that
+              //  the connection is re-established, same as a live connect would.
+              MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, false, remote_port);
+            }
+            else
+            {
+              fprintf(stderr, "Song::connectMidiPorts: failed to connect output port to %s\n", route_name);
+              // Don't leave a stale/wrong alias implying the connection worked.
+              MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, false, nullptr);
+            }
           }  
         }
       }    
@@ -6708,15 +6741,39 @@ void Song::connectMidiPorts()
             if(ir->type != Route::JACK_ROUTE)  
               continue;
             const char* route_name = ir->persistentJackPortName;
+
+            // Never (re-)connect to one of our own ports - see matching
+            //  comment in the output port loop above.
+            const QString route_name_q(route_name);
+            if(route_name_q.contains("MusE") ||
+               MusECore::isOwnBridgedMidiPort(route_name_q, own_client_name))
+            {
+              fprintf(stderr, "Song::connectMidiPorts: skipping muse-to-muse input route to %s\n", route_name);
+              continue;
+            }
+
             void* const remote_port = MusEGlobal::audioDevice->findPort(route_name);
             if(!remote_port)
+            {
+              fprintf(stderr, "Song::connectMidiPorts: input route target not found: %s\n", route_name);
               continue;
+            }
             //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
             MusEGlobal::audioDevice->connect(route_name, our_port_name);
-            // Loaded from file: the pretty-name alias is not persisted, only the
-            //  raw port name/route is - restore the "Muse << ..." alias now that
-            //  the connection is re-established, same as a live connect would.
-            MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, true, remote_port);
+            // See comment in the output port loop above: check actual
+            //  connection state, don't trust connect()'s return value alone.
+            if(MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
+            {
+              // Loaded from file: the pretty-name alias is not persisted, only the
+              //  raw port name/route is - restore the "Muse << ..." alias now that
+              //  the connection is re-established, same as a live connect would.
+              MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, true, remote_port);
+            }
+            else
+            {
+              fprintf(stderr, "Song::connectMidiPorts: failed to connect input port to %s\n", route_name);
+              MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, true, nullptr);
+            }
           }
         }
       }

@@ -447,8 +447,10 @@ class MidiNamCtrls : public MidiControllerList
     MidiNamCtrls(const QString& name) :
       _name(name), _p_ref(nullptr), _isReference(false), _hasMidiNamCtrls(false) { }
     MidiNamCtrls(const MidiNamCtrls& mcl);
-    // We require a destructor here because MidiControllerList
-    //  does not delete its contents.
+    // NOTE: MidiControllerList DOES delete its contents by default (see
+    //  MidiControllerList::_ownsElements) - this destructor must NOT also
+    //  delete them (that caused a heap-use-after-free/double-free, ASan).
+    //  Declared only in case future members need explicit cleanup.
     ~MidiNamCtrls();
 
     bool hasMidiNamCtrls() const { return _hasMidiNamCtrls; }

@@ -943,7 +943,15 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
         }
         // Find a more appropriate name if necessary.
         char fin_name[ROUTE_PERSISTENT_NAME_SIZE];
-        portName(jp, fin_name, ROUTE_PERSISTENT_NAME_SIZE);
+        // Explicitly request the canonical name (0), not the default "no
+        //  preference" (-1) - persistentJackPortName is the literal
+        //  reconnect/find target used by findPort()/jack_port_by_name()
+        //  elsewhere, not a display string. "No preference" risks silently
+        //  picking up a stale alias (possibly one we ourselves set via
+        //  setMidiConnectionAlias() for a DIFFERENT port previously), which
+        //  jack_port_by_name() would then happily match on the wrong port
+        //  the next time this route is resolved.
+        portName(jp, fin_name, ROUTE_PERSISTENT_NAME_SIZE, 0);
         if(strcmp(ir->persistentJackPortName, fin_name) != 0)
         {
           DEBUG_PRST_ROUTES(stderr, "processJackCallbackEvents: Ports connected. Modifying route name: route_persistent_name:%s new name:%s\n", route_jpname, fin_name);
@@ -1010,7 +1018,9 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
                   // Find a more appropriate name if necessary.
                   const char* s = ir->persistentJackPortName;
                   char fin_name[ROUTE_PERSISTENT_NAME_SIZE];
-                  portName(jp, fin_name, ROUTE_PERSISTENT_NAME_SIZE);
+                  // See comment in the connected-branch above: request
+                  //  canonical name (0) explicitly, not "no preference" (-1).
+                  portName(jp, fin_name, ROUTE_PERSISTENT_NAME_SIZE, 0);
                   if(strcmp(ir->persistentJackPortName, fin_name) != 0)
                   {
                     DEBUG_PRST_ROUTES(stderr, "processJackCallbackEvents: Ports connected. Modifying route name: route_persistent_name:%s new name:%s\n", route_jpname, fin_name);
@@ -1259,8 +1269,9 @@ void JackAudioDevice::checkNewRouteConnections(jack_port_t* our_port, int channe
           else
           {
             Route r(Route::JACK_ROUTE, 0, jp, channel, 0, 0, nullptr);
-            // Find a better name.
-            portName(jp, r.persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
+            // Find a better name. Request canonical name (0) explicitly, not
+            //  "no preference" (-1) - see comment in processJackCallbackEvents().
+            portName(jp, r.persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE, 0);
             DEBUG_PRST_ROUTES(stderr, " adding route: route_jp:%p portname:%s route_persistent_name:%s\n", 
                     jp, *pn, r.persistentJackPortName);
             operations.add(PendingOperationItem(route_list, r, PendingOperationItem::AddRouteNode));

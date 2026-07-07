@@ -2854,11 +2854,10 @@ MidiNamCtrls::MidiNamCtrls(const MidiNamCtrls& mcl) : MidiControllerList()
 
 MidiNamCtrls::~MidiNamCtrls()
 {
-  for(const_iterator i = cbegin(); i != cend(); ++i)
-  {
-    if(i->second)
-      delete i->second;
-  }
+  // Intentionally empty: MidiControllerList::~MidiControllerList() (base
+  //  class) already deletes every element here, since this class never
+  //  constructs it with ownsElements=false. Manually deleting them again
+  //  here caused a heap-use-after-free / double-free (ASan).
 }
       
 void MidiNamCtrls::writeMidnam(int level, MusECore::Xml& xml) const
