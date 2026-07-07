@@ -144,15 +144,27 @@ typedef std::map<int, MidiController*, std::less<int> > MidiControllerList_t;
 class MidiControllerList : public MidiControllerList_t
 {
       bool _RPN_Ctrls_Reserved; 
+      // Whether this list owns its MidiController* elements and should delete
+      //  them on destruction. Global registries such as MusECore::defaultMidiController
+      //  and defaultManagedMidiController only store pointers to permanent,
+      //  static-duration MidiController objects (e.g. volumeCtrl, panCtrl, ...)
+      //  and must NOT delete them: they were never allocated with new, so deleting
+      //  them is undefined behavior. This previously caused a heap-use-after-free /
+      //  SIGSEGV during global static destruction at program exit, since two
+      //  separate global lists both held (and both tried to delete) the same pointer.
+      bool _ownsElements;
       
    public:
-      MidiControllerList();
+      // ownsElements: pass false for registries that only reference permanent/
+      //  static-duration MidiController objects (see note above).
+      explicit MidiControllerList(bool ownsElements = true);
       MidiControllerList(const MidiControllerList& mcl);
 
       virtual ~MidiControllerList()
       {
-        for(const_iterator i = cbegin(); i != cend(); ++i)
-          delete i->second;
+        if(_ownsElements)
+          for(const_iterator i = cbegin(); i != cend(); ++i)
+            delete i->second;
       }
 
 

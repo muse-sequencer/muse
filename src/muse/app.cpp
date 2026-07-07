@@ -1075,6 +1075,12 @@ MusE::MusE() : QMainWindow()
       posToolbar->setObjectName("Position tool");
       addToolBar(posToolbar);
 
+      // Route to whichever TopWin is currently active/focused, rather than a
+      //  fixed target. This is what makes it safe for Position to be a single
+      //  shared instance (see TopWin::TopWin()) instead of one per editor window.
+      connect(posToolbar, &PosToolbar::returnPressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
+      connect(posToolbar, &PosToolbar::escapePressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
+
       requiredToolbars.push_back(tools);
       requiredToolbars.push_back(cpuLoadToolbar);
 
@@ -1298,12 +1304,16 @@ MusE::MusE() : QMainWindow()
 //      arrangerView->hide();
       _arranger=arrangerView->getArranger();
 
-      connect(tempo_tb, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
-      connect(tempo_tb, SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
+      // Route to whichever TopWin is currently active/focused, rather than a
+      //  fixed target (arrangerView). This is what makes Tempo/Signature safe
+      //  to be single shared instances (see TopWin::TopWin() and
+      //  MusE::sharedOptionalToolBar()) instead of one per editor window.
+      connect(tempo_tb, &TempoToolbar::returnPressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
+      connect(tempo_tb, &TempoToolbar::escapePressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
       connect(tempo_tb, SIGNAL(masterTrackChanged(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
       
-      connect(sig_tb,   SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
-      connect(sig_tb,   SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
+      connect(sig_tb, &SigToolbar::returnPressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
+      connect(sig_tb, &SigToolbar::escapePressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
 
       //---------------------------------------------------
       //  read list of "Recent Projects"
@@ -5280,6 +5290,21 @@ void MusE::activeTopWinChangedSlot(MusEGui::TopWin* win)
 
 
 
+//---------------------------------------------------------
+//   sharedOptionalToolBar
+//---------------------------------------------------------
+
+QToolBar* MusE::sharedOptionalToolBar(const QString& objName) const
+{
+  for(const auto& tb : optionalToolbars)
+    if(tb && tb->objectName() == objName)
+      return tb;
+  for(const auto& tb : requiredToolbars)
+    if(tb && tb->objectName() == objName)
+      return tb;
+  return nullptr;
+}
+
 void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
 {
   if (win && (win->sharesToolsAndMenu()==false))
@@ -5313,6 +5338,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
         {
           // Check for existing toolbar with same object name, and replace it.
           bool found = false;
+          bool isShared = false;
           for(list<QToolBar*>::iterator i_atb = add_toolbars.begin(); i_atb!=add_toolbars.end(); ++i_atb)
           {
             QToolBar* atb = *i_atb;
@@ -5320,12 +5346,26 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
             {
               if(tb->objectName() == atb->objectName())
               {
+                found = true;
+
+                if(tb == atb)
+                {
+                  // Shared single-instance toolbar (see MusE::sharedOptionalToolBar):
+                  //  tb and atb are literally the same object, already in place
+                  //  and shown. Nothing to swap - just keep the bookkeeping in sync.
+                  if(MusEGlobal::heavyDebugMsg)
+                    fprintf(stderr, "  toolbar '%s' is a shared instance, nothing to swap\n", atb->windowTitle().toLocal8Bit().data());
+                  isShared = true;
+                  add_foreign_toolbars.push_back(atb);
+                  add_toolbars.remove(atb);
+                  break;
+                }
+
                 //tb->hide();
                 
                 if(MusEGlobal::heavyDebugMsg) 
                   fprintf(stderr, "  inserting toolbar '%s'\n", atb->windowTitle().toLocal8Bit().data());
 
-                found = true;
                 insertToolBar(tb, atb);
                 add_foreign_toolbars.push_back(atb);
                 add_toolbars.remove(atb);
@@ -5334,6 +5374,9 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
               }
             }
           }
+
+          if(isShared)
+            continue; // Same object as its own replacement - don't remove it!
           
           // Remove any toolbar break that may exist before the toolbar - unless there 
           //  is a replacement is to be made, in which case leave the break intact.
@@ -5362,6 +5405,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
         QToolBar* tb = *it;
         if (tb)
         {
+          bool isShared = false;
           // Check for existing toolbar with same object name, and replace it.
           for(list<QToolBar*>::iterator i_atb = add_toolbars.begin(); i_atb!=add_toolbars.end(); ++i_atb)
           {
@@ -5370,6 +5414,19 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
             {
               if(tb->objectName() == atb->objectName())
               {
+                if(tb == atb)
+                {
+                  // Shared single-instance toolbar (see MusE::sharedOptionalToolBar):
+                  //  tb and atb are literally the same object, already in place
+                  //  and shown. Nothing to swap - just keep the bookkeeping in sync.
+                  if(MusEGlobal::heavyDebugMsg)
+                    fprintf(stderr, "  toolbar '%s' is a shared instance, nothing to swap\n", atb->windowTitle().toLocal8Bit().data());
+                  isShared = true;
+                  foreignToolbars.push_back(atb);
+                  add_toolbars.remove(atb);
+                  break;
+                }
+
                 //tb->hide();
                 
                 if(MusEGlobal::heavyDebugMsg) 
@@ -5383,6 +5440,9 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
               }
             }
           }
+
+          if(isShared)
+            continue; // Same object as its own replacement - don't remove it!
           
           if (MusEGlobal::heavyDebugMsg) 
             fprintf(stderr, "  removing optional toolbar '%s'\n", tb->windowTitle().toLocal8Bit().data());

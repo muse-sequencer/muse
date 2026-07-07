@@ -57,7 +57,10 @@ MusECore::MidiPort midiPorts[MusECore::MIDI_PORTS];
 
 namespace MusECore {
 
-MidiControllerList defaultManagedMidiController;
+// Non-owning: holds pointers to the permanent, static-duration MidiController
+//  globals declared in midictrl.cpp (pitchCtrl, volumeCtrl, ...). Must not
+//  delete them on exit - see MidiControllerList::_ownsElements.
+MidiControllerList defaultManagedMidiController(false);
 
 //---------------------------------------------------------
 //   initMidiPorts

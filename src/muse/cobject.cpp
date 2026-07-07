@@ -148,69 +148,44 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
     //          instead of /appending/ with addToolBar().
 
-    QToolBar* undo_tools=addToolBar(tr("Undo/Redo"));
-    undo_tools->setObjectName("Undo/Redo");
-    undo_tools->addActions(MusEGlobal::undoRedo->actions());
+    // NOTE: none of these have per-TopWin signal wiring anymore. Tempo,
+    //  Signature and Position route returnPressed/escapePressed dynamically to
+    //  MusE::activeTopWin (wired once in MusE::MusE()), rather than to a fixed
+    //  `this` target, so a single shared instance works correctly for all of
+    //  them - no need for every TopWin to build its own copy just to hand it
+    //  over to MusE later. We reuse MusE's single existing instances directly
+    //  (guaranteed to already exist: MusE always builds its own toolbars
+    //  before constructing any TopWin). This also means
+    //  MusE::setCurrentMenuSharingTopwin() has nothing to actually swap for
+    //  these - see its tb==atb no-op case.
+    QToolBar* undo_tools = muse->sharedOptionalToolBar("Undo/Redo");
+    QToolBar* panic_toolbar = muse->sharedOptionalToolBar("Panic tool");
+    QToolBar* metronome_toolbar = muse->sharedOptionalToolBar("Metronome tool");
+    QToolBar* songpos_tb = muse->sharedOptionalToolBar("Timeline tool");
+    QToolBar* transportToolbar = muse->sharedOptionalToolBar("Transport tool");
+    QToolBar* recToolbar = muse->sharedOptionalToolBar("Recording tool");
+    QToolBar* syncToolbar = muse->sharedOptionalToolBar("Sync tool");
+    QToolBar* posToolbar = muse->sharedOptionalToolBar("Position tool");
+    QToolBar* tempo_tb = muse->sharedOptionalToolBar("Tempo tool");
+    QToolBar* sig_tb = muse->sharedOptionalToolBar("Signature tool");
 
-    QToolBar* panic_toolbar = addToolBar(tr("Panic"));
-    panic_toolbar->setObjectName("Panic tool");
-    panic_toolbar->addAction(MusEGlobal::panicAction);
-
-    QToolBar* metronome_toolbar = addToolBar(tr("Metronome"));
-    metronome_toolbar->setObjectName("Metronome tool");
-    metronome_toolbar->addAction(MusEGlobal::metronomeAction);
-
-    QToolBar* songpos_tb = addToolBar(tr("Timeline"));
-    songpos_tb->setObjectName("Timeline tool");
-    songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
-    songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
-
-    QToolBar* transportToolbar = addToolBar(tr("Transport"));
-    // Force LTR layout on the transport toolbar.
-    // RTL is NOT to be used for flows of time or information or connections.
-    // Media buttons as well, including the punch in/out since they are time-related.
-    transportToolbar->setLayoutDirection(Qt::LeftToRight);
-    transportToolbar->setObjectName("Transport tool");
-    transportToolbar->addActions(MusEGlobal::transportAction->actions());
-    transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
-
-    // NOTE: object names below are required (see notice above). Without them,
-    //  MusE::setCurrentMenuSharingTopwin() cannot match these toolbars against
-    //  MusE's own Recording/Sync/Tempo/Signature/Position toolbars by name, so
-    //  instead of being cleanly swapped in, they get appended as a second,
-    //  visibly duplicate toolbar. Names must match the ones set in MusE::MusE().
-    RecToolbar *recToolbar = new RecToolbar(tr("Recording"), this);
-    recToolbar->setObjectName("Recording tool");
-    addToolBar(recToolbar);
-
-    SyncToolbar *syncToolbar = new SyncToolbar(tr("Sync"), this);
-    syncToolbar->setObjectName("Sync tool");
-    addToolBar(syncToolbar);
+    // Register in our own bookkeeping list directly (bypassing addToolBar()'s
+    //  hide()/QMainWindow::addToolBar() side effects - these are borrowed
+    //  shared instances, not ours to show, hide, or delete).
+    for(QToolBar* tb : { undo_tools, panic_toolbar, metronome_toolbar, songpos_tb,
+                         transportToolbar, recToolbar, syncToolbar, posToolbar,
+                         tempo_tb, sig_tb })
+    {
+        if(tb)
+        {
+            _toolbars.push_back(tb);
+            _borrowedToolbars.push_back(tb);
+        }
+        else if (MusEGlobal::debugMsg)
+            fprintf(stderr, "TopWin::TopWin(): a shared toolbar was not found on MusE - was it renamed?\n");
+    }
 
     addToolBarBreak();
-
-    TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
-    tempo_tb->setObjectName("Tempo tool");
-    addToolBar(tempo_tb);
-
-    SigToolbar* sig_tb = new SigToolbar(tr("Signature"), this);
-    sig_tb->setObjectName("Signature tool");
-    addToolBar(sig_tb);
-
-    PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
-    posToolbar->setObjectName("Position tool");
-    addToolBar(posToolbar);
-
-    connect(tempo_tb, &TempoToolbar::returnPressed, [this]() { focusCanvas(); } );
-    connect(tempo_tb, &TempoToolbar::escapePressed, [this]() { focusCanvas(); } );
-    connect(tempo_tb, &TempoToolbar::masterTrackChanged, [](bool v) { MusEGlobal::song->setMasterFlag(v); } );
-
-    connect(sig_tb, &SigToolbar::returnPressed, [this]() { focusCanvas(); } );
-    connect(sig_tb, &SigToolbar::escapePressed, [this]() { focusCanvas(); } );
-
-    connect(posToolbar, &PosToolbar::returnPressed, [this]() { focusCanvas(); } );
-    connect(posToolbar, &PosToolbar::escapePressed, [this]() { focusCanvas(); } );
 
 // this is not (longer?) the case, to be tested on KDE (kybos)
 // what about changing from MDI to top window later? then the parent remains anyway... (kybos)
@@ -236,6 +211,14 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 }
 
+bool TopWin::isBorrowedToolBar(QToolBar* tb) const
+{
+    for (const auto& bt : _borrowedToolbars)
+        if (bt == tb)
+            return true;
+    return false;
+}
+
 TopWin::~TopWin()
 {
     DEBUG_COBJECT(stderr, "TopWin dtor: %s\n", objectName().toLocal8Bit().constData());
@@ -245,9 +228,13 @@ TopWin::~TopWin()
     // Toolbars must be deleted explicitly to avoid memory leakage and corruption.
     // For some reason (toolbar sharing?) they are reparented and thus
     // not destroyed by the original parent topwin when closed.
+    // EXCEPTION: toolbars in _borrowedToolbars are shared, MusE-owned instances
+    //  (see MusE::sharedOptionalToolBar()) - MusE's own destructor deletes them.
+    //  Deleting them here too would be a double-free.
     for (auto& it : _toolbars) {
         if (it) {
-            delete it;
+            if (!isBorrowedToolBar(it))
+                delete it;
             it = nullptr;
         }
     }
@@ -560,9 +547,20 @@ void TopWin::addToolBar(QToolBar* toolbar)
     _toolbars.push_back(toolbar);
 
     if (!_sharesToolsAndMenu || MusEGlobal::unityWorkaround)
+    {
+        if (MusEGlobal::heavyDebugMsg)
+            fprintf(stderr, "TopWin::addToolBar '%s': showing directly in '%s' (sharesToolsAndMenu=%d unityWorkaround=%d)\n",
+                    toolbar->windowTitle().toLocal8Bit().data(), windowTitle().toLocal8Bit().data(),
+                    _sharesToolsAndMenu, MusEGlobal::unityWorkaround);
         QMainWindow::addToolBar(toolbar);
+    }
     else
+    {
+        if (MusEGlobal::heavyDebugMsg)
+            fprintf(stderr, "TopWin::addToolBar '%s': hiding, parked in '%s', pending hand-off to MusE\n",
+                    toolbar->windowTitle().toLocal8Bit().data(), windowTitle().toLocal8Bit().data());
         toolbar->hide();
+    }
 
     toolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 }
@@ -593,6 +591,11 @@ void TopWin::shareToolsAndMenu(bool val)
         return;
     }
 
+    if (MusEGlobal::heavyDebugMsg)
+        fprintf(stderr, "TopWin::shareToolsAndMenu(%d) on '%s': %s\n",
+                val, windowTitle().toLocal8Bit().data(),
+                val ? "hiding own toolbars, donating to MusE" : "showing own toolbars directly (un-tabbed/floating)");
+
     _sharesToolsAndMenu = val;
 
     if (!val)
@@ -601,6 +604,10 @@ void TopWin::shareToolsAndMenu(bool val)
 
         for (const auto& it : _toolbars)
             if (it) {
+                if (isBorrowedToolBar(it))
+                    continue; // Shared, MusE-owned - stays with MusE, not ours to show/reparent.
+                if (MusEGlobal::heavyDebugMsg)
+                    fprintf(stderr, "  showing own toolbar '%s'\n", it->windowTitle().toLocal8Bit().data());
                 QMainWindow::addToolBar(it);
                 it->show();
             }
@@ -619,6 +626,10 @@ void TopWin::shareToolsAndMenu(bool val)
 
         for (const auto& it : _toolbars)
             if (it) {
+                if (isBorrowedToolBar(it))
+                    continue; // Shared, MusE-owned - stays with MusE, not ours to park/reparent.
+                if (MusEGlobal::heavyDebugMsg)
+                    fprintf(stderr, "  parking (orphaning) own toolbar '%s'\n", it->windowTitle().toLocal8Bit().data());
                 QMainWindow::removeToolBar(it); // this does NOT delete the toolbar, which is good
                 it->setParent(nullptr);
             }

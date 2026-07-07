@@ -488,10 +488,21 @@ CommandLineParseResult parseCommandLine(
 
   if(parser.isSet(option_D))
   {
-    if(!MusEGlobal::debugMsg)
-      MusEGlobal::debugMsg=true;
-    else
-      MusEGlobal::heavyDebugMsg=true;
+    // NOTE: parser.isSet(option_D) is a single boolean - it cannot tell "-D" was
+    //  given once vs. twice, so the old !debugMsg/else logic here could never
+    //  reach the heavyDebugMsg branch (debugMsg starts false, so the if-branch
+    //  always ran, and this whole block only runs once regardless of repeats).
+    //  Count actual occurrences of "-D" in the argument list instead, so
+    //  "specify twice for lots of debug messages" (see option_D's help text
+    //  above) actually works.
+    int dCount = 0;
+    for(const QString& arg : QCoreApplication::arguments())
+      if(arg == QLatin1String("-D"))
+        ++dCount;
+
+    MusEGlobal::debugMsg = true;
+    if(dCount >= 2)
+      MusEGlobal::heavyDebugMsg = true;
   }
 
   if(parser.isSet(option_noPluginDupWarn))

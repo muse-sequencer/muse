@@ -526,6 +526,21 @@ public:
     int currentPartColorIndex() const;
 
     ArrangerView* getArrangerView() const { return arrangerView; }
+
+    // The TopWin (editor window) that currently has focus, or nullptr.
+    // Used e.g. by the shared Position toolbar to route returnPressed/
+    //  escapePressed to whichever editor is currently active.
+    TopWin* getActiveTopWin() const { return activeTopWin; }
+
+    // Returns MusE's own instance of a shared, single-instance-only toolbar
+    //  (Undo/Redo, Panic, Metronome, Timeline, Transport, Recording, Sync,
+    //  Position - looked up by objectName()), or nullptr if not found.
+    // Used by TopWin::TopWin() so that toolbar-sharing TopWin subclasses reuse
+    //  MusE's single existing instance instead of constructing a redundant
+    //  second one of the same toolbar. NOTE: Tempo/Signature toolbars are
+    //  intentionally NOT shared this way - they have per-TopWin signal wiring
+    //  (see TopWin::TopWin()) that requires a distinct instance per window.
+    QToolBar* sharedOptionalToolBar(const QString& objName) const;
 //    QRect configGeometryMain;
     QProgressDialog *progress;
     bool importMidi(const QString name, bool merge);
