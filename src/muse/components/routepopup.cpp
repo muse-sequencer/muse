@@ -373,8 +373,14 @@ void RoutePopupMenu::addMidiTracks(MusECore::Track* t, PopupMenu* pup, bool isOu
 //    (the discovered Alsa port name itself), returned as-is.
 //   isOutput selects which of the device's two Jack client ports (out/in) to
 //    read the pretty-name from, so an Output Routing menu shows the "Muse >>"
-//    alias and an Input Routing menu shows the "Muse <<" alias - previously
-//    this always checked outClientPort() first, so both menus showed "Muse >>".
+//    alias and an Input Routing menu shows the "Muse <<" alias.
+//   IMPORTANT: if the intended-direction port isn't open (e.g. rwFlags()
+//    reports the capability but _openFlags currently has that direction
+//    disabled - see MidiJackDevice::open()), do NOT fall back to the OTHER
+//    direction's port: its pretty-name carries the opposite "Muse >>"/"Muse
+//    <<" prefix, which would show e.g. an input-direction alias inside the
+//    Output Routing menu - actively misleading, not just imprecise. Fall back
+//    to the plain device name instead.
 //---------------------------------------------------------
 
 static QString midiDeviceMenuName(MusECore::MidiDevice* md, bool isOutput)
@@ -383,9 +389,7 @@ static QString midiDeviceMenuName(MusECore::MidiDevice* md, bool isOutput)
     return QString();
   if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
   {
-    void* jp = isOutput ? md->outClientPort() : md->inClientPort();
-    if(!jp)
-      jp = isOutput ? md->inClientPort() : md->outClientPort();
+    void* const jp = isOutput ? md->outClientPort() : md->inClientPort();
     if(jp)
     {
       const QString pretty = MusECore::jackPortPrettyName((jack_port_t*)jp);

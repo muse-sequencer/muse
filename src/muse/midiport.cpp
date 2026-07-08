@@ -1677,7 +1677,29 @@ void MidiPort::deleteController(int ch, unsigned int tick, int ctrl, int val, Pa
 
 //---------------------------------------------------------
 //   midiController
+//   NOTE on the createIfNotFound path below: defaultMidiController is
+//    constructed with ownsElements=false (see MidiControllerList's class
+//    comment in midi_controller.h) - it's meant to only ever hold pointers to
+//    permanent, static-duration MidiController objects, and deleting those
+//    would be undefined behavior (this previously caused a SIGSEGV during
+//    static destruction). But the "not found" fallback below allocates a
+//    genuinely new, heap-owned MidiController and adds it to that same
+//    non-owning list - so it was never freed (LSan: direct leak of the
+//    MidiController, indirect leak of its QString name member). Track it in
+//    a separate, dedicated, OWNING list instead, purely so it gets deleted at
+//    program exit - without touching defaultMidiController's ownership
+//    semantics, which the other (static-duration) entries still depend on.
 //---------------------------------------------------------
+
+namespace {
+// Owns (and deletes at program exit) every MidiController dynamically
+//  created by the createIfNotFound fallback in MidiPort::midiController()
+//  below - see the comment above. Keyed the same way defaultMidiController
+//  is; only ever appended to, never queried - deletion by defaultMidiController
+//  (del()/clr(), if ever called elsewhere) does not affect this list's
+//  ownership since it's a separate map holding separate copies of the pointer.
+MidiControllerList s_dynamicDefaultControllerOwner(true /*ownsElements*/);
+}
 
 MidiController* MidiPort::midiController(int num, int chan, bool createIfNotFound) const
       {
@@ -1730,6 +1752,16 @@ MidiController* MidiPort::midiController(int num, int chan, bool createIfNotFoun
             }
       mc = new MidiController(name, num, min, max, 0, 0);
       defaultMidiController.add(mc);
+      // Per MidiControllerList::add()'s documented contract: on failure
+      //  (num already present - shouldn't happen here, since we only reach
+      //  this point after defaultMidiController.findController(num) already
+      //  came back empty for the same num, above), mc would not be stored
+      //  and ownership would not be taken - checking rather than assuming,
+      //  since silently trusting that would reintroduce the exact leak this
+      //  list exists to prevent.
+      if(!s_dynamicDefaultControllerOwner.add(mc, false /*update*/))
+        fprintf(stderr, "MidiPort::midiController: failed to register new default "
+                        "controller %d for cleanup - it will leak\n", num);
       return mc;
       }
 

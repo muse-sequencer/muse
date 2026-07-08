@@ -17,3 +17,5 @@ leak:Fluida_ui.so
 
 leak:lilv_plugin_instantiate
 
+
+leak:MusECore::LV2PluginWrapper_Window::qt_static_metacall

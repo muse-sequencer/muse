@@ -22,6 +22,7 @@
 //=========================================================
 
 #include <QByteArray>
+#include <QMessageBox>
 #include <QRegularExpression>
 
 #include <stdio.h>
@@ -32,6 +33,7 @@
 
 #include "jackmidi.h"
 #include "jackaudio.h"
+#include "app.h"
 #include "song.h"
 #include "globals.h"
 #include "midi_consts.h"
@@ -102,7 +104,12 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
   int ni = 0;
   if(name.isEmpty())
   {
-    for( ; ni < 65536; ++ni)
+    // Index 0 ("jack-midi-0") is reserved for the permanent "Default" device
+    //  (see autoCreateMidiPorts() in conf.cpp and setMidiConnectionAlias() in
+    //  this file) - it must never be auto-assigned to a real per-port device
+    //  here, or the "Default" label can end up permanently unavailable if a
+    //  real external port happens to be enumerated before Default is created.
+    for(ni = 1; ni < 65536; ++ni)
     {
       name = QString("jack-midi-") + QString::number(ni);
       if(!MusEGlobal::midiDevices.find(name, JACK_MIDI))
@@ -111,7 +118,7 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
   }    
   if(ni >= 65536)
   {
-    fprintf(stderr, "MusE: createJackMidiDevice failed! Can't find an unused midi device name 'jack-midi-[0-65535]'.\n");
+    fprintf(stderr, "MusE: createJackMidiDevice failed! Can't find an unused midi device name 'jack-midi-[1-65535]'.\n");
     return 0;
   }
   
@@ -503,6 +510,21 @@ void JackAudioDevice::setMidiConnectionAlias(void* our_port_v, bool is_input, vo
 
   const jack_uuid_t our_uuid = jack_port_uuid(our_port);
 
+  // Option A: jack-midi-0 is the permanent "Default" port (see
+  //  autoCreateMidiPorts() in conf.cpp - it's intentionally never deleted,
+  //  and meant as a generic, always-present fallback rather than a dedicated
+  //  per-device port). Always label it "Default", regardless of what it's
+  //  actually connected to right now, instead of the usual
+  //  "Muse >> <remote friendly name>" pattern.
+  if(rawJackPortName(our_port).contains("jack-midi-0_"))
+  {
+    const QString label = is_input ? QString("Muse << Default") : QString("Muse >> Default");
+    if(jack_set_property(_client, our_uuid, JACK_METADATA_PRETTY_NAME, label.toUtf8().constData(), "text/plain") != 0)
+      fprintf(stderr, "setMidiConnectionAlias: jack_set_property (pretty-name, Default) failed for %s\n", label.toUtf8().constData());
+    refreshOurPortAlias(our_port, label);
+    return;
+  }
+
   jack_port_t* remote_port = (jack_port_t*)remote_port_v;
   if(!remote_port)
   {
@@ -567,6 +589,17 @@ void JackAudioDevice::setMidiConnectionAlias(void* our_port_v, bool is_input, co
 
   if(intended_target_name.isEmpty())
     return;
+
+  // Option A: same "Default" special-case as the live-port overload above -
+  //  jack-midi-0 always shows "Default", regardless of the intended target.
+  if(rawJackPortName(our_port).contains("jack-midi-0_"))
+  {
+    const QString label = is_input ? QString("Muse << Default") : QString("Muse >> Default");
+    if(jack_set_property(_client, jack_port_uuid(our_port), JACK_METADATA_PRETTY_NAME, label.toUtf8().constData(), "text/plain") != 0)
+      fprintf(stderr, "setMidiConnectionAlias(hint): jack_set_property (pretty-name, Default) failed for %s\n", label.toUtf8().constData());
+    refreshOurPortAlias(our_port, label);
+    return;
+  }
 
   // Don't label a hint that turns out to point at ourselves (shouldn't normally
   //  occur for a route loaded from file, but stay consistent with the live-port
@@ -744,6 +777,16 @@ QString MidiJackDevice::open()
       _out_client_jackport = nullptr;  
     }  
   }
+
+  // jack-midi-0 (Default, see conf.cpp's autoCreateMidiPorts()) must show
+  //  "Muse >> Default" even with zero routes/connections - the route-
+  //  processing loop above only calls setMidiConnectionAlias() when there's
+  //  an actual persisted route to handle, so a still-unconnected Default port
+  //  would otherwise never get labeled. Call it unconditionally here instead,
+  //  every time open() runs (not just the first time the port is created -
+  //  a later open() call with an already-existing port must still relabel it).
+  if(_out_client_jackport && name() == "jack-midi-0")
+    MusEGlobal::audioDevice->setMidiConnectionAlias(_out_client_jackport, false, (void*)nullptr);
   
   if(_openFlags & 2)
   {  
@@ -832,6 +875,10 @@ QString MidiJackDevice::open()
       _in_client_jackport = nullptr;  
     }  
   }
+
+  // See matching comment after the output-port if/else block above.
+  if(_in_client_jackport && name() == "jack-midi-0")
+    MusEGlobal::audioDevice->setMidiConnectionAlias(_in_client_jackport, true, (void*)nullptr);
     
   if(out_fail && in_fail)
     _state = QString("R+W Open fail");
@@ -2075,6 +2122,489 @@ float MidiJackDevice::selfLatencyMidi(int channel, bool capture) const
 bool initMidiJack()
 {
   return false;
+}
+
+//=========================================================
+//  reconcileMidiDevices() / autoCreateMidiPorts() and their shared
+//  ensureDefaultMidiDevice()/findMidiPortSlot()/assignFreeMidiPortSlot()
+//  helpers - moved here from conf.cpp: pure Jack-Midi-driver logic (jack-
+//  midi-N naming, MidiJackDevice::createJackMidiDevice(), Default-device
+//  alias handling), only ever triggered from conf.cpp/songfile.cpp. Same
+//  pattern as enumerateJackMidiDevices() (helper.cpp) forwarding to
+//  enumerateJackMidiDevicesImpl() (here).
+//=========================================================
+
+//---------------------------------------------------------
+//   reconcileMidiDevices
+//   Called once after a song file has been fully loaded - routes, tracks, and
+//    midi port device assignments are all resolved by then. The file's
+//    <mididevice> and <midiport> sections (readConfigMidiDevice(),
+//    readConfigMidiPort() above) unconditionally (re)create every named Jack
+//    Midi device they list, even ones left over from years of editing with no
+//    routes and no track pointing at them anymore. Prune those here: a Jack
+//    Midi device is kept only if it has at least one route, OR a track is
+//    actually using its MusEGlobal::midiPorts[] slot - otherwise it's
+//    genuinely orphaned.
+//   NOTE: checking MusEGlobal::midiPorts[p].device()==dev alone is NOT enough -
+//    the file's <midiport> section assigns a device to a slot independent of
+//    whether any track uses that slot, so a stale slot assignment would make
+//    an otherwise-orphaned device look "in use" forever. We additionally
+//    require a MidiTrack whose outPort() actually equals that slot index.
+//
+//   HOW THIS DIFFERS FROM autoCreateMidiPorts() BELOW (they look similar -
+//    both prune routeless MusE-owned Jack Midi devices - but are NOT
+//    interchangeable, and one must not be replaced by a call to the other):
+//
+//    1) Track-usage check. This function only deletes a device if it has
+//       NO routes AND no track is using its midiPorts[] slot - a device a
+//       track still points at is left alone even if currently unconnected
+//       (e.g. an external synth that's just powered off right now).
+//       autoCreateMidiPorts() Part 1 is more aggressive: it deletes ANY
+//       routeless device regardless of track usage, reassigning affected
+//       tracks to Default instead. That's an acceptable one-time cost for an
+//       explicit, user-invoked cleanup, but far too disruptive to happen
+//       silently on every single project load.
+//    2) Confirmation/undo. autoCreateMidiPorts() is explicitly documented as
+//       NOT undo-able, and shows a confirmation dialog unless the caller
+//       passes skipConfirmation=true. This function has no such gate - it's
+//       meant to be safe enough to run unconditionally on every load, which
+//       only holds BECAUSE of the more conservative check in point 1.
+//    3) Device creation. autoCreateMidiPorts() Part 2 also CREATES a new MusE
+//       device for every currently-unconnected external Jack Midi port it
+//       sees. Doing that on every project load would mean any controller
+//       that simply hasn't finished appearing in the Jack graph yet at load
+//       time (a real timing hazard - see enumerateJackMidiDevicesImpl() and
+//       the graph-settling discussion elsewhere in this file) gets a
+//       brand-new permanent MusE device created for it, every load - silent
+//       port proliferation the user never asked for. This function does not
+//       create anything for external ports at all.
+//
+//    In short: this function is the safe, silent, always-on janitor that
+//     only ever removes what's provably orphaned; autoCreateMidiPorts() is
+//     the explicit, opt-in, more disruptive one. The only piece genuinely
+//     shared between them - making sure the permanent Default device exists -
+//     is factored out into ensureDefaultMidiDevice() below, called by both.
+//---------------------------------------------------------
+
+// Forward declaration - defined further below, shared with autoCreateMidiPorts().
+static int ensureDefaultMidiDevice();
+
+void reconcileMidiDevices()
+{
+  PendingOperationList operations;
+
+  for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
+  {
+    MidiDevice* dev = *i;
+    if(dev->deviceType() != MidiDevice::JACK_MIDI)
+      continue;
+
+    // jack-midi-0 is the permanent "Default" port (see autoCreateMidiPorts()
+    //  Part 1, which has the same exception) - it is intentionally route-less
+    //  most of the time, that's the whole point of a generic fallback port.
+    //  Without this check, this function deletes it on every single project
+    //  load (it always has zero routes and usually no track-assigned slot),
+    //  before autoCreateMidiPorts() (which only runs for template loads, see
+    //  loadDefaultSong() in app.cpp) ever gets a chance to matter - so on a
+    //  normal "open existing project" load it just silently disappears.
+    if(dev->name() == "jack-midi-0")
+      continue;
+
+    if(!dev->inRoutes()->empty() || !dev->outRoutes()->empty())
+      continue;
+
+    bool assigned_to_port = false;
+    for(int p = 0; p < MusECore::MIDI_PORTS && !assigned_to_port; ++p)
+    {
+      if(MusEGlobal::midiPorts[p].device() != dev)
+        continue;
+
+      // The slot points at dev - but is any track actually using slot p?
+      for(const auto& t : *MusEGlobal::song->midis())
+      {
+        if(t->outPort() == p)
+        {
+          assigned_to_port = true;
+          break;
+        }
+      }
+    }
+    if(assigned_to_port)
+      continue;
+
+    // IMPORTANT: even though no track uses it, one or more MidiPort slots may
+    //  still hold a raw pointer to dev (assigned by the file's <midiport>
+    //  section independent of any track). If we delete dev below without
+    //  clearing those slots first, MidiPort::_device is left dangling and a
+    //  later call such as MidiPort::sendPendingInitializations() will
+    //  dereference freed memory (heap-buffer-overflow / use-after-free).
+    // Clear every port still referencing dev before queuing its deletion.
+    for(int p = 0; p < MusECore::MIDI_PORTS; ++p)
+    {
+      if(MusEGlobal::midiPorts[p].device() == dev)
+        MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[p], 0);
+    }
+
+    if(MusEGlobal::debugMsg)
+      fprintf(stderr, "reconcileMidiDevices: pruning unused device %s\n",
+              dev->name().toLocal8Bit().constData());
+
+    operations.add(PendingOperationItem(&MusEGlobal::midiDevices, i, PendingOperationItem::DeleteMidiDevice));
+  }
+
+  if(!operations.empty())
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+
+  // Unlike autoCreateMidiPorts() (which only runs for template loads, see
+  //  loadDefaultSong() in app.cpp), this function runs on every project load
+  //  (see songfile.cpp) - so it's the right place to guarantee the Default
+  //  device exists for a normal "open existing project" load too, not just
+  //  fresh/template ones.
+  ensureDefaultMidiDevice();
+}
+
+//---------------------------------------------------------
+//   findMidiPortSlot
+//   Returns the MusEGlobal::midiPorts[] index dev is currently bound to,
+//    or -1 if it isn't bound to any slot yet.
+//---------------------------------------------------------
+
+static int findMidiPortSlot(MidiDevice* dev)
+{
+  if(!dev)
+    return -1;
+  for(int p = 0; p < MusECore::MIDI_PORTS; ++p)
+  {
+    if(MusEGlobal::midiPorts[p].device() == dev)
+      return p;
+  }
+  return -1;
+}
+
+//---------------------------------------------------------
+//   assignFreeMidiPortSlot
+//   Binds dev into the first free MusEGlobal::midiPorts[] slot, so it
+//    actually shows up in the MIDI track routing menu - RoutePopupMenu::
+//    addMidiPorts() (routepopup.cpp) only lists devices already bound to a
+//    midiPorts[] slot, it never looks at MusEGlobal::midiDevices directly.
+//   Without this, autoCreateMidiPorts() creates JACK_MIDI devices that exist
+//    (visible in the raw Jack-port routing submenu and the "Unused Devices"
+//    picker) but stay invisible in the main track routing menu until the
+//    user manually assigns them there.
+//---------------------------------------------------------
+
+static bool assignFreeMidiPortSlot(MidiDevice* dev)
+{
+  if(!dev)
+  {
+    fprintf(stderr, "assignFreeMidiPortSlot: dev is null\n");
+    return false;
+  }
+
+  for(int p = 0; p < MusECore::MIDI_PORTS; ++p)
+  {
+    if(MusEGlobal::midiPorts[p].device() != nullptr)
+      continue;
+    MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[p], dev);
+    return true;
+  }
+
+  fprintf(stderr, "assignFreeMidiPortSlot: no free midi port slot for device %s\n",
+          dev->name().toLocal8Bit().constData());
+  return false;
+}
+
+//---------------------------------------------------------
+//   ensureDefaultMidiDevice
+//   Finds (or creates) the permanent "jack-midi-0" Default device, (re-)opens
+//    it so its ports exist and its "Muse >> Default"/"Muse << Default" alias
+//    gets (re-)applied (see MidiJackDevice::open() in jackmidi.cpp), and
+//    makes sure it's bound to a MusEGlobal::midiPorts[] slot so it shows up
+//    in the track routing menu. Returns the resulting slot index, or -1 if
+//    the device couldn't be created/bound.
+//   Shared by autoCreateMidiPorts() (Part 0, template loads) and
+//    reconcileMidiDevices() (every project load) - both need this, and
+//    reconcileMidiDevices() in particular is the only one of the two that
+//    unconditionally runs on every load (see songfile.cpp), so it can't just
+//    rely on autoCreateMidiPorts() having already done this.
+//   NOTE: The Default device's midiPorts[] slot index is NOT assumed to be 0 -
+//    a loaded template/project may already have something else bound to slot
+//    0 (e.g. a synth), so we look up (or assign) whatever slot it actually
+//    ends up in instead of hardcoding 0.
+//---------------------------------------------------------
+
+static int ensureDefaultMidiDevice()
+{
+  MidiDevice* defaultDev = MusEGlobal::midiDevices.find("jack-midi-0", MidiDevice::JACK_MIDI);
+  if(!defaultDev)
+    defaultDev = MidiJackDevice::createJackMidiDevice("jack-midi-0", 3 /*Writable + Readable*/);
+
+  if(!defaultDev)
+  {
+    fprintf(stderr, "ensureDefaultMidiDevice: failed to create the Default (jack-midi-0) device\n");
+    return -1;
+  }
+
+  // Force both directions open, regardless of what rwFlags/openFlags the
+  //  device object currently has. If jack-midi-0 already existed as an
+  //  object loaded from a project's <mididevice>/<midiport> XML,
+  //  readConfigMidiDevice()/readConfigMidiPort() (this file) default
+  //  openFlags to 1 (Writable only) whenever the file's entry doesn't
+  //  include an explicit <openFlags> tag, and call dev->setOpenFlags() with
+  //  that. open() only creates the input port when openFlags() has bit 2
+  //  set (and also ANDs openFlags with rwFlags internally, so a stale
+  //  rwFlags would silently undo forcing openFlags alone) - a stale/
+  //  incomplete XML entry could thus leave the Default device's INPUT port
+  //  never even registered with Jack - not just unaliased, genuinely absent
+  //  (confirmed missing from jack_lsp too), while the output port was fine.
+  //  The Default device is documented as always bidirectional, so don't
+  //  trust whatever flags a loaded XML entry happened to set - force both.
+  if(defaultDev->rwFlags() != 3)
+    defaultDev->setrwFlags(3);
+  if(defaultDev->openFlags() != 3)
+    defaultDev->setOpenFlags(3);
+
+  // Call open() unconditionally, even if the device already existed (e.g.
+  //  created earlier from the project/template XML by readConfigMidiDevice()/
+  //  readConfigMidiPort() in this file, which construct the MidiDevice but
+  //  don't open it) - open() is idempotent (it skips re-registering ports
+  //  that already exist), and the "Muse >> Default"/"Muse << Default" alias
+  //  is only ever (re-)applied as the last step inside it. Skipping this
+  //  call whenever the device already existed left it silently without an
+  //  alias if it had never been opened yet, or was opened too early (before
+  //  the Jack audio device was ready, in which case open() would have
+  //  returned before reaching the alias-setting code at all).
+  defaultDev->open();
+
+  int defaultPortSlot = findMidiPortSlot(defaultDev);
+  if(defaultPortSlot < 0)
+  {
+    if(assignFreeMidiPortSlot(defaultDev))
+      defaultPortSlot = findMidiPortSlot(defaultDev);
+    else
+      fprintf(stderr, "ensureDefaultMidiDevice: could not bind the Default device to any "
+                      "midiPorts[] slot - it will not appear in the track routing menu\n");
+  }
+  return defaultPortSlot;
+}
+
+//---------------------------------------------------------
+//   autoCreateMidiPorts
+//   "Midi" menu action ("Autocreate Midi Ports"). Two-part cleanup/sync:
+//    1) Delete every unused (no routes), MusE-owned jack-midi-N device,
+//       EXCEPT "jack-midi-0" (kept as the permanent "Default" port). Any
+//       track/port-slot still pointing at a deleted device is reassigned to
+//       jack-midi-0 first (rather than left dangling, or requiring the user
+//       to notice and fix it manually).
+//    2) For every external Jack Midi port (in either direction) not already
+//       connected to one of our own ports, create a new MusE jack-midi-N
+//       device so the user has something ready to connect it to.
+//   This is NOT undo-able (device/port creation and deletion isn't tracked on
+//    the undo stack), so callers should confirm with the user first - unless
+//    skipConfirmation is true, e.g. when called right after creating a brand
+//    new, still-empty project.
+//
+//   HOW THIS DIFFERS FROM reconcileMidiDevices() ABOVE (they look similar -
+//    both prune routeless MusE-owned Jack Midi devices - but are NOT
+//    interchangeable, and one must not be replaced by a call to the other):
+//
+//    1) Track-usage check. Part 1 here deletes ANY routeless device
+//       regardless of whether a track still points at its midiPorts[] slot -
+//       it reassigns the affected track to Default rather than leaving the
+//       device alone. reconcileMidiDevices() is more conservative: it only
+//       deletes a device that has NO routes AND no track using its slot,
+//       leaving alone anything a track still points at even if currently
+//       unconnected (e.g. an external synth that's just powered off).
+//    2) Confirmation/undo. This function is explicitly NOT undo-able and
+//       shows a confirmation dialog unless skipConfirmation is true - exactly
+//       because of point 1's more aggressive deletion. reconcileMidiDevices()
+//       has no such gate; it's meant to be safe enough to run silently on
+//       every project load, which only holds because it's more conservative.
+//    3) Device creation. Part 2 below also CREATES a new MusE device for
+//       every currently-unconnected external Jack Midi port it sees.
+//       reconcileMidiDevices() never creates anything for external ports -
+//       doing so on every project load would mean any controller that simply
+//       hasn't finished appearing in the Jack graph yet at load time (a real
+//       timing hazard - see enumerateJackMidiDevicesImpl()) gets a brand-new
+//       permanent MusE device created for it, every load.
+//
+//    In short: this function is the explicit, opt-in, more disruptive one
+//     (menu-triggered, or after creating a fresh project); reconcileMidiDevices()
+//     is the safe, silent, always-on janitor that runs on every project load.
+//     The only piece genuinely shared between them - making sure the
+//     permanent Default device exists - is factored out into
+//     ensureDefaultMidiDevice() above, called by both.
+//---------------------------------------------------------
+
+void autoCreateMidiPorts(bool skipConfirmation)
+{
+  if(!MusEGlobal::checkAudioDevice() || MusEGlobal::audioDevice->deviceType() != MusECore::AudioDevice::JACK_AUDIO)
+  {
+    if(MusEGlobal::debugMsg)
+      fprintf(stderr, "autoCreateMidiPorts: no running Jack audio device - nothing to do\n");
+    return;
+  }
+
+  if(!skipConfirmation)
+  {
+    const int ret = QMessageBox::warning(MusEGlobal::muse,
+      QObject::tr("Autocreate Midi Ports"),
+      QObject::tr("This will delete every unused MusE Jack Midi port (except Default),\n"
+                  "and create new MusE ports for any unconnected external Jack Midi ports.\n"
+                  "Tracks using a deleted port will be reassigned to Default.\n\n"
+                  "This action cannot be undone. Continue?"),
+      QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    if(ret != QMessageBox::Yes)
+      return;
+  }
+
+  // ---- Part 0: ensure the permanent "jack-midi-0" Default device exists, ----
+  // ----         and is bound to a MusEGlobal::midiPorts[] slot            ----
+  // Nothing else in this function (or at startup) is guaranteed to create it -
+  //  Part 1 below only ever *skips* deleting it by name, and Part 2 only
+  //  creates devices for external ports. Without this, a fresh project with
+  //  no unconnected external Jack Midi ports would never get a jack-midi-0
+  //  device at all, so it could never show up with its "Muse >> Default" /
+  //  "Muse << Default" alias.
+  const int defaultPortSlot = ensureDefaultMidiDevice();
+
+  // ---- Part 1: prune unused MusE-owned devices, reassigning affected tracks ----
+  PendingOperationList operations;
+  for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
+  {
+    MidiDevice* dev = *i;
+    if(dev->deviceType() != MidiDevice::JACK_MIDI)
+      continue;
+    if(dev->name() == "jack-midi-0")
+      continue; // Always kept - the permanent "Default" port.
+    if(!dev->inRoutes()->empty() || !dev->outRoutes()->empty())
+      continue; // Still connected - keep it.
+
+    // Reassign any track/port slot using this device to Default first,
+    //  same reasoning as reconcileMidiDevices() above but reassigning rather
+    //  than just clearing, since here the device may genuinely still be "in
+    //  use" by a track - it's just unconnected right now.
+    for(int p = 0; p < MusECore::MIDI_PORTS; ++p)
+    {
+      if(MusEGlobal::midiPorts[p].device() != dev)
+        continue;
+
+      if(defaultPortSlot < 0)
+      {
+        fprintf(stderr, "autoCreateMidiPorts: no Default port slot available - leaving "
+                        "tracks on port %d unassigned instead of reassigning\n", p);
+      }
+      else
+      {
+        for(const auto& t : *MusEGlobal::song->midis())
+        {
+          if(t->outPort() == p)
+          {
+            if(MusEGlobal::debugMsg)
+              fprintf(stderr, "autoCreateMidiPorts: reassigning track '%s' from port %d to Default (%d)\n",
+                      t->name().toLocal8Bit().constData(), p, defaultPortSlot);
+            t->setOutPortAndUpdate(defaultPortSlot);
+          }
+        }
+      }
+      MusEGlobal::audio->msgSetMidiDevice(&MusEGlobal::midiPorts[p], 0);
+    }
+
+    if(MusEGlobal::debugMsg)
+      fprintf(stderr, "autoCreateMidiPorts: deleting unused device %s\n",
+              dev->name().toLocal8Bit().constData());
+
+    operations.add(PendingOperationItem(&MusEGlobal::midiDevices, i, PendingOperationItem::DeleteMidiDevice));
+  }
+  if(!operations.empty())
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+
+  // ---- Part 2: create MusE ports for unconnected external Jack Midi ports ----
+  const QString own_client_name(MusEGlobal::audioDevice->clientName());
+
+  // Direction: external OUTPUT ports -> new MusE INPUT device (rwFlags 2/Readable).
+  for(const QString& portName : MusEGlobal::audioDevice->outputPorts(true /*midi*/))
+  {
+    if(portName.contains("MusE") || isOwnBridgedMidiPort(portName, own_client_name))
+      continue; // Not an external port.
+
+    bool alreadyConnected = false;
+    for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end() && !alreadyConnected; ++i)
+    {
+      MidiDevice* dev = *i;
+      if(dev->deviceType() != MidiDevice::JACK_MIDI || !(dev->rwFlags() & 2))
+        continue;
+      // jack-midi-0 (Default) is a generic shared fallback, not a dedicated
+      //  per-device port - a connection to it alone doesn't count as "this
+      //  external port already has its own MusE port".
+      if(dev->name() == "jack-midi-0")
+        continue;
+      void* our_port = dev->inClientPort();
+      if(our_port && MusEGlobal::audioDevice->portConnectedTo(our_port, portName.toUtf8().constData()))
+        alreadyConnected = true;
+    }
+    if(alreadyConnected)
+      continue;
+
+    MidiDevice* newDev = MidiJackDevice::createJackMidiDevice(QString(), 2 /*Readable*/);
+    if(!newDev)
+    {
+      fprintf(stderr, "autoCreateMidiPorts: failed to create a new device for input port %s\n",
+              portName.toLocal8Bit().constData());
+      continue;
+    }
+    newDev->open();
+    assignFreeMidiPortSlot(newDev);
+    void* our_port = newDev->inClientPort();
+    if(our_port)
+    {
+      MusEGlobal::audioDevice->connect(portName.toUtf8().constData(),
+        MusEGlobal::audioDevice->canonicalPortName(our_port));
+      void* remote_port = MusEGlobal::audioDevice->findPort(portName.toUtf8().constData());
+      MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, true, remote_port);
+    }
+  }
+
+  // Direction: external INPUT ports -> new MusE OUTPUT device (rwFlags 1/Writable).
+  for(const QString& portName : MusEGlobal::audioDevice->inputPorts(true /*midi*/))
+  {
+    if(portName.contains("MusE") || isOwnBridgedMidiPort(portName, own_client_name))
+      continue;
+
+    bool alreadyConnected = false;
+    for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end() && !alreadyConnected; ++i)
+    {
+      MidiDevice* dev = *i;
+      if(dev->deviceType() != MidiDevice::JACK_MIDI || !(dev->rwFlags() & 1))
+        continue;
+      // See matching comment in the output-ports loop above.
+      if(dev->name() == "jack-midi-0")
+        continue;
+      void* our_port = dev->outClientPort();
+      if(our_port && MusEGlobal::audioDevice->portConnectedTo(our_port, portName.toUtf8().constData()))
+        alreadyConnected = true;
+    }
+    if(alreadyConnected)
+      continue;
+
+    MidiDevice* newDev = MidiJackDevice::createJackMidiDevice(QString(), 1 /*Writable*/);
+    if(!newDev)
+    {
+      fprintf(stderr, "autoCreateMidiPorts: failed to create a new device for output port %s\n",
+              portName.toLocal8Bit().constData());
+      continue;
+    }
+    newDev->open();
+    assignFreeMidiPortSlot(newDev);
+    void* our_port = newDev->outClientPort();
+    if(our_port)
+    {
+      MusEGlobal::audioDevice->connect(MusEGlobal::audioDevice->canonicalPortName(our_port),
+        portName.toUtf8().constData());
+      void* remote_port = MusEGlobal::audioDevice->findPort(portName.toUtf8().constData());
+      MusEGlobal::audioDevice->setMidiConnectionAlias(our_port, false, remote_port);
+    }
+  }
 }
 
 } // namespace MusECore

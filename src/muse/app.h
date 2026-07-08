@@ -210,6 +210,7 @@ class MusE : public QMainWindow
 
     // Midi Menu Actions
     QAction *midiEditInstAction, *midiResetInstAction, *midiInitInstActions, *midiLocalOffAction;
+    QAction *midiAutoCreatePortsAction;
     QAction *midiTrpAction, *midiInputTrfAction, *midiInputFilterAction, *midiRemoteAction;
 #ifdef BUILD_EXPERIMENTAL
     QAction *midiRhythmAction;
@@ -413,6 +414,7 @@ private slots:
     void resetMidiDevices();
     void initMidiDevices();
     void localOff();
+    void midiAutoCreatePorts();
     void switchMixerAutomation();
     void takeAutomationSnapshot();
     void clearAutomation();

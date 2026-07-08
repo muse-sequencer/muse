@@ -232,5 +232,13 @@ extern unsigned convertFrame4ProjectSampleRate(unsigned frame, unsigned frame_sa
 extern QString defaultStyle;
 } // namespace MusEGlobal
 
+namespace MusECore {
+// autoCreateMidiPorts() declaration moved to driver/jackmidi.h (implementation
+//  now lives in jackmidi.cpp, moved from conf.cpp) - having it here too caused
+//  a "default argument given twice" compile error wherever both this header
+//  and jackmidi.h were included together. Files that call it now need
+//  #include "driver/jackmidi.h" instead of relying on globals.h for it.
+} // namespace MusECore
+
 #endif
 

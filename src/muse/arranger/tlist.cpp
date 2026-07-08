@@ -1376,6 +1376,11 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
         else if (mSubPresets != nullptr && ract != nullptr && ract->data().canConvert<void *>()) {
             static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
         }
+        // p->addMenu(mSubPresets) only borrows mSubPresets' menuAction() -
+        //  it does not reparent/take ownership of the QMenu itself, so it
+        //  must be deleted here or it leaks (ASan: indirect leak via
+        //  QMenu::QMenu() at this call site).
+        delete mSubPresets;
 #endif
         delete p;
         return;
@@ -1482,6 +1487,9 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
             static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
         }
     }
+    // See matching comment in the AUDIO_SOFTSYNTH branch above - p->addMenu()
+    //  does not take ownership of mSubPresets, so it must be deleted here.
+    delete mSubPresets;
 #endif
 
     delete p;

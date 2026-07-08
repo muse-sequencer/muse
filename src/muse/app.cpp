@@ -137,6 +137,7 @@
 #include "marker/markerview.h"
 #include "metronome.h"
 #include "conf.h"
+#include "driver/jackmidi.h" // autoCreateMidiPorts() - moved here, see jackmidi.cpp
 #include "midifilterimpl.h"
 #include "midiitransform.h"
 #include "miditransform.h"
@@ -836,6 +837,11 @@ MusE::MusE() : QMainWindow()
 #endif
       midiResetInstAction = new QAction(*MusEGui::midiResetSVGIcon, tr("Reset Instrument"), this);
       midiResetInstAction->setStatusTip(tr("Send 'note-off' command to all midi channels."));
+
+      midiAutoCreatePortsAction = new QAction(tr("Autocreate Midi Ports"), this);
+      midiAutoCreatePortsAction->setStatusTip(tr(
+        "Delete unused Jack Midi ports (except Default), and create new ones "
+        "for any unconnected external Jack Midi ports. Not undo-able."));
       midiInitInstActions = new QAction(*MusEGui::midiInitSVGIcon, tr("Init Instrument"), this);
       midiInitInstActions->setStatusTip(tr("Send initialization messages as found in instrument definition."));
       midiLocalOffAction = new QAction(*MusEGui::midiLocalOffSVGIcon, tr("Local Off"), this);
@@ -936,6 +942,7 @@ MusE::MusE() : QMainWindow()
       //-------- Midi connections
       connect(midiEditInstAction, SIGNAL(triggered()), SLOT(startEditInstrument()));
       connect(midiResetInstAction, SIGNAL(triggered()), SLOT(resetMidiDevices()));
+      connect(midiAutoCreatePortsAction, &QAction::triggered, [this]() { midiAutoCreatePorts(); });
       connect(midiInitInstActions, SIGNAL(triggered()), SLOT(initMidiDevices()));
       connect(midiLocalOffAction, SIGNAL(triggered()), SLOT(localOff()));
 
@@ -1200,6 +1207,9 @@ MusE::MusE() : QMainWindow()
       menu_functions->addAction(midiResetInstAction);
       menu_functions->addAction(midiInitInstActions);
       menu_functions->addAction(midiLocalOffAction);
+
+      menu_functions->addSeparator();
+      menu_functions->addAction(midiAutoCreatePortsAction);
 
       panicPopupMenu->addAction(midiResetInstAction);
       panicPopupMenu->addAction(midiInitInstActions);
@@ -1553,7 +1563,17 @@ void MusE::loadDefaultSong(const QString& filename_override, bool use_template, 
         }
         fprintf(stderr, "starting with pre configured song %s\n", name.toLocal8Bit().constData());
   }
-  loadProjectFile(name, useTemplate, loadConfig);
+  const bool isOk = loadProjectFile(name, useTemplate, loadConfig);
+  if(isOk && useTemplate)
+  {
+    // New, still-empty project loaded from a template (this is the actual
+    //  application-startup path - see main.cpp) - create/sync the Default
+    //  (jack-midi-0) device and any other missing Jack Midi ports here, same
+    //  as the "File > New" menu action does via finishLoadDefaultTemplate().
+    // Without this, the Default port simply never appears until the user
+    //  manually runs "Autocreate Midi Ports" from the Midi menu.
+    MusECore::autoCreateMidiPorts(true);
+  }
 }
 
 //---------------------------------------------------------
@@ -1563,6 +1583,15 @@ void MusE::loadDefaultSong(const QString& filename_override, bool use_template, 
 void MusE::resetMidiDevices()
       {
       MusEGlobal::audio->msgResetMidiDevices();
+      }
+
+//---------------------------------------------------------
+//   midiAutoCreatePorts
+//---------------------------------------------------------
+
+void MusE::midiAutoCreatePorts()
+      {
+      MusECore::autoCreateMidiPorts();
       }
 
 //---------------------------------------------------------
@@ -2682,7 +2711,14 @@ void MusE::loadDefaultTemplate()
     bool isOk = loadProjectFile(MusEGlobal::museGlobalShare + QString("/templates/default.med"), true, false);
 
     if (isOk)
+    {
       setUntitledProject();
+      // New, still-empty project - safe to skip the confirmation dialog here.
+      // (See the #else variant's finishLoadDefaultTemplate() - this build
+      //  path was missing the same call, so the "Default" (jack-midi-0)
+      //  device never got created here.)
+      MusECore::autoCreateMidiPorts(true);
+    }
 }
 
 #else
@@ -2723,6 +2759,8 @@ void MusE::finishLoadDefaultTemplate()
     DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishLoadDefaultTemplate\n");
 
     setUntitledProject();
+    // New, still-empty project - safe to skip the confirmation dialog here.
+    MusECore::autoCreateMidiPorts(true);
 }
 #endif
 

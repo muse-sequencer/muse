@@ -54,6 +54,7 @@
 #include "midictrl.h"
 #include "audiodev.h"
 #include "conf.h"
+#include "driver/jackmidi.h" // reconcileMidiDevices() - moved here from conf.h
 #include "keyevent.h"
 #include "gconfig.h"
 #include "config.h"

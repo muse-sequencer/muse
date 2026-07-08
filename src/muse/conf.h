@@ -63,7 +63,8 @@ extern bool readConfiguration();
 extern bool readConfiguration(const char *configFile);
 extern void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalConfig);
 extern void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames = true);
-extern void reconcileMidiDevices();
+// reconcileMidiDevices() moved to jackmidi.h - pure Jack-Midi-driver logic,
+//  see jackmidi.cpp for reasoning. Include jackmidi.h instead.
 }
 
 #endif

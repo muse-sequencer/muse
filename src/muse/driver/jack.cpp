@@ -1187,6 +1187,25 @@ void JackAudioDevice::processGraphChanges()
       // Support even if port == null.
       processJackCallbackEvents(Route(md, -1), port, md->inRoutes(), true);
     }  
+
+    // jack-midi-0 (Default) has zero routes, so the two processJackCallbackEvents()/
+    //  checkNewRouteConnections() calls above never find anything to call
+    //  setMidiConnectionAlias() on for it - that only happens for an actual new
+    //  connection. Its alias is otherwise set exactly once, immediately after
+    //  jack_port_register() inside MidiJackDevice::open() (jackmidi.cpp) - before
+    //  any connection or graph settling. Some backends don't reliably keep a
+    //  classic alias (jack_port_set_alias()) set that early. Re-apply it here too,
+    //  every graph-change pass, in parallel with how the other ports above get
+    //  (re-)aliased - cheap and idempotent either way.
+    if(md->name() == "jack-midi-0")
+    {
+      jack_port_t* out_port = (jack_port_t*)md->outClientPort();
+      if(out_port)
+        setMidiConnectionAlias(out_port, false, (void*)nullptr);
+      jack_port_t* in_port = (jack_port_t*)md->inClientPort();
+      if(in_port)
+        setMidiConnectionAlias(in_port, true, (void*)nullptr);
+    }
   }
 }
 

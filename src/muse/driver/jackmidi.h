@@ -110,6 +110,25 @@ extern bool initMidiJack();
 //  helper.cpp/helper.h is kept as a thin forwarder for existing callers (main.cpp, song.cpp).
 extern void enumerateJackMidiDevicesImpl();
 
+// Called once after a song file has been fully loaded (see songfile.cpp) -
+//  prunes genuinely orphaned MusE-owned Jack Midi devices (no routes, no
+//  track using their midiPorts[] slot) and ensures the permanent "Default"
+//  (jack-midi-0) device exists. Safe to run silently on every project load -
+//  see the function's own header comment in jackmidi.cpp for exactly how
+//  this differs from, and must not be replaced by, autoCreateMidiPorts()
+//  below.
+extern void reconcileMidiDevices();
+
+// "Midi" menu action ("Autocreate Midi Ports"). More aggressive/disruptive
+//  than reconcileMidiDevices() above - deletes every unused MusE Jack Midi
+//  device regardless of track usage, and creates new devices for currently-
+//  unconnected external Jack Midi ports. NOT undo-able - callers should
+//  confirm with the user first unless skipConfirmation is true (e.g. right
+//  after creating a brand new, still-empty project). See the function's own
+//  header comment in jackmidi.cpp for the full comparison with
+//  reconcileMidiDevices().
+extern void autoCreateMidiPorts(bool skipConfirmation = false);
+
 } // namespace MusECore
 
 #endif
