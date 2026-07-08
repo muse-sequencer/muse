@@ -2267,6 +2267,18 @@ void JackAudioDevice::unregisterPort(void* p)
       if(!checkJackClient(_client) || !p) 
         return;
 //      fprintf(stderr, "JACK: unregister Port\n");
+      // Explicitly remove the Metadata pretty-name we may have set on this
+      //  port (see setMidiConnectionAlias() in jackmidi.cpp) before
+      //  unregistering it - don't rely on the Jack server auto-purging
+      //  metadata when a port is destroyed. Real Jack1/Jack2 do this, but
+      //  PipeWire's Jack-compat layer has already proven unreliable for
+      //  related port bookkeeping elsewhere in this codebase (see the alias
+      //  persistence comments in jackmidi.cpp) - if metadata for a UUID
+      //  outlives the port it described, and Jack/PipeWire later reuses that
+      //  UUID for an unrelated new port, the new port would silently inherit
+      //  the old, wrong pretty-name. Removing it here ourselves, on every
+      //  port we ever unregister, means we never depend on that behavior.
+      jack_remove_property(_client, jack_port_uuid((jack_port_t*)p), JACK_METADATA_PRETTY_NAME);
       jack_port_unregister(_client, (jack_port_t*)p);
       }
 
