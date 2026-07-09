@@ -3608,6 +3608,11 @@ LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const Lil
 
     lilv_plugin_get_port_ranges_float(_handle, _pluginControlsMin, _pluginControlsMax, _pluginControlsDefault);
 
+    // One slot per real port index, filled in below. Owns its data, so
+    // LV2PluginWrapper::portName() can hand back a stable pointer without
+    // re-querying lilv (which would otherwise leak a fresh LilvNode per call).
+    _portNames.resize(numPorts);
+
     for(uint32_t j = 0; j < numPorts; j++)
     {
         const LilvPort *_port = lilv_plugin_get_port_by_index(_handle, j);
@@ -3627,6 +3632,10 @@ LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const Lil
 
         if(_nPsym != nullptr)
             _portSym = lilv_node_as_string(_nPsym);
+
+        // Cache now, while _portName is still valid (either the lilv string,
+        // still backed by _nPname below, or the auto-generated fallback).
+        _portNames[j] = QByteArray(_portName);
 
         const bool optional = lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_connectionOptional);
 
@@ -7496,7 +7505,22 @@ double LV2PluginWrapper::defaultValue(unsigned long port) const
 }
 const char *LV2PluginWrapper::portName(unsigned long i) const
 {
-    return lilv_node_as_string(lilv_port_get_name(_synth->_handle, lilv_plugin_get_port_by_index(_synth->_handle, i)));
+    if(!_synth)
+    {
+      fprintf(stderr, "LV2PluginWrapper::portName(): no synth - port %lu\n", i);
+      return "";
+    }
+    if(i >= (unsigned long)_synth->_portNames.size())
+    {
+      fprintf(stderr, "LV2PluginWrapper::portName(): port %lu out of range (%d ports)\n",
+        i, _synth->_portNames.size());
+      return "";
+    }
+    // Owned by _synth->_portNames (filled once at port-setup time), so this
+    // pointer stays valid for the plugin's lifetime. Previously this called
+    // lilv_port_get_name() directly and never freed the returned LilvNode -
+    // a leak on every single call (see lilv_node_duplicate leaks in LSAN reports).
+    return _synth->_portNames[i].constData();
 }
 
 const CtrlVal::CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const

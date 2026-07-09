@@ -1,21 +1,43 @@
 
+###  Wayland / Xwayland
 leak:QtWaylandClient
 leak:wl_proxy_marshal
 leak:wl_display_read_events
 
 
-# LSan/ASan suppressions — plugin-scan child process only
+###  LSan/ASan suppressions — plugin-scan child process only
 leak:loadPluginLib
 leak:queryClapPortCounts
+
+###  libinstpatch 
 leak:ipatch_init
+leak:ipatch_file_ref_from_object
+leak:ipatch_file_open
+leak:ipatch_item_set_parent
+leak:ipatch_sf2_get_info
+
+###  DBUS
 leak:dbus_bus_register
+
+
+###  NVIDIA / GLX
 leak:libnvidia-glcore.so
 leak:libnvidia-glsi.so
 
+###  external plugins 
 leak:Fluida_ui.so
-
-
 leak:lilv_plugin_instantiate
+# leak:MusECore::LV2PluginWrapper_Window::qt_static_metacall
 
 
-leak:MusECore::LV2PluginWrapper_Window::qt_static_metacall
+###  Qt process-lifetime static init — allocated once at startup, intentionally
+# never freed (platform theme/font cache), not something MusE controls.
+leak:QXcbIntegration::createPlatformTheme
+leak:QGuiApplicationPrivate::createPlatformIntegration
+leak:QFontDatabase::load
+
+####  UBSan's own RTTI vtable-check cache (__ubsan_handle_dynamic_type_cache_miss
+####  → __cxa_demangle). This is sanitizer instrumentation overhead,
+####  not MusE-allocated memory.
+leak:__ubsan_handle_dynamic_type_cache_miss
+

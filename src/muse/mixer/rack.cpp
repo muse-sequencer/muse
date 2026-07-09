@@ -402,7 +402,9 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             if(ptype == MusEPlugin::PluginTypeLV2)
             {
                //show presets submenu for lv2 plugins
-               mSubPresets = new PopupMenu(tr("Presets"));
+               // Parented to 'menu' so it's destroyed along with it below -
+               // QMenu::addMenu() does not take ownership of the submenu itself.
+               mSubPresets = new PopupMenu(tr("Presets"), menu);
                menu->addMenu(mSubPresets);
                MusECore::PluginI *plugI = pipe->at(idx);
                static_cast<MusECore::LV2PluginWrapper *>(plugI->plugin())->populatePresetsMenu(plugI, mSubPresets);
