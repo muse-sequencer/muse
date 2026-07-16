@@ -41,3 +41,11 @@ leak:QFontDatabase::load
 ####  not MusE-allocated memory.
 leak:__ubsan_handle_dynamic_type_cache_miss
 
+
+
+###  pango
+leak:pango_layout_get_pixel_size
+leak:libfontconfig.so
+leak:libpango-1.0.so
+leak:FcConfigSetDefaultSubstitute
+
