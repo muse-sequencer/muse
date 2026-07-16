@@ -1,3 +1,7 @@
+15.07.2026
+    * Upgraded: Pyro4 support removed and upgraded to full native Pyro5. (Tim)
+    - There was also a crash that has been fixed. We now get and release the GIL.
+    - Tested all *.py remote control examples OK.
 14.03.2026
     - Add 'New' button to note name list feature in Settings. (Tim)
 09.03.2026

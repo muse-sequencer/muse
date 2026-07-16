@@ -275,7 +275,7 @@ PyObject* getParts(PyObject*, PyObject* args)
                                     break;
                                     }
                               default:
-                                    printf("Event type not supported yet: %d\n", event.type());
+                                    fprintf(stderr, "Event type not supported yet: %d\n", event.type());
                                     break;
                               }
                         PyList_Append(pyevents, pyevent);
@@ -325,13 +325,13 @@ bool addPyPartEventsToMusePart(MidiPart* npart, PyObject* part)
       PyObject* events;
 
       if (PyDict_Check(part) == false) {
-            printf("Not a dict!\n");
+            fprintf(stderr, "Not a dict!\n");
             return false;
             }
       PyObject* pstrevents = Py_BuildValue("s","events");
       if (PyDict_Contains(part, pstrevents) == false) {
             Py_DECREF(pstrevents);
-            printf("No events in part data...\n");
+            fprintf(stderr, "No events in part data...\n");
             return false;
             }
       Py_DECREF(pstrevents);
@@ -339,7 +339,7 @@ bool addPyPartEventsToMusePart(MidiPart* npart, PyObject* part)
       events = PyDict_GetItemString(part, "events");
 
       if (PyList_Check(events) == false) {
-            printf("Events not a list!\n");
+            fprintf(stderr, "Events not a list!\n");
             return false;
             }
 
@@ -350,7 +350,7 @@ bool addPyPartEventsToMusePart(MidiPart* npart, PyObject* part)
       for (Py_ssize_t i=0; i<len; i++) {
             PyObject* pevent = PyList_GetItem(events, i);
             if (PyDict_Check(pevent) == false) {
-                  printf("Event is not a dictionary!\n");
+                  fprintf(stderr, "Event is not a dictionary!\n");
                   return false;
                   }
             PyObject* p_etick = PyDict_GetItemString(pevent, "tick");
@@ -389,7 +389,7 @@ bool addPyPartEventsToMusePart(MidiPart* npart, PyObject* part)
                     npart->addEvent(event);
                     }
               else
-                    printf("Unhandled event type from python: %s\n", type.c_str());
+                    fprintf(stderr, "Unhandled event type from python: %s\n", type.c_str());
             }
             }
 
@@ -451,7 +451,7 @@ PyObject* modifyPart(PyObject*, PyObject* part)
             }
 
       if (opart == nullptr) {
-            printf("Part doesn't exist!\n");
+            fprintf(stderr, "Part doesn't exist!\n");
             Py_RETURN_NONE;
             }
 
@@ -822,7 +822,7 @@ PyObject* getTrackEffects(PyObject*, PyObject* args)
       const Pipeline* pipeline = track->efxPipe();
       for (int i = 0; i < MusECore::PipelineDepth; i++) {
             QString name = pipeline->name(i);
-            printf("fx %d name: %s\n", i, name.toLocal8Bit().constData());
+            fprintf(stderr, "fx %d name: %s\n", i, name.toLocal8Bit().constData());
             PyObject* pyname = Py_BuildValue("s", name.toUtf8().constData());
             PyList_Append(pyfxnames, pyname);
             Py_DECREF(pyname);
@@ -1106,6 +1106,9 @@ bool PyroServerThread::initServer()
       _runServer = false;
       const char* mod_name = "muse";
 
+      // Initialize Python on the main thread, then release the GIL when done.
+      // The Pyro server runs in a separate QThread and acquires the GIL
+      //   with PyGILState_Ensure() before calling into Python.
       Py_Initialize();
 
 // For Python 3.5 and above:
@@ -1148,6 +1151,9 @@ bool PyroServerThread::initServer()
       g_pMainModule     = PyImport_AddModule( "__main__" );
       g_pMainDictionary = PyModule_GetDict( g_pMainModule );
 
+      // Release GIL so other threads can use Python.
+      PyEval_SaveThread();
+
       return true;
 }
 
@@ -1163,23 +1169,29 @@ void PyroServerThread::run()
       _runServer = true;
 
       string launcherfilename = string(SHAREDIR) + string("/pybridge/museplauncher.py");
-      printf("Initiating MusE Pybridge launcher from %s\n", launcherfilename.c_str());
+      fprintf(stderr, "Initiating MusE Pybridge launcher from %s\n", launcherfilename.c_str());
       FILE* fp = fopen(launcherfilename.c_str(),"r");
       if(!fp)
       {
-        printf("MusE Pybridge open launcher file failed\n");
+        fprintf(stderr, "MusE Pybridge open launcher file failed\n");
       }
       else
       {
+        fprintf(stderr, "About to acquire GIL\n");
+        PyGILState_STATE state = PyGILState_Ensure();
+        fprintf(stderr, "GIL acquired\n");
+
         PyObject* p_res = PyRun_File(fp, launcherfilename.c_str(), Py_file_input, g_pMainDictionary, g_pMainDictionary);
         if(p_res == nullptr)
         {
-            printf("MusE Pybridge initialization failed\n");
+            fprintf(stderr, "MusE Pybridge initialization failed\n");
             PyErr_Print();
         }
         fclose(fp);
 
-        printf("MusE Pybridge finished\n");
+        PyGILState_Release(state);
+
+        fprintf(stderr, "MusE Pybridge finished\n");
       }
 }
 
@@ -1341,7 +1353,7 @@ bool Song::event(QEvent* _e)
                   break;
                   }
             default:
-                  printf("Unknown pythonthread event received: %d\n", e->getType());
+                  fprintf(stderr, "Unknown pythonthread event received: %d\n", e->getType());
                   break;
             }
 

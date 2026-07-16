@@ -21,9 +21,9 @@
 //=========================================================
 """
 
-import Pyro4.core
+import Pyro5.api as pyro
 import time
-muse=Pyro4.core.Proxy('PYRONAME:muse')
+muse=pyro.Proxy('PYRONAME:muse')
 parts = muse.getParts("Track 1")
 
 ptick = parts[0]['tick']
