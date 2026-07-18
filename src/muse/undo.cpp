@@ -615,13 +615,41 @@ void UndoList::clearDelete()
 {
   if(!empty())
   {
+    // Guard against the same Track/Part pointer being deleted twice by this pass.
+    // Two separate DeleteTrack (or AddTrack) UndoOp entries can end up referencing the
+    //  same Track - e.g. two applyOperation()/applyOperationGroup() calls for the same
+    //  track before it was actually removed from the earlier one's undo bookkeeping.
+    // PendingOperationList::add() already guards the underlying RT-stage operation against
+    //  this ("Double DeleteTrack. Ignoring."), but that guard doesn't cover the parallel
+    //  Undo-list entries, and deleteUndoOp() has no visibility across entries to catch it -
+    //  it just blindly deletes op.track/op.part. Without this, the second entry for an
+    //  already-freed pointer double-deletes it (crash in the Track/Part destructor).
+    // Same idea for Part via DeletePart/AddPart.
+    std::set<const Track*> seenTracks;
+    std::set<const Part*> seenParts;
+
     if (this->isUndo)
     {
       for(iUndo iu = begin(); iu != end(); ++iu)
       {
         Undo& u = *iu;
         for(iUndoOp i = u.begin(); i != u.end(); ++i)
-          deleteUndoOp(*i, true, false);
+        {
+          UndoOp& op = *i;
+          // This branch calls deleteUndoOp(op, true, false) below, so only DeleteTrack/
+          //  DeletePart entries actually delete anything here (doUndos == true).
+          if(op.type == UndoOp::DeleteTrack && op.track && !seenTracks.insert(op.track).second)
+          {
+            fprintf(stderr, "UndoList::clearDelete: duplicate DeleteTrack track:%p in undo list, skipping\n", op.track);
+            op.track = nullptr;
+          }
+          else if(op.type == UndoOp::DeletePart && op.part && !seenParts.insert(op.part).second)
+          {
+            fprintf(stderr, "UndoList::clearDelete: duplicate DeletePart part:%p in undo list, skipping\n", op.part);
+            op.part = nullptr;
+          }
+          deleteUndoOp(op, true, false);
+        }
         u.clear();
       }
     }
@@ -631,7 +659,22 @@ void UndoList::clearDelete()
       {
         Undo& u = *iu;
         for(riUndoOp i = u.rbegin(); i != u.rend(); ++i)
-          deleteUndoOp(*i, false, true);
+        {
+          UndoOp& op = *i;
+          // This branch calls deleteUndoOp(op, false, true) below, so only AddTrack/
+          //  AddPart entries actually delete anything here (doRedos == true).
+          if(op.type == UndoOp::AddTrack && op.track && !seenTracks.insert(op.track).second)
+          {
+            fprintf(stderr, "UndoList::clearDelete: duplicate AddTrack track:%p in redo list, skipping\n", op.track);
+            op.track = nullptr;
+          }
+          else if(op.type == UndoOp::AddPart && op.part && !seenParts.insert(op.part).second)
+          {
+            fprintf(stderr, "UndoList::clearDelete: duplicate AddPart part:%p in redo list, skipping\n", op.part);
+            op.part = nullptr;
+          }
+          deleteUndoOp(op, false, true);
+        }
         u.clear();
       }
     }

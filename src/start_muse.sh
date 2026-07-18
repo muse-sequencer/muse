@@ -8,8 +8,8 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # echo "This bash script is located in: $SCRIPT_DIR"
 
 
-### test for virtual python environment , set QT paths
-### WARNING: venv could mix qt5 (linked in muse) with qt6 (from env) in same namespace, creating errors
+### (optional) use virtual python environment , set QT paths
+### WARNING: can conflict with qt5 (linked in muse) 
 # if [ -n "$VIRTUAL_ENV" ]; then
 #     PYVER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 #     echo "INFO: using py venv: ${PYVER} "

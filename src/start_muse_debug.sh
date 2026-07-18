@@ -13,17 +13,17 @@ SUPP_LSAN="${SCRIPT_DIR}/misc/lsan.supp"
 
 
 
-### test for virtual python environment , set QT paths
-if [ -n "$VIRTUAL_ENV" ]; then
-    PYVER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-    echo "INFO: Using python virtual_env : ${PYVER}"
-
-    export QT_PLUGIN_PATH="$VIRTUAL_ENV/lib/python$PYVER/site-packages/PyQt6/Qt6/plugins:/usr/lib/qt6/plugins"
-    export LD_LIBRARY_PATH="$VIRTUAL_ENV/lib/python$PYVER/site-packages/PyQt6/Qt6/lib"
-
-else
-    echo "INFO: Not using python virtual_env."
-fi
+### (optional) use virtual python environment , set QT paths; WARNING: can conflict with QT5 linked by muse
+# if [ -n "$VIRTUAL_ENV" ]; then
+#     PYVER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+#     echo "INFO: Using python virtual_env : ${PYVER}"
+# 
+#     export QT_PLUGIN_PATH="$VIRTUAL_ENV/lib/python$PYVER/site-packages/PyQt6/Qt6/plugins:/usr/lib/qt6/plugins"
+#     export LD_LIBRARY_PATH="$VIRTUAL_ENV/lib/python$PYVER/site-packages/PyQt6/Qt6/lib"
+# 
+# else
+#     echo "INFO: Not using python virtual_env."
+# fi
 
 
 
