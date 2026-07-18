@@ -4717,6 +4717,17 @@ void Song::clear(bool signal, bool clear_all)
       
       bounceTrack    = 0;
 
+      // Shared across undoList->clearDelete()/redoList->clearDelete() below (see
+      //  UndoClearDedup in undo.h): pre-seed with every currently-live track so a
+      //  track that's ALSO referenced by an undo/redo entry (e.g. a delete that was
+      //  undone, restoring the track here, while a stale AddTrack entry for the same
+      //  track is still sitting in redoList) only ever gets deleted once - by
+      //  _midis.clearDelete()/_waves.clearDelete()/etc. below, not a second time by
+      //  the undo/redo cleanup afterward.
+      UndoClearDedup undoRedoDedup;
+      for(ciTrack it = _tracks.begin(); it != _tracks.end(); ++it)
+        undoRedoDedup.tracks.insert(*it);
+
       // Clear any midi control assignments.
       _midiAssignments.clear();
       
@@ -4799,8 +4810,8 @@ void Song::clear(bool signal, bool clear_all)
       MusEGlobal::midiRemoteIsLearning = false;
       midiRemote()->initialize();
 
-      undoList->clearDelete();
-      redoList->clearDelete();
+      undoList->clearDelete(&undoRedoDedup);
+      redoList->clearDelete(&undoRedoDedup);
       if(MusEGlobal::undoAction)
         MusEGlobal::undoAction->setEnabled(false);
       if(MusEGlobal::redoAction)
@@ -4860,7 +4871,13 @@ void Song::cleanupForQuit()
 
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Song::cleanupForQuit...\n");
-      
+
+      // See the matching comment in Song::clear() - shared across
+      //  undoList->clearDelete()/redoList->clearDelete() below.
+      UndoClearDedup undoRedoDedup;
+      for(ciTrack it = _tracks.begin(); it != _tracks.end(); ++it)
+        undoRedoDedup.tracks.insert(*it);
+
       _tracks.clear();
       
       if(MusEGlobal::debugMsg)
@@ -4897,8 +4914,8 @@ void Song::cleanupForQuit()
       
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "deleting undoList and redoList\n");
-      undoList->clearDelete();
-      redoList->clearDelete();
+      undoList->clearDelete(&undoRedoDedup);
+      redoList->clearDelete(&undoRedoDedup);
       
       _markerList->clear();
       
