@@ -9,13 +9,14 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 
 ### test for virtual python environment , set QT paths
-if [ -n "$VIRTUAL_ENV" ]; then
-    PYVER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-    echo "INFO: using py venv: ${PYVER} "
-
-    export QT_PLUGIN_PATH="$VIRTUAL_ENV/lib/python$PYVER/site-packages/PyQt6/Qt6/plugins:/usr/lib/qt6/plugins"
-    export LD_LIBRARY_PATH="$VIRTUAL_ENV/lib/python$PYVER/site-packages/PyQt6/Qt6/lib"
-fi
+### WARNING: venv could mix qt5 (linked in muse) with qt6 (from env) in same namespace, creating errors
+# if [ -n "$VIRTUAL_ENV" ]; then
+#     PYVER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+#     echo "INFO: using py venv: ${PYVER} "
+# 
+#     export QT_PLUGIN_PATH="$VIRTUAL_ENV/lib/python$PYVER/site-packages/PyQt6/Qt6/plugins:/usr/lib/qt6/plugins"
+#     export LD_LIBRARY_PATH="$VIRTUAL_ENV/lib/python$PYVER/site-packages/PyQt6/Qt6/lib"
+# fi
 
 
 ### on wayland, use XCB/Xwayland (for better plugin-GUI support)
@@ -58,6 +59,7 @@ export LSAN_OPTIONS=suppressions="${SUPP_LSAN}"
 # -R  Force plugin cache re-creation. 
 # 
 #  -D for DEBUG !
+# 
 /usr/local/bin/muse4     -j -J  -Y 8   --no-plugin-duplicate-warnings #  > error.log 2>&1 
 #
 ########################################

@@ -4619,9 +4619,17 @@ bool MusE::clearSong(bool clear_all)
     DEBUG_LOADING_AND_CLEARING(stderr, "MusE::clearSong: clear_all:%d _busyWithLoading:%d\n",
       clear_all, _busyWithLoading);
 
-//     // Are we already busy waiting for something while loading or closing another project?
-//     if(_busyWithLoading)
-//       return false;
+    // Are we already busy waiting for something while loading or closing another project?
+    // NOTE: Without this guard, a second clearSong()/load call arriving before the first
+    //  one's deferred TopWin destructions finish will append a second ClearSong entry to
+    //  _loadingFinishStructList. Once destruction finally completes, executeLoadingFinish()
+    //  processes BOTH entries, calling finishClearSong() -> Song::clear() twice, and the
+    //  second call double-deletes Undo list Track pointers already freed by the first
+    //  (crash in deleteUndoOp(), undo.cpp).
+    if(_busyWithLoading)
+      return false;
+
+    _busyWithLoading = true;
 
     if (MusEGlobal::song->dirty) {
         int n = 0;
@@ -4632,11 +4640,15 @@ bool MusE::clearSong(bool clear_all)
         switch (n) {
         case 0:
             if (!save())      // abort if save failed
+            {
+                _busyWithLoading = false;
                 return false;
+            }
             break;
         case 1:
             break;
         case 2:
+            _busyWithLoading = false;
             return false;
         default:
             fprintf(stderr, "InternalError: gibt %d\n", n);
@@ -4792,6 +4804,8 @@ bool MusE::finishClearSong(bool clear_all)
     _arranger->songIsClearing();
     MusEGlobal::song->clear(true, clear_all);
     microSleep(100000);
+
+    _busyWithLoading = false;
     return true;
 
 }

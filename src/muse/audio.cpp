@@ -1495,6 +1495,12 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         if(!atrack->processed() && (atrack->type() != Track::AUDIO_OUTPUT))
         {
           channels = atrack->channels();
+          if(channels <= 0)
+          {
+            fprintf(stderr, "Audio::process(): no channels - dummy-buffer fallback, track:%s\n",
+                    atrack->name().toLocal8Bit().constData());
+            continue;
+          }
           // Just a dummy buffer.
           float* buffer[channels];
           float data[frames * channels];

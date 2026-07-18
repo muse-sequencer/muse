@@ -847,8 +847,14 @@ void AudioTrack::copyData(unsigned pos,
     nframes = MusEGlobal::segmentSize;
   }
 
-  float* buffer[srcTotalOutChans];
-  double meter[trackChans];
+  // Note: sized with a minimum of 1, not srcTotalOutChans/trackChans directly -
+  //  a bare zero-size VLA is undefined behavior (UBSan: "variable length array
+  //  bound evaluates to non-positive value 0"), even though it's never
+  //  dereferenced in that case. All loops below already correctly iterate
+  //  0 times when srcTotalOutChans/trackChans is 0, so this changes nothing
+  //  functionally - it just avoids declaring the degenerate array shape.
+  float* buffer[srcTotalOutChans > 0 ? srcTotalOutChans : 1];
+  double meter[trackChans > 0 ? trackChans : 1];
 
   #ifdef NODE_DEBUG_PROCESS
     fprintf(stderr, "MusE: AudioTrack::copyData "
