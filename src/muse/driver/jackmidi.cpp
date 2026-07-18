@@ -129,6 +129,20 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
 }
 
 //---------------------------------------------------------
+//   createAndOpenJackMidiDevice
+//   See the header comment (jackmidi.h) for when to use this instead of
+//    the raw createJackMidiDevice() + a manually-deferred open() call.
+//---------------------------------------------------------
+
+MidiDevice* MidiJackDevice::createAndOpenJackMidiDevice(QString name, int rwflags)
+{
+  MidiDevice* dev = createJackMidiDevice(name, rwflags);
+  if(dev)
+    dev->open();
+  return dev;
+}
+
+//---------------------------------------------------------
 //   enumerateJackMidiDevicesImpl
 //   Attempts to pair together Jack midi inputs and outputs into single MidiDevices,
 //    similar to how ALSA presents pairs of inputs and outputs.
@@ -755,6 +769,17 @@ QString MidiJackDevice::open()
         }
       }  
     }  
+    else
+    {
+      // Port already exists - open() was called again while already open (e.g. Jack
+      //  graph-change reconciliation, route refresh, or song-load reconciliation
+      //  re-invoking open()). The port is still valid and writable. Without this,
+      //  _writeEnable (unconditionally reset to false at the top of open(), above)
+      //  would stay false forever, since the "just created a new port" branch above
+      //  only runs when the port doesn't already exist - silently blocking putEvent()
+      //  for this device from here on even though its Jack port is completely fine.
+      _writeEnable = true;
+    }
   }
   else
   {
@@ -873,6 +898,11 @@ QString MidiJackDevice::open()
         }
       }
     }  
+    else
+    {
+      // See matching comment in the output port block above.
+      _readEnable = true;
+    }
   }
   else
   {
@@ -2357,6 +2387,8 @@ static bool assignFreeMidiPortSlot(MidiDevice* dev)
 static int ensureDefaultMidiDevice()
 {
   MidiDevice* defaultDev = MusEGlobal::midiDevices.find("jack-midi-0", MidiDevice::JACK_MIDI);
+  // Deliberately NOT createAndOpenJackMidiDevice() here: openFlags may still need
+  //  adjusting (below) before open() actually runs (see defaultDev->open() further down).
   if(!defaultDev)
     defaultDev = MidiJackDevice::createJackMidiDevice("jack-midi-0", 3 /*Writable + Readable*/);
 
@@ -2567,14 +2599,13 @@ void autoCreateMidiPorts(bool skipConfirmation)
     if(alreadyConnected)
       continue;
 
-    MidiDevice* newDev = MidiJackDevice::createJackMidiDevice(QString(), 2 /*Readable*/);
+    MidiDevice* newDev = MidiJackDevice::createAndOpenJackMidiDevice(QString(), 2 /*Readable*/);
     if(!newDev)
     {
       fprintf(stderr, "autoCreateMidiPorts: failed to create a new device for input port %s\n",
               portName.toLocal8Bit().constData());
       continue;
     }
-    newDev->open();
     assignFreeMidiPortSlot(newDev);
     void* our_port = newDev->inClientPort();
     if(our_port)
@@ -2608,14 +2639,13 @@ void autoCreateMidiPorts(bool skipConfirmation)
     if(alreadyConnected)
       continue;
 
-    MidiDevice* newDev = MidiJackDevice::createJackMidiDevice(QString(), 1 /*Writable*/);
+    MidiDevice* newDev = MidiJackDevice::createAndOpenJackMidiDevice(QString(), 1 /*Writable*/);
     if(!newDev)
     {
       fprintf(stderr, "autoCreateMidiPorts: failed to create a new device for output port %s\n",
               portName.toLocal8Bit().constData());
       continue;
     }
-    newDev->open();
     assignFreeMidiPortSlot(newDev);
     void* our_port = newDev->outClientPort();
     if(our_port)

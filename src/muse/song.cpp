@@ -7114,6 +7114,8 @@ void Song::removeTrackOperation(Track* track, PendingOperationList& ops)
       }
 
       ops.add(PendingOperationItem(&_tracks, track, PendingOperationItem::DeleteTrack, sec_track_list));
+      
+      fprintf(stderr, "removeTrackOperation: track:%p\n", track);
 
       // NOTE: Routes:
       // Routes are removed in the PendingOperationItem::DeleteTrack section of PendingOperationItem::executeRTStage().

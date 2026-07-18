@@ -444,6 +444,9 @@ void deleteUndoOp(UndoOp& op, bool doUndos = true, bool doRedos = true)
   switch(op.type)
   {
     case UndoOp::DeleteTrack:
+
+          fprintf(stderr, "deleteUndoOp: DeleteTrack op.track:%p doUndos:%d\n", op.track, doUndos);
+
           if(op.track && doUndos)
           {
             delete const_cast<Track*>(op.track);

@@ -80,6 +80,18 @@ class MidiJackDevice : public MidiDevice {
       virtual ~MidiJackDevice(); 
       
       static MidiDevice* createJackMidiDevice(QString name = "", int rwflags = 3); // 1:Writable 2: Readable 3: Writable + Readable
+
+      // Convenience wrapper: createJackMidiDevice() followed by open().
+      // createJackMidiDevice() alone only constructs and registers the device - it does
+      //  NOT register a real Jack port, so writeEnable()/readEnable() stay false until
+      //  open() is called. That gap has caused more than one silently-dead device (no
+      //  port ever created, so putEvent() quietly no-ops forever) because individual call
+      //  sites forgot the follow-up open() call. Use this for the common case.
+      // Only use the raw createJackMidiDevice() + a manually-deferred open() call if the
+      //  caller specifically needs routes to be added first, so open()'s own
+      //  auto-connect-to-route logic has something to connect to (see
+      //  enumerateJackMidiDevicesImpl() in jackmidi.cpp for that case).
+      static MidiDevice* createAndOpenJackMidiDevice(QString name = "", int rwflags = 3);
       virtual inline MidiDeviceType deviceType() const { return JACK_MIDI; } 
       virtual void setName(const QString&);
       

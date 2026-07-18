@@ -198,7 +198,7 @@ static void readConfigMidiDevice(Xml& xml)
                                 {
                                   if(MusEGlobal::debugMsg)
                                     fprintf(stderr, "readConfigMidiDevice: creating jack midi device %s with rwFlags:%d\n", device.toLocal8Bit().constData(), rwFlags);
-                                  dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
+                                  dev = MidiJackDevice::createAndOpenJackMidiDevice(device, rwFlags);
                                 }
 #ifdef ALSA_SUPPORT
                                 else
@@ -343,7 +343,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               {
                                 if(MusEGlobal::debugMsg)
                                   fprintf(stderr, "readConfigMidiPort: creating jack midi device %s with rwFlags:%d\n", device.toLocal8Bit().constData(), rwFlags);
-                                dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
+                                dev = MidiJackDevice::createAndOpenJackMidiDevice(device, rwFlags);
                               }
                               
                               // NOTE: an empty 'device' just means this port has no device
