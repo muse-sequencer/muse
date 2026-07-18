@@ -3952,7 +3952,15 @@ void Song::beat()
 
       // Keep the sync detectors running...
       for(int port = 0; port < MusECore::MIDI_PORTS; ++port)
-          MusEGlobal::midiPorts[port].syncInfo().setTime();
+      {
+        // Skip unassigned port slots. setTime() does a gettimeofday()-class syscall
+        //  (see its own comment in sync.cpp) and MIDI_PORTS is a fixed pool of slots,
+        //  most of which are typically unused in any given session. A port with no
+        //  device attached has no sync detector actually "running" to keep alive.
+        if(!MusEGlobal::midiPorts[port].device())
+          continue;
+        MusEGlobal::midiPorts[port].syncInfo().setTime();
+      }
 
       if (MusEGlobal::audio->isPlaying())
         setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true);
@@ -7114,8 +7122,6 @@ void Song::removeTrackOperation(Track* track, PendingOperationList& ops)
       }
 
       ops.add(PendingOperationItem(&_tracks, track, PendingOperationItem::DeleteTrack, sec_track_list));
-      
-      fprintf(stderr, "removeTrackOperation: track:%p\n", track);
 
       // NOTE: Routes:
       // Routes are removed in the PendingOperationItem::DeleteTrack section of PendingOperationItem::executeRTStage().
