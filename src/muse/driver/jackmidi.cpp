@@ -143,6 +143,13 @@ void enumerateJackMidiDevicesImpl()
     return;
 
   PendingOperationList operations;
+  // Devices created below (createJackMidiDevice() only constructs + registers
+  //  them, it does NOT open()/register a real Jack port - see MidiJackDevice::open()).
+  //  Track them here and open() each one once, after the route-add operations
+  //  below have actually been executed, so open()'s auto-connect-to-route logic
+  //  has real routes to look at. Without this, these devices are permanently
+  //  stuck with writeEnable()/readEnable() == false and silently drop every event.
+  std::list<MidiDevice*> newDevices;
 
   // If Jack is running.
   if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO)
@@ -245,6 +252,7 @@ void enumerateJackMidiDevicesImpl()
                     operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
                   if(!dev->outRoutes()->contains(dstRoute))
                     operations.add(MusECore::PendingOperationItem(dev->outRoutes(), dstRoute, MusECore::PendingOperationItem::AddRouteNode));
+                  newDevices.push_back(dev);
                 }
 
                 rsl.erase(ri);  // Done with this read port. Remove.
@@ -265,6 +273,7 @@ void enumerateJackMidiDevicesImpl()
           const Route dstRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, w_good_name); // Persistent route.
           if(!dev->outRoutes()->contains(dstRoute))
             operations.add(MusECore::PendingOperationItem(dev->outRoutes(), dstRoute, MusECore::PendingOperationItem::AddRouteNode));
+          newDevices.push_back(dev);
         }
       }
     }
@@ -286,12 +295,24 @@ void enumerateJackMidiDevicesImpl()
           if(!dev->inRoutes()->contains(srcRoute))
             operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
         }
+        newDevices.push_back(dev);
       }
     }
   }
 
   if(!operations.empty())
     MusEGlobal::audio->msgExecutePendingOperations(operations); // Don't update here.
+
+  // NOTE: createJackMidiDevice() only constructs and registers the device -
+  //  it does not register a real Jack port. Without this open() call these
+  //  devices are stuck with writeEnable()/readEnable() == false forever, so
+  //  midiDeviceWritable() (midi.cpp) always rejects them and Audio::collectEvents()/
+  //  Audio::processMidi() never call putEvent() on them: events are silently
+  //  dropped before they even reach the FIFO. Open now that outRoutes/inRoutes
+  //  (added above via pending operations) are in place, so open()'s own
+  //  auto-connect-to-route logic has something to connect to.
+  for(MidiDevice* nd : newDevices)
+    nd->open();
 }
 
 
