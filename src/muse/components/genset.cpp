@@ -455,6 +455,12 @@ void GlobalSettingsConfig::updateSettings()
                   break;
                   }
             }
+      for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
+            if (divisions[i] == MusEGlobal::config.defaultDivision) {
+                  midiDivisionSelectDefault->setCurrentIndex(i);
+                  break;
+                  }
+            }
       for (unsigned i = 0; i < sizeof(selectableAudioBufSizes)/sizeof(*selectableAudioBufSizes); ++i) {
             if (selectableAudioBufSizes[i] == MusEGlobal::config.deviceAudioBufSize) {
                   deviceAudioSize->setCurrentIndex(i);
@@ -646,6 +652,10 @@ void GlobalSettingsConfig::apply()
 
       int div            = midiDivisionSelect->currentIndex();
       const int new_div  = divisions[div];
+
+      const int def_div_idx = midiDivisionSelectDefault->currentIndex();
+      if(def_div_idx >= 0 && def_div_idx < (int)(sizeof(divisions)/sizeof(*divisions)))
+        MusEGlobal::config.defaultDivision = divisions[def_div_idx];
       
       MusEGlobal::config.autoSave = autoSaveCheckBox->isChecked();
       MusEGlobal::config.scrollableSubMenus = scrollableSubmenusCheckbox->isChecked();

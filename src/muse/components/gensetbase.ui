@@ -73,7 +73,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="TabPage">
       <attribute name="title">
@@ -1294,17 +1294,70 @@ Adjusts responsiveness of audio controls and
              <property name="title">
               <string>Ticks</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout_2">
-              <property name="topMargin">
-               <number>2</number>
-              </property>
-              <property name="bottomMargin">
-               <number>6</number>
-              </property>
-              <property name="verticalSpacing">
-               <number>6</number>
-              </property>
-              <item row="2" column="1" rowspan="2">
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="2" column="0" rowspan="2">
+               <widget class="QLabel" name="midiResLabel">
+                <property name="text">
+                 <string>Midi Resolution Active
+(Ticks/Quarternote)</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="TextLabel3">
+                <property name="text">
+                 <string>RTC Resolution
+(Ticks/Sec)</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2" colspan="2">
+               <widget class="QComboBox" name="rtcResolutionSelect">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>1024</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>2048</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>4096</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>8192</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>16384</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>32768</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="2" column="2" rowspan="2" colspan="2">
                <widget class="QComboBox" name="midiDivisionSelect">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1402,71 +1455,118 @@ Adjusts responsiveness of audio controls and
                 </item>
                </widget>
               </item>
-              <item row="0" column="0">
+              <item row="0" column="0" colspan="2">
                <widget class="QCheckBox" name="warnIfBadTimingCheckBox">
                 <property name="text">
                  <string>Warn if timer frequency is inadequate</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="0" rowspan="2">
-               <widget class="QLabel" name="TextLabel3">
+              <item row="4" column="0">
+               <widget class="QLabel" name="midiResLabelDefault">
                 <property name="text">
-                 <string>RTC Resolution
-(Ticks/Sec)</string>
+                 <string>Midi Resolution Default
+(for new song)</string>
                 </property>
                 <property name="wordWrap">
                  <bool>false</bool>
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="midiResLabel">
-                <property name="text">
-                 <string>Midi Resolution
-(Ticks/Quarternote)</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="rtcResolutionSelect">
+              <item row="4" column="2">
+               <widget class="QComboBox" name="midiDivisionSelectDefault">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="currentIndex">
+                 <number>5</number>
+                </property>
                 <item>
                  <property name="text">
-                  <string>1024</string>
+                  <string>48</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>2048</string>
+                  <string>96</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>4096</string>
+                  <string>120</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>8192</string>
+                  <string>192</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>16384</string>
+                  <string>240</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>32768</string>
+                  <string>384</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>480</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>768</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>960</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>1536</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>1920</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>3072</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>3840</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>6144</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>7680</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>12288</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>15360</string>
                  </property>
                 </item>
                </widget>
@@ -2246,7 +2346,7 @@ Second names: Flats (Db, Eb, Gb etc.), or the flat scale (C, Db, D, Eb, E etc.),
                  <x>0</x>
                  <y>0</y>
                  <width>559</width>
-                 <height>437</height>
+                 <height>442</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_26">

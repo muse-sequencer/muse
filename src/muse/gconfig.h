@@ -303,6 +303,14 @@ struct GlobalConfigValues {
 
       bool enableAlsaMidiDriver; // Whether to enable the ALSA midi driver
       int division;
+      // The division (PPQN) a brand new/blank project should start with. Distinct from
+      //  'division' above, which is the CURRENTLY LOADED song's actual resolution and is
+      //  legitimately overwritten per-file (see songfile.cpp's midiDivision tag reader,
+      //  and the undoable division-change operations in undo.cpp). Without this separate
+      //  field, opening a file with a different PPQN silently changed what every
+      //  subsequently created new project starts with too - including across app
+      //  restarts, since 'division' gets persisted to the config file on save.
+      int defaultDivision;
       int rtcTicks;
       int curMidiSyncInPort;     // The currently selected midi sync input port.
       bool midiSendInit;         // Send instrument initialization sequences

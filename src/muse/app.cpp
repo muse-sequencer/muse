@@ -2597,6 +2597,14 @@ void MusE::finishFileClose(bool restartSequencer)
 void MusE::setUntitledProject()
       {
       setConfigDefaults();
+      // A brand new/blank project must start at the user's configured default PPQN,
+      //  not whatever the previously loaded song's division happened to be.
+      //  setConfigDefaults() is also called mid-load (loadProjectFile1()/
+      //  finishLoadProjectFile1()) where the loaded file's own division must be
+      //  left alone, so this reset lives here instead - setUntitledProject() is
+      //  used exclusively for "start a blank project" (including the load-error
+      //  fallback), never for loading an actual file's content.
+      MusEGlobal::config.division = MusEGlobal::config.defaultDivision;
       QString name(MusEGui::getUniqueUntitledName());
       MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
       QDir::setCurrent(QDir::homePath());

@@ -261,6 +261,7 @@ GlobalConfigValues config = {
       
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;
+      384,                          // defaultDivision - PPQN for brand new/blank projects
       1024,                         // rtcTicks
       0,                            // curMidiSyncInPort The currently selected midi sync input port.
       true,                         // midiSendInit Send instrument initialization sequences

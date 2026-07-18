@@ -1319,6 +1319,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               // Make sure the AL namespace variable mirrors our variable.
                               AL::division = MusEGlobal::config.division;
                         }
+                        else if (tag == "defaultDivision")
+                              MusEGlobal::config.defaultDivision = xml.parseInt();
                         else if (tag == "guiDivision")  // Obsolete. Was never used.
                               xml.parseInt();
                         else if (tag == "rtcTicks")
@@ -2062,6 +2064,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
                         
       xml.intTag(level, "enableAlsaMidiDriver", MusEGlobal::config.enableAlsaMidiDriver);
       xml.intTag(level, "division", MusEGlobal::config.division);
+      xml.intTag(level, "defaultDivision", MusEGlobal::config.defaultDivision);
       xml.intTag(level, "rtcTicks", MusEGlobal::config.rtcTicks);
       xml.intTag(level, "curMidiSyncInPort", MusEGlobal::config.curMidiSyncInPort);
       xml.intTag(level, "midiSendInit", MusEGlobal::config.midiSendInit);
