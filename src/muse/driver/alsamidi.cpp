@@ -959,7 +959,13 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
     }
   }
   
-  MidiPlayEvent buf_ev;
+  // NOTE: buf_ev is intentionally NOT declared here unconditionally. This function runs
+  //  at the sequencer timer rate (2048x/sec by default) for every ALSA device, almost
+  //  always with nothing pending in any buffer. A MidiPlayEvent carries a virtual
+  //  destructor (see mpevent.h), so an unconditional local here means constructing and
+  //  destructing one on every single call regardless of whether it's ever used. Each
+  //  buf_ev below is scoped to only exist when its buffer's size check (already computed
+  //  either way, a cheap atomic load) says there's actually something to read.
 
   // If stopping or not 'running' just purge ALL playback FIFO and container events.
   // But do not clear the user ones. We need to hold on to them until active,
@@ -969,13 +975,17 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
     // Transfer the user lock-free buffer events to the user sorted multi-set.
     // To avoid too many events building up in the buffer while inactive, use the exclusive add.
     const unsigned int usr_buf_sz = eventBuffers(MidiDevice::UserBuffer)->getSize();
-    for(unsigned int i = 0; i < usr_buf_sz; ++i)
+    if(usr_buf_sz > 0)
     {
-      if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+      MidiPlayEvent buf_ev;
+      for(unsigned int i = 0; i < usr_buf_sz; ++i)
       {
-        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
-        if(!rpnReserved || !buf_ev.isNativeRPN())
-          _outUserEvents.addExclusive(buf_ev, rpnReserved);
+        if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+        {
+          // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+          if(!rpnReserved || !buf_ev.isNativeRPN())
+            _outUserEvents.addExclusive(buf_ev, rpnReserved);
+        }
       }
     }
 
@@ -988,25 +998,33 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
   {
     // Transfer the user lock-free buffer events to the user sorted multi-set.
     const unsigned int usr_buf_sz = eventBuffers(MidiDevice::UserBuffer)->getSize();
-    for(unsigned int i = 0; i < usr_buf_sz; ++i)
+    if(usr_buf_sz > 0)
     {
-      if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+      MidiPlayEvent buf_ev;
+      for(unsigned int i = 0; i < usr_buf_sz; ++i)
       {
-        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
-        if(!rpnReserved || !buf_ev.isNativeRPN())
-          _outUserEvents.insert(buf_ev);
+        if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+        {
+          // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+          if(!rpnReserved || !buf_ev.isNativeRPN())
+            _outUserEvents.insert(buf_ev);
+        }
       }
     }
 
     // Transfer the playback lock-free buffer events to the playback sorted multi-set.
     const unsigned int pb_buf_sz = eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
-    for(unsigned int i = 0; i < pb_buf_sz; ++i)
+    if(pb_buf_sz > 0)
     {
-      if(eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+      MidiPlayEvent buf_ev;
+      for(unsigned int i = 0; i < pb_buf_sz; ++i)
       {
-        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
-        if(!rpnReserved || !buf_ev.isNativeRPN())
-          _outPlaybackEvents.insert(buf_ev);
+        if(eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+        {
+          // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+          if(!rpnReserved || !buf_ev.isNativeRPN())
+            _outPlaybackEvents.insert(buf_ev);
+        }
       }
     }
   }
