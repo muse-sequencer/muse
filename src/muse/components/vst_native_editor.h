@@ -94,6 +94,15 @@ public:
     bool fixScaling() { return m_fixScaling; }
     void updateWindowTitle(const QString&);
 
+    // Detaches this editor from its owning SynthIF/PluginWrapper_State without
+    // calling back into it. Must be called by the owner just before the owner
+    // itself is destroyed (e.g. in deactivate3()/cleanup()), because close()
+    // only *schedules* deletion of this editor (Qt::WA_DeleteOnClose uses
+    // deleteLater()). Without this, our destructor would later call
+    // _sif->editorDeleted() / _pstate->editorDeleted() on already-freed memory.
+    // Fixes heap-use-after-free, see CRASH_10.md.
+    void detachOwner() { _sif = nullptr; _pstate = nullptr; }
+
 #if defined(Q_WS_X11)
     // Local X11 event filter.
     bool x11EventFilter(XEvent *pEvent);

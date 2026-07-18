@@ -1784,6 +1784,11 @@ void VstNativeSynthIF::deactivate3()
       {
         // Don't delete the editor directly here. Call close.
         _editor->close();
+        // close() only schedules the editor's deletion (Qt::WA_DeleteOnClose
+        // uses deleteLater()). This SynthIF may be destroyed before that
+        // deferred deletion runs, so detach now to prevent the editor's
+        // destructor from later calling back into freed memory.
+        _editor->detachOwner();
         _editor = nullptr;
         _guiVisible = false;
       }
@@ -3664,6 +3669,10 @@ void VstNativePluginWrapper::cleanup(LADSPA_Handle handle)
    if(state->editor)
    {
      state->editor->close();
+     // See VstNativeSynthIF::deactivate3(): close() only schedules deletion
+     // (deleteLater()), and 'state' is deleted below, so detach now to avoid
+     // a later use-after-free in the editor's destructor.
+     state->editor->detachOwner();
      state->editor = nullptr;
      state->guiVisible = false;
    }
