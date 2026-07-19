@@ -599,6 +599,12 @@ void PartCanvas::updateItems()
       if (curItem) sn=static_cast<NPart*>(curItem)->serial();
       curItem=nullptr;
 
+      // See EventCanvas::updateItems() for why this must happen before
+      // items.clearDelete() - 'moving' can otherwise be left holding
+      // pointers into the just-freed items, causing a use-after-free the
+      // next time this canvas paints.
+      cancelMouseOps();
+
       items.clearDelete();
       for (MusECore::ciTrack t = tracks->begin(); t != tracks->end(); ++t) {
          if ((*t)->isVisible()) //ignore parts from hidden tracks
