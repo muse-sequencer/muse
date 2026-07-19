@@ -57,6 +57,7 @@
 #include "song.h"
 
 #include "vst_native.h"
+#include "rtlog.h"
 #include "pluglist.h"
 
 #define OLD_PLUGIN_ENTRY_POINT "main"
@@ -2650,7 +2651,10 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
   fprintf(stderr, "VstNativeSynthIF::getData: Handling inputs...\n");
   #endif
   
-  bool used_in_chan_array[in_ports]; // Don't bother initializing if not 'running'. 
+  bool used_in_chan_array[in_ports ? in_ports : 1]; // Don't bother initializing if not 'running'.
+  // Note: array is clamped to size >=1 above only to avoid a zero-length VLA
+  // (UB, flagged by UBSan) when in_ports is 0 - all loops below still use
+  // the real in_ports count, so nothing extra is ever accessed.
   
   // Gather input data from connected input routes.
   // Don't bother if not 'running'.
@@ -3051,8 +3055,8 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       // Protection. Observed this condition. Why? Supposed to be linear timestamps.
       if(found && evframe < frame)
       {
-        fprintf(stderr, 
-          "VstNativeSynthIF::getData *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%u nframes:%u v.frame:%lu\n",
+        MusECore::rtLog(
+          "VstNativeSynthIF::getData *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%u nframes:%u v.frame:%lu",
           evframe, frame, v.idx, v.value, v.unique, syncFrame, nframes, v.frame);
 
         // No choice but to ignore it.
@@ -3175,8 +3179,11 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
             ++nevents;
           }
 
-          VstMidiEvent events[nevents];
-          char evbuf[sizeof(VstMidiEvent*) * nevents + sizeof(VstEvents)];
+          // Clamped to size >=1 to avoid a zero-length VLA (UB, flagged by
+          // UBSan) when nevents is 0 - the while loop below only ever writes
+          // events[0..event_counter), and event_counter <= nevents.
+          VstMidiEvent events[nevents ? nevents : 1];
+          char evbuf[sizeof(VstMidiEvent*) * (nevents ? nevents : 1) + sizeof(VstEvents)];
           VstEvents *vst_events = (VstEvents*)evbuf;
           vst_events->numEvents = 0;
           vst_events->reserved  = 0;
@@ -3253,8 +3260,11 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       // Don't bother if not 'running'.
       if(_curActiveState)
       {
-        float* in_bufs[in_ports];
-        float* out_bufs[out_ports];
+        // Clamped to size >=1 to avoid a zero-length VLA (UB, flagged by
+        // UBSan) when in_ports/out_ports is 0 - loops below still use the
+        // real in_ports/out_ports counts.
+        float* in_bufs[in_ports ? in_ports : 1];
+        float* out_bufs[out_ports ? out_ports : 1];
         for(unsigned long k = 0; k < out_ports; ++k)
         {
           if(!connectToDummyAudioPorts && k < nop)

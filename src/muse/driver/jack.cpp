@@ -42,6 +42,7 @@
 
 #include "strntcpy.h"
 #include "audio.h"
+#include "rtlog.h"
 #include "globals.h"
 #include "song.h"
 #include "jackaudio.h"
@@ -319,7 +320,7 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
       }
       else {
             if (MusEGlobal::debugMsg)
-                 puts("jack calling when audio is disconnected!\n");
+                 MusECore::rtLog("jack calling when audio is disconnected!");
             }
 
   // Reset for next cycle.

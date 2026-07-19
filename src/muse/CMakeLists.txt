@@ -162,6 +162,7 @@ file (GLOB core_source_files
       steprec.cpp
       value_units.cpp
       xml_statistics.cpp
+      rtlog.cpp
       )
 file (GLOB main_source_files
       main.cpp

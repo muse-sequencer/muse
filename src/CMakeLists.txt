@@ -809,10 +809,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ff
 # Release with debug is usually -O2.
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
 
+
+# DEBUG FLAGS - usually have no -O setting. Let's give it a default one.
 # set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC" CACHE STRING "Debug CXX flags" FORCE)
-# set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
-# Debug usually has no -O setting. Let's give it a default one.
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DQT_DEBUG -Werror")
+#set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DQT_DEBUG -Wall -Wextra -Werror -Wfatal-errors")
 
 #
 #  Sanitizers (ASan/UBSan). Usage: cmake -DMUSE_ENABLE_ASAN=ON ..

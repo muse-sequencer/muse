@@ -58,6 +58,7 @@
 #include "audio.h"
 #include "audiodev.h"
 #include "audioprefetch.h"
+#include "rtlog.h"
 // FIXME Move cliplist into components ?
 #include "cliplist/cliplist.h"
 //#include "debug.h"
@@ -1468,6 +1469,11 @@ void MusE::stopHeartBeat()
 
 void MusE::heartBeat()
 {
+    // Drain anything real-time threads (JACK/ALSA callbacks, the audio
+    // prefetch thread's RT-context senders, etc.) queued via rtLog().
+    // This is the only place that may call rtLogFlush() - see rtlog.h.
+    MusECore::rtLogFlush();
+
     if (cpuLoadToolbar->isVisible())
         cpuLoadToolbar->setValues(MusEGlobal::song->cpuLoad(),
                                   MusEGlobal::song->dspLoad(),

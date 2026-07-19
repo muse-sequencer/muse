@@ -34,6 +34,7 @@
 #include "song.h"
 #include "audio.h"
 #include "sync.h"
+#include "rtlog.h"
 
 // For debugging transport timing: Uncomment the fprintf section.
 #define AUDIO_PREFETCH_DEBUG_TRANSPORT_SYNC(dev, format, args...) // fprintf(dev, format, ##args);
@@ -171,8 +172,16 @@ void AudioPrefetch::msgTick(bool isRecTick, bool isPlayTick)
       msg.pos = 0; // seems to be unused, was uninitialized.
       msg._isRecTick = isRecTick;
       msg._isPlayTick = isPlayTick;
+      // Bounded like msgSeek() above: don't spam fprintf on every failed
+      // retry if the pipe stays full for a while.
+      const int max_tick_retries = 64;
+      int tries = 0;
       while (sendMsg1(&msg, sizeof(msg))) {
-            fprintf(stderr, "AudioPrefetch::msgTick(): send failed!\n");
+            if(++tries >= max_tick_retries)
+            {
+              MusECore::rtLog("AudioPrefetch::msgTick(): send failed after %d tries, dropping tick", tries);
+              return;
+            }
             }
       }
 
@@ -203,9 +212,22 @@ void AudioPrefetch::msgSeek(unsigned samplePos, bool force)
       PrefetchMsg msg{};
       msg.id  = PREFETCH_SEEK;
       msg.pos = samplePos;
+      // This function runs on the RT audio thread (see comment above), so it
+      // must never block: no sleep(), and no unbounded fprintf spam if the
+      // pipe stays full. Retry a bounded number of times without sleeping;
+      // if it still hasn't gone through, drop this seek and report once -
+      // a later seek (this is superseded-seek-collapsing territory, see
+      // seek()'s seekCount handling) or the next PREFETCH_TICK will recover.
+      const int max_rt_retries = 64;
+      int tries = 0;
       while (sendMsg1(&msg, sizeof(msg))) {
-            fprintf(stderr, "AudioPrefetch::msgSeek::sleep(1)\n");
-            sleep(1);
+            if(++tries >= max_rt_retries)
+            {
+              MusECore::rtLog("AudioPrefetch::msgSeek: send failed after %d tries, dropping seek (samplePos:%u)",
+                      tries, samplePos);
+              --seekCount; // Undo: this message was never actually sent.
+              return;
+            }
             }
       }
 
@@ -234,9 +256,15 @@ void AudioPrefetch::prefetch(bool doSeek)
             Fifo* fifo = track->prefetchFifo();
             const int empty_count = fifo->getEmptyCount();
 
-            // Diagnostics.
-            //if(empty_count >= 256)
-            //  fprintf(stderr, "WARNING: AudioPrefetch::prefetch: track:%s empty_count:%d >= 512\n", track->name().toUtf8().constData(), empty_count);
+            // Diagnostics: this runs on the prefetch thread (not the RT audio
+            // thread), so an fprintf here is safe and won't itself provoke a
+            // dropout. Unlike the downstream "fifo underrun" message in
+            // WaveTrack::getPrefetchData() - which just reports the FIFO was
+            // empty when the audio thread asked - this tells us WHY: the
+            // producer is chronically behind and hasn't caught up over
+            // multiple prefetch ticks.
+            if(empty_count >= 256)
+              fprintf(stderr, "WARNING: AudioPrefetch::prefetch: track:%s falling behind, empty_count:%d\n", track->name().toUtf8().constData(), empty_count);
 
             // Nothing to fill?
             if(empty_count <= 0)
@@ -262,14 +290,26 @@ void AudioPrefetch::prefetch(bool doSeek)
             {
               if(do_loops)
               {
-                unsigned n = rpos_frame - write_pos;
+                // Signed arithmetic: write_pos can legitimately be >= rpos_frame
+                // right after a seek/scrub to or past the loop-out marker
+                // (prefetchWritePos() is set directly from the seek target,
+                // with no clamping to the loop range). With unsigned n, that
+                // case underflowed to a huge value, which silently skipped
+                // the wrap-around below for the rest of the session for this
+                // track - the prefetch position then permanently diverged
+                // from what the looping consumer expects, causing chronic
+                // FIFO underrun. Fixes CRASH_10.md report.
+                const int64_t n_signed = (int64_t)rpos_frame - (int64_t)write_pos;
 
-                AUDIO_PREFETCH_DEBUG_TRANSPORT_SYNC(stderr, "  do loops: write_pos:%d n:%d segmentSize:%d\n",
-                        write_pos, n, MusEGlobal::segmentSize);
+                AUDIO_PREFETCH_DEBUG_TRANSPORT_SYNC(stderr, "  do loops: write_pos:%d n:%ld segmentSize:%d\n",
+                        write_pos, (long)n_signed, MusEGlobal::segmentSize);
 
-                if (n < MusEGlobal::segmentSize)
+                if (n_signed < (int64_t)MusEGlobal::segmentSize)
                 {
                   // adjust loop start so we get exact loop len
+                  // (n_signed <= 0 here means we're already at/past rpos_frame -
+                  //  treat that the same as "no remainder", i.e. wrap now.)
+                  unsigned n = (n_signed > 0) ? (unsigned)n_signed : 0;
                   if (n > lpos_frame)
                         n = 0;
                   write_pos = lpos_frame - n;
@@ -353,4 +393,3 @@ void AudioPrefetch::seek(unsigned seekTo)
 bool AudioPrefetch::seekDone() const { return seekCount.load() == 0; }
 
 } // namespace MusECore
-
