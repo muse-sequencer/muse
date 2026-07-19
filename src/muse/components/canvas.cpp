@@ -728,6 +728,42 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
       CItem* item;
       int x, y, nx, ny;
 
+      // Accumulates just the screen area actually touched by this update
+      // (old + new position of every item that actually moved), instead of
+      // invalidating the whole visible viewport below. This function runs
+      // on every single mouse-move event during a drag (move/copy/clone),
+      // so redraw()'ing everything here forced a full re-render of the grid
+      // and every visible track's automation curves/fills/points on every
+      // pixel of mouse movement - the cause of slow/delayed drag feedback.
+      // Same scoping approach already used for the lasso-select drag
+      // (see redraw(lassoRegion) elsewhere in this file).
+      //
+      // CItem::mp()/width() are in virtual/song coordinates - the same space
+      // View::setPainter() maps FOR us via an active QPainter transform when
+      // drawItem()/drawMoving() draw with these raw values. redraw()/
+      // QWidget::update() are plain widget calls outside that transform, so
+      // we replicate it manually here: mapx()/mapy() for absolute positions
+      // (translate+scale, matching setPainter()'s p.translate()+p.scale()),
+      // rmapx()/rmapy() for the width/height deltas (scale only - see the
+      // same distinction used for width/height throughout view.h's
+      // ViewRect helpers). y2height() itself already returns a device-scale
+      // row height (see PartCanvas::y2height() and drawCanvas()/
+      // drawTopItem(), which compute screen Y via "-rmapy(yorg) - ypos" plus
+      // raw accumulated track heights - i.e. these already assume ymag == 1
+      // for this canvas type), but we still run it through rmapy() rather
+      // than assume that invariant here in the generic base class.
+      QRegion changedRegion;
+      auto addItemRect = [&changedRegion, this](const QPoint& p, int w) {
+        const int sx = mapx(p.x());
+        const int sy = mapy(p.y());
+        const int sw = rmapx(w, true);
+        const int sh = rmapy(y2height(p.y()), true);
+        // 1px safety margin, same idea as the QRect(x-1, ..., w+2, ...)
+        // padding used elsewhere in this file - avoids off-by-one edge
+        // artifacts from cosmetic pens / rounding.
+        changedRegion += QRect(sx - 1, sy - 1, sw + 2, sh + 2);
+      };
+
       // Inform the classes that an item is about to be moved.
       //
       // Simply for consistency with the code below, inform of the current item first.
@@ -789,6 +825,8 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
         old_mp = curItem->mp();
         if (old_mp != mp) {
               //fprintf(stderr, "Canvas::moveItems: curItem y:%d setMp x:%d y:%d\n", y, mp.x(), mp.y());
+              addItemRect(old_mp, curItem->width());
+              addItemRect(mp, curItem->width());
               curItem->setMp(mp);
               itemMoved(curItem, old_mp);
               }
@@ -812,11 +850,15 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
 
             old_mp = i->second->mp();
             if (old_mp != mp) {
+                  addItemRect(old_mp, item->width());
+                  addItemRect(mp, item->width());
                   i->second->setMp(mp);
                   itemMoved(i->second, old_mp);
                   }
             }
-      redraw();
+
+      if(!changedRegion.isEmpty())
+        redraw(changedRegion);
       }
 
 //---------------------------------------------------------

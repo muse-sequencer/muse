@@ -2920,23 +2920,12 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&, const 
         QColor c(part->mute() ? Qt::white : partColor);
         c.setAlpha(128);  // Fix this regardless of config.globalAlphaBlend setting. Should be OK.
         p.setBrush(c);
-        MusECore::TrackList* tl = MusEGlobal::song->tracks();
-        int yy  = 0;
-        int y = item->mp().y();
-        int ih = item->height();
-        MusECore::ciTrack it;
-        for(it = tl->begin(); it != tl->end(); ++it)
-        {
-          int h = (*it)->height();
-          if(y < yy+h)
-          {
-            ih = h;
-            break;
-          }
-          yy += h;
-        }
-        if(it == tl->end())
-          ih = MusEGlobal::config.trackHeight;
+        // y2height(y) is the same "which row is at this y, how tall is it"
+        // scan that used to be duplicated inline here - same fallback to
+        // config.trackHeight when y is past the last track. See also
+        // Canvas::moveItems(), which now uses this same virtual to scope
+        // the drag-preview redraw region.
+        const int ih = y2height(item->mp().y());
         p.drawRect(item->mp().x(), item->mp().y(), item->width(), ih);
       }
 
