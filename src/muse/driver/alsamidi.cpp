@@ -1143,6 +1143,20 @@ bool initMidiAlsa()
                snd_strerror(error));
             return true;
             }
+
+      // Raise the client's input AND output pools so bursts of events
+      // can't be silently dropped by the kernel sequencer.
+      //  (dense chords, fast CC/pitchbend sweeps, 
+      //     or our own thru/echo output) 
+      // Units are ALSA "cells", not bytes - one cell per ordinary event
+      //  (note on/off, CC, pitchbend etc.); sysex chains multiple cells.
+      // This is MusE's own client-side pool - it applies uniformly to
+      //  events from/to any connected external client, and requires no
+      //  cooperation from the sender/receiver on the other end.
+      if(snd_seq_set_client_pool_input(alsaSeq, 1000) < 0)
+            fprintf(stderr, "Could not set ALSA sequencer input pool size\n");
+      if(snd_seq_set_client_pool_output(alsaSeq, 1000) < 0)
+            fprintf(stderr, "Could not set ALSA sequencer output pool size\n");
             
       // Combine base and SUBS_ capability bits: some ports (observed e.g. ALSA
       //  "<input>" client ports, capability 0x3) report plain SND_SEQ_PORT_CAP_READ/WRITE
