@@ -4,7 +4,7 @@ echo ""
 echo " ==================================== "
 echo "   Running cmake (configuration)"
 echo " ==================================== "
-cmake -S . -B ../build  -DCMAKE_BUILD_TYPE=Debug  -DMODULES_BUILD_STATIC=ON  -DMUSE_ENABLE_ASAN=ON
+cmake -S . -B ../build_debug  -DCMAKE_BUILD_TYPE=Debug  -DMODULES_BUILD_STATIC=ON  -DMUSE_ENABLE_ASAN=ON
 # to put the resulting binary in a specific location add -DCMAKE_INSTALL_PREFIX=<some location>
 
 
@@ -13,7 +13,7 @@ echo " ==================================== "
 echo "     Starting the build process"
 echo " ==================================== "
 
-cmake --build ../build -j7
+cmake --build ../build_debug -j7
 
 
 echo ""
@@ -27,7 +27,7 @@ echo -n "Do you want to run 'make install' command ? (/usr/local/ by default) Y/
 read -r answer
 
 case "$answer" in
-    [Yy]) echo "Starting installation. " && sudo  cmake --install ../build ;;
+    [Yy]) echo "Starting installation. " && sudo  cmake --install ../build_debug ;;
     [Nn]) echo "==> NO installation. Ending. " ;;
     *)    echo "==> Invalid Input. NOT installed. " ;;
 esac
