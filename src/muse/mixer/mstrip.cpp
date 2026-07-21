@@ -982,7 +982,7 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
   if(!instr)
     return;
 
-  if(act->data().type() == QVariant::Int || act->data().type() == QVariant::UInt)
+  if(act->data().typeId() == QMetaType::Int || act->data().typeId() == QMetaType::UInt)
   {
     bool ok;
     int rv = act->data().toInt(&ok);
@@ -1583,7 +1583,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       slider->setMinimumHeight(80);
 
       _meterLayout = new MeterLayout();
-      _meterLayout->setMargin(0);
+      _meterLayout->setContentsMargins(0, 0, 0, 0);
       _meterLayout->setSpacing(props.meterSpacing());
 
       meter[0] = new Meter(nullptr);

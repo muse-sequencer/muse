@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP (cliplist_mocs
+QT6_WRAP_CPP (cliplist_mocs
       cliplist.h
       )
 
@@ -34,7 +34,7 @@ QT5_WRAP_CPP (cliplist_mocs
 file (GLOB cliplist_ui_files
       cliplisteditorbase.ui
       )
-QT5_WRAP_UI ( cliplist_uis ${cliplist_ui_files} )
+QT6_WRAP_UI ( cliplist_uis ${cliplist_ui_files} )
 
 ##
 ## List of source files to compile

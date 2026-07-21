@@ -279,7 +279,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
             viewMousePressEvent(event);
             return;
             }
-      QPoint cpos = event->pos();
+      QPoint cpos = event->position().toPoint();
       curItem     = items.find(cpos);
       bool ctrl  = event->modifiers() & Qt::ControlModifier;
       bool alt = event->modifiers() & Qt::AltModifier;
@@ -317,7 +317,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
             MusECore::TrackList* tl = MusEGlobal::song->tracks();
             MusECore::ciTrack it;
             int yy = 0;
-            int y = event->y();
+            int y = qRound(event->position().y());
             for (it = tl->begin(); it != tl->end(); ++it) {
                   int h = (*it)->height();
                   if (y >= yy && y < (yy + h) && (*it)->isVisible())
@@ -1371,7 +1371,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
          str.append(QString("\n@") + QString().setNum(event.tick()) + QString(" len:") +
                     QString().setNum(event.lenTick()) + QString(" ") + f.path());
       }
-      QMessageBox::information(this, "File info", str, "Ok", 0);
+      QMessageBox::information(this, "File info", str);
       break;
    }
    case OP_SELECT_CLONES: // Select clones
@@ -1486,7 +1486,7 @@ bool PartCanvas::mousePress(QMouseEvent* event)
 
         QAction* act;
 
-        act = menu->exec(event->globalPos());
+        act = menu->exec(event->globalPosition().toPoint());
         if(act)
         {
           // Do not respond to the action if it does not have an integer data.
@@ -1656,7 +1656,7 @@ void PartCanvas::mouseRelease(QMouseEvent* event)
 
   automation.controllerState = doNothing;
   // Direction argument doesn't matter, just pass zero.
-  processAutomationMovements(event->pos(), 0, false);
+  processAutomationMovements(event->position().toPoint(), 0, false);
 
   MusEGlobal::song->applyOperationGroup(operations);
 
@@ -1670,7 +1670,7 @@ void PartCanvas::mouseRelease(QMouseEvent* event)
 
 void PartCanvas::mouseMove(QMouseEvent* event)
       {
-      int x = event->pos().x();
+      int x = qRound(event->position().x());
       if (x < 0)
             x = 0;
 
@@ -1896,7 +1896,7 @@ void PartCanvas::showStatusTip(QMouseEvent* event) const {
     static Tool localTool;
 
     CItem* item;
-        item = findCurrentItem(event->pos());
+        item = findCurrentItem(event->position().toPoint());
 
     if (item) {
         if (hoverItem == item && localTool == _tool)
@@ -4445,11 +4445,11 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
           printf("type1\n");
             text = QString(event->mimeData()->data("text/partlist"));
 
-            int x = event->pos().x();
+            int x = event->position().toPoint().x();
             if (x < 0)
                   x = 0;
             x = MusEGlobal::sigmap.raster(x, *_raster);
-            unsigned trackNo = y2pitch(event->pos().y());
+            unsigned trackNo = y2pitch(event->position().toPoint().y());
             MusECore::Track* track = 0;
             if (trackNo < tracks->size())
                   track = tracks->index(trackNo);
@@ -4463,12 +4463,12 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       }
       else if (type == 2)
       {
-          unsigned trackNo = y2pitch(event->pos().y());
+          unsigned trackNo = y2pitch(event->position().toPoint().y());
           MusECore::Track* track = 0;
           if (trackNo < tracks->size())
                 track = tracks->index(trackNo);
 
-          int x = event->pos().x();
+          int x = event->position().toPoint().x();
           if (x < 0)
                 x = 0;
           x = MusEGlobal::sigmap.raster(x, *_raster);

@@ -1294,7 +1294,7 @@ Adjusts responsiveness of audio controls and
              <property name="title">
               <string>Ticks</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout">
+             <layout class="QGridLayout" name="gridLayout746">
               <item row="2" column="0" rowspan="2">
                <widget class="QLabel" name="midiResLabel">
                 <property name="text">

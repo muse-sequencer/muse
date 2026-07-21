@@ -499,9 +499,7 @@ void MPConfig::DeviceItemRenamed(QTableWidgetItem* item)
         QMessageBox::critical(this,
             tr("MusE: bad device name"),
             tr("Please choose a unique device name"),
-            QMessageBox::Ok,
-            Qt::NoButton,
-            Qt::NoButton);
+            QMessageBox::Ok);
         instanceList->blockSignals(true);
         item->setText(orig_name);
         instanceList->blockSignals(false);

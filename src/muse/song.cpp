@@ -29,6 +29,7 @@
 #include <QDir>
 #include <QFile>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QPoint>
 #include <QString>
 #include <QTextStream>
@@ -5050,7 +5051,7 @@ void Song::seqSignal(int fd)
 
                         {
                         // give the user a sensible explanation
-                        int btn = QMessageBox::critical( MusEGlobal::muse, tr("Jack shutdown!"),
+                        QMessageBox mb( QMessageBox::Critical, tr("Jack shutdown!"),
                             tr("Jack has detected a performance problem which has led to\n"
                             "MusE being disconnected.\n"
                             "This could happen due to a number of reasons:\n"
@@ -5065,8 +5066,12 @@ void Song::seqSignal(int fd)
                             " homepage which is available through the help menu).\n"
                             "\n"
                             "To proceed check the status of Jack and try to restart it and then\n"
-                            "click on the Restart button."), "Restart", "Cancel");
-                        if (btn == 0) {
+                            "click on the Restart button."), QMessageBox::NoButton, MusEGlobal::muse );
+                        QPushButton* restartBtn = mb.addButton("Restart", QMessageBox::AcceptRole);
+                        mb.addButton("Cancel", QMessageBox::RejectRole);
+                        mb.setDefaultButton(restartBtn);
+                        mb.exec();
+                        if (mb.clickedButton() == restartBtn) {
                               fprintf(stderr, "Restarting!\n");
                               MusEGlobal::muse->seqRestart();
                               }
@@ -5408,8 +5413,8 @@ int Song::execAutomationCtlPopup(Track* track, const QPoint& menupos, MidiAudioC
           if(atrack)
           {
             if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
-                tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-                QString(), 0, 1 ) == 0)
+                tr("Clear all controller events?"),
+                QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
               MusEGlobal::audio->msgClearControllerEvents(atrack, id);
           }
     break;

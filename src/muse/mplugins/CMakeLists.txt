@@ -25,14 +25,14 @@
 ## Expand Qt macros in source files
 ##
 if ( ENABLE_EXPERIMENTAL )
-      QT5_WRAP_UI ( mplugins_experimental_uis rhythmbase.ui)
+      QT6_WRAP_UI ( mplugins_experimental_uis rhythmbase.ui)
       set ( experimental_hdrs rhythm.h )
       set ( experimental_srcs
             rhythm.cpp
             ${mplugins_experimental_uis}
             )
 endif ( ENABLE_EXPERIMENTAL )
-QT5_WRAP_CPP ( mplugins_mocs
+QT6_WRAP_CPP ( mplugins_mocs
       midifilterimpl.h
       miditransform.h
       midiitransform.h
@@ -51,7 +51,7 @@ file (GLOB mplugins_ui_files
       transformbase.ui
       mrconfigbase.ui
       )
-QT5_WRAP_UI ( mplugins_uis ${mplugins_ui_files} )
+QT6_WRAP_UI ( mplugins_uis ${mplugins_ui_files} )
 
 ##
 ## List of source files to compile

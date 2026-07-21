@@ -592,7 +592,7 @@ void LMaster::editingFinished()
         else {
             QMessageBox::warning(this, tr("MusE: List Editor"),
                                  tr("Input error, conversion not OK or value out of range"),
-                                 QMessageBox::Ok, Qt::NoButton
+                                 QMessageBox::Ok
                                  );
         }
     }
@@ -611,7 +611,7 @@ void LMaster::editingFinished()
         if (newtick == 0) { // Do not allow change of position to beginning of song
             QMessageBox::warning(this, tr(LMASTER_MSGBOX_STRING),
                                  tr("Reposition of tempo and signature events to start position is not allowed!"),
-                                 QMessageBox::Ok, Qt::NoButton
+                                 QMessageBox::Ok
                                  );
         }
         else if (oldtick != newtick) {  // Ignore if tick hasn't changed

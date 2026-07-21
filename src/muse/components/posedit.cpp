@@ -83,9 +83,9 @@ QSize PosEdit::sizeHint() const
 #else
             w  += fm.width(QString("0000.00.000"));
 #endif
-      return QSize(w, h).expandedTo(QApplication::globalStrut());
+      return QSize(w, h);
     }
-    return QSize(20, 20).expandedTo(QApplication::globalStrut());      
+    return QSize(20, 20);
 	}
 
 //---------------------------------------------------------
@@ -405,7 +405,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
       {
         if(sl.size() != 4)
         {
-          printf("validate smpte string:%s sections:%d != 4\n", s.toLocal8Bit().data(), sl.size());
+          printf("validate smpte string:%s sections:%d != 4\n", s.toLocal8Bit().data(), (int)sl.size());
           return QValidator::Invalid;
         }  
         
@@ -456,7 +456,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
       {
         if(sl.size() != 3)
         {
-          printf("validate bbt string:%s sections:%d != 3\n", s.toLocal8Bit().data(), sl.size());
+          printf("validate bbt string:%s sections:%d != 3\n", s.toLocal8Bit().data(), (int)sl.size());
           return QValidator::Invalid;
         }
           
@@ -689,7 +689,7 @@ bool PosEdit::finishEdit()
       {
         if(sl.size() != 4)
         {
-          printf("finishEdit smpte string:%s sections:%d != 4\n", text().toLocal8Bit().data(), sl.size());
+          printf("finishEdit smpte string:%s sections:%d != 4\n", text().toLocal8Bit().data(), (int)sl.size());
           return false;
         }  
         
@@ -704,7 +704,7 @@ bool PosEdit::finishEdit()
       {
         if(sl.size() != 3)
         {
-          printf("finishEdit bbt string:%s sections:%d != 3\n", text().toLocal8Bit().data(), sl.size());
+          printf("finishEdit bbt string:%s sections:%d != 3\n", text().toLocal8Bit().data(), (int)sl.size());
           return false;
         }
           

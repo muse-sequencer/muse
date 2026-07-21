@@ -1213,7 +1213,7 @@ void CompactKnob::mousePressEvent(QMouseEvent* e)
     d_scrollMode = ScrNone;
     d_direction = 0;
     _pressed = false;
-    emit sliderRightClicked(e->globalPos(), _id);
+    emit sliderRightClicked(e->globalPosition().toPoint(), _id);
     return;
   }
 

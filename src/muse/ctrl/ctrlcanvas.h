@@ -37,6 +37,7 @@
 class QWheelEvent;
 class QMouseEvent;
 class QEvent;
+class QEnterEvent;
 class QWidget;
 class QLabel;
 
@@ -237,7 +238,7 @@ class CtrlCanvas : public MusEGui::View {
       void setCursor();
       void keyPressEvent(QKeyEvent *event);
       void keyReleaseEvent(QKeyEvent *event);
-      void enterEvent(QEvent*e);
+      void enterEvent(QEnterEvent*e);
       void leaveEvent(QEvent*e);
       QPoint raster(const QPoint&) const;
 

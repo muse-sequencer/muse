@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP ( mixer_mocs
+QT6_WRAP_CPP ( mixer_mocs
       amixer.h
       astrip.h
       auxknob.h

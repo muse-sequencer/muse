@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP ( src_converter_mocs
+QT6_WRAP_CPP ( src_converter_mocs
       src_converter.h
       )
 
@@ -34,7 +34,7 @@ QT5_WRAP_CPP ( src_converter_mocs
 file (GLOB src_converter_ui_files
       src_resampler_settings_base.ui
       ) 
-QT5_WRAP_UI ( src_converter_uis ${src_converter_ui_files} )
+QT6_WRAP_UI ( src_converter_uis ${src_converter_ui_files} )
 
 ##
 ## List of source files to compile

@@ -91,7 +91,7 @@ QSize PitchLabel::sizeHint() const
 
       int w = textWidth + fw * 2;
       int h  = fm.height() + fw * 2;
-      return QSize(w, h).expandedTo(QApplication::globalStrut());
+      return QSize(w, h);
       }
 
 //---------------------------------------------------------

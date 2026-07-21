@@ -144,7 +144,7 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
     else
         setCursor(QCursor(Qt::ArrowCursor));
 
-    int x = event->x();
+    int x = qRound(event->position().x());
     if (x<0) x=0;
     int tick = parent->x_to_tick(x-xoffset+xpos);
     if (tick<0) tick=0;

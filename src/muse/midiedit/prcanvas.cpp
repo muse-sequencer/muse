@@ -29,6 +29,7 @@
 #include <QUuid>
 
 #include <stdio.h>
+#include <utility>
 #include "muse_math.h"
 
 #include "prcanvas.h"
@@ -1909,7 +1910,7 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
     MusECore::Undo operations;
     unsigned int playedEventTick = UINT_MAX;
 
-    for (const auto& i : qAsConst(items)) {
+    for (const auto& i : std::as_const(items)) {
         if (!(i.second->isSelected()))
             continue;
         NEvent* e   = (NEvent*)(i.second);
@@ -2103,7 +2104,7 @@ void PianoCanvas::showNoteTooltip(QMouseEvent* event) {
             str = MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")";
         }
 
-        QToolTip::showText(QPoint(event->globalX(), event->globalY() + 20), str);
+        QToolTip::showText(QPoint(qRound(event->globalPosition().x()), qRound(event->globalPosition().y()) + 20), str);
     }
 }
 

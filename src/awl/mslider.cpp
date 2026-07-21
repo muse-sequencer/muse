@@ -272,7 +272,7 @@ void MeterSlider::paintEvent(QPaintEvent* ev)
 
 void MeterSlider::mousePressEvent(QMouseEvent* ev)
       {
-      if (ev->pos().x() < _meterWidth) {
+      if (ev->position().x() < _meterWidth) {
             emit meterClicked();
             return;
             }

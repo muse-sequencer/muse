@@ -143,7 +143,7 @@ QChar SuperDoubleValidator::findAndStripMultiplier(QString &t, bool doStrip, int
 
 QString SuperDoubleValidator::stripped(const QString &t, int *pos) const
 {
-    QStringRef text(&t);
+    QStringView text(t);
     if ((_dl->specialText().isEmpty() || text != _dl->specialText()) &&
         (_dl->logZeroSpecialText().isEmpty() || text != _dl->logZeroSpecialText())) {
         int from = 0;

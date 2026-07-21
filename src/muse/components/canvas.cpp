@@ -27,9 +27,10 @@
 #include "canvas.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QCursor>
 #include <QScreen>
+// Qt6: QDesktopWidget was removed; QScreen (above) is the modern replacement
+//  for screen-geometry queries.
 
 #include <vector>
 
@@ -618,7 +619,7 @@ void Canvas::wheelEvent(QWheelEvent* ev)
 #if QT_VERSION >= 0x050e00
         emit horizontalZoom(d > 0, ev->globalPosition().toPoint());
 #else
-        emit horizontalZoom(d > 0, ev->globalPos());
+        emit horizontalZoom(d > 0, ev->globalPosition().toPoint());
 #endif
       return;
     }
@@ -930,7 +931,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       
       start           = event->pos();
       ev_pos          = start;
-      global_start    = event->globalPos();
+      global_start    = event->globalPosition().toPoint();
       ev_global_pos   = global_start;
       
       curItem = findCurrentItem(start);
@@ -1411,8 +1412,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       
       QRect  screen_rect    = QApplication::primaryScreen()->geometry();
       QPoint screen_center  = QPoint(screen_rect.width()/2, screen_rect.height()/2);
-      QPoint glob_dist      = event->globalPos() - ev_global_pos;
-      QPoint glob_zoom_dist = MusEGlobal::config.borderlessMouse ? (event->globalPos() - screen_center) : glob_dist;
+      QPoint glob_dist      = event->globalPosition().toPoint() - ev_global_pos;
+      QPoint glob_zoom_dist = MusEGlobal::config.borderlessMouse ? (event->globalPosition().toPoint() - screen_center) : glob_dist;
       QPoint last_dist      = event->pos() - ev_pos;
       
       ev_pos     = event->pos();
@@ -1430,7 +1431,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       // set scrolling variables: doScroll, scrollRight
       // No auto scroll in zoom mode or normal pan mode.
       if (drag != DRAG_OFF && drag != DRAG_ZOOM && (drag != DRAG_PAN || !MusEGlobal::config.borderlessMouse)) {  
-            int ex = rmapx(event->x())+mapx(0);
+            int ex = rmapx(qRound(event->position().x()))+mapx(0);
             if(ex < 15 && (canScrollLeft || drag == DRAG_PAN))
               hscrollDir = (drag == DRAG_PAN ? HSCROLL_RIGHT : HSCROLL_LEFT);
             else  
@@ -1461,7 +1462,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             else  
               hscrollDir = HSCROLL_NONE;
             
-            int ey = rmapy(event->y())+mapy(0);
+            int ey = rmapy(qRound(event->position().y()))+mapy(0);
             if(ey < 15 && (canScrollUp || drag == DRAG_PAN))
               vscrollDir = (drag == DRAG_PAN ? VSCROLL_DOWN : VSCROLL_UP);
             else  
@@ -1720,7 +1721,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             }
 
 
-      ev_global_pos = event->globalPos();
+      ev_global_pos = event->globalPosition().toPoint();
 
       if(drag != DRAG_ZOOM && (drag != DRAG_PAN || !MusEGlobal::config.borderlessMouse))
         mouseMove(event);
@@ -1907,7 +1908,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
 
       // HACK
       QMouseEvent e(event->type(), pos,
-         event->globalPos(), event->button(), event->buttons(), event->modifiers());
+         event->globalPosition().toPoint(), event->button(), event->buttons(), event->modifiers());
       mouseRelease(&e);
       
       // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.

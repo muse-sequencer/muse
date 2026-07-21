@@ -99,7 +99,7 @@ SelectionControl::~SelectionControl() {
 
 }
 
-void SelectionControl::enterEvent(QEvent* e) {
+void SelectionControl::enterEvent(QEnterEvent* e) {
     setCursor(Qt::PointingHandCursor);
     QAbstractButton::enterEvent(e);
 }
@@ -341,7 +341,7 @@ void Switch::toggle(Qt::CheckState state) {
 void Switch::mousePressEvent(QMouseEvent *e)
 {
   if(e->button() == Qt::RightButton)
-    emit switchRightClicked(e->globalPos(), _id);
+    emit switchRightClicked(e->globalPosition().toPoint(), _id);
   else
   {
     const QRect r = indicatorRect();

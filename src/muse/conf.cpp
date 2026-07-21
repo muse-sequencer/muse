@@ -1988,8 +1988,8 @@ bool MusE::loadConfigurationColors(QWidget* parent)
     return false;
   
   if(QMessageBox::question(parent, QString("MusE"),
-      tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"), tr("&Ok"), tr("&Cancel"),
-      QString(), 0, 1 ) == 1)
+      tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"),
+      QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Cancel)
     return false;
   
   // Read, and return if error.

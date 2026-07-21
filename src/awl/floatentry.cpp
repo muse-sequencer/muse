@@ -224,8 +224,8 @@ void FloatEntry::endEdit()
 void FloatEntry::mousePressEvent(QMouseEvent* event)
       {
       button = event->button();
-      starty = event->y();
-      evx    = double(event->x());
+      starty = qRound(event->position().y());
+      evx    = event->position().x();
       timecount = 0;
       repeat();
       timer->start(TIMER1);

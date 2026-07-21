@@ -56,7 +56,7 @@ TScale::TScale(QWidget* parent, int ymag)
 void TScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       {
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 
       int y = r.y();
@@ -82,7 +82,7 @@ void TScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
 
 void TScale::viewMouseMoveEvent(QMouseEvent* event)
       {
-      emit tempoChanged(280000 - event->y());
+      emit tempoChanged(280000 - qRound(event->position().y()));
       }
 
 void TScale::leaveEvent(QEvent*)

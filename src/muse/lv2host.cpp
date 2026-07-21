@@ -2155,7 +2155,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
 
 #ifdef LV2_GUI_USE_QWIDGET
             QVBoxLayout* layout = new QVBoxLayout();
-            layout->setMargin(0);
+            layout->setContentsMargins(0, 0, 0, 0);
             layout->setSpacing(0);
             layout->addWidget(ewWin);
             win->setLayout(layout);
@@ -2302,7 +2302,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                 {
 #ifdef LV2_GUI_USE_QWIDGET
                     QVBoxLayout* layout = new QVBoxLayout();
-                    layout->setMargin(0);
+                    layout->setContentsMargins(0, 0, 0, 0);
                     layout->setSpacing(0);
                     layout->addWidget(static_cast<QWidget *>(uiW));
                     win->setLayout(layout);
@@ -2331,7 +2331,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
 
 #ifdef LV2_GUI_USE_QWIDGET
                         QVBoxLayout* layout = new QVBoxLayout();
-                        layout->setMargin(0);
+                        layout->setContentsMargins(0, 0, 0, 0);
                         layout->setSpacing(0);
                         layout->addWidget(ewWin);
                         win->setLayout(layout);
@@ -2425,7 +2425,7 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
     it = state->iStateValues.find(strKey);
     if(it != state->iStateValues.end())
     {
-        if(it.value().second.type() == QVariant::ByteArray)
+        if(it.value().second.typeId() == QMetaType::QByteArray)
         {
             // fprintf(stderr, "lv2state_stateRetreive: Is QVariant::ByteArray\n");
 
@@ -2676,7 +2676,7 @@ bool LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
         QVariant qVal = it.value().second;
         if(!name.isEmpty() && qVal.isValid())
         {
-            if(qVal.type() == QVariant::String) // plugin ui uri
+            if(qVal.typeId() == QMetaType::QString) // plugin ui uri
             {
                 QString sUiUri = qVal.toString();
                 for(const auto &iter : state->synth->_pluginUiTypes)
@@ -7513,7 +7513,7 @@ const char *LV2PluginWrapper::portName(unsigned long i) const
     if(i >= (unsigned long)_synth->_portNames.size())
     {
       fprintf(stderr, "LV2PluginWrapper::portName(): port %lu out of range (%d ports)\n",
-        i, _synth->_portNames.size());
+        i, (int)_synth->_portNames.size());
       return "";
     }
     // Owned by _synth->_portNames (filled once at port-setup time), so this

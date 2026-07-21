@@ -5644,7 +5644,11 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
 
     PluginLoader loader;
     QFile file(uifile.fileName());
-    file.open(QFile::ReadOnly);
+    if(!file.open(QFile::ReadOnly))
+    {
+      fprintf(stderr, "PluginGui::constructGUIFromFile(): failed to open %s for reading\n", uifile.fileName().toLocal8Bit().constData());
+      return;
+    }
     mw = loader.load(&file, this);
     file.close();
     setCentralWidget(mw);

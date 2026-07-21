@@ -22,7 +22,6 @@
 //
 //=========================================================
 
-#include <QDesktopWidget>
 #include <QClipboard>
 #include <QMessageBox>
 #include <QShortcut>
@@ -474,7 +473,11 @@ void MusE::saveProjectRecentList()
     QString prjPath(MusEGlobal::configPath);
     prjPath += "/projects";
     QFile f(prjPath);
-    f.open(QIODevice::WriteOnly | QIODevice::Text);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+      fprintf(stderr, "MusE::saveProjectRecentList(): failed to open %s for writing\n", prjPath.toLocal8Bit().constData());
+      return;
+    }
     if (f.exists()) {
         QTextStream out(&f);
         for (int i = 0; i < projectRecentList.size(); ++i) {
@@ -1417,12 +1420,9 @@ void MusE::centerAndResize() {
 
     // set sensible initial sizes/positions for mainwin/transport (kybos)
 
-// Class QDesktopWidget deprecated as of Qt 5.11
-#if QT_VERSION >= 0x050b00
+    // Qt6: QDesktopWidget was removed; QScreen::availableGeometry() is the
+    //  modern replacement (was already used here for Qt >= 5.11).
     const QRect screenRect = qApp->primaryScreen()->availableGeometry();
-#else
-    const QRect screenRect = qApp->desktop()->availableGeometry();
-#endif
     const QSize screenSize = screenRect.size();
     int width = screenSize.width();
     int height = screenSize.height();
@@ -2861,10 +2861,26 @@ void MusE::closeEvent(QCloseEvent* event)
     }
     if (MusEGlobal::song->dirty) {
         int n = 0;
-        n = QMessageBox::warning(this, appName,
-                                 tr("The current project contains unsaved data.\n"
-                                    "Save current project?"),
-                                 tr("&Save"), tr("&Discard"), tr("&Cancel"), 0, 2);
+        // Qt6: the old QMessageBox::warning(parent, title, text, btn0Text,
+        //  btn1Text, btn2Text, defaultBtn, escapeBtn) overload is gone.
+        //  Build the dialog manually and map the clicked button back to the
+        //  same 0/1/2 values checked below.
+        QMessageBox mb(QMessageBox::Warning, appName,
+                       tr("The current project contains unsaved data.\n"
+                          "Save current project?"), QMessageBox::NoButton, this);
+        QPushButton* saveBtn = mb.addButton(tr("&Save"), QMessageBox::AcceptRole);
+        QPushButton* discardBtn = mb.addButton(tr("&Discard"), QMessageBox::DestructiveRole);
+        QPushButton* cancelBtn = mb.addButton(tr("&Cancel"), QMessageBox::RejectRole);
+        mb.setDefaultButton(saveBtn);
+        mb.exec();
+        if(mb.clickedButton() == saveBtn)
+          n = 0;
+        else if(mb.clickedButton() == discardBtn)
+          n = 1;
+        else if(mb.clickedButton() == cancelBtn)
+          n = 2;
+        else
+          n = 2; // dialog dismissed some other way (e.g. Escape) - treat as cancel
         if (n == 0) {
             if (!save())      // don't quit if save failed
             {
@@ -4520,10 +4536,22 @@ bool MusE::clearSong(bool clear_all)
 {
     if (MusEGlobal::song->dirty) {
         int n = 0;
-        n = QMessageBox::warning(this, appName,
-                                 tr("The current project contains unsaved data.\n"
-                                    "Save current project before continuing?"),
-                                 tr("&Save"), tr("&Discard"), tr("&Cancel"), 0, 2);
+        QMessageBox mb(QMessageBox::Warning, appName,
+                       tr("The current project contains unsaved data.\n"
+                          "Save current project before continuing?"), QMessageBox::NoButton, this);
+        QPushButton* saveBtn = mb.addButton(tr("&Save"), QMessageBox::AcceptRole);
+        QPushButton* discardBtn = mb.addButton(tr("&Discard"), QMessageBox::DestructiveRole);
+        QPushButton* cancelBtn = mb.addButton(tr("&Cancel"), QMessageBox::RejectRole);
+        mb.setDefaultButton(saveBtn);
+        mb.exec();
+        if(mb.clickedButton() == saveBtn)
+          n = 0;
+        else if(mb.clickedButton() == discardBtn)
+          n = 1;
+        else if(mb.clickedButton() == cancelBtn)
+          n = 2;
+        else
+          n = 2; // dialog dismissed some other way (e.g. Escape) - treat as cancel
         switch (n) {
         case 0:
             if (!save())      // abort if save failed
@@ -4639,10 +4667,22 @@ bool MusE::clearSong(bool clear_all)
 
     if (MusEGlobal::song->dirty) {
         int n = 0;
-        n = QMessageBox::warning(this, appName,
-                                 tr("The current project contains unsaved data.\n"
-                                    "Save current project before continuing?"),
-                                 tr("&Save"), tr("&Discard"), tr("&Cancel"), 0, 2);
+        QMessageBox mb(QMessageBox::Warning, appName,
+                       tr("The current project contains unsaved data.\n"
+                          "Save current project before continuing?"), QMessageBox::NoButton, this);
+        QPushButton* saveBtn = mb.addButton(tr("&Save"), QMessageBox::AcceptRole);
+        QPushButton* discardBtn = mb.addButton(tr("&Discard"), QMessageBox::DestructiveRole);
+        QPushButton* cancelBtn = mb.addButton(tr("&Cancel"), QMessageBox::RejectRole);
+        mb.setDefaultButton(saveBtn);
+        mb.exec();
+        if(mb.clickedButton() == saveBtn)
+          n = 0;
+        else if(mb.clickedButton() == discardBtn)
+          n = 1;
+        else if(mb.clickedButton() == cancelBtn)
+          n = 2;
+        else
+          n = 2; // dialog dismissed some other way (e.g. Escape) - treat as cancel
         switch (n) {
         case 0:
             if (!save())      // abort if save failed

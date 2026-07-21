@@ -42,6 +42,7 @@
 // Forward declarations:
 class QDropEvent;
 class QEvent;
+class QEnterEvent;
 class QKeyEvent;
 class QToolTip;
 
@@ -79,7 +80,7 @@ class EventCanvas : public Canvas {
 
    private:
       virtual void leaveEvent(QEvent*e);
-      virtual void enterEvent(QEvent*e);
+      virtual void enterEvent(QEnterEvent*e);
 
    protected:
       bool _playEvents;

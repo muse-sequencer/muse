@@ -684,8 +684,8 @@ int main(int argc, char* argv[])
   #endif
 
         // Now create the application, and let Qt remove recognized arguments.
-        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+        // Qt6: AA_EnableHighDpiScaling and AA_UseHighDpiPixmaps were removed;
+        //  both behaviors are always enabled now, no attribute needed.
 
         // Qt style must be set before app object is created (->Qt docu)
         // Should the standard Qt style (Fusion) get removed in future,

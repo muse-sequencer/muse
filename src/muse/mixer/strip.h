@@ -40,6 +40,7 @@
 
 // Forward declarations:
 class QMouseEvent;
+class QEnterEvent;
 class QResizeEvent;
 class QGridLayout;
 class QLayout;
@@ -630,7 +631,7 @@ class TrackNameLabel : public QLabel
     virtual void mouseReleaseEvent(QMouseEvent*);
     virtual void mouseMoveEvent(QMouseEvent*);
     virtual void leaveEvent(QEvent*);
-    virtual void enterEvent(QEvent*);
+    virtual void enterEvent(QEnterEvent*);
 
   signals:
     void doubleClicked();

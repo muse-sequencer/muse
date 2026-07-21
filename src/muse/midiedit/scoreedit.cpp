@@ -4032,20 +4032,20 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
     // because the "area" of a beat goes from "beat_begin" to "nextbeat_begin-1",
     // but notes are drawn in the middle of that area!
 
-    list<staff_t>::iterator staff_it=staff_at_y(event->y() + y_pos);
+    list<staff_t>::iterator staff_it=staff_at_y(qRound(event->position().y()) + y_pos);
 
-    int y=event->y() + y_pos - staff_it->y_draw;
-    int x=event->x()+x_pos-x_left;
+    int y=qRound(event->position().y()) + y_pos - staff_it->y_draw;
+    int x=qRound(event->position().x())+x_pos-x_left;
     int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
 
     if (staff_it!=staves.end())
     {
-        if (event->x() <= x_left) //clicked in the preamble?
+        if (qRound(event->position().x()) <= x_left) //clicked in the preamble?
         {
             if (event->button() == Qt::RightButton) //right-click?
             {
                 current_staff=staff_it;
-                staff_menu->popup(event->globalPos());
+                staff_menu->popup(event->globalPosition().toPoint());
             }
             else if (event->button() == Qt::MiddleButton) //middle click?
             {
@@ -4280,7 +4280,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 
     if (dragging_staff && event->button()==Qt::LeftButton)
     {
-        int y=event->y()+y_pos;
+        int y=qRound(event->position().y())+y_pos;
         list<staff_t>::iterator mouse_staff=staff_at_y(y);
 
         if (mouse_staff!=staves.end())
@@ -4328,10 +4328,10 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
     if (dragging)
     {
-        int dx=event->x()-mouse_down_pos.x();
-        int dy=event->y()-mouse_down_pos.y();
+        int dx=qRound(event->position().x())-mouse_down_pos.x();
+        int dy=qRound(event->position().y())-mouse_down_pos.y();
 
-        int x=event->x()+x_pos-x_left;
+        int x=qRound(event->position().x())+x_pos-x_left;
 
         int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
 
@@ -4470,7 +4470,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
         if ((mouse_operation==LENGTH) || (mouse_operation==BEGIN)) //x-scrolling enabled?
         {
-            int win_x=event->x();
+            int win_x=qRound(event->position().x());
 
             if (win_x < x_left + SCROLL_MARGIN)
             {
@@ -4493,7 +4493,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
     if (dragging_staff) //y-scrolling enabled?
     {
-        int win_y=event->y();
+        int win_y=qRound(event->position().y());
 
         if (win_y < SCROLL_MARGIN)
         {

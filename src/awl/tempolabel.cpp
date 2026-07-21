@@ -75,7 +75,7 @@ QSize TempoLabel::sizeHint() const
 #else
       int w  = 6 + fm.width(QString("000.00")) +  fw * 2;  // 6=indent
 #endif
-      return QSize(w, h).expandedTo(QApplication::globalStrut());
+      return QSize(w, h);
       }
 }
 

@@ -2309,7 +2309,8 @@ void DeicsOnze::setupInitBuffer(int len)
 void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   //write the set in a temporary file and in a QByteArray
   QTemporaryFile file;
-  file.open();
+  if(!file.open())
+    fprintf(stderr, "DeicsOnze::getInitData(): failed to open temporary file\n");
   AL::Xml* xml=new AL::Xml(&file);
   xml->header();
   _set->writeSet(xml, _saveOnlyUsed);
@@ -2797,7 +2798,8 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
   //save the set in a temporary file and
   // read the XML file and create DOM tree
   QTemporaryFile file;
-  file.open();
+  if(!file.open())
+    fprintf(stderr, "DeicsOnze::parseInitData(): failed to open temporary file\n");
   file.write(baUncomp);
   QDomDocument domTree;
   file.reset(); //seek the start of the file

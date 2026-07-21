@@ -702,8 +702,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       {
       ev->accept();
 
-      int x      = ev->x();
-      int y      = ev->y();
+      int x      = qRound(ev->position().x());
+      int y      = qRound(ev->position().y());
       int button = ev->button();
       int instrument = y / TH;
       if (instrument >= ourDrumMapSize) instrument=ourDrumMapSize-1;
@@ -885,7 +885,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
 #endif
 
           int id = -1;
-          QAction* result = popup->exec(ev->globalPos());
+          QAction* result = popup->exec(ev->globalPosition().toPoint());
           if(result)
             id = result->data().toInt();
 
@@ -1034,7 +1034,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   field = MusECore::WorkingDrumMapEntry::NameField;
                   if (button == Qt::LeftButton)
                   {
-                      int velo = 127 * (ev->x() - header->sectionPosition(COL_NAME)) / (header->sectionSize(COL_NAME) - 10);
+                      int velo = 127 * (qRound(ev->position().x()) - header->sectionPosition(COL_NAME)) / (header->sectionSize(COL_NAME) - 10);
                       if (velo <= 0) velo = 1;  // Zero note on vel is not allowed.
                       else if (velo > 127 ) velo = 127;
                       emit keyPressed(instrument, velo); //Mapping done on other side, send index
@@ -1061,8 +1061,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
 
 void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
       {
-      int x = ev->x();
-      int y = ev->y();
+      int x = qRound(ev->position().x());
+      int y = qRound(ev->position().y());
       unsigned instrument = y / TH;
 
       int section = header->logicalIndexAt(x);
@@ -1810,7 +1810,7 @@ DList::~DList()
 
 void DList::viewMouseMoveEvent(QMouseEvent* ev)
       {
-      curY = ev->y();
+      curY = qRound(ev->position().y());
       int dInstrument;
       dInstrument = curY / TH;
       if (dInstrument >= ourDrumMapSize)
@@ -1851,7 +1851,7 @@ void DList::viewMouseMoveEvent(QMouseEvent* ev)
 void DList::viewMouseReleaseEvent(QMouseEvent* ev)
       {
       if (drag == DRAG) {
-            int y = ev->y();
+            int y = qRound(ev->position().y());
             int dInstrument;
             dInstrument = (y+TH/2) / TH;
             
@@ -1868,8 +1868,8 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
             emit mapChanged(sInstrument, (unsigned)dInstrument); //Track instrument change done in canvas
             }
       drag = NORMAL;
-      int x = ev->x();
-      int y = ev->y();
+      int x = qRound(ev->position().x());
+      int y = qRound(ev->position().y());
       bool shift = ev->modifiers() & Qt::ShiftModifier;
       unsigned instrument = y / TH;
 
@@ -1904,8 +1904,8 @@ void DList::wheelEvent(QWheelEvent* ev)
   int x = ev_pos.x();
   int y = ev_pos.y();
 #else
-  int x = ev->x();
-  int y = ev->y();
+  int x = qRound(ev->position().x());
+  int y = qRound(ev->position().y());
 #endif
 
   DrumColumn col = DrumColumn(x2col(x));

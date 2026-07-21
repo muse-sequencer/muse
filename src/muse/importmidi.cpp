@@ -29,6 +29,7 @@
 #include <utility>
 
 #include <QMessageBox>
+#include <QPushButton>
 
 #include "app.h"
 #include "song.h"
@@ -85,11 +86,26 @@ void MusE::importMidi(const QString &file)
       else
             fn = file;
 
-      int n = QMessageBox::question(this, appName,
-         tr("Add midi file to current project?\n"),
-         tr("&Add to Project"),
-         tr("&Replace"),
-         tr("&Abort"), 0, 2);
+      // Qt6: the old QMessageBox::question(parent, title, text, btn0Text,
+      //  btn1Text, btn2Text, defaultBtn, escapeBtn) overload is gone. Build
+      //  the dialog manually and map the clicked button back to the same
+      //  0/1/2 values switch()'d on below.
+      QMessageBox mb(QMessageBox::Question, appName,
+         tr("Add midi file to current project?\n"), QMessageBox::NoButton, this);
+      QPushButton* addBtn = mb.addButton(tr("&Add to Project"), QMessageBox::AcceptRole);
+      QPushButton* replaceBtn = mb.addButton(tr("&Replace"), QMessageBox::DestructiveRole);
+      QPushButton* abortBtn = mb.addButton(tr("&Abort"), QMessageBox::RejectRole);
+      mb.setDefaultButton(addBtn);
+      mb.exec();
+      int n;
+      if(mb.clickedButton() == addBtn)
+        n = 0;
+      else if(mb.clickedButton() == replaceBtn)
+        n = 1;
+      else if(mb.clickedButton() == abortBtn)
+        n = 2;
+      else
+        n = 2; // dialog dismissed some other way (e.g. Escape) - treat as abort
 
       switch (n) {
             case 0:

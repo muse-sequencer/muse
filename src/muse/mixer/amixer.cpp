@@ -23,6 +23,7 @@
 
 #include "muse_math.h"
 
+#include <utility>
 #include <QMenuBar>
 #include <QPaintEvent>
 #include <QSpacerItem>
@@ -1216,7 +1217,7 @@ bool AudioMixerApp::updateStripList()
 
 void AudioMixerApp::updateSelectedStrips()
 {
-  for (Strip *s : qAsConst(stripList))
+  for (Strip *s : std::as_const(stripList))
   {
     if(MusECore::Track* t = s->getTrack())
     {

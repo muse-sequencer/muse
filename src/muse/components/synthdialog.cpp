@@ -1,3 +1,4 @@
+#include <utility>
 #include <QMenu>
 #include <QCryptographicHash>
 #include <QLineEdit>
@@ -231,7 +232,7 @@ QVector<int> SynthDialog::getFavsIdx()
 QVector<int> SynthDialog::getRecentsIdx()
 {
     QVector<int> si;
-    for (const auto& it : qAsConst(recents)) {
+    for (const auto& it : std::as_const(recents)) {
         int i = 0;
         bool found = false;
         for (const auto& its : MusEGlobal::synthis) {
@@ -299,7 +300,7 @@ void SynthDialog::saveSettings()
 {
 //    if (!ui.filterBox->currentText().isEmpty()) {
         bool found = false;
-        for (const auto& it : qAsConst(filterSavedItems))
+        for (const auto& it : std::as_const(filterSavedItems))
             if(it == ui.filterBox->currentText()) {
                 found = true;
                 break;
@@ -511,7 +512,7 @@ void SynthDialog::writeFavConfiguration(int level, MusECore::Xml& xml)
 {
     xml.tag(level++, "synthDialogFavorites");
 
-    for (const auto& it : qAsConst(favs))
+    for (const auto& it : std::as_const(favs))
         xml.strTag(level, "hash", QLatin1String(it.toHex()));
 
     xml.etag(--level, "synthDialogFavorites");
@@ -550,7 +551,7 @@ void SynthDialog::writeRecentsConfiguration(int level, MusECore::Xml& xml)
 {
     xml.tag(level++, "synthDialogRecents");
 
-    for (const auto& it : qAsConst(recents))
+    for (const auto& it : std::as_const(recents))
         xml.strTag(level, "hash", QLatin1String(it.toHex()));
 
     xml.etag(--level, "synthDialogRecents");

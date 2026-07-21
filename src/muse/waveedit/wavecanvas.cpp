@@ -787,7 +787,7 @@ void WaveCanvas::wheelEvent(QWheelEvent* ev)
 #if QT_VERSION >= 0x050e00
       emit horizontalZoom(delta>0, ev->globalPosition().toPoint());
 #else
-      emit horizontalZoom(delta>0, ev->globalPos());
+      emit horizontalZoom(delta>0, ev->globalPosition().toPoint());
 #endif
   } else { // scroll horizontally
       emit mouseWheelMoved(delta / 10);
@@ -805,8 +805,8 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
 //             }
       const bool ctl = event->modifiers() & Qt::ControlModifier;
       button = event->button();
-      QPoint pt = event->pos();
-      unsigned x = event->x();
+      QPoint pt = event->position().toPoint();
+      unsigned x = qRound(event->position().x());
 
       switch (_tool)
       {
@@ -953,7 +953,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
 
 void WaveCanvas::mouseRelease(QMouseEvent* ev)
 {
-  QPoint pt = ev->pos();
+  QPoint pt = ev->position().toPoint();
   const bool ctl = ev->modifiers() & Qt::ControlModifier;
 
   switch(_tool)
@@ -1054,7 +1054,7 @@ void WaveCanvas::mouseRelease(QMouseEvent* ev)
 
 void WaveCanvas::mouseMove(QMouseEvent* event)
       {
-      QPoint pt = event->pos();
+      QPoint pt = event->position().toPoint();
       int x = pt.x();
       if (x < 0)
             x = 0;

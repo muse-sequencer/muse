@@ -57,7 +57,7 @@ QSize TempoEdit::sizeHint() const
 #else
       int w  = 2 + fm.width(QString("000.00")) +  fw * 4 + 30;
 #endif
-      return QSize(w, h).expandedTo(QApplication::globalStrut());
+      return QSize(w, h);
       }
 
 //---------------------------------------------------------

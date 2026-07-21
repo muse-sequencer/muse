@@ -144,7 +144,7 @@ void Slider::setSliderSize(const QSize& s)
 
 void Slider::mousePressEvent(QMouseEvent* ev)
       {
-      startDrag = ev->pos();
+      startDrag = ev->position().toPoint();
 //      if (points->boundingRect().toRect().contains(startDrag)) {
             emit sliderPressed(_id);
             dragMode = true;
@@ -175,7 +175,7 @@ void Slider::mouseMoveEvent(QMouseEvent* ev)
       {
       if (!dragMode)
             return;
-      int delta = startDrag.y() - ev->y();
+      int delta = startDrag.y() - qRound(ev->position().y());
 
 //      if (_invert)
 //            delta = -delta;

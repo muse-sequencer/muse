@@ -21,7 +21,8 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
+# NOTE: bumped from 3.10.2 -> 3.16 for Qt6 CMake config package support.
 
 project(muse)
 
@@ -164,13 +165,13 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
-SET(MusE_VERSION_MAJOR 4)
+SET(MusE_VERSION_MAJOR 5)
 SET(MusE_VERSION_MINOR 0)
-SET(MusE_VERSION_PATCH 0)
-SET(MusE_VERSION       "4.2.1")
-SET(MusE_VERSION_FULL  "4.2.1")
-SET(MusE_INSTALL_NAME  "muse-4.2")
-SET(MusE_EXEC_NAME     "muse4")
+SET(MusE_VERSION_PATCH 1)
+SET(MusE_VERSION       "5.0.1")
+SET(MusE_VERSION_FULL  "5.0.1-beta")
+SET(MusE_INSTALL_NAME  "muse-5.0")
+SET(MusE_EXEC_NAME     "muse5")
 
 SET(MusE_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 
@@ -308,49 +309,48 @@ set(CMAKE_THREAD_PREFER_PTHREAD On)
 find_package(Threads REQUIRED)
 
 ##
-##  look for Qt5
+##  look for Qt6
 ##
 
+set(QT_MIN_VERSION "6.2.0")
 
-set(QT_MIN_VERSION "5.9.5")
-set(QT_USE_QTXML TRUE)
-set(QT_USE_QTDESIGNER TRUE)
-set(QT_USE_QTSVG TRUE)
+find_package(Qt6Widgets ${QT_MIN_VERSION})
 
-find_package(Qt5Widgets)
-
-if (NOT Qt5Widgets_FOUND)
-      message(FATAL_ERROR "Fatal error: QT (version >= 5.9.5) required.\n"
-      "Cmake tries to detect QT5 by searching for 'Qt5Widgets' package\n"
-      "If you have QT5 installed, make sure 'Qt5Widgets' package is in PKG_CONFIG_PATH."
+if (NOT Qt6Widgets_FOUND)
+      message(FATAL_ERROR "Fatal error: QT (version >= ${QT_MIN_VERSION}) required.\n"
+      "Cmake tries to detect QT6 by searching for 'Qt6Widgets' package\n"
+      "If you have QT6 installed, make sure 'Qt6Widgets' package is in PKG_CONFIG_PATH."
       )
-endif (NOT Qt5Widgets_FOUND)
+endif (NOT Qt6Widgets_FOUND)
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5UiTools REQUIRED)
-find_package(Qt5LinguistTools REQUIRED)
-find_package(Qt5Xml REQUIRED)
-find_package(Qt5Svg REQUIRED)
+find_package(Qt6Core REQUIRED)
+find_package(Qt6UiTools REQUIRED)
+find_package(Qt6LinguistTools REQUIRED)
+find_package(Qt6Xml REQUIRED)
+find_package(Qt6Svg REQUIRED)
+find_package(Qt6Core5Compat) # optional: eases porting of code still using QTextCodec, QRegExp, etc.
 
-# Needed for plugins factory:
-SET(QT_USE_QTUITOOLS TRUE)
+# NOTE: QT_USE_QTXML / QT_USE_QTDESIGNER / QT_USE_QTSVG / QT_USE_QTUITOOLS were
+#  Qt4-era qmake-style hints consumed by the old FindQt4.cmake module.
+#  They have no effect with Qt5Config/Qt6Config-based find_package() and were removed.
 
-include_directories (${Qt5Widgets_INCLUDE_DIRS})
-include_directories (${Qt5Core_INCLUDE_DIRS})
-include_directories (${Qt5UiTools_INCLUDE_DIRS})
-include_directories (${Qt5Xml_INCLUDE_DIRS})
-include_directories (${Qt5Svg_INCLUDE_DIRS})
+# Modern (imported-target) style: targets like Qt6::Widgets already carry
+#  their own include dirs, compile definitions, and link dependencies, so
+#  the old include_directories()/link_directories() calls below are no
+#  longer strictly necessary. They are kept only because downstream
+#  CMakeLists.txt files in this project still use the plain include_directories()
+#  style rather than target_link_libraries(... Qt6::Widgets ...) everywhere.
+include_directories (${Qt6Widgets_INCLUDE_DIRS})
+include_directories (${Qt6Core_INCLUDE_DIRS})
+include_directories (${Qt6UiTools_INCLUDE_DIRS})
+include_directories (${Qt6Xml_INCLUDE_DIRS})
+include_directories (${Qt6Svg_INCLUDE_DIRS})
 
-LINK_DIRECTORIES(${Qt5Widgets_LIBRARY_DIRS})
-LINK_DIRECTORIES(${Qt5Core_LIBRARY_DIRS})
-LINK_DIRECTORIES(${Qt5UiTools_LIBRARY_DIRS})
-LINK_DIRECTORIES(${Qt5Xml_LIBRARY_DIRS})
-LINK_DIRECTORIES(${Qt5Svg_LIBRARY_DIRS})
-
-SET(QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5UiTools_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5Svg_LIBRARIES} ${Qt5Core_LIBRARIES})
-#~ set(CMAKE_AUTOUIC ON)
-
-##include(${QT_USE_FILE})
+# QT_LIBRARIES now holds modern imported targets (Qt6::Foo) instead of the
+#  old *_LIBRARIES variables, so downstream target_link_libraries(${QT_LIBRARIES})
+#  calls keep working, but pick up each target's usage requirements automatically.
+#  LINK_DIRECTORIES() calls are no longer needed with imported targets and were removed.
+SET(QT_LIBRARIES Qt6::Widgets Qt6::UiTools Qt6::Xml Qt6::Svg Qt6::Core)
 
 ##
 ##   Begin MANDATORY packages...

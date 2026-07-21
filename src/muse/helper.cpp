@@ -21,6 +21,7 @@
 //=========================================================
 
 #include <list>
+#include <utility>
 
 #include "helper.h"
 #include "song.h"
@@ -90,17 +91,17 @@ namespace {
     static QString stripDirectionMarks(const QString& s)
     {
         static const QVector<QChar> dirMarks = {
-            0x200E, // LRM
-            0x200F, // RLM
-            0x202A, // LRE
-            0x202B, // RLE
-            0x202C, // PDF
-            0x202D, // LRO
-            0x202E, // RLO
-            0x2066, // LRI
-            0x2067, // RLI
-            0x2068, // FSI
-            0x2069  // PDI
+            QChar(0x200E), // LRM
+            QChar(0x200F), // RLM
+            QChar(0x202A), // LRE
+            QChar(0x202B), // RLE
+            QChar(0x202C), // PDF
+            QChar(0x202D), // LRO
+            QChar(0x202E), // RLO
+            QChar(0x2066), // LRI
+            QChar(0x2067), // RLI
+            QChar(0x2068), // FSI
+            QChar(0x2069)  // PDI
         };
 
         QString out;
@@ -2241,7 +2242,7 @@ int countSelectedParts()
 {
     int cnt = 0;
 
-    for(const auto& it : qAsConst(*MusEGlobal::song->tracks())) {
+    for(const auto& it : std::as_const(*MusEGlobal::song->tracks())) {
         for(const auto& ip : *it->cparts())
             if(ip.second->selected())
                 cnt++;

@@ -742,17 +742,24 @@ void RoutingMatrixWidgetAction::sendActionChanged()
   }
 
   // Now update the associated widgets and graphics widgets (popup menus, widgets etc. containing this action)...
-  
+  // Qt6: associatedGraphicsWidgets()/associatedWidgets() are deprecated in
+  //  favor of associatedObjects() + qobject_cast().
+  const QList<QObject*> assocObjs = associatedObjects();
+
 #ifndef QT_NO_GRAPHICSVIEW
-  for (int i = 0; i < associatedGraphicsWidgets().size(); ++i) {
+  for (int i = 0; i < assocObjs.size(); ++i) {
+      QGraphicsWidget *w = qobject_cast<QGraphicsWidget*>(assocObjs.at(i));
+      if (!w)
+          continue;
       //DEBUG_PRST_ROUTES(stderr, "RoutingMatrixWidgetAction::sendActionChanged associated graphics widget\n");
-      QGraphicsWidget *w = associatedGraphicsWidgets().at(i);
       qApp->sendEvent(w, &e);
   }
 #endif
 
-  for (int i = 0; i < associatedWidgets().size(); ++i) {
-      QWidget *w = associatedWidgets().at(i);
+  for (int i = 0; i < assocObjs.size(); ++i) {
+      QWidget *w = qobject_cast<QWidget*>(assocObjs.at(i));
+      if (!w)
+          continue;
       //DEBUG_PRST_ROUTES(stderr, "RoutingMatrixWidgetAction::sendActionChanged associated widget:%s \n", w->metaObject()->className());
       qApp->sendEvent(w, &e);
   }

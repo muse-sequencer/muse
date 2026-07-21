@@ -232,8 +232,8 @@ bool Nentry::contextMenu(QContextMenuEvent *e)
 void Nentry::mousePress(QMouseEvent* event)
       {
       button = event->button();
-      starty = event->y();
-      evx    = event->x();
+      starty = qRound(event->position().y());
+      evx    = qRound(event->position().x());
       if (event->button() == Qt::LeftButton) {
             focusW = qApp->focusWidget();
             edit->setFocus();

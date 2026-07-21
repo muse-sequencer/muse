@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP ( remote_moc_headers
+QT6_WRAP_CPP ( remote_moc_headers
       pyapi.h
       )
 

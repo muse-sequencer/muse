@@ -107,8 +107,8 @@ QSize SigSpinBox::sizeHint() const
 #else
         int w  = fw * 2 + b_rect.width() + fm.width(QString("00"));
 #endif
-        return QSize(w, h).expandedTo(QApplication::globalStrut());
+        return QSize(w, h);
       }
-      return QSize(20, 20).expandedTo(QApplication::globalStrut());      
+      return QSize(20, 20);
       }
       

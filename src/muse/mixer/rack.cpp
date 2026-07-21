@@ -206,12 +206,18 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
           // FIXME: put into external stylesheet
           // I tried, but there is a bug in QT, not possible to address scrollbar in individual widget (kybos)
           QFile file(":/qss/scrollbar_small_vertical.qss");
-          file.open(QFile::ReadOnly);
-          QString style = file.readAll();
-          style.replace("darkgrey", MusEGlobal::config.rackItemBackgroundColor.name());
-          style.replace("lightgrey", MusEGlobal::config.rackItemBackgroundColor.lighter().name());
-          style.replace("grey", MusEGlobal::config.rackItemBackgroundColor.darker().name());
-          verticalScrollBar()->setStyleSheet(style);
+          if(!file.open(QFile::ReadOnly))
+          {
+            fprintf(stderr, "EffectRack::EffectRack(): failed to open scrollbar_small_vertical.qss resource\n");
+          }
+          else
+          {
+            QString style = file.readAll();
+            style.replace("darkgrey", MusEGlobal::config.rackItemBackgroundColor.name());
+            style.replace("lightgrey", MusEGlobal::config.rackItemBackgroundColor.lighter().name());
+            style.replace("grey", MusEGlobal::config.rackItemBackgroundColor.darker().name());
+            verticalScrollBar()->setStyleSheet(style);
+          }
       }
 
       setSelectionMode(QAbstractItemView::SingleSelection);
@@ -427,7 +433,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       }      
 #ifdef LV2_SUPPORT
       if (mSubPresets != nullptr) {
-         QWidget *mwidget = act->parentWidget();
+         QWidget *mwidget = qobject_cast<QWidget*>(act->parent());
          if (mwidget != nullptr) {
             if(mSubPresets == dynamic_cast<QMenu*>(mwidget)) {
                MusECore::PluginI *plugI = pipe->at(idx);
@@ -635,7 +641,7 @@ void EffectRack::startDragItem(int idx)
       const QByteArray data = xmlconf.toUtf8();
 
       if (MusEGlobal::debugMsg)
-          printf("Sending %d [%s]\n", data.length(), xmlconf.toLocal8Bit().constData());
+          printf("Sending %d [%s]\n", (int)data.length(), xmlconf.toLocal8Bit().constData());
 
       // FIXME: Drag to desktop? Tried, but no luck. Nothing happens.
       //        Tried application/xml, text/xml. text/plain works but just
@@ -670,7 +676,7 @@ void EffectRack::dropEvent(QDropEvent *event)
 {
       if(!event || !track)
         return;
-      const QListWidgetItem *i = itemAt( event->pos() );
+      const QListWidgetItem *i = itemAt( event->position().toPoint() );
       if (!i)
             return;
       const int idx = row(i);
@@ -724,7 +730,7 @@ void EffectRack::dropEvent(QDropEvent *event)
               const QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE);
               MusECore::Xml xml(mimeData.constData());
               if (MusEGlobal::debugMsg)
-                  printf("received %d [%s]\n", mimeData.size(), mimeData.constData());
+                  printf("received %d [%s]\n", (int)mimeData.size(), mimeData.constData());
 
               if(act == Qt::MoveAction)
               {
@@ -845,9 +851,9 @@ void EffectRack::mousePressEvent(QMouseEvent *event)
       {
       if(event && track)
       {
-        RackSlot* item = (RackSlot*) itemAt(event->pos());
+        RackSlot* item = (RackSlot*) itemAt(event->position().toPoint());
         if(event->button() & Qt::LeftButton) {
-            dragPos = event->pos();
+            dragPos = event->position().toPoint();
         }
         else if(event->button() & Qt::RightButton) {
             setCurrentItem(item);
@@ -879,7 +885,7 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
               if (!(*pipe)[idx0])
                 return;
 
-              const QPoint pos = event->pos();
+              const QPoint pos = event->position().toPoint();
               const QRect itemrect = visualItemRect(i);
 
               // NOTE: Tried comparing manhattan length distance with QApplication::startDragDistance(),
@@ -894,7 +900,7 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
       QListWidget::mouseMoveEvent(event);
 }
 
-void EffectRack::enterEvent(QEvent *event)
+void EffectRack::enterEvent(QEnterEvent *event)
 {
   setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   QListWidget::enterEvent(event);

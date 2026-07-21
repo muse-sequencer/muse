@@ -85,7 +85,7 @@ QSize PosLabel::sizeHint() const
 #else
             w  = 2 + fm.width("9999.99.99999") + fw * 4;
 #endif
-      return QSize(w, h).expandedTo(QApplication::globalStrut());
+      return QSize(w, h);
       }
 
 //---------------------------------------------------------

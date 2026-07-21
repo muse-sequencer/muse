@@ -489,7 +489,7 @@ void CtrlCanvas::keyReleaseEvent(QKeyEvent *event)
 //   enterEvent
 //---------------------------------------------------------
 
-void CtrlCanvas::enterEvent(QEvent*)
+void CtrlCanvas::enterEvent(QEnterEvent*)
       {
         setCursor();
       }
@@ -1516,7 +1516,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
         PopupMenu* itemPopupMenu = new PopupMenu(this, false);
         populateMergeOptions(itemPopupMenu);
         itemPopupMenu->setToolTipsVisible(true);
-        QAction *act = itemPopupMenu->exec(event->globalPos());
+        QAction *act = itemPopupMenu->exec(event->globalPosition().toPoint());
         int idx = -1;
         bool is_checked = false;
         if(act && act->data().isValid())
@@ -1833,7 +1833,7 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
       //_mouseDist = event->pos();
 
       if (MusEGlobal::config.showNoteTooltips)
-          QToolTip::showText(QPoint(event->globalX(), event->globalY() + 20), tr("Value: ") + QString::number(val));
+          QToolTip::showText(QPoint(qRound(event->globalPosition().x()), qRound(event->globalPosition().y()) + 20), tr("Value: ") + QString::number(val));
 }
 
 //---------------------------------------------------------

@@ -70,7 +70,7 @@ QSize PitchLabel::sizeHint() const
 #else
       int w = 2 + fm.width(QString("-9999")) + fw * 4;     // must display 14Bit controller values
 #endif
-      return QSize(w, h).expandedTo(QApplication::globalStrut());
+      return QSize(w, h);
       }
 
 //---------------------------------------------------------

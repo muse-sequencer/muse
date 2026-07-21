@@ -1184,7 +1184,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
         return;
     }
 
-    int x       = ev->x();
+    int x       = qRound(ev->position().x());
     int section = header->logicalIndexAt(x);
     if (section == -1)
     {
@@ -1192,7 +1192,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
         return;
     }
 
-    MusECore::Track* t = y2Track(ev->y() + ypos);
+    MusECore::Track* t = y2Track(qRound(ev->position().y()) + ypos);
     if(t == nullptr)
     {
         ev->accept();
@@ -1715,8 +1715,8 @@ void TList::changeAutomation(QAction* act)
     }
     else if(act->data().toInt() == AUTO_RESET_ALL_COLORS) {
         if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
-                                 tr("Reset all controller colors to defaults?"), tr("&Ok"), tr("&Cancel"),
-                                 QString(), 0, 1 ) == 0)
+                                 tr("Reset all controller colors to defaults?"),
+                                 QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
         {
           MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
           cll->initColors();
@@ -1775,8 +1775,8 @@ void TList::changeAutomationColor(QAction* act)
     if (colindex == AUTO_CLEAR_AUTO)
     {
         if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
-                                 tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-                                 QString(), 0, 1 ) == 0)
+                                 tr("Clear all controller events?"),
+                                 QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
         {
             MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
             MusEGlobal::audio->msgClearControllerEvents(track, id);
@@ -2050,8 +2050,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
         return;
     }
 
-    const int x       = ev->x();
-    const int y       = ev->y();
+    const int x       = qRound(ev->position().x());
+    const int y       = qRound(ev->position().y());
     const int button  = ev->button();
     const bool ctrl   = ((QInputEvent*)ev)->modifiers() & Qt::ControlModifier;
     const bool shift  = ((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier;
@@ -2064,7 +2064,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
             // Show the menu
             QMenu m(this);
             MusEGui::populateAddTrack(&m, false, false);
-            QAction* act = m.exec(ev->globalPos(), nullptr);
+            QAction* act = m.exec(ev->globalPosition().toPoint(), nullptr);
 
             // Valid click?
             if(act)
@@ -2090,7 +2090,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
     if (resizeFlag) {
         mode = RESIZE;
 
-        int y  = ev->y();
+        int y  = qRound(ev->position().y());
         int ty = -ypos;
         sTrack = 0;
         for (MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it, ++sTrack) {
@@ -2201,7 +2201,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 p->addAction(tr("Grand Staff"))->setData(2);
 
                 // Show the menu
-                QAction* act = p->exec(ev->globalPos(), nullptr);
+                QAction* act = p->exec(ev->globalPosition().toPoint(), nullptr);
                 if (act) {
                     switch (act->data().toInt()) {
                     case 0:
@@ -2629,7 +2629,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 MusEGui::populateAddTrack(&m, false, true);
                 p->addMenu(&m);
 
-                QAction* act = p->exec(ev->globalPos(), nullptr);
+                QAction* act = p->exec(ev->globalPosition().toPoint(), nullptr);
                 if (act) {
                     //fprintf(stderr, "TList::mousePressEvent act:%p\n", act);
                     int n = act->data().toInt();
@@ -2886,7 +2886,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                         connect(pup, SIGNAL(triggered(QAction*)), SLOT(instrPopupActivated(QAction*)));
 
-                        QAction *act = pup->exec(ev->globalPos());
+                        QAction *act = pup->exec(ev->globalPosition().toPoint());
                         if(act)
                         {
                             int val = act->data().toInt();
@@ -3162,7 +3162,7 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
 
     if (ev->buttons() == 0) {
 //        if ((((QInputEvent*)ev)->modifiers() | ev->buttons()) == 0) {
-        int y = ev->y();
+        int y = qRound(ev->position().y());
         int ty = -ypos;
         MusECore::TrackList* tracks = MusEGlobal::song->tracks();
         MusECore::iTrack it;
@@ -3194,7 +3194,7 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
         return;
     }
 
-    curY      = ev->y();
+    curY      = qRound(ev->position().y());
     int delta = curY - startY;
     switch (mode) {
     case START_DRAG:
@@ -3337,8 +3337,8 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
         return;
     }
 
-    const int x = ev->x();
-    MusECore::Track* t = y2Track(ev->y() + ypos);
+    const int x = qRound(ev->position().x());
+    MusECore::Track* t = y2Track(qRound(ev->position().y()) + ypos);
 
     if (mode == DRAG) {
         if (t) {

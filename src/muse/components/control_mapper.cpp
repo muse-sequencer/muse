@@ -1141,7 +1141,7 @@ bool MapperControlDelegate::editorEvent(QEvent* event, QAbstractItemModel* model
   if(event->type() == QEvent::MouseMove)
   {
     QMouseEvent* me = static_cast<QMouseEvent*>(event);
-    fprintf(stderr, "MapperControlDelegate::editorEvent: Move X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+    fprintf(stderr, "MapperControlDelegate::editorEvent: Move X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), qRound(me->globalPosition().x()), qRound(me->globalPosition().y()));  // REMOVE Tim.
     // If any buttons down, ignore.
     if(me->buttons() != Qt::NoButton)
     {
@@ -1153,7 +1153,7 @@ bool MapperControlDelegate::editorEvent(QEvent* event, QAbstractItemModel* model
   if(event->type() == QEvent::MouseButtonPress)
   {
     QMouseEvent* me = static_cast<QMouseEvent*>(event);
-    fprintf(stderr, "MapperControlDelegate::editorEvent: Press X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+    fprintf(stderr, "MapperControlDelegate::editorEvent: Press X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), qRound(me->globalPosition().x()), qRound(me->globalPosition().y()));  // REMOVE Tim.
 
     _firstPress = false;  // HACK
     
@@ -1167,7 +1167,7 @@ bool MapperControlDelegate::editorEvent(QEvent* event, QAbstractItemModel* model
   if(event->type() == QEvent::MouseButtonRelease)
   {
     QMouseEvent* me = static_cast<QMouseEvent*>(event);
-    fprintf(stderr, "MapperControlDelegate::editorEvent: Release X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+    fprintf(stderr, "MapperControlDelegate::editorEvent: Release X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), qRound(me->globalPosition().x()), qRound(me->globalPosition().y()));  // REMOVE Tim.
 
     // If the element under the mouse is not the one when pressed, eat up these events because
     //  they trigger the editor or action of the element under the mouse at the release position.
@@ -1246,7 +1246,7 @@ bool MapperControlDelegate::eventFilter(QObject* editor, QEvent* event)
   if(event->type() == QEvent::MouseButtonPress)
   {
     QMouseEvent* me = static_cast<QMouseEvent*>(event);
-    fprintf(stderr, "MapperControlDelegate::eventFilter: Press X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+    fprintf(stderr, "MapperControlDelegate::eventFilter: Press X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), qRound(me->globalPosition().x()), qRound(me->globalPosition().y()));  // REMOVE Tim.
     //event->accept();
     //return true;
   }
@@ -1254,7 +1254,7 @@ bool MapperControlDelegate::eventFilter(QObject* editor, QEvent* event)
   if(event->type() == QEvent::MouseButtonRelease)
   {
     QMouseEvent* me = static_cast<QMouseEvent*>(event);
-    fprintf(stderr, "MapperControlDelegate::eventFilter: Release X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), me->globalX(), me->globalY());  // REMOVE Tim.
+    fprintf(stderr, "MapperControlDelegate::eventFilter: Release X:%d Y:%d gX:%d gY:%d\n", me->x(), me->y(), qRound(me->globalPosition().x()), qRound(me->globalPosition().y()));  // REMOVE Tim.
     //event->accept();
     //return true;
   }

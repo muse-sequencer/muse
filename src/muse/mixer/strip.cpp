@@ -942,7 +942,7 @@ void TrackNameLabel::leaveEvent(QEvent *e)
     QLabel::leaveEvent(e);
 }
 
-void TrackNameLabel::enterEvent(QEvent *e)
+void TrackNameLabel::enterEvent(QEnterEvent *e)
 {
     if (!_hovered) {
         _hovered = true;
@@ -1836,7 +1836,7 @@ void ExpanderHandle::mousePressEvent(QMouseEvent* e)
   {
     case ResizeModeNone:
     case ResizeModeHovering:
-      _dragLastGlobPos = e->globalPos();
+      _dragLastGlobPos = e->globalPosition().toPoint();
       _resizeMode = ResizeModeDragging;
       e->accept();
       return;
@@ -1883,7 +1883,7 @@ void ExpanderHandle::mouseMoveEvent(QMouseEvent* e)
     
     case ResizeModeDragging:
     {
-      const QPoint gp = e->globalPos();
+      const QPoint gp = e->globalPosition().toPoint();
       const QPoint delta = gp -_dragLastGlobPos;
       _dragLastGlobPos = gp;
       emit moved(delta.x());

@@ -539,7 +539,11 @@ void DeicsOnzeGui::saveConfiguration() {
     lastDir = fi.path();
     if(!filename.endsWith(".dco")) filename+=".dco";
     QFile f(filename);
-    f.open(QIODevice::WriteOnly);
+    if(!f.open(QIODevice::WriteOnly))
+    {
+      fprintf(stderr, "DeicsOnzeGui::saveConfiguration(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+      return;
+    }
     AL::Xml* xml = new AL::Xml(&f);
     xml->header();
     _deicsOnze->writeConfiguration(xml);
@@ -554,7 +558,11 @@ void DeicsOnzeGui::saveDefaultConfiguration() {
   QString filename = DEI_hostConfigPath + QString("/" DEICSONZESTR ".dco");
   if(!filename.isEmpty()) {
     QFile f(filename);
-    f.open(QIODevice::WriteOnly);
+    if(!f.open(QIODevice::WriteOnly))
+    {
+      fprintf(stderr, "DeicsOnzeGui::saveDefaultConfiguration(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+      return;
+    }
    
     AL::Xml* xml = new AL::Xml(&f);
     xml->header();
@@ -1089,21 +1097,24 @@ void QFramePitchEnvelope::paintEvent(QPaintEvent* /*e*/) {
   paint.drawLine(P2linkP3, P3linkEnd);
 }
 void QFramePitchEnvelope::mousePressEvent(QMouseEvent * e) {
+    // Qt6: QMouseEvent::x()/y() are deprecated; cache the position once
+    //  instead of calling position() repeatedly below.
+    const QPoint p = e->position().toPoint();
     //startlinkP1
-    if(e->x()<startlinkP1.x()+DRAGWIDTH && e->x()>startlinkP1.x()-DRAGWIDTH
-       && e->y()<startlinkP1.y()+DRAGWIDTH && e->y()>startlinkP1.y()-DRAGWIDTH)
+    if(p.x()<startlinkP1.x()+DRAGWIDTH && p.x()>startlinkP1.x()-DRAGWIDTH
+       && p.y()<startlinkP1.y()+DRAGWIDTH && p.y()>startlinkP1.y()-DRAGWIDTH)
 	isStartlinkP1Edit=true;
     //P1linkP2
-    if(e->x()<P1linkP2.x()+DRAGWIDTH && e->x()>P1linkP2.x()-DRAGWIDTH
-       && e->y()<P1linkP2.y()+DRAGWIDTH && e->y()>P1linkP2.y()-DRAGWIDTH)
+    if(p.x()<P1linkP2.x()+DRAGWIDTH && p.x()>P1linkP2.x()-DRAGWIDTH
+       && p.y()<P1linkP2.y()+DRAGWIDTH && p.y()>P1linkP2.y()-DRAGWIDTH)
 	isP1linkP2Edit=true;
     //P2linkP3
-    if(e->x()<P2linkP3.x()+DRAGWIDTH && e->x()>P2linkP3.x()-DRAGWIDTH
-       && e->y()<P2linkP3.y()+DRAGWIDTH && e->y()>P2linkP3.y()-DRAGWIDTH)
+    if(p.x()<P2linkP3.x()+DRAGWIDTH && p.x()>P2linkP3.x()-DRAGWIDTH
+       && p.y()<P2linkP3.y()+DRAGWIDTH && p.y()>P2linkP3.y()-DRAGWIDTH)
 	isP2linkP3Edit=true;
     //P3linkEnd
-    if(e->x()<P3linkEnd.x()+DRAGWIDTH && e->x()>P3linkEnd.x()-DRAGWIDTH
-       && e->y()<P3linkEnd.y()+DRAGWIDTH && e->y()>P3linkEnd.y()-DRAGWIDTH)
+    if(p.x()<P3linkEnd.x()+DRAGWIDTH && p.x()>P3linkEnd.x()-DRAGWIDTH
+       && p.y()<P3linkEnd.y()+DRAGWIDTH && p.y()>P3linkEnd.y()-DRAGWIDTH)
 	isP3linkEndEdit=true;
 }
 void QFramePitchEnvelope::mouseReleaseEvent(QMouseEvent* /*e*/) {
@@ -1113,27 +1124,29 @@ void QFramePitchEnvelope::mouseReleaseEvent(QMouseEvent* /*e*/) {
     isP3linkEndEdit=false;
 }
 void QFramePitchEnvelope::mouseMoveEvent(QMouseEvent* e) {
+  // Qt6: QMouseEvent::x()/y() are deprecated; cache the position once.
+  const QPoint p = e->position().toPoint();
   if(isStartlinkP1Edit) {
-    if(e->y()>startlinkP1.y()) _deicsOnzeGui->PL1SpinBox->stepDown();
-    if(e->y()<startlinkP1.y()) _deicsOnzeGui->PL1SpinBox->stepUp();
+    if(p.y()>startlinkP1.y()) _deicsOnzeGui->PL1SpinBox->stepDown();
+    if(p.y()<startlinkP1.y()) _deicsOnzeGui->PL1SpinBox->stepUp();
   }
   if(isP1linkP2Edit) {
-    if(e->x()>P1linkP2.x()) _deicsOnzeGui->PR1SpinBox->stepDown();
-    if(e->x()<P1linkP2.x()) _deicsOnzeGui->PR1SpinBox->stepUp();
-    if(e->y()>P1linkP2.y()) _deicsOnzeGui->PL2SpinBox->stepDown();
-    if(e->y()<P1linkP2.y()) _deicsOnzeGui->PL2SpinBox->stepUp();
+    if(p.x()>P1linkP2.x()) _deicsOnzeGui->PR1SpinBox->stepDown();
+    if(p.x()<P1linkP2.x()) _deicsOnzeGui->PR1SpinBox->stepUp();
+    if(p.y()>P1linkP2.y()) _deicsOnzeGui->PL2SpinBox->stepDown();
+    if(p.y()<P1linkP2.y()) _deicsOnzeGui->PL2SpinBox->stepUp();
   }
   if(isP2linkP3Edit) {
-    if(e->x()>P2linkP3.x()) _deicsOnzeGui->PR2SpinBox->stepDown();
-    if(e->x()<P2linkP3.x()) _deicsOnzeGui->PR2SpinBox->stepUp();
-    if(e->y()>P2linkP3.y()) _deicsOnzeGui->PL3SpinBox->stepDown();
-    if(e->y()<P2linkP3.y()) _deicsOnzeGui->PL3SpinBox->stepUp();
+    if(p.x()>P2linkP3.x()) _deicsOnzeGui->PR2SpinBox->stepDown();
+    if(p.x()<P2linkP3.x()) _deicsOnzeGui->PR2SpinBox->stepUp();
+    if(p.y()>P2linkP3.y()) _deicsOnzeGui->PL3SpinBox->stepDown();
+    if(p.y()<P2linkP3.y()) _deicsOnzeGui->PL3SpinBox->stepUp();
   }
   if(isP3linkEndEdit) {
-    if(e->x()>P3linkEnd.x()) _deicsOnzeGui->PR3SpinBox->stepDown();
-    if(e->x()<P3linkEnd.x()) _deicsOnzeGui->PR3SpinBox->stepUp();
-    if(e->y()>P3linkEnd.y()) _deicsOnzeGui->PL1SpinBox->stepDown();
-    if(e->y()<P3linkEnd.y()) _deicsOnzeGui->PL1SpinBox->stepUp();
+    if(p.x()>P3linkEnd.x()) _deicsOnzeGui->PR3SpinBox->stepDown();
+    if(p.x()<P3linkEnd.x()) _deicsOnzeGui->PR3SpinBox->stepUp();
+    if(p.y()>P3linkEnd.y()) _deicsOnzeGui->PL1SpinBox->stepDown();
+    if(p.y()<P3linkEnd.y()) _deicsOnzeGui->PL1SpinBox->stepUp();
   }
 }
 //-----------------------------------------------------------
@@ -1232,21 +1245,24 @@ void QFrameEnvelope::paintEvent(QPaintEvent* /*e*/) {
   paint.drawLine(D2linkRR, RRlinkEnd);
 }
 void QFrameEnvelope::mousePressEvent(QMouseEvent * e) {
+    // Qt6: QMouseEvent::x()/y() are deprecated; cache the position once
+    //  instead of calling position() repeatedly below.
+    const QPoint p = e->position().toPoint();
     //ARlinkD1
-    if(e->x()<ARlinkD1.x()+DRAGWIDTH && e->x()>ARlinkD1.x()-DRAGWIDTH
-       && e->y()<ARlinkD1.y()+DRAGWIDTH && e->y()>ARlinkD1.y()-DRAGWIDTH)
+    if(p.x()<ARlinkD1.x()+DRAGWIDTH && p.x()>ARlinkD1.x()-DRAGWIDTH
+       && p.y()<ARlinkD1.y()+DRAGWIDTH && p.y()>ARlinkD1.y()-DRAGWIDTH)
 	isARlinkD1Edit=true;
     //D1linkD2
-    if(e->x()<D1linkD2.x()+DRAGWIDTH && e->x()>D1linkD2.x()-DRAGWIDTH
-       && e->y()<D1linkD2.y()+DRAGWIDTH && e->y()>D1linkD2.y()-DRAGWIDTH)
+    if(p.x()<D1linkD2.x()+DRAGWIDTH && p.x()>D1linkD2.x()-DRAGWIDTH
+       && p.y()<D1linkD2.y()+DRAGWIDTH && p.y()>D1linkD2.y()-DRAGWIDTH)
 	isD1linkD2Edit=true;
     //D2linkRR
-    if(e->x()<D2linkRR.x()+DRAGWIDTH && e->x()>D2linkRR.x()-DRAGWIDTH
-       && e->y()<D2linkRR.y()+DRAGWIDTH && e->y()>D2linkRR.y()-DRAGWIDTH)
+    if(p.x()<D2linkRR.x()+DRAGWIDTH && p.x()>D2linkRR.x()-DRAGWIDTH
+       && p.y()<D2linkRR.y()+DRAGWIDTH && p.y()>D2linkRR.y()-DRAGWIDTH)
 	isD2linkRREdit=true;
     //RRlinkEnd
-    if(e->x()<RRlinkEnd.x()+DRAGWIDTH && e->x()>RRlinkEnd.x()-DRAGWIDTH
-       && e->y()<RRlinkEnd.y()+DRAGWIDTH && e->y()>RRlinkEnd.y()-DRAGWIDTH)
+    if(p.x()<RRlinkEnd.x()+DRAGWIDTH && p.x()>RRlinkEnd.x()-DRAGWIDTH
+       && p.y()<RRlinkEnd.y()+DRAGWIDTH && p.y()>RRlinkEnd.y()-DRAGWIDTH)
 	isRRlinkEndEdit=true;
 }
 void QFrameEnvelope::mouseReleaseEvent(QMouseEvent* /*e*/) {
@@ -1256,24 +1272,26 @@ void QFrameEnvelope::mouseReleaseEvent(QMouseEvent* /*e*/) {
     isRRlinkEndEdit=false;
 }
 void QFrameEnvelope::mouseMoveEvent(QMouseEvent* e) {
+    // Qt6: QMouseEvent::x()/y() are deprecated; cache the position once.
+    const QPoint p = e->position().toPoint();
     if(isARlinkD1Edit)
     {
 	switch(op) {
 	    case 0 :
-		if(e->x()>ARlinkD1.x()) _deicsOnzeGui->AR1SpinBox->stepDown();
-		if(e->x()<ARlinkD1.x()) _deicsOnzeGui->AR1SpinBox->stepUp();
+		if(p.x()>ARlinkD1.x()) _deicsOnzeGui->AR1SpinBox->stepDown();
+		if(p.x()<ARlinkD1.x()) _deicsOnzeGui->AR1SpinBox->stepUp();
 		break;
 	    case 1 :
-		if(e->x()>ARlinkD1.x()) _deicsOnzeGui->AR2SpinBox->stepDown();
-		if(e->x()<ARlinkD1.x()) _deicsOnzeGui->AR2SpinBox->stepUp();
+		if(p.x()>ARlinkD1.x()) _deicsOnzeGui->AR2SpinBox->stepDown();
+		if(p.x()<ARlinkD1.x()) _deicsOnzeGui->AR2SpinBox->stepUp();
 		break;
 	    case 2 :
-		if(e->x()>ARlinkD1.x()) _deicsOnzeGui->AR3SpinBox->stepDown();
-		if(e->x()<ARlinkD1.x()) _deicsOnzeGui->AR3SpinBox->stepUp();
+		if(p.x()>ARlinkD1.x()) _deicsOnzeGui->AR3SpinBox->stepDown();
+		if(p.x()<ARlinkD1.x()) _deicsOnzeGui->AR3SpinBox->stepUp();
 		break;
 	    case 3 :
-		if(e->x()>ARlinkD1.x()) _deicsOnzeGui->AR4SpinBox->stepDown();
-		if(e->x()<ARlinkD1.x()) _deicsOnzeGui->AR4SpinBox->stepUp();
+		if(p.x()>ARlinkD1.x()) _deicsOnzeGui->AR4SpinBox->stepDown();
+		if(p.x()<ARlinkD1.x()) _deicsOnzeGui->AR4SpinBox->stepUp();
 		break;
 	    default :
 		break;
@@ -1283,28 +1301,28 @@ void QFrameEnvelope::mouseMoveEvent(QMouseEvent* e) {
     {
 	switch(op) {
 	    case 0 :
-		if(e->x()>D1linkD2.x()) _deicsOnzeGui->D1R1SpinBox->stepDown();
-		if(e->x()<D1linkD2.x()) _deicsOnzeGui->D1R1SpinBox->stepUp();
-		if(e->y()>D1linkD2.y()) _deicsOnzeGui->D1L1SpinBox->stepDown();
-		if(e->y()<D1linkD2.y()) _deicsOnzeGui->D1L1SpinBox->stepUp();
+		if(p.x()>D1linkD2.x()) _deicsOnzeGui->D1R1SpinBox->stepDown();
+		if(p.x()<D1linkD2.x()) _deicsOnzeGui->D1R1SpinBox->stepUp();
+		if(p.y()>D1linkD2.y()) _deicsOnzeGui->D1L1SpinBox->stepDown();
+		if(p.y()<D1linkD2.y()) _deicsOnzeGui->D1L1SpinBox->stepUp();
 		break;
 	    case 1 :
-		if(e->x()>D1linkD2.x()) _deicsOnzeGui->D1R2SpinBox->stepDown();
-		if(e->x()<D1linkD2.x()) _deicsOnzeGui->D1R2SpinBox->stepUp();
-		if(e->y()>D1linkD2.y()) _deicsOnzeGui->D1L2SpinBox->stepDown();
-		if(e->y()<D1linkD2.y()) _deicsOnzeGui->D1L2SpinBox->stepUp();
+		if(p.x()>D1linkD2.x()) _deicsOnzeGui->D1R2SpinBox->stepDown();
+		if(p.x()<D1linkD2.x()) _deicsOnzeGui->D1R2SpinBox->stepUp();
+		if(p.y()>D1linkD2.y()) _deicsOnzeGui->D1L2SpinBox->stepDown();
+		if(p.y()<D1linkD2.y()) _deicsOnzeGui->D1L2SpinBox->stepUp();
 		break;
 	    case 2 :
-		if(e->x()>D1linkD2.x()) _deicsOnzeGui->D1R3SpinBox->stepDown();
-		if(e->x()<D1linkD2.x()) _deicsOnzeGui->D1R3SpinBox->stepUp();
-		if(e->y()>D1linkD2.y()) _deicsOnzeGui->D1L3SpinBox->stepDown();
-		if(e->y()<D1linkD2.y()) _deicsOnzeGui->D1L3SpinBox->stepUp();
+		if(p.x()>D1linkD2.x()) _deicsOnzeGui->D1R3SpinBox->stepDown();
+		if(p.x()<D1linkD2.x()) _deicsOnzeGui->D1R3SpinBox->stepUp();
+		if(p.y()>D1linkD2.y()) _deicsOnzeGui->D1L3SpinBox->stepDown();
+		if(p.y()<D1linkD2.y()) _deicsOnzeGui->D1L3SpinBox->stepUp();
 		break;
 	    case 3 :
-		if(e->x()>D1linkD2.x()) _deicsOnzeGui->D1R4SpinBox->stepDown();
-		if(e->x()<D1linkD2.x()) _deicsOnzeGui->D1R4SpinBox->stepUp();
-		if(e->y()>D1linkD2.y()) _deicsOnzeGui->D1L4SpinBox->stepDown();
-		if(e->y()<D1linkD2.y()) _deicsOnzeGui->D1L4SpinBox->stepUp();
+		if(p.x()>D1linkD2.x()) _deicsOnzeGui->D1R4SpinBox->stepDown();
+		if(p.x()<D1linkD2.x()) _deicsOnzeGui->D1R4SpinBox->stepUp();
+		if(p.y()>D1linkD2.y()) _deicsOnzeGui->D1L4SpinBox->stepDown();
+		if(p.y()<D1linkD2.y()) _deicsOnzeGui->D1L4SpinBox->stepUp();
 		break;
 	    default :
 		break;
@@ -1314,27 +1332,27 @@ void QFrameEnvelope::mouseMoveEvent(QMouseEvent* e) {
     {
 	switch(op) {
 	    case 0 :
-		if(e->x()>D2linkRR.x() /*&& e->y()<D2linkRR.y()*/)
+		if(p.x()>D2linkRR.x() /*&& p.y()<D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R1SpinBox->stepDown();
-		if(e->x()<D2linkRR.x() /*&& e->y()>D2linkRR.y()*/)
+		if(p.x()<D2linkRR.x() /*&& p.y()>D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R1SpinBox->stepUp();
 		break;
 	    case 1 :
-		if(e->x()>D2linkRR.x() /*&& e->y()<D2linkRR.y()*/)
+		if(p.x()>D2linkRR.x() /*&& p.y()<D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R2SpinBox->stepDown();
-		if(e->x()<D2linkRR.x() /*&& e->y()>D2linkRR.y()*/)
+		if(p.x()<D2linkRR.x() /*&& p.y()>D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R2SpinBox->stepUp();
 		break;
 	    case 2 :
-		if(e->x()>D2linkRR.x() /*&& e->y()<D2linkRR.y()*/)
+		if(p.x()>D2linkRR.x() /*&& p.y()<D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R3SpinBox->stepDown();
-		if(e->x()<D2linkRR.x() /*&& e->y()>D2linkRR.y()*/)
+		if(p.x()<D2linkRR.x() /*&& p.y()>D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R3SpinBox->stepUp();
 		break;
 	    case 3 :
-		if(e->x()>D2linkRR.x() /*&& e->y()<D2linkRR.y()*/)
+		if(p.x()>D2linkRR.x() /*&& p.y()<D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R4SpinBox->stepDown();
-		if(e->x()<D2linkRR.x() /*&& e->y()>D2linkRR.y()*/)
+		if(p.x()<D2linkRR.x() /*&& p.y()>D2linkRR.y()*/)
 		    _deicsOnzeGui->D2R4SpinBox->stepUp();
 		break;
 	    default :
@@ -1345,20 +1363,20 @@ void QFrameEnvelope::mouseMoveEvent(QMouseEvent* e) {
     {
 	switch(op) {
 	    case 0 :
-		if(e->x()>RRlinkEnd.x()) _deicsOnzeGui->RR1SpinBox->stepDown();
-		if(e->x()<RRlinkEnd.x()) _deicsOnzeGui->RR1SpinBox->stepUp();
+		if(p.x()>RRlinkEnd.x()) _deicsOnzeGui->RR1SpinBox->stepDown();
+		if(p.x()<RRlinkEnd.x()) _deicsOnzeGui->RR1SpinBox->stepUp();
 		break;
 	    case 1 :
-		if(e->x()>RRlinkEnd.x()) _deicsOnzeGui->RR2SpinBox->stepDown();
-		if(e->x()<RRlinkEnd.x()) _deicsOnzeGui->RR2SpinBox->stepUp();
+		if(p.x()>RRlinkEnd.x()) _deicsOnzeGui->RR2SpinBox->stepDown();
+		if(p.x()<RRlinkEnd.x()) _deicsOnzeGui->RR2SpinBox->stepUp();
 		break;
 	    case 2 :
-		if(e->x()>RRlinkEnd.x()) _deicsOnzeGui->RR3SpinBox->stepDown();
-		if(e->x()<RRlinkEnd.x()) _deicsOnzeGui->RR3SpinBox->stepUp();
+		if(p.x()>RRlinkEnd.x()) _deicsOnzeGui->RR3SpinBox->stepDown();
+		if(p.x()<RRlinkEnd.x()) _deicsOnzeGui->RR3SpinBox->stepUp();
 		break;
 	    case 3 :
-		if(e->x()>RRlinkEnd.x()) _deicsOnzeGui->RR4SpinBox->stepDown();
-		if(e->x()<RRlinkEnd.x()) _deicsOnzeGui->RR4SpinBox->stepUp();
+		if(p.x()>RRlinkEnd.x()) _deicsOnzeGui->RR4SpinBox->stepDown();
+		if(p.x()<RRlinkEnd.x()) _deicsOnzeGui->RR4SpinBox->stepUp();
 		break;
 	    default :
 		break;
@@ -1831,7 +1849,11 @@ void DeicsOnzeGui::saveSetDialog() {
     lastDir = fi.path();
     if(!filename.endsWith(".dei")) filename+=".dei";
     QFile f(filename);
-    f.open(QIODevice::WriteOnly);
+    if(!f.open(QIODevice::WriteOnly))
+    {
+      fprintf(stderr, "DeicsOnzeGui::saveSetDialog(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+      return;
+    }
     
     AL::Xml* xml = new AL::Xml(&f);
     xml->header();
@@ -1948,13 +1970,13 @@ void DeicsOnzeGui::newCategoryDialog() {
 void DeicsOnzeGui::deleteCategoryDialog() {
   QTreeCategory* cat = (QTreeCategory*) categoryListView->currentItem();
   if(cat && cat->isSelected()) {
-    if(!QMessageBox::question(
+    if(QMessageBox::question(
 			      this,
 			      tr("Delete category"),
 			      tr("Do you really want to delete %1 ?")
 			      .arg(cat->_category->_categoryName.c_str()),
-			      tr("&Yes"), tr("&No"),
-			      QString(), 0, 1 ))
+			      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
+       == QMessageBox::Yes)
       {
 	for(int c = 0; c < NBRCHANNELS; c++)
 	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
@@ -2018,14 +2040,16 @@ void DeicsOnzeGui::loadCategoryDialog() {
 	  Category* lCategory = new Category();
 	  lCategory->readCategory(node.firstChild());
 	  if (!_deicsOnze->_set->isFreeHBank(lCategory->_hbank)) {
-	    if(!QMessageBox::question(
-				      this,
-				      tr("Replace or add"),
-				      tr("%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.\n Do you want to replace it or to add it in the next free slot ?")
-				      .arg((lCategory->_categoryName).c_str())
-				      .arg(buffstr.setNum(lCategory->_hbank+1)),
-				      tr("&Replace"), tr("&Add"),
-				      QString(), 0, 1 )) {
+	    QMessageBox replaceOrAddBox(QMessageBox::Question, tr("Replace or add"),
+			      tr("%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.\n Do you want to replace it or to add it in the next free slot ?")
+			      .arg((lCategory->_categoryName).c_str())
+			      .arg(buffstr.setNum(lCategory->_hbank+1)),
+			      QMessageBox::NoButton, this);
+	    QAbstractButton* replaceBtn = replaceOrAddBox.addButton(tr("&Replace"), QMessageBox::AcceptRole);
+	    replaceOrAddBox.addButton(tr("&Add"), QMessageBox::RejectRole);
+	    replaceOrAddBox.setDefaultButton(static_cast<QPushButton*>(replaceBtn));
+	    replaceOrAddBox.exec();
+	    if(replaceOrAddBox.clickedButton() == replaceBtn) {
 	      delete(_deicsOnze->_set
 		     ->findCategory(lCategory->_hbank));
 	      lCategory->linkSet(_deicsOnze->_set);
@@ -2072,7 +2096,11 @@ void DeicsOnzeGui::saveCategoryDialog() {
       lastDir = fi.path();
       if(!filename.endsWith(".dec")) filename+=".dec";
       QFile f(filename);
-      f.open(QIODevice::WriteOnly);
+      if(!f.open(QIODevice::WriteOnly))
+      {
+        fprintf(stderr, "DeicsOnzeGui::saveCategoryDialog(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+        return;
+      }
       AL::Xml* xml = new AL::Xml(&f);
       xml->header();
       cat->_category->writeCategory(xml, false);
@@ -2117,14 +2145,14 @@ void DeicsOnzeGui::deleteSubcategoryDialog() {
   QTreeSubcategory* sub =
     (QTreeSubcategory*) subcategoryListView->currentItem();
   if(sub && sub->isSelected()) {
-    if(!QMessageBox::question(
+    if(QMessageBox::question(
 			      this,
 			      tr("Delete subcategory"),
 			      tr("Do you really want to delete %1 ?")
 			      .arg(sub->_subcategory
 				   ->_subcategoryName.c_str()),
-			      tr("&Yes"), tr("&No"),
-			      QString(), 0, 1 )) {
+			      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
+       == QMessageBox::Yes) {
       	for(int c = 0; c < NBRCHANNELS; c++)
 	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
       delete(sub->_subcategory);
@@ -2185,15 +2213,17 @@ void DeicsOnzeGui::loadSubcategoryDialog() {
 	  Subcategory* lSubcategory = new Subcategory();
 	  lSubcategory->readSubcategory(node.firstChild());
 	  if (!cat->_category->isFreeLBank(lSubcategory->_lbank)) {
-	    if(!QMessageBox::question(
-				      this,
-				      tr("Replace or add"),
-				      tr("%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.\n Do you want to replace it or to add it in the next free slot ?")
-				      .arg((lSubcategory->_subcategoryName)
-					   .c_str())
-				      .arg(buffstr.setNum(lSubcategory->_lbank+1)),
-				      tr("&Replace"), tr("&Add"),
-				      QString(), 0, 1 )) {
+	    QMessageBox replaceOrAddBox(QMessageBox::Question, tr("Replace or add"),
+			      tr("%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.\n Do you want to replace it or to add it in the next free slot ?")
+			      .arg((lSubcategory->_subcategoryName)
+				   .c_str())
+			      .arg(buffstr.setNum(lSubcategory->_lbank+1)),
+			      QMessageBox::NoButton, this);
+	    QAbstractButton* replaceBtn = replaceOrAddBox.addButton(tr("&Replace"), QMessageBox::AcceptRole);
+	    replaceOrAddBox.addButton(tr("&Add"), QMessageBox::RejectRole);
+	    replaceOrAddBox.setDefaultButton(static_cast<QPushButton*>(replaceBtn));
+	    replaceOrAddBox.exec();
+	    if(replaceOrAddBox.clickedButton() == replaceBtn) {
 	      delete(cat->_category->findSubcategory(lSubcategory->_lbank));
 	      lSubcategory->linkCategory(cat->_category);
 	    }
@@ -2240,7 +2270,11 @@ void DeicsOnzeGui::saveSubcategoryDialog() {
       lastDir = fi.path();
       if(!filename.endsWith(".des")) filename+=".des";
       QFile f(filename);
-      f.open(QIODevice::WriteOnly);
+      if(!f.open(QIODevice::WriteOnly))
+      {
+        fprintf(stderr, "DeicsOnzeGui::saveSubcategoryDialog(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+        return;
+      }
 
       AL::Xml* xml = new AL::Xml(&f);
       xml->header();
@@ -2288,13 +2322,13 @@ void DeicsOnzeGui::deletePresetDialog() {
   QTreePreset* pre = (QTreePreset*) presetListView->currentItem();
   if(pre) {
     if(pre->isSelected()) {
-      if(!QMessageBox::question(
+      if(QMessageBox::question(
 				this,
 				tr("Delete preset"),
 				tr("Do you really want to delete %1 ?")
 				.arg(pre->_preset->name.c_str()),
-				tr("&Yes"), tr("&No"),
-				QString(), 0, 1 )) {
+				QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
+	 == QMessageBox::Yes) {
 	for(int c = 0; c < NBRCHANNELS; c++)
 	  _deicsOnze->_preset[c]=_deicsOnze->_initialPreset;
 	delete(pre->_preset);
@@ -2357,14 +2391,16 @@ void DeicsOnzeGui::loadPresetDialog() {
 	  Preset* lPreset = new Preset();
 	  lPreset->readPreset(node.firstChild());
 	  if(!sub->_subcategory->isFreeProg(lPreset->prog)) {
-	    if(!QMessageBox::question(
-				      this,
-				      tr("Replace or add"),
-				      tr("%1 is supposed to be affected to the prog number %2, but there is already one on this slot.\n Do you want to replace it or to add it in the next free slot ?")
-				      .arg((lPreset->name).c_str())
-				      .arg(buffstr.setNum(lPreset->prog+1)),
-				      tr("&Replace"), tr("&Add"),
-				      QString(), 0, 1 )) {
+	    QMessageBox replaceOrAddBox(QMessageBox::Question, tr("Replace or add"),
+			      tr("%1 is supposed to be affected to the prog number %2, but there is already one on this slot.\n Do you want to replace it or to add it in the next free slot ?")
+			      .arg((lPreset->name).c_str())
+			      .arg(buffstr.setNum(lPreset->prog+1)),
+			      QMessageBox::NoButton, this);
+	    QAbstractButton* replaceBtn = replaceOrAddBox.addButton(tr("&Replace"), QMessageBox::AcceptRole);
+	    replaceOrAddBox.addButton(tr("&Add"), QMessageBox::RejectRole);
+	    replaceOrAddBox.setDefaultButton(static_cast<QPushButton*>(replaceBtn));
+	    replaceOrAddBox.exec();
+	    if(replaceOrAddBox.clickedButton() == replaceBtn) {
 	      delete(sub->_subcategory->findPreset(lPreset->prog));
 	      lPreset->linkSubcategory(sub->_subcategory);
 	    }
@@ -2410,7 +2446,11 @@ void DeicsOnzeGui::savePresetDialog() {
       lastDir = fi.path();
       if(!filename.endsWith(".dep")) filename+=".dep";
       QFile f(filename);
-      f.open(QIODevice::WriteOnly);
+      if(!f.open(QIODevice::WriteOnly))
+      {
+        fprintf(stderr, "DeicsOnzeGui::savePresetDialog(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+        return;
+      }
       AL::Xml* xml = new AL::Xml(&f);
 
       xml->header();

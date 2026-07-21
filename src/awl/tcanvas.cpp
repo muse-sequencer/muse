@@ -217,7 +217,7 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
             case QEvent::MouseButtonDblClick:
                   {
                   QMouseEvent* me = (QMouseEvent*)event;
-                  QPoint p(me->pos());
+                  QPoint p(me->position().toPoint());
                   button   = me->button();
                   keyState = me->modifiers();
                   mouseDoubleClick(me);
@@ -229,7 +229,7 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                   QMouseEvent* me = (QMouseEvent*)event;
                   keyState = me->modifiers();
                   button   = me->button();
-                  QPoint p(me->pos());
+                  QPoint p(me->position().toPoint());
                   int x = p.x() - rRuler.x();
                   bool shift = keyState & Qt::ShiftModifier;
 
@@ -256,7 +256,7 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                   QMouseEvent* me = (QMouseEvent*)event;
                   keyState        = me->modifiers();
                   button          = me->buttons();
-                  QPoint p(me->pos());
+                  QPoint p(me->position().toPoint());
                   AL::Pos pos(pix2pos(p.x()-rCanvasA.x()));
 
                   if (dragType == DRAG_OTHER) {
@@ -377,15 +377,19 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
             case QEvent::Wheel:
             	{
                   QWheelEvent* e = (QWheelEvent*)event;
-                  if (e->orientation() != Qt::Vertical)
+                  // Qt6: QWheelEvent::orientation() and delta() were removed;
+                  //  use angleDelta() instead. A zero y-component here means
+                  //  a purely horizontal wheel movement (the previous
+                  //  behaviour when orientation() != Qt::Vertical).
+                  if (e->angleDelta().y() == 0)
             		return true;
       		if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier)) {
                         //
                         // xmag
                         //
-                        int oldx = e->x() - rCanvasA.x();
+                        int oldx = qRound(e->position().x()) - rCanvasA.x();
                         AL::Pos pos(pix2pos(oldx));
-                        int step = e->delta() / 120;
+                        int step = e->angleDelta().y() / 120;
                         if (step > 0) {
                               for (int i = 0; i< step; ++i)
                                     _xmag *= 1.1;
@@ -411,7 +415,7 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                         //   scroll
                         //
                         int step = qMin(QApplication::wheelScrollLines() * vbar->singleStep(), vbar->pageStep());
-            		int offset = e->delta() * step / 120;
+            		int offset = e->angleDelta().y() * step / 120;
             		if (vbar->invertedControls())
                   		offset = -offset;
             		if (qAbs(offset) < 1)

@@ -1406,7 +1406,7 @@ void ConnectionsView::paintEvent(QPaintEvent*)
 void ConnectionsView::mousePressEvent(QMouseEvent* e)
 {
   e->setAccepted(true);
-  lastY = e->y();
+  lastY = qRound(e->position().y());
 
   // Check for any hits to the curves.
   for(PainterPathList::const_iterator ippl = _strokedPathList.cbegin(); ippl != _strokedPathList.cend(); ++ippl)
@@ -1452,7 +1452,7 @@ void ConnectionsView::mouseMoveEvent(QMouseEvent* e)
 {
   e->setAccepted(true);
   const Qt::MouseButtons mb = e->buttons();
-  const int y = e->y();
+  const int y = qRound(e->position().y());
   const int ly = lastY;
   lastY = y;
 
@@ -3205,7 +3205,7 @@ void RouteDialog::addItems()
   QTreeWidgetItem* routesItem;
   // Tried wrap flags: Doesn't work (at least not automatically).
   //const int align_flags = Qt::AlignLeft | Qt::AlignVCenter | Qt::TextWordWrap | Qt::TextWrapAnywhere;
-  const int align_flags = Qt::AlignLeft | Qt::AlignVCenter;
+  const Qt::Alignment align_flags = Qt::AlignLeft | Qt::AlignVCenter;
   
   //
   // Tracks:

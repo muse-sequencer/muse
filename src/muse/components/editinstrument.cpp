@@ -31,6 +31,7 @@
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QLineEdit>
 #include <QWhatsThis>
 #include <QVariant>
@@ -207,6 +208,19 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
    : QMainWindow(parent, fl)
       {
       setupUi(this);
+      // Qt6: these used to be wired via editinstrumentbase.ui's auto-generated
+      //  connections, which only compiled/worked under Qt5 because uic emitted
+      //  runtime string-based SIGNAL()/SLOT() connections that resolved against
+      //  the real object at runtime. Qt6's uic emits compile-time pointer-to-
+      //  member-function connects typed against the setupUi() parameter's
+      //  static type (QMainWindow*), which never had these methods - they are
+      //  EditInstrument's own overrides, so connect them here explicitly.
+      connect(fileNewAction, &QAction::triggered, this, &EditInstrument::fileNew);
+      connect(fileOpenAction, &QAction::triggered, this, &EditInstrument::fileOpen);
+      connect(fileSaveAction, &QAction::triggered, this, qOverload<>(&EditInstrument::fileSave));
+      connect(fileSaveAsAction, &QAction::triggered, this, &EditInstrument::fileSaveAs);
+      connect(fileCloseAction, &QAction::triggered, this, &EditInstrument::fileClose);
+      connect(whatsThisAction, &QAction::triggered, this, &EditInstrument::helpWhatsThis);
       toolBar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
       workingInstrument = new MusECore::MidiInstrument();
@@ -1130,9 +1144,8 @@ void EditInstrument::fileSaveAs()
                 if(QMessageBox::question(this,
                     tr("MusE: Save instrument as"),
                     tr("The user instrument '%1' already exists. This will overwrite its .idf instrument file.\nAre you sure?").arg(s),
-                    QMessageBox::Ok | QMessageBox::Default,
-                    QMessageBox::Cancel | QMessageBox::Escape,
-                    Qt::NoButton) == QMessageBox::Ok)
+                    QMessageBox::Ok | QMessageBox::Cancel,
+                    QMessageBox::Ok) == QMessageBox::Ok)
                 {
                   // Set the working instrument's file path to the found instrument's path.
                   workingInstrument->setFilePath((*imi)->filePath());
@@ -1506,9 +1519,7 @@ void EditInstrument::instrumentNameReturn()
       QMessageBox::critical(this,
           tr("MusE: Bad instrument name"),
           tr("Please choose a unique instrument name.\n(The name might be used by a hidden instrument.)"),
-          QMessageBox::Ok,
-          Qt::NoButton,
-          Qt::NoButton);
+          QMessageBox::Ok);
 
       return;
     }
@@ -1650,9 +1661,7 @@ void EditInstrument::patchNameReturn()
           QMessageBox::critical(this,
               tr("MusE: Bad patch name"),
               tr("Please choose a unique patch name"),
-              QMessageBox::Ok,
-              Qt::NoButton,
-              Qt::NoButton);
+              QMessageBox::Ok);
 
           return;
         }
@@ -1672,9 +1681,7 @@ void EditInstrument::patchNameReturn()
         QMessageBox::critical(this,
             tr("MusE: Bad patchgroup name"),
             tr("Please choose a unique patchgroup name"),
-            QMessageBox::Ok,
-            Qt::NoButton,
-            Qt::NoButton);
+            QMessageBox::Ok);
 
         return;
       }
@@ -2133,9 +2140,7 @@ void EditInstrument::ctrlNameReturn()
           QMessageBox::critical(this,
               tr("MusE: Bad controller name"),
               tr("Please choose a unique controller name"),
-              QMessageBox::Ok,
-              Qt::NoButton,
-              Qt::NoButton);
+              QMessageBox::Ok);
 
           return;
         }
@@ -3499,15 +3504,39 @@ int EditInstrument::checkDirty(MusECore::MidiInstrument* i, bool isClose)
 
       int n;
       if(isClose)
-        n = QMessageBox::warning(this, tr("MusE"),
-         tr("The current Instrument contains unsaved data\n"
-         "Save Current Instrument?"),
-         tr("&Save"), tr("&Don't save"), tr("&Abort"), 0, 2);
+      {
+        // Qt6: the old QMessageBox::warning(parent, title, text, btn0Text,
+        //  btn1Text, btn2Text, defaultBtn, escapeBtn) overload is gone.
+        //  Build the dialog manually and map the clicked button back to the
+        //  same 0/1/2 return values callers of checkDirty() switch() on.
+        QMessageBox mb(QMessageBox::Warning, tr("MusE"),
+           tr("The current Instrument contains unsaved data\n"
+           "Save Current Instrument?"), QMessageBox::NoButton, this);
+        QPushButton* saveBtn = mb.addButton(tr("&Save"), QMessageBox::AcceptRole);
+        QPushButton* dontSaveBtn = mb.addButton(tr("&Don't save"), QMessageBox::DestructiveRole);
+        QPushButton* abortBtn = mb.addButton(tr("&Abort"), QMessageBox::RejectRole);
+        mb.setDefaultButton(saveBtn);
+        mb.exec();
+        if(mb.clickedButton() == saveBtn)
+          n = 0;
+        else if(mb.clickedButton() == dontSaveBtn)
+          n = 1;
+        else if(mb.clickedButton() == abortBtn)
+          n = 2;
+        else
+          n = 2; // dialog dismissed some other way (e.g. Escape) - treat as abort
+      }
       else
-        n = QMessageBox::warning(this, tr("MusE"),
-         tr("The current Instrument contains unsaved data\n"
-         "Save Current Instrument?"),
-         tr("&Save"), tr("&Don't save"), 0, 1);
+      {
+        QMessageBox mb(QMessageBox::Warning, tr("MusE"),
+           tr("The current Instrument contains unsaved data\n"
+           "Save Current Instrument?"), QMessageBox::NoButton, this);
+        QPushButton* saveBtn = mb.addButton(tr("&Save"), QMessageBox::AcceptRole);
+        QPushButton* dontSaveBtn = mb.addButton(tr("&Don't save"), QMessageBox::RejectRole);
+        mb.setDefaultButton(saveBtn);
+        mb.exec();
+        n = (mb.clickedButton() == dontSaveBtn) ? 1 : 0;
+      }
       if (n == 0) {
             if (i->filePath().isEmpty())
             {

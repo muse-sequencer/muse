@@ -74,9 +74,9 @@ QSize PosEdit::sizeHint() const
             w  += fm.width(QString("000:00:00:00"));
       else
             w  += fm.width(QString("0000.00.000"));
-      return QSize(w, h).expandedTo(QApplication::globalStrut());
+      return QSize(w, h);
     }
-    return QSize(20, 20).expandedTo(QApplication::globalStrut());      
+    return QSize(20, 20);
 	}
 
 //---------------------------------------------------------

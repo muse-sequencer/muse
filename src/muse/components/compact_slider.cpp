@@ -1160,7 +1160,7 @@ void CompactSlider::keyPressEvent(QKeyEvent* e)
   SliderBase::keyPressEvent(e);
 }
 
-void CompactSlider::enterEvent(QEvent *e)
+void CompactSlider::enterEvent(QEnterEvent *e)
 {
   _entered = true;
   if(!_hovered)

@@ -539,6 +539,11 @@ void RasterizerModel::setDisplayFormat(DisplayFormat format)
 
 int RasterizerModel::indexOfRaster(int val) const
 {
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::indexOfRaster: _rasterizer is nullptr (expected)\n");
+    return -1;
+  }
   const int mdl_rows = _modelToRasterRowList.size();
   const int mdl_cols = _modelToRasterColumnList.size();
   int rast_row, rast_col;
@@ -557,6 +562,11 @@ int RasterizerModel::indexOfRaster(int val) const
 
 QModelIndex RasterizerModel::modelIndexOfRaster(int val) const
 {
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::modelIndexOfRaster: _rasterizer is nullptr (expected)\n");
+    return QModelIndex();
+  }
   const int mdl_rows = _modelToRasterRowList.size();
   const int mdl_cols = _modelToRasterColumnList.size();
   int rast_row, rast_col;
@@ -575,6 +585,11 @@ QModelIndex RasterizerModel::modelIndexOfRaster(int val) const
 
 int RasterizerModel::checkRaster(int val) const
 {
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::checkRaster: _rasterizer is nullptr (expected)\n");
+    return -1;
+  }
   const int mdl_rows = _modelToRasterRowList.size();
   const int mdl_cols = _modelToRasterColumnList.size();
   int rast, rast_row, rast_col;
@@ -595,6 +610,11 @@ int RasterizerModel::checkRaster(int val) const
 
 int RasterizerModel::barRow() const
 {
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::barRow: _rasterizer is nullptr (expected)\n");
+    return -1;
+  }
   const int rast_bar_row = _rasterizer->barRow();
   QMap<int /*rasterRow*/, int /*modelRow*/>::const_iterator imbr =
     _rasterToModelRowMap.find(rast_bar_row);
@@ -605,6 +625,11 @@ int RasterizerModel::barRow() const
 
 int RasterizerModel::offRow() const
 {
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::offRow: _rasterizer is nullptr (expected)\n");
+    return -1;
+  }
   const int rast_off_row = _rasterizer->offRow();
   QMap<int /*rasterRow*/, int /*modelRow*/>::const_iterator imbr =
     _rasterToModelRowMap.find(rast_off_row);
@@ -615,6 +640,11 @@ int RasterizerModel::offRow() const
 
 bool RasterizerModel::isBarRaster(int row, int col) const 
 { 
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::isBarRaster: _rasterizer is nullptr (expected)\n");
+    return false;
+  }
   const int rast_row = modelToRasterRow(row);
   if(rast_row < 0)
     return false;
@@ -628,6 +658,11 @@ bool RasterizerModel::isBarRaster(int row, int col) const
 
 bool RasterizerModel::isOffRaster(int row, int col) const 
 { 
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::isOffRaster: _rasterizer is nullptr (expected)\n");
+    return false;
+  }
   const int rast_row = modelToRasterRow(row);
   if(rast_row < 0)
     return false;
@@ -681,6 +716,11 @@ int RasterizerModel::commonRaster(Rasterizer::CommonRasters commonRast) const
 
 int RasterizerModel::pickRaster(int raster, RasterPick pick) const
 {
+  if(!_rasterizer)
+  {
+    fprintf(stderr, "RasterizerModel::pickRaster: _rasterizer is nullptr (expected)\n");
+    return raster;
+  }
   const QModelIndex mdl_idx = modelIndexOfRaster(raster);
   if(!mdl_idx.isValid())
     return raster;

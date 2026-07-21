@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <utility>
 
 #include <QAbstractButton>
 #include <QFontDialog>
@@ -362,13 +363,13 @@ Appearance::Appearance(QWidget* parent)
       QStringList fileTypes;
       fileTypes.append("*.qss");
       QFileInfoList list = themeDir.entryInfoList(fileTypes);
-      for (const auto& item : qAsConst(list))
+      for (const auto& item : std::as_const(list))
           themeComboBox->addItem(item.baseName());
 
       themeDir.setPath(MusEGlobal::configPath + QString("/themes"));
       if (themeDir.exists()) {
           list = themeDir.entryInfoList(fileTypes);
-          for (const auto& item : qAsConst(list)) {
+          for (const auto& item : std::as_const(list)) {
               if (themeComboBox->findText(item.baseName()) == -1)
               themeComboBox->addItem(item.baseName());
           }

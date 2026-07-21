@@ -50,7 +50,7 @@ void CheckBox::hasToggled(bool val)
 void CheckBox::mousePressEvent(QMouseEvent *e)
 {
   if(e->button() == Qt::RightButton)
-    emit checkboxRightClicked(e->globalPos(), _id);
+    emit checkboxRightClicked(e->globalPosition().toPoint(), _id);
   else
   {
     if(isChecked())

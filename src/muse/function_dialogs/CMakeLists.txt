@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT5_WRAP_CPP (widgets_functiondialogs_mocs
+QT6_WRAP_CPP (widgets_functiondialogs_mocs
       crescendo.h
       deloverlaps.h
       function_dialog_base.h
@@ -54,7 +54,7 @@ file (GLOB widgets_functiondialogs_ui_files
       velocitybase.ui
       )
 
-QT5_WRAP_UI (widgets_functiondialogs_ui_headers ${widgets_functiondialogs_ui_files})
+QT6_WRAP_UI (widgets_functiondialogs_ui_headers ${widgets_functiondialogs_ui_files})
 
 ##
 ## List of source files to compile

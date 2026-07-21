@@ -24,6 +24,7 @@
 #include <QCloseEvent>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QStringList>
 //#include <QTimer>
 #include <QHeaderView>
@@ -597,10 +598,27 @@ void MidiSyncConfig::closeEvent(QCloseEvent* e)
       {
       if(_dirty)
       {
-        int n = QMessageBox::warning(this, tr("MusE"),
+        // Qt6: the old QMessageBox::warning(parent, title, text, btn0Text,
+        //  btn1Text, btn2Text, defaultBtn, escapeBtn) overload is gone.
+        //  Build the dialog manually and map the clicked button back to the
+        //  same 0/1/2 values checked below.
+        QMessageBox mb(QMessageBox::Warning, tr("MusE"),
          tr("Settings have changed\n"
-         "Apply sync settings?"),
-         tr("&Apply"), tr("&No"), tr("&Abort"), 0, 2);
+         "Apply sync settings?"), QMessageBox::NoButton, this);
+        QPushButton* applyBtn = mb.addButton(tr("&Apply"), QMessageBox::AcceptRole);
+        QPushButton* noBtn = mb.addButton(tr("&No"), QMessageBox::DestructiveRole);
+        QPushButton* abortBtn = mb.addButton(tr("&Abort"), QMessageBox::RejectRole);
+        mb.setDefaultButton(applyBtn);
+        mb.exec();
+        int n;
+        if(mb.clickedButton() == applyBtn)
+          n = 0;
+        else if(mb.clickedButton() == noBtn)
+          n = 1;
+        else if(mb.clickedButton() == abortBtn)
+          n = 2;
+        else
+          n = 2; // dialog dismissed some other way (e.g. Escape) - treat as abort
          
         if(n == 2)
         {
