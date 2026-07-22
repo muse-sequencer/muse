@@ -372,6 +372,7 @@ target_link_libraries ( components
       widgets
       xml_module
       icons
+      git_version_info
       )
 
 ##

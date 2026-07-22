@@ -791,6 +791,27 @@ configure_file (
       )
 
 #
+# git_version_info: tiny static library wrapping git_version.cpp.
+# NOTE: deliberately its own library rather than a source file added
+#  straight to the "muse" executable target. It needs to be link-able into
+#  BOTH the "muse" executable AND shared module libraries (e.g. components.so
+#  when MODULES_BUILD_STATIC=OFF) - a static lib's object code gets pulled
+#  into whichever target links it, executable or .so, so this works for
+#  both MODULES_BUILD_STATIC=ON and OFF. POSITION_INDEPENDENT_CODE is
+#  required so its object file can legally be linked into a .so; it's a
+#  harmless no-op when linked into the executable.
+#
+add_library ( git_version_info STATIC
+      ${PROJECT_BINARY_DIR}/git_version.cpp
+      )
+set_target_properties ( git_version_info PROPERTIES
+      POSITION_INDEPENDENT_CODE ON
+      )
+target_include_directories ( git_version_info PUBLIC
+      ${PROJECT_SOURCE_DIR}
+      )
+
+#
 # If the cmake version includes cpack, use it
 #
 IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
