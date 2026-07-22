@@ -845,8 +845,18 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.midiCtrlGraphMergeEraseInclusive = xml.parseInt();
                         else if (tag == "midiCtrlGraphMergeEraseWysiwyg")
                               MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg = xml.parseInt();
-                        else if (tag == "museTheme")
+                        else if (tag == "museTheme") {
                               MusEGlobal::config.theme = xml.parse1();
+                              if (MusEGlobal::debugMsg)
+                                  fprintf(stderr, "readConfiguration: read museTheme <%s>\n",
+                                          qPrintable(MusEGlobal::config.theme));
+                              }
+                        else if (tag == "museColorPalette") {
+                              MusEGlobal::config.museColorPalette = xml.parse1();
+                              if (MusEGlobal::debugMsg)
+                                  fprintf(stderr, "readConfiguration: read museColorPalette <%s>\n",
+                                          qPrintable(MusEGlobal::config.museColorPalette));
+                              }
                         else if (tag == "useRewindOnStop")
                               MusEGlobal::config.useRewindOnStop = xml.parseInt();
                         else if (tag == "moveArmedCheckBox")
@@ -2135,7 +2145,14 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
 //      xml.strTag(level, "qtStyle", MusEGlobal::config.style);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
+      if (MusEGlobal::debugMsg)
+          fprintf(stderr, "writeGlobalConfiguration: writing museTheme <%s>\n",
+                  qPrintable(MusEGlobal::config.theme));
       xml.strTag(level, "museTheme", MusEGlobal::config.theme);
+      if (MusEGlobal::debugMsg)
+          fprintf(stderr, "writeGlobalConfiguration: writing museColorPalette <%s>\n",
+                  qPrintable(MusEGlobal::config.museColorPalette));
+      xml.strTag(level, "museColorPalette", MusEGlobal::config.museColorPalette);
       xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);
       xml.intTag(level, "useRewindOnStop", MusEGlobal::config.useRewindOnStop);
       xml.intTag(level, "moveArmedCheckBox", MusEGlobal::config.moveArmedCheckBox);

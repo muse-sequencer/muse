@@ -4143,15 +4143,24 @@ void MusE::configAppearance()
     if (!appearance) {
         // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
         appearance = new MusEGui::Appearance(this);
-        appearance->resetValues();
     }
 
     if(appearance->isVisible()) {
         appearance->raise();
         appearance->activateWindow();
     }
-    else
+    else {
+        // Re-sync the dialog's working copy (and its "cancel" backup copy)
+        //  from the live config every time it's (re)opened - not just once
+        //  at construction. Otherwise, changes applied via a previous
+        //  Appearance session (e.g. a theme switch) would be invisible to
+        //  this dialog, and closing it via [X]/Escape afterwards would
+        //  revert MusEGlobal::config back to the stale first-open snapshot
+        //  (see Appearance::doCancel()). Same pattern as MetronomeConfig
+        //  below.
+        appearance->resetValues();
         appearance->show();
+    }
 }
 
 //---------------------------------------------------------

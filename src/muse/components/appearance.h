@@ -109,6 +109,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       // Ask to close and if so, tell the main window to close the app and return true.
       bool checkClose();
       bool changeTheme();
+      bool changeColorPalette();
       void saveCurrentThemeColors();
 
    private slots:
@@ -150,6 +151,13 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       Appearance(QWidget* parent=0);
       ~Appearance();
       void resetValues();
+      // Rescans themes/ (chrome) and themes/muse_custom/ (color palettes)
+      //  and repopulates themeComboBox/themeCustomComboBox. Called from
+      //  both the constructor and resetValues() (which runs on every
+      //  dialog reopen, not just the first) so themes/palettes added or
+      //  renamed on disk while MusE is running show up without needing a
+      //  full app restart.
+      void populateThemeCombos();
       static QString& getSetDefaultStyle(const QString *newStyle = nullptr);
 private slots:
       void on_pbSetFontFamily_clicked();

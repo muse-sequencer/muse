@@ -929,7 +929,7 @@ MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WindowFl
       connect(modul2enable, SIGNAL(toggled(bool)), SLOT(modul2enableChanged(bool)));
       connect(modul3enable, SIGNAL(toggled(bool)), SLOT(modul3enableChanged(bool)));
       connect(modul4enable, SIGNAL(toggled(bool)), SLOT(modul4enableChanged(bool)));
-      connect(modulGroup,   SIGNAL(buttonClicked(int)),  SLOT(changeModul(int)));
+      connect(modulGroup,   SIGNAL(idClicked(int)),  SLOT(changeModul(int)));
 
       connect(selPortOp,   SIGNAL(activated(int)), SLOT(selPortOpSel(int)));
       connect(selPortVala, SIGNAL(valueChanged(int)), SLOT(selPortValaChanged(int)));

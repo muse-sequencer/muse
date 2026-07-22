@@ -1,0 +1,39 @@
+--- ComboboxItemViewFilter.hpp	2026-07-22 13:50:28.457183017 +0200
++++ ComboboxItemViewFilter.hpp.copy	2026-07-22 13:48:31.157265657 +0200
+@@ -56,22 +56,7 @@
+         if (watchedObject == _comboBox) {
+           const auto* childEvent = static_cast<QChildEvent*>(evt);
+           const auto* child = childEvent->child();
+-          // NOTE: was `if (child == _comboBox->view())`. That re-enters
+-          //  QComboBox::view() from inside a ChildAdded event that fires
+-          //  as a side effect of view()'s OWN lazy construction of the
+-          //  popup container (QComboBoxPrivate::viewContainer() only
+-          //  caches the container pointer AFTER its constructor returns,
+-          //  and this event fires mid-construction, from QWidget::
+-          //  setParent() inside that constructor). Every reentrant call
+-          //  to view() therefore sees "no container yet" and starts
+-          //  building ANOTHER one, unboundedly - infinite recursion,
+-          //  each level allocating a fresh QComboBoxPrivateContainer/
+-          //  QListView, until the process runs out of memory.
+-          //  'child' is already the QObject we need to identify - no
+-          //  need to call view() again at all, just check its type
+-          //  directly (this class's own installEventFilter() call above
+-          //  confirms the item view is the only child added here).
+-          if (qobject_cast<const QAbstractItemView*>(child)) {
++          if (child == _comboBox->view()) {
+             if (auto* qlementine = qobject_cast<QlementineStyle*>(_comboBox->style())) {
+               if (isDefaultItemDelegate(_comboBox->itemDelegate())) {
+                 _comboBox->setItemDelegate(new ComboBoxDelegate(_comboBox, *qlementine));
+@@ -191,11 +176,7 @@
+       case QEvent::ChildAdded: {
+         const auto* childEvent = static_cast<QChildEvent*>(evt);
+         const auto* child = childEvent->child();
+-        // NOTE: see the identical fix + explanation in
+-        //  ComboboxItemViewFilter::eventFilter() above - was
+-        //  `if (child == _comboBox->view())`, which reenters view()'s own
+-        //  lazy construction and recurses without bound.
+-        if (qobject_cast<const QAbstractItemView*>(child)) {
++        if (child == _comboBox->view()) {
+           if (auto* qlementine = qobject_cast<QlementineStyle*>(_comboBox->style())) {
+             if (isDefaultItemDelegate(_comboBox->itemDelegate())) {
+               _comboBox->setItemDelegate(new ComboBoxDelegate(_comboBox, *qlementine));

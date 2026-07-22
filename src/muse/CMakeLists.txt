@@ -2,7 +2,7 @@
 #  MusE
 #  Linux Music Editor
 #  $Id:$
-#
+# 
 #  Copyright (C) 1999-2011 by Werner Schweer and others
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -167,6 +167,13 @@ file (GLOB core_source_files
 file (GLOB main_source_files
       main.cpp
       )
+if ( QLEMENTINE_SUPPORT )
+      # muse_theme.cpp unconditionally includes Qlementine headers, so it
+      #  must only be compiled when Qlementine itself is available.
+      list (APPEND main_source_files
+            muse_theme.cpp
+            )
+endif ( QLEMENTINE_SUPPORT )
 file (GLOB icons_source_files
       icons.cpp
       )
@@ -195,6 +202,17 @@ add_library ( core ${MODULES_BUILD}
       ${muse_moc_headers}
       ${core_source_files}
       )
+if ( QLEMENTINE_SUPPORT )
+      # helper.cpp (loadMuseChromeTheme/loadMuseColorPalette) and other
+      #  core_source_files need both the define (to not compile out their
+      #  #ifdef QLEMENTINE_SUPPORT blocks) and the actual Qlementine
+      #  headers (via linking the imported target, which propagates its
+      #  include directories) - main.cpp getting these via the 'muse'
+      #  executable target isn't enough, since helper.cpp compiles into
+      #  this separate 'core' library target instead.
+      target_compile_definitions(core PRIVATE QLEMENTINE_SUPPORT)
+      target_link_libraries(core qlementine::qlementine)
+endif ( QLEMENTINE_SUPPORT )
 add_executable ( muse
       ${main_source_files}
       ${muse_qrc_files}
@@ -417,6 +435,16 @@ target_link_libraries(muse
       # Note that this also appears in the fluidsynth MESS shared library.
       ${INSTPATCH_LIBRARIES}
       )
+
+if ( QLEMENTINE_SUPPORT )
+      target_link_libraries(muse qlementine::qlementine)
+      # The "Unix Makefiles" generator doesn't reliably track imported
+      #  (find_package) targets' library files as link prerequisites - so
+      #  reinstalling a locally-patched qlementine.a doesn't trigger a
+      #  relink on its own. Add it explicitly.
+      set_property(TARGET muse APPEND PROPERTY LINK_DEPENDS "$<TARGET_FILE:qlementine::qlementine>")
+      target_compile_definitions(muse PRIVATE QLEMENTINE_SUPPORT)
+endif ( QLEMENTINE_SUPPORT )
 
 target_link_libraries(icons
       ${QT_LIBRARIES}

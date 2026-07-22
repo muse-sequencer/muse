@@ -341,7 +341,8 @@ GlobalConfigValues config = {
       QStringList(),                // canvasCustomBgList
 //      QString(""),                  // default styleSheetFile
 //      QString("Fusion"),            // style
-      QString("Dark Flat"),         // theme
+      QString("dark"),               // theme
+      QString("muse_style_dark"),    // museColorPalette
       QString("sweep"),             // externalWavEditor
       true,                         // useRewindOnStop
       false,                        // moveArmedCheckBox

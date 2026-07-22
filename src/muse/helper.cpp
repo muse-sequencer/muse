@@ -24,6 +24,10 @@
 #include <utility>
 
 #include "helper.h"
+#ifdef QLEMENTINE_SUPPORT
+#include "muse_theme.h"
+#include <oclero/qlementine/style/QlementineStyle.hpp>
+#endif
 #include "song.h"
 #include "app.h"
 #include "icons.h"
@@ -2153,6 +2157,63 @@ QRect normalizeQRect(const QRect& rect)
 //}
 
 //---------------------------------------------------------
+//   loadBaseStylesheet
+//    Reads default_style.qss - the base layer of styling that applies
+//     regardless of which theme is active (e.g. qproperty-* rules for
+//     custom-painted widgets that expose their colors as Q_PROPERTY).
+//     Individual themes' .qss files are expected to only override the
+//     deltas they actually care about, not redefine everything.
+//    Looked up in the same two locations and with the same cascade
+//     semantics as per-theme .qss files (see loadTheme() below):
+//      - MusEGlobal::museGlobalShare + "/default_style.qss" (installed,
+//        e.g. /usr/local/share/muse-5.0/default_style.qss)
+//      - MusEGlobal::configPath + "/default_style.qss" (user override,
+//        e.g. ~/.config/MusE/MusE/default_style.qss)
+//    Returns the combined content, or an empty string if neither exists.
+//---------------------------------------------------------
+
+QString loadBaseStylesheet()
+{
+    const QString pathDef = MusEGlobal::museGlobalShare + "/default_style.qss";
+    const QString pathUser = MusEGlobal::configPath + "/default_style.qss";
+
+    QByteArray sdef;
+    if (QFile::exists(pathDef)) {
+        QFile fdef(pathDef);
+        if (fdef.open(QIODevice::ReadOnly))
+            sdef = fdef.readAll();
+        else
+            printf("loading base style sheet <%s> failed\n", qPrintable(pathDef));
+        fdef.close();
+    }
+
+    QByteArray suser;
+    if (QFile::exists(pathUser)) {
+        QFile fuser(pathUser);
+        if (fuser.open(QIODevice::ReadOnly))
+            suser = fuser.readAll();
+        else
+            printf("loading base style sheet <%s> failed\n", qPrintable(pathUser));
+        fuser.close();
+    }
+
+    if (sdef.isEmpty() && suser.isEmpty())
+        return QString();
+
+    if (suser.isEmpty())
+        return QString::fromUtf8(sdef.data());
+    if (sdef.isEmpty())
+        return QString::fromUtf8(suser.data());
+
+    // Same cascade policy as per-theme stylesheets: if cascading is on,
+    //  concatenate (installed base, then user override on top); otherwise
+    //  the user's file fully replaces the installed one.
+    if (MusEGlobal::config.cascadeStylesheets)
+        return QString::fromUtf8(sdef.data()) + '\n' + QString::fromUtf8(suser.data());
+    return QString::fromUtf8(suser.data());
+}
+
+//---------------------------------------------------------
 //   loadTheme
 //---------------------------------------------------------
 
@@ -2164,8 +2225,8 @@ void loadTheme(const QString& theme)
     if(MusEGlobal::debugMsg)
         fprintf(stderr, "loadTheme: %s\n", theme.toLocal8Bit().constData());
 
-    QString stylePathUser = MusEGlobal::configPath + "/themes/" + theme + ".qss";
-    QString stylePathDef = MusEGlobal::museGlobalShare + "/themes/" + theme + ".qss";
+    QString stylePathUser = MusEGlobal::configPath + "/themes/old_themes/" + theme + ".qss";
+    QString stylePathDef = MusEGlobal::museGlobalShare + "/themes/old_themes/" + theme + ".qss";
 
     QByteArray sdef;
     if (QFile::exists(stylePathDef)) {
@@ -2216,9 +2277,128 @@ void loadTheme(const QString& theme)
         sheet += "QMenu#CheckmarkOnly::item { padding-left: 26px; }";
 #endif
 
+    // Base layer first, theme on top, so the theme only needs to override
+    //  what it actually wants to change.
+    const QString baseSheet = loadBaseStylesheet();
+    if (!baseSheet.isEmpty())
+        sheet = baseSheet + '\n' + sheet;
+
     qApp->setStyleSheet(sheet);
 
     loadThemeColors(theme);
+}
+
+//---------------------------------------------------------
+//   loadMuseChromeTheme
+//    "Main Theme (Qlementine)" in Appearance - standard-widget chrome.
+//    Prefers themes/<theme>.json (Qlementine Theme); falls back to the
+//    legacy themes/old_themes/<theme>.qss + .cfc pair if no such JSON
+//    exists (or Qlementine isn't compiled in).
+//---------------------------------------------------------
+
+void loadMuseChromeTheme(const QString& theme)
+{
+    if (theme.isEmpty())
+        return;
+
+#ifdef QLEMENTINE_SUPPORT
+    // NOTE: once QLEMENTINE_SUPPORT is compiled in, this function must
+    //  NEVER fall through to the legacy loadTheme() below. loadTheme()
+    //  calls qApp->setStyleSheet(), and the moment ANY stylesheet is set
+    //  on a QApplication, Qt permanently wraps its active QStyle in an
+    //  internal QStyleSheetStyle proxy for the rest of the process's
+    //  lifetime. From that point on, QApplication::style() returns the
+    //  proxy, not the raw QlementineStyle* underneath it - so every
+    //  subsequent qobject_cast<QlementineStyle*>(QApplication::style())
+    //  fails, permanently, even for a perfectly valid JSON theme selected
+    //  afterward. This was silently breaking chrome theme switching for
+    //  the rest of the session the first time this function ever hit its
+    //  old fallback path (e.g. at startup, with a stale legacy theme name
+    //  left over in MusEGlobal::config.theme from before old themes were
+    //  removed from the picker). Better to do nothing (leave whichever
+    //  theme is already active) than to silently corrupt the style.
+    const QString jsonPathUser = MusEGlobal::configPath + "/themes/" + theme + ".json";
+    const QString jsonPathDef = MusEGlobal::museGlobalShare + "/themes/" + theme + ".json";
+    const QString jsonPath = QFile::exists(jsonPathUser) ? jsonPathUser
+                            : QFile::exists(jsonPathDef)  ? jsonPathDef
+                            : QString();
+
+    if (jsonPath.isEmpty())
+    {
+        fprintf(stderr, "loadMuseChromeTheme: no JSON theme found for <%s> in themes/ - "
+                         "leaving the current chrome theme unchanged (NOT falling back to "
+                         "legacy .qss, which would break QlementineStyle for the rest of "
+                         "this session - see comment above).\n",
+                qPrintable(theme));
+        return;
+    }
+
+    auto* style = qobject_cast<oclero::qlementine::QlementineStyle*>(QApplication::style());
+    if (!style)
+    {
+        fprintf(stderr, "loadMuseChromeTheme: found <%s> but QApplication's style is not a "
+                         "QlementineStyle (either it was never installed in main(), or a "
+                         "prior legacy .qss load already corrupted it this session - see "
+                         "comment above). Not applying.\n",
+                qPrintable(jsonPath));
+        return;
+    }
+
+    if (const auto museTheme = MuseTheme::fromJsonPath(jsonPath))
+    {
+        style->setTheme(*museTheme);
+        if (MusEGlobal::debugMsg)
+            fprintf(stderr, "loadMuseChromeTheme: applied Qlementine/JSON theme <%s>\n",
+                    qPrintable(jsonPath));
+    }
+    // fromJsonPath() already printed the reason it failed, if it did -
+    //  either way, do NOT fall back to loadTheme() here.
+    return;
+#else
+    // Qlementine isn't compiled in at all, so there's no QlementineStyle
+    //  to corrupt - the legacy .qss + .cfc mechanism is the only option.
+    loadTheme(theme);
+#endif
+}
+
+//---------------------------------------------------------
+//   loadMuseColorPalette
+//    "Custom Widgets Theme (Muse)" in Appearance - colors for MusE's own
+//    custom-painted widgets (canvases, knobs, meters, track labels, ...),
+//    independent of whichever chrome theme is active. Looks for
+//    themes/muse_custom/<name>.json (see MuseTheme::loadColorPaletteFromJsonPath()).
+//    No legacy fallback - this axis is new, there's nothing to fall back to.
+//---------------------------------------------------------
+
+void loadMuseColorPalette(const QString& paletteName)
+{
+    if (paletteName.isEmpty())
+        return;
+
+#ifdef QLEMENTINE_SUPPORT
+    const QString jsonPathUser = MusEGlobal::configPath + "/themes/muse_custom/" + paletteName + ".json";
+    const QString jsonPathDef = MusEGlobal::museGlobalShare + "/themes/muse_custom/" + paletteName + ".json";
+    const QString jsonPath = QFile::exists(jsonPathUser) ? jsonPathUser
+                            : QFile::exists(jsonPathDef)  ? jsonPathDef
+                            : QString();
+
+    if (jsonPath.isEmpty())
+    {
+        fprintf(stderr, "loadMuseColorPalette: no palette file found for <%s> in themes/muse_custom/\n",
+                qPrintable(paletteName));
+        return;
+    }
+
+    if (MuseTheme::loadColorPaletteFromJsonPath(jsonPath))
+    {
+        if (MusEGlobal::debugMsg)
+            fprintf(stderr, "loadMuseColorPalette: applied <%s>\n", qPrintable(jsonPath));
+    }
+    // loadColorPaletteFromJsonPath() already printed the reason it failed, if it did.
+#else
+    Q_UNUSED(paletteName)
+    fprintf(stderr, "loadMuseColorPalette: Qlementine support not compiled in, ignoring\n");
+#endif
 }
 
 //---------------------------------------------------------
@@ -2230,9 +2410,9 @@ void loadThemeColors(const QString& theme)
     if (MusEGlobal::debugMsg)
         fprintf(stderr, "loadThemeColors: %s\n", theme.toLocal8Bit().constData());
 
-    QString configColorPath = MusEGlobal::configPath + "/themes/" + theme + ".cfc";
+    QString configColorPath = MusEGlobal::configPath + "/themes/old_themes/" + theme + ".cfc";
     if (!QFile::exists(configColorPath)) {
-        configColorPath = MusEGlobal::museGlobalShare + "/themes/" + theme + ".cfc";
+        configColorPath = MusEGlobal::museGlobalShare + "/themes/old_themes/" + theme + ".cfc";
     }
 
     MusECore::readConfiguration(qPrintable(configColorPath));

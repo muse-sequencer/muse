@@ -378,7 +378,8 @@ struct GlobalConfigValues {
       QStringList canvasCustomBgList;
 //      QString styleSheetFile;
 //      QString style;
-      QString theme;
+      QString theme;              // Main/chrome theme: Qlementine .json (themes/), or legacy .qss+.cfc (themes/old_themes/)
+      QString museColorPalette;   // Custom-widgets color palette: MusE-only .json (themes/muse_custom/), independent of theme above
 
       QString externalWavEditor;
       bool useRewindOnStop;

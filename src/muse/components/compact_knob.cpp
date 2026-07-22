@@ -33,6 +33,8 @@
 #include "muse_math.h"
 #include "mmath.h"
 #include "gconfig.h"
+#include "globals.h"
+#include "app.h"
 
 #include <QPalette>
 #include <QLinearGradient>
@@ -44,6 +46,7 @@
 //#include <QResizeEvent>
 #include <QPainter>
 #include <QEvent>
+#include <QStyle>
 //#include <QPaintEvent>
 //#include <QMouseEvent>
 #include <QKeyEvent>
@@ -133,6 +136,14 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
       d_altFaceColor  = d_faceColor;
       d_markerColor   = palette().dark().color().darker(125);
 
+      // Defaults preserve prior behavior (MusEGlobal::config.knobFontColor,
+      //  lighter on hover, darker when off); a theme's qss can override any
+      //  of these via qproperty-labelColor / qproperty-labelColorHover /
+      //  qproperty-labelColorOff. See configChanged() for the live-update
+      //  path when MusEGlobal::config itself changes instead (e.g. via the
+      //  JSON color-palette mechanism, which bypasses qss entirely).
+      configChanged();
+
       l_slope = 0;
       l_const = 100;
 
@@ -156,6 +167,8 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
       d_scale.setOrientation(ScaleDraw::Round);
 
       setUpdateTime(50);
+
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       }
 
 // Static.
@@ -984,29 +997,22 @@ void CompactKnob::drawLabel(QPainter* painter)
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
 
-  const bool has_focus = hasFocus();
-
-  if (_style3d) {
-      if (has_focus)
-      {
-          if (_hovered)
-              painter->setPen(QPen(QColor(239,239,239)));
-          else
-              painter->setPen(QPen(Qt::white));
-      }
-      else if (_hovered)
-          painter->setPen(QPen(QColor(48,48,48)));
-      else
-          painter->setPen(QPen(Qt::black));
-
-  } else {
-      if (_hovered)
-          painter->setPen(MusEGlobal::config.knobFontColor.lighter());
-      else if (hasOffMode() && isOff())
-          painter->setPen(MusEGlobal::config.knobFontColor.darker());
-      else
-          painter->setPen(MusEGlobal::config.knobFontColor);
-  }
+  // NOTE: previously branched on _style3d here, with a hardcoded
+  //  (non-themeable) color set for the 3d-style case and a
+  //  MusEGlobal::config.knobFontColor-driven set for the flat case. Since
+  //  _style3d defaults to true and nothing in the codebase ever calls
+  //  setStyle3d(false), the themeable branch was dead code in practice.
+  //  Unified into a single path using the labelColor/labelColorHover/
+  //  labelColorOff Q_PROPERTYs instead, which default to
+  //  MusEGlobal::config.knobFontColor (see constructor) but can be
+  //  overridden per-theme via qss (qproperty-labelColor etc.), and update
+  //  live when the stylesheet changes (see changeEvent()).
+  if (_hovered)
+      painter->setPen(d_labelColorHover);
+  else if (hasOffMode() && isOff())
+      painter->setPen(d_labelColorOff);
+  else
+      painter->setPen(d_labelColor);
 
   int label_flags = 0;
   int value_flags = 0;
@@ -1381,6 +1387,61 @@ void CompactKnob::setMarkerColor(const QColor& c)
 void CompactKnob::setActiveColor(const QColor& c)
 {
   d_activeColor = c;
+  update();
+}
+
+//------------------------------------------------------------
+//  setLabelColor / setLabelColorHover / setLabelColorOff
+//------------------------------------------------------------
+void CompactKnob::setLabelColor(const QColor& c)
+{
+  d_labelColor = c;
+  update();
+}
+
+void CompactKnob::setLabelColorHover(const QColor& c)
+{
+  d_labelColorHover = c;
+  update();
+}
+
+void CompactKnob::setLabelColorOff(const QColor& c)
+{
+  d_labelColorOff = c;
+  update();
+}
+
+//------------------------------------------------------------
+//  changeEvent
+//   Re-polish on stylesheet/style changes so qproperty-* overrides from
+//    a newly-applied theme (see MusEGui::loadTheme()) take effect
+//    immediately, without requiring an app restart.
+//------------------------------------------------------------
+void CompactKnob::changeEvent(QEvent* e)
+{
+  SliderBase::changeEvent(e);
+  if (e->type() == QEvent::StyleChange)
+  {
+    style()->unpolish(this);
+    style()->polish(this);
+    update();
+  }
+}
+
+//------------------------------------------------------------
+//  configChanged
+//   Re-reads MusEGlobal::config.knobFontColor whenever config changes
+//    (e.g. Appearance's "Custom Widgets Theme (Muse)" palette switch, via
+//    MusEGui::loadMuseColorPalette() - see compact_knob.h for why this is
+//    needed in addition to changeEvent() above: that mechanism only fires
+//    on stylesheet/qproperty-* changes, which the JSON-based color
+//    palette does not use). Matches the defaults set in the constructor.
+//------------------------------------------------------------
+void CompactKnob::configChanged()
+{
+  d_labelColor      = MusEGlobal::config.knobFontColor;
+  d_labelColorHover = MusEGlobal::config.knobFontColor.lighter();
+  d_labelColorOff   = MusEGlobal::config.knobFontColor.darker();
   update();
 }
 

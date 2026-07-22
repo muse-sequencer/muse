@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabArranger">
       <attribute name="title">
@@ -1218,13 +1218,34 @@
             <item>
              <widget class="QLabel" name="label_6">
               <property name="text">
-               <string>Current theme</string>
+               <string>Main Theme (Qlementine)</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QComboBox" name="themeComboBox">
               <property name="currentText">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_B5">
+            <item>
+             <widget class="QLabel" name="label_B2">
+              <property name="text">
+               <string>Custom Widgets Theme (Muse)</string>
+              </property>
+              <property name="textB2" stdset="0">
+               <string>Current theme</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="themeCustomComboBox">
+              <property name="currentTextB2" stdset="0">
                <string/>
               </property>
              </widget>

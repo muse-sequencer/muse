@@ -90,18 +90,18 @@ export LSAN_OPTIONS=suppressions="${SUPP_LSAN}"
 #   --gen-suppressions=all \
 #   --num-callers=11 \
 #   --suppressions="${SUPP_VALG}" \
-#   /usr/local/bin/muse4  2> valg.out.txt
+#   /usr/local/bin/muse5  2> valg.out.txt
 
 
 ###  only mem leaks  - USEFUL
 # valgrind --leak-check=full --show-leak-kinds=definite --track-origins=yes  \
 #    --gen-suppressions=all \
 #    --suppressions="${SUPP_VALG}" \
-#    /usr/local/bin/muse4  2> valg.out.txt
+#    /usr/local/bin/muse5  2> valg.out.txt
 
 
 
-#gdb --args /usr/local/bin/muse4  -j -J  -Y 8   --no-plugin-duplicate-warnings  #2> error.log
+#gdb --args /usr/local/bin/muse5 -D -D -j -J  -Y 8   --no-plugin-duplicate-warnings  #2> error.log
 #
 # HINT: LeakSanitizer does not work under ptrace (strace, gdb, etc)
 

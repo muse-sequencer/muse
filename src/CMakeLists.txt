@@ -21,8 +21,9 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
-# NOTE: bumped from 3.10.2 -> 3.16 for Qt6 CMake config package support.
+CMAKE_MINIMUM_REQUIRED(VERSION 3.21)
+# NOTE: bumped from 3.16 -> 3.21 for Qlementine (oclero/qlementine), which
+#  itself requires CMake >= 3.21. See ENABLE_QLEMENTINE below.
 
 project(muse)
 
@@ -276,6 +277,13 @@ option ( ENABLE_INSTPATCH    "Enable Instrument Patch Library support (enhances 
 #  even attempt to connect to a server. If Python is not found, no big deal.
 option ( ENABLE_PYTHON       "Enable python control support."         ON)
 
+# Modern QStyle (oclero/qlementine) for standard Qt widget theming, fetched
+#  via CMake FetchContent (see below, after Qt6 is found). This is separate
+#  from - and does not replace - MusE's own theme/color config system,
+#  which drives colors for MusE's custom-painted widgets (canvases, knobs,
+#  meters, etc.) that Qlementine's QStyle has no knowledge of.
+option ( ENABLE_QLEMENTINE    "Enable Qlementine modern QStyle for standard Qt widgets" ON)
+
 option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files (WARNING: This will modify the .ts files in the source tree!!)" OFF)
 option ( MODULES_BUILD_STATIC "Build type of internal modules"                                   OFF)
 
@@ -360,6 +368,108 @@ include_directories (${Qt6Svg_INCLUDE_DIRS})
 #  calls keep working, but pick up each target's usage requirements automatically.
 #  LINK_DIRECTORIES() calls are no longer needed with imported targets and were removed.
 SET(QT_LIBRARIES Qt6::Widgets Qt6::UiTools Qt6::Xml Qt6::Svg Qt6::Core)
+
+##
+## Qlementine (modern QStyle for standard Qt widgets)
+##
+if ( ENABLE_QLEMENTINE )
+    # Priority 1: a local patched source checkout, at
+    #  ../qlementine_1.4.2_patched/ relative to this file (i.e. a sibling
+    #  of src/, at the repo root). If present, build directly from it - no
+    #  network access, no find_package, fully under local control. Meant
+    #  for use while the known upstream reentrancy bugs remain unfixed
+    #  (see notes/qlementine-*.md in this repo for write-ups of each):
+    #  drop a patched qlementine checkout at that path and CMake picks it
+    #  up automatically, ahead of both the installed-package and
+    #  fetch-from-git options below.
+    set(QLEMENTINE_LOCAL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../qlementine_1.4.2_patched")
+    if ( EXISTS "${QLEMENTINE_LOCAL_SOURCE_DIR}/CMakeLists.txt" )
+        message(STATUS "Qlementine: using local patched source at ${QLEMENTINE_LOCAL_SOURCE_DIR} "
+                        "- no download, no find_package, fully local.")
+        add_subdirectory("${QLEMENTINE_LOCAL_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/qlementine_local")
+        if ( TARGET qlementine )
+            # Local add_subdirectory() target has no namespace (same as the
+            #  FetchContent case below) - alias it so downstream
+            #  target_link_libraries() calls can use qlementine::qlementine
+            #  regardless of which of the three paths here was taken.
+            if ( NOT TARGET qlementine::qlementine )
+                add_library(qlementine::qlementine ALIAS qlementine)
+            endif ( NOT TARGET qlementine::qlementine )
+            message(STATUS "Qlementine: local patched source built OK, target 'qlementine::qlementine' available.")
+            set(QLEMENTINE_SUPPORT ON)
+        else ( TARGET qlementine )
+            message(WARNING "Qlementine: local patched source at ${QLEMENTINE_LOCAL_SOURCE_DIR} "
+                             "did not produce a 'qlementine' target - check its CMakeLists.txt. "
+                             "Building WITHOUT Qlementine support.")
+            set(QLEMENTINE_SUPPORT OFF)
+        endif ( TARGET qlementine )
+
+    else ( EXISTS "${QLEMENTINE_LOCAL_SOURCE_DIR}/CMakeLists.txt" )
+        # Priority 2: an already-installed system package (e.g. /usr/local,
+        #  via `cmake --install` from a local qlementine checkout) over
+        #  fetching from git. Faster (no clone/build every configure) and
+        #  lets you patch/rebuild/reinstall qlementine yourself and have
+        #  MusE pick it up automatically, without any FetchContent
+        #  PATCH_COMMAND machinery.
+        find_package(qlementine CONFIG QUIET)
+        if ( qlementine_FOUND )
+            message(STATUS "Qlementine: found installed package v${qlementine_VERSION} "
+                            "(qlementine::qlementine, config: ${qlementine_CONFIG}) - using it, not fetching from git.")
+            set(QLEMENTINE_SUPPORT ON)
+        else ( qlementine_FOUND )
+            # Priority 3: fetch from git. Only reached if neither a local
+            #  patched checkout nor an installed package was found.
+            message(STATUS "Qlementine: no local patched source or installed package found, "
+                            "fetching v1.4.2 from GitHub instead (ENABLE_QLEMENTINE=ON)...")
+            include(FetchContent)
+            FetchContent_Declare(
+                qlementine
+                GIT_REPOSITORY "https://github.com/oclero/qlementine.git"
+                # NOTE: pinned to a specific tagged release rather than tracking
+                #  a moving branch, for reproducible builds. Two known
+                #  reentrancy bugs exist here as of this writing (both require
+                #  local patches - see notes/qlementine-*.md in this repo, or
+                #  the upstream issue reports):
+                #   - ComboboxItemViewFilter: infinite recursion on first
+                #     QComboBox::view(), genuinely NEW in v1.4.0 (confirmed
+                #     absent in v1.0.0 through v1.3.0).
+                #   - ComboboxItemViewFilter: popup shows only the first item
+                #     (viewMinimumSizeHint() clamped too early against a value
+                #     captured before the view was sized for content).
+                #   - MenuEventFilter: unreliable/dropped menu-item clicks
+                #     (flashAction deferred-resend mechanism) - present in
+                #     EVERY tagged release checked, v1.0.0 through current dev.
+                #     Downgrading does NOT avoid this one.
+                #  This FetchContent path builds unpatched upstream code, so
+                #  all three bugs are present here until upstream fixes them -
+                #  use QLEMENTINE_LOCAL_SOURCE_DIR above (or an installed,
+                #  patched package) to get a working build meanwhile.
+                GIT_TAG        v1.4.2
+                GIT_SHALLOW    TRUE
+                )
+            FetchContent_MakeAvailable(qlementine)
+            if ( TARGET qlementine )
+                # The FetchContent/build-tree target has no namespace (unlike
+                #  the installed-package case above) - alias it so downstream
+                #  target_link_libraries() calls can use qlementine::qlementine
+                #  either way, regardless of which path was taken here.
+                if ( NOT TARGET qlementine::qlementine )
+                    add_library(qlementine::qlementine ALIAS qlementine)
+                endif ( NOT TARGET qlementine::qlementine )
+                message(STATUS "Qlementine: found/fetched OK, target 'qlementine::qlementine' available.")
+                set(QLEMENTINE_SUPPORT ON)
+            else ( TARGET qlementine )
+                message(WARNING "Qlementine: FetchContent completed but no 'qlementine' target was created - "
+                                 "something went wrong (check the FetchContent output above). "
+                                 "Building WITHOUT Qlementine support.")
+                set(QLEMENTINE_SUPPORT OFF)
+            endif ( TARGET qlementine )
+        endif ( qlementine_FOUND )
+    endif ( EXISTS "${QLEMENTINE_LOCAL_SOURCE_DIR}/CMakeLists.txt" )
+else ( ENABLE_QLEMENTINE )
+    message(STATUS "Qlementine: disabled (ENABLE_QLEMENTINE=OFF).")
+    set(QLEMENTINE_SUPPORT OFF)
+endif ( ENABLE_QLEMENTINE )
 
 ##
 ##   Begin MANDATORY packages...
@@ -1099,6 +1209,7 @@ if(LV2_SUPPORT)
 endif(LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)
+summary_add("Qlementine modern QStyle" QLEMENTINE_SUPPORT)
 summary_add("CLAP support" CLAP_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
 summary_add("RubberBand support" RUBBERBAND_SUPPORT)

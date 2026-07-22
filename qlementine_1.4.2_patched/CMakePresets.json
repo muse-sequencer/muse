@@ -1,0 +1,171 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "macos",
+      "displayName": "macOS",
+      "description": "Ninja project for macOS",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/_build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/qt/lib/cmake/Qt6",
+        "QLEMENTINE_SANDBOX": true,
+        "QLEMENTINE_SHOWCASE": true
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "windows",
+      "displayName": "Windows",
+      "description": "Visual Studio project for Windows",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/_build",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.2/msvc2022_64",
+        "QLEMENTINE_SANDBOX": true,
+        "QLEMENTINE_SHOWCASE": true
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "linux",
+      "displayName": "Linux",
+      "description": "Makefile for Linux",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/_build",
+      "cacheVariables": {
+        "QLEMENTINE_SANDBOX": true,
+        "QLEMENTINE_SHOWCASE": true
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "macos",
+      "displayName": "macOS",
+      "configurePreset": "macos",
+      "description": "Build with Ninja for macOS",
+      "targets": ["qlementine"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "macos-sandbox",
+      "displayName": "Sandbox for macOS",
+      "configurePreset": "macos",
+      "description": "Sandbox - Build with Ninja for macOS",
+      "targets": ["sandbox"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "macos-showcase",
+      "displayName": "Showcase for macOS",
+      "configurePreset": "macos",
+      "description": "Showcase - Build with Ninja for macOS",
+      "targets": ["showcase"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "windows",
+      "displayName": "Windows",
+      "configurePreset": "windows",
+      "description": "Build with Visual Studio for Windows",
+      "targets": ["qlementine"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-sandbox",
+      "displayName": "Sandbox for Windows",
+      "configurePreset": "windows",
+      "description": "Sandbox - Build with Visual Studio for Windows",
+      "targets": ["sandbox"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-showcase",
+      "displayName": "Showcase for Windows",
+      "configurePreset": "windows",
+      "description": "Showcase - Build with Visual Studio for Windows",
+      "targets": ["showcase"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "linux",
+      "displayName": "Linux",
+      "configurePreset": "linux",
+      "description": "Build for Linux",
+      "targets": ["qlementine"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-sandbox",
+      "displayName": "Sandbox for Linux",
+      "configurePreset": "linux",
+      "description": "Sandbox - Build for Linux",
+      "targets": ["sandbox"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-showcase",
+      "displayName": "Showcase for Linux",
+      "configurePreset": "linux",
+      "description": "Showcase - Build for Linux",
+      "targets": ["showcase"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    }
+  ]
+}

@@ -337,7 +337,7 @@ Appearance::Appearance(QWidget* parent)
       
       connect(colorNameLineEdit, SIGNAL(editingFinished()), SLOT(colorNameEditFinished()));
       connect(itemList, SIGNAL(itemSelectionChanged()), SLOT(colorItemSelectionChanged()));
-      connect(aPalette, SIGNAL(buttonClicked(int)), SLOT(paletteClicked(int)));
+      connect(aPalette, SIGNAL(idClicked(int)), SLOT(paletteClicked(int)));
       connect(globalAlphaSlider, SIGNAL(valueChanged(int)), SLOT(asliderChanged(int)));
       connect(rslider, SIGNAL(valueChanged(int)), SLOT(rsliderChanged(int)));
       connect(gslider, SIGNAL(valueChanged(int)), SLOT(gsliderChanged(int)));
@@ -360,23 +360,18 @@ Appearance::Appearance(QWidget* parent)
       //    THEMES
       //---------------------------------------------------
 
-      QDir themeDir(MusEGlobal::museGlobalShare + QString("/themes"));
-      QStringList fileTypes;
-      fileTypes.append("*.qss");
-      QFileInfoList list = themeDir.entryInfoList(fileTypes);
-      for (const auto& item : std::as_const(list))
-          themeComboBox->addItem(item.baseName());
+      // See populateThemeCombos() - also called from resetValues() so
+      //  reopening this dialog rescans for themes/palettes added or
+      //  renamed on disk, without needing a full app restart.
+      populateThemeCombos();
 
-      themeDir.setPath(MusEGlobal::configPath + QString("/themes"));
-      if (themeDir.exists()) {
-          list = themeDir.entryInfoList(fileTypes);
-          for (const auto& item : std::as_const(list)) {
-              if (themeComboBox->findText(item.baseName()) == -1)
-              themeComboBox->addItem(item.baseName());
-          }
-      }
-
-      themeComboBox->setCurrentText(MusEGlobal::config.theme);
+      // NOTE: themeComboBox/themeCustomComboBox ->setCurrentText() intentionally
+      //  NOT done here. This dialog is a session-long singleton (see
+      //  MusE::configAppearance()): constructed once, then just shown/hidden
+      //  on reopen. Selecting the current theme/palette here would only ever
+      //  reflect whatever it was at first construction. It's done in
+      //  resetValues() instead, which now runs on every reopen, not just
+      //  the first.
 
       //---------------------------------------------------
       //    Fonts
@@ -594,6 +589,61 @@ void Appearance::setConfigurationColors()
 }
       
 //---------------------------------------------------------
+//   populateThemeCombos
+//    Scans share + user-config copies of themes/ (chrome) and
+//    themes/muse_custom/ (color palettes) and (re)populates
+//    themeComboBox/themeCustomComboBox. Safe to call more than once -
+//    clears each combo first, so re-scanning doesn't accumulate
+//    duplicate/stale entries.
+//---------------------------------------------------------
+
+void Appearance::populateThemeCombos()
+{
+    // Local helper: scans share + user-config copies of a themes/
+    //  subdirectory for files matching filters, adding each match's base
+    //  name to combo (deduped, so a name present in both places, or
+    //  under multiple extensions, only appears once).
+    auto populateThemeCombo = [](QComboBox* combo, const QString& subdir, const QStringList& filters)
+    {
+        combo->clear();
+
+        QDir dir(MusEGlobal::museGlobalShare + QString("/themes") + subdir);
+        QFileInfoList list = dir.entryInfoList(filters);
+        for (const auto& item : std::as_const(list)) {
+            if (combo->findText(item.baseName()) == -1)
+                combo->addItem(item.baseName());
+        }
+
+        dir.setPath(MusEGlobal::configPath + QString("/themes") + subdir);
+        if (dir.exists()) {
+            list = dir.entryInfoList(filters);
+            for (const auto& item : std::as_const(list)) {
+                if (combo->findText(item.baseName()) == -1)
+                    combo->addItem(item.baseName());
+            }
+        }
+    };
+
+    // "Main Theme (Qlementine)": only genuine Qlementine JSON themes.
+    // NOTE: deliberately NOT scanning themes/old_themes/*.qss here anymore.
+    //  Those legacy stylesheets were written to be applied via
+    //  qApp->setStyleSheet() on top of the default Qt style - layering
+    //  them on top of QlementineStyle now that it's the active QStyle
+    //  produces inconsistent, partially-styled results (QSS forces
+    //  QStyleSheetStyle proxying, which fights with Qlementine's own
+    //  drawControl()/drawPrimitive() painting). The files are left in
+    //  place under themes/old_themes/ for reference / possible future
+    //  conversion to proper Qlementine JSON themes, but no longer
+    //  offered as selectable "Main Theme" options. loadMuseChromeTheme()
+    //  still has the legacy .qss/.cfc fallback path in case it's ever
+    //  needed again, it's just not advertised in this dropdown.
+    populateThemeCombo(themeComboBox, QString(), QStringList() << "*.json");
+
+    // "Custom Widgets Theme (Muse)": MusE color-palette-only JSON files.
+    populateThemeCombo(themeCustomComboBox, QString("/muse_custom"), QStringList() << "*.json");
+}
+
+//---------------------------------------------------------
 //   resetValues
 //---------------------------------------------------------
 
@@ -603,6 +653,21 @@ void Appearance::resetValues()
       *backupConfig = MusEGlobal::config;  // init with global config values
       updateFonts();
       cbAutoAdjustFontSize->setChecked(config->autoAdjustFontSize);
+
+      // Rescan for themes/palettes added or renamed on disk since this
+      //  dialog was last (re)opened - see populateThemeCombos(). Must run
+      //  before setCurrentText() below, so the selection below actually
+      //  has a matching item to select.
+      populateThemeCombos();
+
+      // Re-select the current theme/palette every time this runs (first
+      //  open AND every reopen) - not just once at construction - otherwise
+      //  a session where the dialog is reopened without changing anything,
+      //  then closed via [X]/Escape, would revert MusEGlobal::config back
+      //  to whatever it was the first time the dialog was ever opened
+      //  (see doCancel()/closeEvent(), and MusE::configAppearance()).
+      themeComboBox->setCurrentText(config->theme);
+      themeCustomComboBox->setCurrentText(config->museColorPalette);
 
       setConfigurationColors();
       
@@ -819,20 +884,39 @@ bool Appearance::changeTheme()
     if (!isColorsDirty())
         saveCurrentThemeColors();
 
-    // Apply the new theme immediately: loads its colors (.cfc) AND its Qt
-    //  stylesheet (.qss), then installs the stylesheet on the running
-    //  QApplication via qApp->setStyleSheet() - no restart required.
-    // NOTE: this used to be done by hand here, reloading only the colors
-    //  (duplicating loadThemeColors()'s path logic) and explicitly NOT
-    //  touching the style/stylesheet ("we want the simple version"), which
-    //  is why switching themes used to require a restart. loadTheme()
-    //  already does both steps correctly (it's also what main.cpp calls
-    //  once at startup), so just reuse it here instead of reimplementing
-    //  half of it.
-    MusEGui::loadTheme(currentTheme);
+    // Apply the new chrome theme immediately: prefers a Qlementine JSON
+    //  theme (themes/<name>.json) if one exists for this name, otherwise
+    //  falls back to the legacy .qss + .cfc mechanism (themes/old_themes/).
+    //  Either way, no restart required - loadMuseChromeTheme() is also
+    //  what main.cpp calls once at startup, so this stays in sync with
+    //  that as the underlying mechanism evolves instead of reimplementing
+    //  theme-loading here.
+    MusEGui::loadMuseChromeTheme(currentTheme);
 
     backgroundTree->reset();
     hide();
+
+    return true;
+}
+
+//---------------------------------------------------------
+//   changeColorPalette
+//    Parallel to changeTheme() above, for the independent "Custom Widgets
+//    Theme (Muse)" axis (themeCustomComboBox) - MusE's own custom-painted
+//    widget colors, unrelated to which chrome theme is active.
+//---------------------------------------------------------
+
+bool Appearance::changeColorPalette()
+{
+    const QString currentPalette = themeCustomComboBox->currentText();
+
+    if (config->museColorPalette == currentPalette)
+        return false;
+
+    printf("Changing to custom widgets color palette %s\n", qPrintable(currentPalette));
+
+    MusEGlobal::config.museColorPalette = currentPalette;
+    MusEGui::loadMuseColorPalette(currentPalette);
 
     return true;
 }
@@ -878,7 +962,13 @@ bool Appearance::apply()
       if (changeTheme()) {
           *config = MusEGlobal::config;
           // NOTE: no restart_required here - changeTheme() now applies the
-          //  new theme's colors and stylesheet live via MusEGui::loadTheme().
+          //  new theme's colors and stylesheet live via MusEGui::loadMuseChromeTheme().
+      }
+
+      if (changeColorPalette()) {
+          *config = MusEGlobal::config;
+          // NOTE: no restart_required here either - applied live via
+          //  MusEGui::loadMuseColorPalette().
       }
 
       int showPartEvent = 0;

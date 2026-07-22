@@ -114,18 +114,32 @@ void destroy_function_dialogs()
 
 void retranslate_function_dialogs()
 {
-	gatetime_dialog->retranslateUi(gatetime_dialog);
-	velocity_dialog->retranslateUi(velocity_dialog);
-	quantize_dialog->retranslateUi(quantize_dialog);
-	erase_dialog->retranslateUi(erase_dialog);
-	del_overlaps_dialog->retranslateUi(del_overlaps_dialog);
-	set_notelen_dialog->retranslateUi(set_notelen_dialog);
-	move_notes_dialog->retranslateUi(move_notes_dialog);
-	transpose_dialog->retranslateUi(transpose_dialog);
-	crescendo_dialog->retranslateUi(crescendo_dialog);
-	legato_dialog->retranslateUi(legato_dialog);
-	paste_dialog->retranslateUi(paste_dialog);
-	paste_events_dialog->retranslateUi(paste_events_dialog);
+	// NOTE: see write_function_dialog_config() below for why these need
+	//  null checks - destroy_function_dialogs() may have already run.
+	if (gatetime_dialog)
+		gatetime_dialog->retranslateUi(gatetime_dialog);
+	if (velocity_dialog)
+		velocity_dialog->retranslateUi(velocity_dialog);
+	if (quantize_dialog)
+		quantize_dialog->retranslateUi(quantize_dialog);
+	if (erase_dialog)
+		erase_dialog->retranslateUi(erase_dialog);
+	if (del_overlaps_dialog)
+		del_overlaps_dialog->retranslateUi(del_overlaps_dialog);
+	if (set_notelen_dialog)
+		set_notelen_dialog->retranslateUi(set_notelen_dialog);
+	if (move_notes_dialog)
+		move_notes_dialog->retranslateUi(move_notes_dialog);
+	if (transpose_dialog)
+		transpose_dialog->retranslateUi(transpose_dialog);
+	if (crescendo_dialog)
+		crescendo_dialog->retranslateUi(crescendo_dialog);
+	if (legato_dialog)
+		legato_dialog->retranslateUi(legato_dialog);
+	if (paste_dialog)
+		paste_dialog->retranslateUi(paste_dialog);
+	if (paste_events_dialog)
+		paste_events_dialog->retranslateUi(paste_events_dialog);
 }
 
 void read_function_dialog_config(MusECore::Xml& xml)
@@ -182,18 +196,36 @@ void write_function_dialog_config(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "dialogs");
 
-	gatetime_dialog->write_configuration(level, xml);
-	velocity_dialog->write_configuration(level, xml);
-	quantize_dialog->write_configuration(level, xml);
-	erase_dialog->write_configuration(level, xml);
-	del_overlaps_dialog->write_configuration(level, xml);
-	set_notelen_dialog->write_configuration(level, xml);
-	move_notes_dialog->write_configuration(level, xml);
-	transpose_dialog->write_configuration(level, xml);
-	crescendo_dialog->write_configuration(level, xml);
-	legato_dialog->write_configuration(level, xml);
-	paste_dialog->write_configuration(level, xml);
-	paste_events_dialog->write_configuration(level, xml);
+	// NOTE: these can be null here - destroy_function_dialogs() may have
+	//  already run (as part of MusE::closeEvent()'s own cleanup) before
+	//  some other still-open top-level window's closeEvent() triggers a
+	//  second, redundant writeGlobalConfiguration() call during
+	//  QApplication::closeAllWindows()'s shutdown cascade. Skip whichever
+	//  dialogs are already gone rather than crash.
+	if (gatetime_dialog)
+		gatetime_dialog->write_configuration(level, xml);
+	if (velocity_dialog)
+		velocity_dialog->write_configuration(level, xml);
+	if (quantize_dialog)
+		quantize_dialog->write_configuration(level, xml);
+	if (erase_dialog)
+		erase_dialog->write_configuration(level, xml);
+	if (del_overlaps_dialog)
+		del_overlaps_dialog->write_configuration(level, xml);
+	if (set_notelen_dialog)
+		set_notelen_dialog->write_configuration(level, xml);
+	if (move_notes_dialog)
+		move_notes_dialog->write_configuration(level, xml);
+	if (transpose_dialog)
+		transpose_dialog->write_configuration(level, xml);
+	if (crescendo_dialog)
+		crescendo_dialog->write_configuration(level, xml);
+	if (legato_dialog)
+		legato_dialog->write_configuration(level, xml);
+	if (paste_dialog)
+		paste_dialog->write_configuration(level, xml);
+	if (paste_events_dialog)
+		paste_events_dialog->write_configuration(level, xml);
 
 	xml.etag(--level, "dialogs");
 }

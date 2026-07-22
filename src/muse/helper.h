@@ -141,6 +141,21 @@ QRect normalizeQRect(const QRect& rect);
 //void loadQtStyle(const QString&);
 void loadTheme(const QString&);
 void loadThemeColors(const QString&);
+QString loadBaseStylesheet();
+
+// Two independent theming axes (see Appearance's "Main Theme (Qlementine)"
+//  and "Custom Widgets Theme (Muse)" combo boxes):
+//  - loadMuseChromeTheme(): standard Qt widget chrome. Prefers
+//    themes/<name>.json (Qlementine Theme); falls back to legacy
+//    themes/old_themes/<name>.qss + .cfc (loadTheme() above) if no such
+//    JSON exists.
+//  - loadMuseColorPalette(): MusE's own custom-painted widget colors
+//    (canvases, knobs, meters, track labels, ...), independent of the
+//    chrome theme. Looks for themes/muse_custom/<name>.json.
+// Both write directly into MusEGlobal::config / the running QlementineStyle
+//  - callers don't need to know the underlying file format.
+void loadMuseChromeTheme(const QString& theme);
+void loadMuseColorPalette(const QString& paletteName);
 // Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
 //void updateThemeAndStyle();
 int countSelectedParts();

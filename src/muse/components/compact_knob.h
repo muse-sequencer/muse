@@ -74,6 +74,14 @@ class CompactKnob : public SliderBase, public ScaleIf
       Q_PROPERTY( QColor shinyColor READ shinyColor WRITE setShinyColor )
       Q_PROPERTY( QColor markerColor READ markerColor WRITE setMarkerColor )
       Q_PROPERTY( QColor activeColor READ activeColor WRITE setActiveColor )
+
+      // Label/value text colors. Themeable via qss, e.g.:
+      //   CompactKnob { qproperty-labelColor: #dddddd; qproperty-labelColorHover: #ffffff; }
+      // Defaults (set in the constructor) fall back to MusEGlobal::config.knobFontColor
+      // so behavior is unchanged for themes that don't set these explicitly.
+      Q_PROPERTY( QColor labelColor READ labelColor WRITE setLabelColor )
+      Q_PROPERTY( QColor labelColorHover READ labelColorHover WRITE setLabelColorHover )
+      Q_PROPERTY( QColor labelColorOff READ labelColorOff WRITE setLabelColorOff )
       
       Q_PROPERTY( QString labelText READ labelText WRITE setLabelText )
       Q_PROPERTY( QString valPrefix READ valPrefix WRITE setValPrefix )
@@ -116,6 +124,13 @@ class CompactKnob : public SliderBase, public ScaleIf
    private slots:
       void editorReturnPressed();
       void editorEscapePressed();
+      // Refreshes colors that default from MusEGlobal::config (currently
+      //  labelColor/labelColorHover/labelColorOff) whenever config changes -
+      //  e.g. via Appearance's "Custom Widgets Theme (Muse)" palette switch
+      //  (see MusEGui::loadMuseColorPalette()), which writes directly into
+      //  MusEGlobal::config and does NOT go through the stylesheet/
+      //  QEvent::StyleChange mechanism that qproperty-* theming relies on.
+      void configChanged();
 
    protected:
       bool hasScale;
@@ -154,6 +169,9 @@ class CompactKnob : public SliderBase, public ScaleIf
       QColor d_curFaceColor;
       QColor d_markerColor;
       QColor d_activeColor;
+      QColor d_labelColor;
+      QColor d_labelColorHover;
+      QColor d_labelColorOff;
 
       void recalcAngle();
       void valueChange();
@@ -171,6 +189,7 @@ class CompactKnob : public SliderBase, public ScaleIf
       virtual void mouseDoubleClickEvent(QMouseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       virtual void leaveEvent(QEvent*);
+      virtual void changeEvent(QEvent*);
 //       virtual bool event(QEvent*);
 
       double getValue(const QPoint &p);
@@ -245,6 +264,12 @@ class CompactKnob : public SliderBase, public ScaleIf
       void setMarkerColor(const QColor& c);
       QColor activeColor() const { return d_activeColor; }
       void setActiveColor(const QColor& c);
+      QColor labelColor() const { return d_labelColor; }
+      void setLabelColor(const QColor& c);
+      QColor labelColorHover() const { return d_labelColorHover; }
+      void setLabelColorHover(const QColor& c);
+      QColor labelColorOff() const { return d_labelColorOff; }
+      void setLabelColorOff(const QColor& c);
 
       QString toolTipValueText(bool inclLabel, bool inclVal) const;
 

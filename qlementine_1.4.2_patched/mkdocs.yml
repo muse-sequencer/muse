@@ -1,0 +1,49 @@
+# Project information.
+site_name: Qlementine Documentation
+site_author: Olivier Cléro
+site_description: "Official documentation for the Qlementine library"
+copyright: Copyright &copy; 2023 Olivier Cléro
+
+# Theme.
+theme:
+  name: material
+  palette:
+    primary: green
+    scheme: default
+  font:
+    text: Inter
+    code: Fira Code
+  favicon: assets/images/favicon.png
+  logo: assets/images/logo.svg
+  features:
+    - search.suggest
+extra_css:
+  - stylesheets/extra.css
+
+# Plugins.
+plugins:
+  - git-revision-date-localized:
+      enable_creation_date: false
+      type: date
+  - search
+
+# Extensions.
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.keys
+  - pymdownx.smartsymbols
+  - admonition
+  - pymdownx.details
+
+# Page tree.
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Theme: theme.md
+  - Widgets: widgets.md
+  - Utilities: utilities.md
+  - About: about.md

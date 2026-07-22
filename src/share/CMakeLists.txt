@@ -34,8 +34,21 @@ ADD_SUBDIRECTORY(wallpapers)
 ADD_SUBDIRECTORY(scoreglyphs)
 ADD_SUBDIRECTORY(note_names)
 ADD_SUBDIRECTORY(locale)
-ADD_SUBDIRECTORY(themes)
 ADD_SUBDIRECTORY(metronome)
 ADD_SUBDIRECTORY(rdf)
 
 install (FILES didyouknow.txt splash.jpg DESTINATION ${MusE_SHARE_DIR} )
+
+# themes/ is a plain data directory (Qlementine .json chrome themes at its
+#  root, plus the old_themes/ and muse_custom/ subfolders) - no build logic
+#  of its own, so it doesn't need (and doesn't have) its own CMakeLists.txt.
+#  install(DIRECTORY ...) copies the whole tree recursively, subfolders
+#  included, in one go - this is what ADD_SUBDIRECTORY(themes) used to do
+#  via a themes/CMakeLists.txt, which no longer exists.
+install (DIRECTORY themes/
+      DESTINATION ${MusE_SHARE_DIR}/themes
+      FILES_MATCHING
+      PATTERN "*.json"
+      PATTERN "*.qss"
+      PATTERN "*.cfc"
+      )
