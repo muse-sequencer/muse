@@ -22,7 +22,7 @@
 //  plugin.h wasn't part of this pass — showNativeGui()/nativeGuiVisible()
 //  below won't compile without it.
 //
-//  (C) Copyright 2024 MusE contributors
+//  (C) Copyright 2026 - Ruwig Faldagon - faldagon[AT]gmx.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License

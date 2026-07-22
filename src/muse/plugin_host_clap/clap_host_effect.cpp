@@ -6,7 +6,7 @@
 //  CLAP host integration for MusE — effect-rack side. See clap_host_effect.h
 //  for the class contract and the required plugin.h friend-declaration note.
 //
-//  (C) Copyright 2026 - Ruwig Faldagon - faldagon@gmx.net
+//  (C) Copyright 2026 - Ruwig Faldagon - faldagon[AT]gmx.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License

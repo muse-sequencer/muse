@@ -13,7 +13,7 @@
 //  clap_host_effect.h for the effect-rack equivalent, which shares the same
 //  ClapSynth descriptor and ClapInstanceCore.
 //
-//  (C) Copyright 2026 - Ruwig Faldagon - faldagon@gmx.net
+//  (C) Copyright 2026 - Ruwig Faldagon - faldagon[AT]gmx.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by

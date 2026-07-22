@@ -44,6 +44,7 @@
 #include "app.h"
 #include "arranger.h"
 #include "pcanvas.h"
+#include "helper.h"
 #include "event.h"
 #include "components/filedialog.h"
 #include "globals.h"
@@ -818,14 +819,17 @@ bool Appearance::changeTheme()
     if (!isColorsDirty())
         saveCurrentThemeColors();
 
-    QString configColorPath = MusEGlobal::configPath + "/themes/" + currentTheme + ".cfc";
-    if (!QFile::exists(configColorPath)) {
-        configColorPath = MusEGlobal::museGlobalShare + "/themes/" + currentTheme + ".cfc";
-    }
-
-    // We want the simple version, don't set the style or stylesheet yet.
-    MusECore::readConfiguration(qPrintable(configColorPath));
-//    MusEGlobal::muse->changeConfig(true);
+    // Apply the new theme immediately: loads its colors (.cfc) AND its Qt
+    //  stylesheet (.qss), then installs the stylesheet on the running
+    //  QApplication via qApp->setStyleSheet() - no restart required.
+    // NOTE: this used to be done by hand here, reloading only the colors
+    //  (duplicating loadThemeColors()'s path logic) and explicitly NOT
+    //  touching the style/stylesheet ("we want the simple version"), which
+    //  is why switching themes used to require a restart. loadTheme()
+    //  already does both steps correctly (it's also what main.cpp calls
+    //  once at startup), so just reuse it here instead of reimplementing
+    //  half of it.
+    MusEGui::loadTheme(currentTheme);
 
     backgroundTree->reset();
     hide();
@@ -873,7 +877,8 @@ bool Appearance::apply()
 
       if (changeTheme()) {
           *config = MusEGlobal::config;
-          restart_required = true;
+          // NOTE: no restart_required here - changeTheme() now applies the
+          //  new theme's colors and stylesheet live via MusEGui::loadTheme().
       }
 
       int showPartEvent = 0;
@@ -1008,7 +1013,10 @@ bool Appearance::apply()
       *backupConfig = *config;
       updateColorItems();
 
-      // We want the simple version, don't set the style or stylesheet yet.
+      // NOTE: changeConfig()'s bool only controls whether settings are
+      //  written to disk - it does not touch style/stylesheet. The new
+      //  theme (colors + stylesheet) was already applied live above, by
+      //  changeTheme().
       MusEGlobal::muse->changeConfig(true);
       raise();
 
@@ -1031,10 +1039,11 @@ bool Appearance::checkClose()
       return true;
   }
 
-  // We want the non-simple version, set the style and stylesheet, and don't save - it's already been done.
-  // And force the style.
+  // NOTE: writeFlag=false here because settings were already saved by
+  //  apply(). changeConfig() only refreshes shortcuts/status bar and emits
+  //  configChanged() - style/stylesheet is unaffected by it either way,
+  //  and was already applied live in changeTheme().
   MusEGlobal::muse->changeConfig(false);
-//   MusEGlobal::muse->updateThemeAndStyle(true);
 
   MusEGlobal::muse->setRestartingApp(false); // Cancel any restart. Also cleared in muse->closeEvent().
   return false;

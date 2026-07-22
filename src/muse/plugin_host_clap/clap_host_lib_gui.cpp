@@ -10,7 +10,7 @@
 //  (clap.gui / clap.timer-support / clap.posix-fd-support) that core's
 //  hostGetExtension() returns.
 //
-//  (C) Copyright 2026 - Ruwig Faldagon - faldagon@gmx.net
+//  (C) Copyright 2026 - Ruwig Faldagon - faldagon[AT]gmx.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License
