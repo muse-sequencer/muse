@@ -53,7 +53,12 @@
 // #cmakedefine HAVE_M_PI
 
 #define VERSION             "${MusE_VERSION_FULL}"
-#define GITSTRING           "${MusE_GITSTRING}"
+// NOTE: GITSTRING moved to git_version.h (see git_version.h.in) on purpose.
+//  It's derived from `git describe --dirty`, so it changes on almost every
+//  reconfigure during active development. Keeping it out of this widely
+//  included header avoids forcing a near-full rebuild every time cmake
+//  reconfigures (config.h is #included by 180+ translation units; only
+//  main.cpp and aboutbox_impl.cpp actually need GITSTRING).
 #define ORGANIZATION_NAME   "MusE"
 #define ORGANIZATION_DOMAIN "muse-sequencer.github.io"
 #define ORGANIZATION_URL    "https://muse-sequencer.github.io/"

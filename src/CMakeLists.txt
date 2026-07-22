@@ -774,6 +774,23 @@ configure_file (
       )
 
 #
+# produce git_version.cpp file
+# NOTE: kept separate from config.h on purpose. MusE_GITSTRING comes from
+#  `git describe --dirty --always`, so it changes on almost every reconfigure
+#  while the working tree has uncommitted changes. It's baked into this tiny
+#  generated .cpp (see git_version.cpp.in) which implements the function
+#  declared in the stable, hand-written git_version.h. main.cpp and
+#  aboutbox_impl.cpp only include git_version.h - never touched by
+#  reconfigures - so a version bump only recompiles this one small file and
+#  relinks the binary, instead of forcing a near-full rebuild through the
+#  widely included config.h.
+#
+configure_file (
+      ${PROJECT_SOURCE_DIR}/git_version.cpp.in
+      ${PROJECT_BINARY_DIR}/git_version.cpp
+      )
+
+#
 # If the cmake version includes cpack, use it
 #
 IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")

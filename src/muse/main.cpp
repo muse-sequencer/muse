@@ -55,6 +55,7 @@
 #endif
 
 #include "config.h"
+#include "git_version.h"
 
 #ifdef ALSA_SUPPORT
 #include <alsa/asoundlib.h>
@@ -319,7 +320,7 @@ CommandLineParseResult parseCommandLine(
 {
   parser.setApplicationDescription(APP_DESCRIPTION);
   const QString version_string(VERSION);
-  const QString git_string(GITSTRING);
+  const QString git_string(museGitVersionString());
   if(git_string.isEmpty())
     QCoreApplication::setApplicationVersion(version_string);
   else

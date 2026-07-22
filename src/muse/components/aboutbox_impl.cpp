@@ -22,6 +22,7 @@
 //=========================================================
 #include "aboutbox_impl.h"
 #include "config.h"
+#include "git_version.h"
 #include "icons.h"
 #include "globals.h"
 #include "audio.h"
@@ -41,7 +42,7 @@ AboutBoxImpl::AboutBoxImpl()
   imageLabel->setPixmap(*aboutMuseImage);
 
   QString version(VERSION);
-  QString gitstring(GITSTRING);
+  QString gitstring(museGitVersionString());
 
   QString verStr("Version: " + version);
   if (!qEnvironmentVariableIsEmpty("APPDIR"))

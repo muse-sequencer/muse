@@ -1,0 +1,17 @@
+//=============================================================================
+//  MusE
+//  Linux Music Editor
+//
+//  Generated from git_version.cpp.in by cmake configure_file() on every
+//  reconfigure. Deliberately the ONLY translation unit that depends on the
+//  volatile `git describe --dirty --always` output, so a version bump only
+//  costs recompiling this one tiny file + relinking - not main.cpp, not
+//  the about dialog, not anything else.
+//=============================================================================
+
+#include "git_version.h"
+
+const char* museGitVersionString()
+{
+  return "${MusE_GITSTRING}";
+}
