@@ -230,8 +230,8 @@ const char* audio_file_pattern[] = {
       nullptr
 };
 
-const char* colors_config_file_pattern[] = {
-      QT_TRANSLATE_NOOP("file_patterns", "Color configuration files (*.cfc)"),
+const char* muse_color_palette_file_pattern[] = {
+      QT_TRANSLATE_NOOP("file_patterns", "MusE color palette files (*.json)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
       nullptr
 };

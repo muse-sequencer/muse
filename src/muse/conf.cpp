@@ -22,6 +22,7 @@
 //=========================================================
 
 #include <QFile>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QString>
 #include <QByteArray>
@@ -31,6 +32,9 @@
 #include <stdio.h>
 
 #include "app.h"
+#ifdef QLEMENTINE_SUPPORT
+#include "muse_theme.h"
+#endif
 #include "transport.h"
 #include "icons.h"
 #include "globals.h"
@@ -1990,20 +1994,19 @@ bool MusE::loadConfigurationColors(QWidget* parent)
 {
   if(!parent)
     parent = this;
-  //QString file = QFileDialog::getOpenFileName(parent, tr("Load configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
-  QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::colors_config_file_pattern, this,
-                                               tr("Load configuration colors"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
+#ifdef QLEMENTINE_SUPPORT
+  QString file = MusEGui::getOpenFileName(QString("themes/muse_custom"), MusEGlobal::muse_color_palette_file_pattern, this,
+                                               tr("Load MusE color palette"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
 
   if(file.isEmpty())
     return false;
-  
+
   if(QMessageBox::question(parent, QString("MusE"),
       tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"),
       QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Cancel)
     return false;
-  
-  // Read, and return if error.
-  if(MusECore::readConfiguration(file.toLocal8Bit().constData()))   // True if error.
+
+  if(!MusEGui::MuseTheme::loadColorPaletteFromJsonPath(file))
   {
     fprintf(stderr, "MusE::loadConfigurationColors failed\n");
     return false;
@@ -2012,26 +2015,65 @@ bool MusE::loadConfigurationColors(QWidget* parent)
   // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
   changeConfig(false);
   return true;
+#else
+  // NOTE: legacy .cfc fallback, only used when Qlementine isn't compiled
+  //  in at all - the JSON museColors mechanism above is what's actually
+  //  used in a normal (ENABLE_QLEMENTINE=ON) build.
+  QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::muse_color_palette_file_pattern, this,
+                                               tr("Load configuration colors"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
+
+  if(file.isEmpty())
+    return false;
+
+  if(QMessageBox::question(parent, QString("MusE"),
+      tr("Color settings will immediately be replaced with any found in the file.\nAre you sure you want to proceed?"),
+      QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Cancel)
+    return false;
+
+  // Read, and return if error.
+  if(MusECore::readConfiguration(file.toLocal8Bit().constData()))   // True if error.
+  {
+    fprintf(stderr, "MusE::loadConfigurationColors failed\n");
+    return false;
+  }
+  changeConfig(false);
+  return true;
+#endif
 }
 
 bool MusE::saveConfigurationColors(QWidget* parent)
 {
   if(!parent)
     parent = this;
-  QString file = MusEGui::getSaveFileName(QString("themes"), MusEGlobal::colors_config_file_pattern, this,
-                                               tr("Save configuration colors"), nullptr, MusEGui::MFileDialog::USER_VIEW);
+#ifdef QLEMENTINE_SUPPORT
+  QString file = MusEGui::getSaveFileName(QString("themes/muse_custom"), MusEGlobal::muse_color_palette_file_pattern, this,
+                                               tr("Save MusE color palette"), nullptr, MusEGui::MFileDialog::USER_VIEW);
 
   if(file.isEmpty())
     return false;
 
-// redundant, this is already done by the file dialog itself (kybos)
-//  if(QFile::exists(file))
-//  {
-//    if(QMessageBox::question(parent, QString("MusE"),
-//        tr("File exists.\nDo you want to overwrite it?"), tr("&Ok"), tr("&Cancel"),
-//        QString(), 0, 1 ) == 1)
-//      return false;
-//  }
+  if (!file.endsWith(".json", Qt::CaseInsensitive))
+    file += ".json";
+
+  // Use the file's base name (without extension) as the palette's
+  //  display name, matching how themeCustomComboBox derives names from
+  //  files - so a palette saved here shows up there with a sensible name.
+  const QString paletteName = QFileInfo(file).completeBaseName();
+
+  if (!MusEGui::MuseTheme::saveColorPaletteToJsonPath(file, paletteName))
+  {
+    fprintf(stderr, "save configuration colors to <%s> failed\n", qPrintable(file));
+    return false;
+  }
+  return true;
+#else
+  // NOTE: legacy .cfc fallback, only used when Qlementine isn't compiled
+  //  in at all - see loadConfigurationColors() above for why.
+  QString file = MusEGui::getSaveFileName(QString("themes"), MusEGlobal::muse_color_palette_file_pattern, this,
+                                               tr("Save configuration colors"), nullptr, MusEGui::MFileDialog::USER_VIEW);
+
+  if(file.isEmpty())
+    return false;
 
   QFile f(file);
   if(!f.open(QIODevice::WriteOnly))
@@ -2050,6 +2092,7 @@ bool MusE::saveConfigurationColors(QWidget* parent)
   xml.tag(0, "/muse");
   f.close();
   return true;
+#endif
 }
 
 void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const

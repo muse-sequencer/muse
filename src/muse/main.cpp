@@ -1287,6 +1287,7 @@ int main(int argc, char* argv[])
         qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
                  << "Load theme...";
 
+        MusEGui::seedUserThemeFiles();
         MusEGui::loadMuseChromeTheme(MusEGlobal::config.theme);
         MusEGui::loadMuseColorPalette(MusEGlobal::config.museColorPalette);
 //        MusEGui::loadThemeColors(MusEGlobal::config.theme);

@@ -384,6 +384,33 @@ if ( ENABLE_QLEMENTINE )
     #  fetch-from-git options below.
     set(QLEMENTINE_LOCAL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../qlementine_1.4.2_patched")
     if ( EXISTS "${QLEMENTINE_LOCAL_SOURCE_DIR}/CMakeLists.txt" )
+        # lib/resources/ (fonts, icons, the qlementine.qrc file itself) is
+        #  often deliberately stripped from a checkout to keep the repo
+        #  thin - DOWNLOAD_RESOURCES.sh re-fetches it from a GitHub
+        #  archive. Run it automatically if the specific file
+        #  qt_add_library() needs isn't there yet, so the build doesn't
+        #  just fail with a cryptic "cannot find source file" error.
+        if ( NOT EXISTS "${QLEMENTINE_LOCAL_SOURCE_DIR}/lib/resources/qlementine.qrc" )
+            if ( EXISTS "${QLEMENTINE_LOCAL_SOURCE_DIR}/DOWNLOAD_RESOURCES.sh" )
+                message(STATUS "Qlementine: lib/resources/qlementine.qrc missing from local patched "
+                                "checkout - running DOWNLOAD_RESOURCES.sh to fetch it...")
+                execute_process(
+                    COMMAND bash "${QLEMENTINE_LOCAL_SOURCE_DIR}/DOWNLOAD_RESOURCES.sh"
+                    WORKING_DIRECTORY "${QLEMENTINE_LOCAL_SOURCE_DIR}"
+                    RESULT_VARIABLE _qlementine_download_resources_result
+                    )
+                if ( NOT _qlementine_download_resources_result EQUAL 0 )
+                    message(WARNING "Qlementine: DOWNLOAD_RESOURCES.sh exited with code "
+                                     "${_qlementine_download_resources_result} - the build below will "
+                                     "likely fail if lib/resources/ still isn't populated.")
+                endif ( NOT _qlementine_download_resources_result EQUAL 0 )
+            else ( EXISTS "${QLEMENTINE_LOCAL_SOURCE_DIR}/DOWNLOAD_RESOURCES.sh" )
+                message(WARNING "Qlementine: lib/resources/qlementine.qrc is missing from "
+                                 "${QLEMENTINE_LOCAL_SOURCE_DIR} and no DOWNLOAD_RESOURCES.sh was found there "
+                                 "to fetch it - the build below will likely fail.")
+            endif ( EXISTS "${QLEMENTINE_LOCAL_SOURCE_DIR}/DOWNLOAD_RESOURCES.sh" )
+        endif ( NOT EXISTS "${QLEMENTINE_LOCAL_SOURCE_DIR}/lib/resources/qlementine.qrc" )
+
         message(STATUS "Qlementine: using local patched source at ${QLEMENTINE_LOCAL_SOURCE_DIR} "
                         "- no download, no find_package, fully local.")
         add_subdirectory("${QLEMENTINE_LOCAL_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/qlementine_local")

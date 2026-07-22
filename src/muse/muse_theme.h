@@ -73,6 +73,16 @@ public:
   static bool loadColorPaletteFromJsonPath(const QString& jsonPath);
   static bool loadColorPaletteFromJsonDoc(const QJsonDocument& jsonDoc);
 
+  // Write-side counterpart: serializes MusEGlobal::config's current color
+  //  values (the same 94 fields/partColors loadColorPaletteFromJson*()
+  //  reads) into a standalone color-palette JSON file - mirrors
+  //  Qlementine's own Theme::toJson() pattern for chrome themes, just for
+  //  MusE's own museColors extension instead. paletteName (if non-empty)
+  //  is written into "meta"/"name" for display purposes; it's not used to
+  //  derive the file name - the caller decides where to write via jsonPath.
+  static bool saveColorPaletteToJsonPath(const QString& jsonPath, const QString& paletteName = QString());
+  static QJsonDocument colorPaletteToJsonDoc(const QString& paletteName = QString());
+
 private:
   // Reads museColorsObj's keys into MusEGlobal::config's QColor fields
   //  (see gconfig.h) by name, plus the "partColors" array. Keys not

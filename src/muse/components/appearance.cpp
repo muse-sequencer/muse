@@ -881,8 +881,18 @@ bool Appearance::changeTheme()
 
     MusEGlobal::config.theme = currentTheme;
 
-    if (!isColorsDirty())
-        saveCurrentThemeColors();
+    // NOTE: used to call saveCurrentThemeColors() here (if (!isColorsDirty())
+    //  saveCurrentThemeColors();), snapshotting all current colors to
+    //  themes/<old-theme-name>.cfc before switching. That's the old
+    //  per-theme-editable-color-set model; chrome themes are now curated
+    //  JSON files, not user-editable-and-saved snapshots, and this was
+    //  firing for JSON theme names too (writing e.g. dark.cfc/light.cfc)
+    //  even though .cfc doesn't represent a "chrome" theme at all. Any
+    //  individually-edited colors already persist via the main config
+    //  file's own per-field color tags (writeConfigurationColors() in
+    //  conf.cpp), independent of this - removing it loses no functionality,
+    //  just the stray, never-read-back .cfc file writes. saveCurrentThemeColors()
+    //  itself is left in place (unused???) rather than removed outright.
 
     // Apply the new chrome theme immediately: prefers a Qlementine JSON
     //  theme (themes/<name>.json) if one exists for this name, otherwise
@@ -921,6 +931,10 @@ bool Appearance::changeColorPalette()
     return true;
 }
 
+// unused??? - no callers remain (see NOTEs in changeTheme() and apply()
+//  above for why the calls were removed). Left in place rather than
+//  deleted, in case the per-theme-editable-color .cfc model is ever
+//  wanted again for something.
 void Appearance::saveCurrentThemeColors() {
 
     QDir dir(MusEGlobal::configPath + "/themes/");
@@ -956,8 +970,11 @@ bool Appearance::apply()
 {
       bool restart_required = false;
 
-      if (isColorsDirty())
-          saveCurrentThemeColors();
+      // NOTE: used to call saveCurrentThemeColors() here too (if
+      //  (isColorsDirty()) saveCurrentThemeColors();) - see the longer
+      //  explanation in changeTheme() above. Same reasoning: obsolete now
+      //  that chrome themes are curated JSON files, and any edited colors
+      //  already persist via the main config's own per-field color tags.
 
       if (changeTheme()) {
           *config = MusEGlobal::config;

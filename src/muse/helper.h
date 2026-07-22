@@ -156,6 +156,17 @@ QString loadBaseStylesheet();
 //  - callers don't need to know the underlying file format.
 void loadMuseChromeTheme(const QString& theme);
 void loadMuseColorPalette(const QString& paletteName);
+
+// One-time setup: if the user's themes/ directory is missing or empty
+//  (typically first launch with a fresh config directory), copies the
+//  chrome themes (themes/*.json) and color palettes
+//  (themes/muse_custom/*.json) from the system share directory into the
+//  user's config directory. This gives the user their own editable
+//  starting copies (matching the Colors tab's Save/Load buttons, which
+//  target themes/muse_custom/) while leaving the system-installed
+//  originals in museGlobalShare untouched. Safe to call every startup -
+//  it's a no-op once the user directory already has files in it.
+void seedUserThemeFiles();
 // Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
 //void updateThemeAndStyle();
 int countSelectedParts();

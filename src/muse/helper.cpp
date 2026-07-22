@@ -2157,6 +2157,68 @@ QRect normalizeQRect(const QRect& rect)
 //}
 
 //---------------------------------------------------------
+//   seedUserThemeFiles
+//---------------------------------------------------------
+
+namespace {
+
+// Copies every file matching filters from srcDir into dstDir (creating
+//  dstDir if needed), but ONLY if dstDir doesn't already exist or is
+//  empty - never overwrites a user's existing files. Returns the number
+//  of files actually copied.
+int seedDirIfEmpty(const QString& srcDirPath, const QString& dstDirPath, const QStringList& filters)
+{
+    QDir dstDir(dstDirPath);
+    if (dstDir.exists() && !dstDir.entryInfoList(QDir::Files).isEmpty())
+        return 0; // user already has files here - never touch it
+
+    QDir srcDir(srcDirPath);
+    if (!srcDir.exists())
+        return 0; // nothing to seed from
+
+    if (!dstDir.exists())
+        dstDir.mkpath(".");
+
+    int copied = 0;
+    const QFileInfoList list = srcDir.entryInfoList(filters, QDir::Files);
+    for (const auto& item : list)
+    {
+        const QString dstPath = dstDirPath + "/" + item.fileName();
+        if (QFile::exists(dstPath))
+            continue; // shouldn't normally happen given the emptiness check above, but be safe
+        if (QFile::copy(item.absoluteFilePath(), dstPath))
+            ++copied;
+        else
+            fprintf(stderr, "seedUserThemeFiles: failed to copy <%s> to <%s>\n",
+                    qPrintable(item.absoluteFilePath()), qPrintable(dstPath));
+    }
+    return copied;
+}
+
+} // anonymous namespace
+
+void seedUserThemeFiles()
+{
+#ifdef QLEMENTINE_SUPPORT
+    const QStringList jsonFilter = QStringList() << "*.json";
+
+    const int chromeCopied = seedDirIfEmpty(
+        MusEGlobal::museGlobalShare + "/themes",
+        MusEGlobal::configPath + "/themes",
+        jsonFilter);
+
+    const int paletteCopied = seedDirIfEmpty(
+        MusEGlobal::museGlobalShare + "/themes/muse_custom",
+        MusEGlobal::configPath + "/themes/muse_custom",
+        jsonFilter);
+
+    if (MusEGlobal::debugMsg && (chromeCopied || paletteCopied))
+        fprintf(stderr, "seedUserThemeFiles: seeded %d chrome theme(s), %d color palette(s) into %s/themes\n",
+                chromeCopied, paletteCopied, qPrintable(MusEGlobal::configPath));
+#endif
+}
+
+//---------------------------------------------------------
 //   loadBaseStylesheet
 //    Reads default_style.qss - the base layer of styling that applies
 //     regardless of which theme is active (e.g. qproperty-* rules for

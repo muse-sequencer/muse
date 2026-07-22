@@ -24,6 +24,7 @@
 #include "muse_theme.h"
 
 #include "gconfig.h"
+#include "globals.h"
 
 #include <QFile>
 #include <QJsonArray>
@@ -152,6 +153,63 @@ const QVector<QPair<QString, ColorMember>>& colorFieldTable()
 
 //---------------------------------------------------------
 //   loadMuseColors
+//---------------------------------------------------------
+//   colorPaletteToJsonDoc / saveColorPaletteToJsonPath
+//---------------------------------------------------------
+
+QJsonDocument MuseTheme::colorPaletteToJsonDoc(const QString& paletteName)
+{
+  QJsonObject root;
+
+  QJsonObject meta;
+  meta["name"] = paletteName.isEmpty() ? QStringLiteral("MusE Custom") : paletteName;
+  meta["author"] = QStringLiteral("MusE user (saved from Appearance > Colors)");
+  meta["version"] = QStringLiteral("1.0");
+  root["meta"] = meta;
+
+  for (const auto& entry : colorFieldTable())
+  {
+    const QColor& c = MusEGlobal::config.*(entry.second);
+    root[entry.first] = c.isValid() ? c.name(QColor::HexRgb) : QString();
+  }
+
+  QJsonArray partColorsArr;
+  for (int i = 0; i < NUM_PARTCOLORS; ++i)
+  {
+    const QColor& c = MusEGlobal::config.partColors[i];
+    partColorsArr.append(c.isValid() ? c.name(QColor::HexRgb) : QString());
+  }
+  root["partColors"] = partColorsArr;
+
+  return QJsonDocument(root);
+}
+
+bool MuseTheme::saveColorPaletteToJsonPath(const QString& jsonPath, const QString& paletteName)
+{
+  QFile f(jsonPath);
+  if (!f.open(QIODevice::WriteOnly))
+  {
+    fprintf(stderr, "MuseTheme::saveColorPaletteToJsonPath: could not open <%s> for writing: %s\n",
+            qPrintable(jsonPath), qPrintable(f.errorString()));
+    return false;
+  }
+
+  const QJsonDocument doc = colorPaletteToJsonDoc(paletteName);
+  const qint64 written = f.write(doc.toJson(QJsonDocument::Indented));
+  f.close();
+
+  if (written < 0)
+  {
+    fprintf(stderr, "MuseTheme::saveColorPaletteToJsonPath: write to <%s> failed: %s\n",
+            qPrintable(jsonPath), qPrintable(f.errorString()));
+    return false;
+  }
+
+  if (MusEGlobal::debugMsg)
+    fprintf(stderr, "MuseTheme::saveColorPaletteToJsonPath: wrote <%s>\n", qPrintable(jsonPath));
+  return true;
+}
+
 //---------------------------------------------------------
 
 void MuseTheme::loadMuseColors(const QJsonObject& museColorsObj)
