@@ -15,7 +15,7 @@
 //  Callers (ClapSynthIF, ClapPluginWrapper_State) own the translation to/from
 //  MusE's MidiPlayEvent stream, LADSPA-style connectPort() pointers, etc.
 //
-//  (C) Copyright 2024 MusE contributors
+//  (C) Copyright 2026 - Ruwig Faldagon - faldagon@gmx.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License

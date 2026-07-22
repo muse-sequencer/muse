@@ -125,7 +125,16 @@ include_directories(${VST_HEADER_PATH})
 # set libdir if not use -DLIB_INSTALL_DIR
 if (NOT LIB_INSTALL_DIR)
         if(CMAKE_INSTALL_LIBDIR)
-                SET(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+                # CMAKE_INSTALL_LIBDIR (from GNUInstallDirs) is a relative path by
+                #  design (e.g. "lib" or "lib64"). That's fine for install()
+                #  destinations, which CMake resolves against CMAKE_INSTALL_PREFIX
+                #  automatically - but CMAKE_INSTALL_RPATH needs an absolute path
+                #  baked into the binary, so make it absolute here explicitly.
+                if(IS_ABSOLUTE ${CMAKE_INSTALL_LIBDIR})
+                        SET(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+                else(IS_ABSOLUTE ${CMAKE_INSTALL_LIBDIR})
+                        SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+                endif(IS_ABSOLUTE ${CMAKE_INSTALL_LIBDIR})
         else(CMAKE_INSTALL_LIBDIR)
                 SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
         endif(CMAKE_INSTALL_LIBDIR)
@@ -503,6 +512,16 @@ if (ENABLE_PYTHON)
             endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 3.5)
       endif (Python3_Development_FOUND)
       #  TODO Check for Pyro5 ?
+      if (PYTHON_SUPPORT)
+            # Bake the directory of whichever libpython was actually linked
+            #  (pyenv, venv, or the system default - whatever find_package(Python3)
+            #  picked up at configure time) into the RPATH, so muse5 finds it at
+            #  runtime without needing LD_LIBRARY_PATH set by hand.
+            get_filename_component(MusE_PYTHON_LIB_DIR ${Python3_LIBRARIES} DIRECTORY)
+            list(APPEND CMAKE_INSTALL_RPATH ${MusE_PYTHON_LIB_DIR})
+            message(" Python library used for linking: " ${Python3_LIBRARIES} )
+            message(" Python library rpath added: " ${MusE_PYTHON_LIB_DIR} )
+      endif (PYTHON_SUPPORT)
 endif (ENABLE_PYTHON)
 
 

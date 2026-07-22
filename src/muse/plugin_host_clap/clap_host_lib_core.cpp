@@ -6,7 +6,7 @@
 //  Reusable CLAP plugin-instance core (non-GUI half). See clap_host_lib.h for
 //  the class contract and the GUI/timer/fd half in clap_host_lib_gui.cpp.
 //
-//  (C) Copyright 2024 MusE contributors
+//  (C) Copyright 2026 - Ruwig Faldagon - faldagon@gmx.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License

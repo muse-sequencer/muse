@@ -8,9 +8,7 @@
 //  does the actual CLAP work, this file only translates to/from MusE's
 //  SynthIF/track world.
 //
-//  Copyright (C) 1999-2011 by Werner Schweer and others
-//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on sourceforge)
-//  (C) Copyright 2024 MusE contributors
+//  (C) Copyright 2026 - Ruwig Faldagon - faldagon@gmx.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License

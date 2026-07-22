@@ -60,7 +60,7 @@ export LSAN_OPTIONS=suppressions="${SUPP_LSAN}"
 # 
 #  -D for DEBUG !
 # 
-/usr/local/bin/muse4     -j -J  -Y 8   --no-plugin-duplicate-warnings #  > error.log 2>&1 
+/usr/local/bin/muse5     -j -J  -Y 8   --no-plugin-duplicate-warnings #  > error.log 2>&1 
 #
 ########################################
 
