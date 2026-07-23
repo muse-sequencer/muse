@@ -64,7 +64,7 @@
 #define ORGANIZATION_URL    "https://muse-sequencer.github.io/"
 #define ORGANIZATION_HELP_URL "https://muse-sequencer.github.io/docs/"
 #define ORGANIZATION_CODE_REPO_URL "https://github.com/muse-sequencer/muse/"
-#define PACKAGE_NAME        "v5.0"
+#define PACKAGE_NAME        "MusE-5.0"
 #define APP_DISPLAY_NAME    "MusE"
 #define APP_DESCRIPTION     "MusE: Linux Music Editor"
 #define DOCDIR              "${MusE_DOC_DIR}"

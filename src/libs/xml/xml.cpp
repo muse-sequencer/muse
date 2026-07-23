@@ -322,8 +322,10 @@ Xml::Token Xml::parse()
                         next();
                         }
                   
-                  buffer.append(char(0));
-                  _s1 = QString(buffer);
+                  // No trailing '\0': QByteArray->QString keeps full size(), which would embed
+                  // a null char into _s1 and break strict tag-name comparisons (tag == "...").
+                  // See same fix in token()/stoken() above.
+                  _s1 = QString::fromUtf8(buffer);
 
                   if (c == EOF) {
                         fprintf(stderr, "XML: unexpected EOF\n");
@@ -401,8 +403,10 @@ Xml::Token Xml::parse()
                   next();
                   }
             
-            buffer.append(char(0));
-            _s1 = QString(buffer);
+            // No trailing '\0': QByteArray->QString keeps full size(), which would embed
+            // a null char into _s1 and break strict tag-name comparisons (tag == "...").
+            // See same fix in token()/stoken() above.
+            _s1 = QString::fromUtf8(buffer);
 
             // skip white space:
             while (c == ' ' || c == '\t' || c == '\n')
@@ -497,8 +501,10 @@ Xml::Token Xml::parse()
                   next();
                   }
                   
-            buffer.append(char(0));
-            _s1 = QString(buffer);
+            // No trailing '\0': QByteArray->QString keeps full size(), which would embed
+            // a null char into _s1 and silently corrupt every text value read via parse1().
+            // See same fix in token()/stoken() above.
+            _s1 = QString::fromUtf8(buffer);
 
             if (c == '<')
                   --bufptr;
