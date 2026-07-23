@@ -175,6 +175,27 @@ Appearance::Appearance(QWidget* parent)
       colorwidget->setAutoFillBackground(true);
       aPalette = new QButtonGroup(aPaletteBox);
 
+      // QlementineStyle (installed app-wide in main.cpp, see QLEMENTINE_SUPPORT)
+      //  custom-paints QPushButton itself and ignores per-widget
+      //  setStyleSheet("background-color: ...") - these 16 buttons exist
+      //  specifically to show a user-configurable swatch color, which
+      //  Qlementine's painting can't represent. Give them a plain style
+      //  that still honors simple QSS background-color, instead of the
+      //  app-wide custom one. Static: QStyleFactory::create() returns a
+      //  new QStyle each call, and QWidget::setStyle() does NOT take
+      //  ownership, so one shared instance (owned by qApp, like the
+      //  Qlementine style) avoids 16 leaked QStyle objects.
+      static QStyle* const swatchStyle = QStyleFactory::create(MusEGlobal::defaultStyle);
+      if(swatchStyle)
+      {
+        QAbstractButton* const swatchButtons[] = {
+          palette0, palette1, palette2, palette3, palette4, palette5, palette6, palette7,
+          palette8, palette9, palette10, palette11, palette12, palette13, palette14, palette15
+        };
+        for(QAbstractButton* b : swatchButtons)
+          b->setStyle(swatchStyle);
+      }
+
       aPalette->addButton(palette0, 0);
       aPalette->addButton(palette1, 1);
       aPalette->addButton(palette2, 2);
@@ -904,7 +925,6 @@ bool Appearance::changeTheme()
     MusEGui::loadMuseChromeTheme(currentTheme);
 
     backgroundTree->reset();
-    hide();
 
     return true;
 }
