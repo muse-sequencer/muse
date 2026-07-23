@@ -28,7 +28,11 @@
 #endif
 
 #include <sstream>
-#include <clocale>
+// #include <clocale>
+#include <locale.h>   // newlocale, uselocale, freelocale, LC_NUMERIC_MASK
+#include <cctype>     // isspace
+#include <cstdio>   // fprintf, stderr
+#include <cerrno>   // errno
 
 // Forwards from header:
 #include <QString>
@@ -36,9 +40,23 @@
 
 namespace MusELib {
 
+
 #ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
-QString hexfloatDecimalPoint = QString('.');
+// NOTE: hexfloatDecimalPoint is no longer used for decimal-point replacement.
+//
+// CORRECTION: an earlier comment here claimed strtod/strtof parse hex-float
+// literals with '.' "regardless of system locale". That is WRONG: strtod/strtof
+// ARE locale sensitive for the decimal-point character, even inside a hex-float
+// significand. Under a comma-locale (e.g. de_DE) "0x1.aaaaaap-1" stops at the '.'
+// and mis-parses. We therefore force the "C" locale via uselocale() in the
+// cLocaleStrToNum() helpers below (see museStringToDouble/Float).
+//
+// This variable is kept only for ABI/symbol compatibility. The original bug it
+// related to was the Qt6-incompatible QString('.') constructor (resolved to
+// QString(int=46, QChar()) under Qt6), not a locale-conversion issue.
+QString hexfloatDecimalPoint = QString(QChar('.'));
 #endif
+
 
 QString museStringFromDouble(double v)
 {
@@ -53,71 +71,6 @@ QString museStringFromDouble(double v)
     return QString::fromLatin1(ss.str().c_str());
 }
 
-double museStringToDouble(const QString &s, bool *ok)
-{
-//==================================================================
-// Check if C++ istringstream supports hexfloat formatting.
-// As of summer 2023, only experimental clang versions support this.
-// And C++ is still in the process of adding support.
-//==================================================================
-#ifdef HAVE_ISTRINGSTREAM_HEXFLOAT
-
-  // If C++ istringstream supports hexfloat, use it.
-  std::istringstream ss(s.toStdString());
-  ss.imbue(std::locale("C"));
-  double value = 0.0;
-  ss >> value;
-  if(ok)
-    *ok = true;
-  return value;
-    
-#else // C++ istringstream does not support hexfloat
-
-  // Is it a hex number?
-  if(s.startsWith("0x", Qt::CaseInsensitive) ||
-     s.startsWith("-0x", Qt::CaseInsensitive) ||
-     s.startsWith("+0x", Qt::CaseInsensitive))
-  {
-    // Note that strtod is locale sensitive.
-    // We DO NOT want locale influence here. Just standard "C" locale. This function is intended for file IO.
-    // One way around this is to call thread-safe per-thread functions uselocale() etc. but they aren't found on some platforms (mingw).
-    //
-    // Instead of trying to set locale to match our data, try the opposite: Translate the data to match locale.
-    //
-    // From docs:
-    //  Hexadecimal floating-point expression. It consists of the following parts:
-    //    (optional) plus or minus sign
-    //    0x or 0X
-    //    nonempty sequence of hexadecimal digits optionally containing a decimal-point character
-    //     (as determined by the current C locale) (defines significand)
-    //    (optional) p or P followed with optional minus or plus sign and nonempty sequence of decimal digits (defines exponent to base 2)
-    //
-    // Therefore in case of hexfloats, the decimal point should be the only thing requiring alteration here.
-    // Note that our hexfloatDecimalPoint is a QString.
-    //
-    // Replace the known '.' decimal point with the current locale decimal point:
-
-    QString s2(s);
-    s2.replace(QChar('.'), hexfloatDecimalPoint);
-    const QByteArray ba = s2.toUtf8();
-
-    const char *sc = ba.constData();
-    char *end;
-    const double rv = std::strtod(sc, &end);
-    if(ok)
-      // "The function sets the pointer pointed to by str_end to point to the character past the last character interpreted."
-      *ok = (end - sc) == ba.size();
-
-    return rv;
-  }
-  else // Not a hex number.
-  {
-    // Just use normal toDouble(). Does not care about locale. Uses 'C' locale.
-    return s.toDouble(ok);
-  }
-
-#endif // HAVE_ISTRINGSTREAM_HEXFLOAT
-}
 
 QString museStringFromFloat(float v)
 {
@@ -132,16 +85,143 @@ QString museStringFromFloat(float v)
     return QString::fromLatin1(ss.str().c_str());
 }
 
+
+
+
+#ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
+  // add some helper functions for locale handling 
+  // 
+  // Parse a hex-float (or any) literal under the "C" locale, regardless of the
+  // process locale. strtod/strtof ARE locale sensitive for the decimal point,
+  // even inside a hex-float significand: under a comma-locale (e.g. de_DE)
+  // "0x1.aaaaaap-1" otherwise stops at the '.', yielding 0x1 and a parse failure.
+  // uselocale() switches only the calling thread's locale, so it is thread-safe
+  // (unlike setlocale()). Returns true if something was parsed and only
+  // whitespace/'\0' remains after the number.
+  static bool cLocaleConsumed(const char *sc, char *end)
+  {
+    if(end == sc)
+      return false;
+    while(*end)
+    {
+      if(!std::isspace(static_cast<unsigned char>(*end)))
+        return false;
+      ++end;
+    }
+    return true;
+  }
+
+
+  static bool cLocaleStrToNum(const char *sc, double &out)
+  {
+    if(!sc)
+    {
+      fprintf(stderr, "cLocaleStrToNum: null input string\n");
+      out = 0;
+      return false;
+    }
+    char *end = nullptr;
+    locale_t cloc = newlocale(LC_NUMERIC_MASK, "C", static_cast<locale_t>(0));
+    if(cloc != static_cast<locale_t>(0))
+    {
+      locale_t old = uselocale(cloc);
+      out = std::strtod(sc, &end);
+      uselocale(old);
+      freelocale(cloc);
+    }
+    else
+    {
+      // newlocale() failed: we cannot force the "C" locale for this thread.
+      // Parse anyway, but warn: under a comma-locale a hex-float significand
+      // ("0x1.aaaaaap-1") will mis-parse at the '.'. Not silent on purpose.
+      fprintf(stderr,
+        "cLocaleStrToNum(double): newlocale(LC_NUMERIC,\"C\") failed (errno=%d), "
+        "parsing '%s' in process locale - hex-floats may be wrong\n",
+        errno, sc ? sc : "(null)");
+      out = std::strtod(sc, &end);
+    }
+    return cLocaleConsumed(sc, end);
+  }
+
+  static bool cLocaleStrToNum(const char *sc, float &out)
+  {
+    if(!sc)
+    {
+      fprintf(stderr, "cLocaleStrToNum: null input string\n");
+      out = 0;
+      return false;
+    }
+    char *end = nullptr;
+    locale_t cloc = newlocale(LC_NUMERIC_MASK, "C", static_cast<locale_t>(0));
+    if(cloc != static_cast<locale_t>(0))
+    {
+      locale_t old = uselocale(cloc);
+      out = std::strtof(sc, &end);
+      uselocale(old);
+      freelocale(cloc);
+    }
+    else
+    {
+      // See double overload: warn instead of silently parsing in the wrong locale.
+      fprintf(stderr,
+        "cLocaleStrToNum(float): newlocale(LC_NUMERIC,\"C\") failed (errno=%d), "
+        "parsing '%s' in process locale - hex-floats may be wrong\n",
+        errno, sc ? sc : "(null)");
+      out = std::strtof(sc, &end);
+    }
+    return cLocaleConsumed(sc, end);
+  }
+#endif 
+
+
+
+
+double museStringToDouble(const QString &s, bool *ok)
+{
+#ifdef HAVE_ISTRINGSTREAM_HEXFLOAT
+  std::istringstream ss(s.toStdString());
+  ss.imbue(std::locale("C"));
+  double value = 0.0;
+  ss >> value;
+  if(ok)
+    *ok = true;
+  return value;
+#else // C++ istringstream does not support hexfloat
+  // Trim once up front so leading/trailing whitespace doesn't bypass the hex check.
+  const QString st = s.trimmed();
+
+  // Is it a hex number?
+  if(st.startsWith("0x", Qt::CaseInsensitive) ||
+     st.startsWith("-0x", Qt::CaseInsensitive) ||
+     st.startsWith("+0x", Qt::CaseInsensitive))
+  {
+    const QByteArray ba = st.toLatin1();
+    double rv = 0.0;
+    const bool good = cLocaleStrToNum(ba.constData(), rv);
+    if(ok)
+      *ok = good;
+    return rv;
+  }
+  else // Not a hex number.
+  {
+    // Plain decimal value (e.g. "0.375"). QString::toDouble() is locale-INDEPENDENT:
+    // it always parses with '.' as the decimal separator (it does NOT use the
+    // process/QLocale locale), so it is safe under a comma-locale like de_DE and
+    // matches how museStringFromDouble() writes values in the "C" locale.
+    // Therefore no uselocale("C") wrapping is needed here, unlike the strtod path
+    // above where the C runtime IS locale sensitive.
+    return st.toDouble(ok);
+  }
+#endif // HAVE_ISTRINGSTREAM_HEXFLOAT
+}
+
+
+
+
+
 float museStringToFloat(const QString &s, bool *ok)
 {
-//==================================================================
-// Check if C++ istringstream supports hexfloat formatting.
-// As of summer 2023, only experimental clang versions support this.
-// And C++ is still in the process of adding support.
-//==================================================================
 #ifdef HAVE_ISTRINGSTREAM_HEXFLOAT
-
-  // If C++ istringstream supports hexfloat, use it.
   std::istringstream ss(s.toStdString());
   ss.imbue(std::locale("C"));
   float value = 0.0f;
@@ -149,54 +229,33 @@ float museStringToFloat(const QString &s, bool *ok)
   if(ok)
     *ok = true;
   return value;
-
 #else // C++ istringstream does not support hexfloat
+  // Trim once up front so leading/trailing whitespace doesn't bypass the hex check.
+  const QString st = s.trimmed();
 
   // Is it a hex number?
-  if(s.startsWith("0x", Qt::CaseInsensitive) ||
-     s.startsWith("-0x", Qt::CaseInsensitive) ||
-     s.startsWith("+0x", Qt::CaseInsensitive))
+  if(st.startsWith("0x", Qt::CaseInsensitive) ||
+     st.startsWith("-0x", Qt::CaseInsensitive) ||
+     st.startsWith("+0x", Qt::CaseInsensitive))
   {
-    // Note that strtof is locale sensitive.
-    // We DO NOT want locale influence here. Just standard "C" locale. This function is intended for file IO.
-    // One way around this is to call thread-safe per-thread functions uselocale() etc. but they aren't found on some platforms (mingw).
-    //
-    // Instead of trying to set locale to match our data, try the opposite: Translate the data to match locale.
-    //
-    // From docs:
-    //  Hexadecimal floating-point expression. It consists of the following parts:
-    //    (optional) plus or minus sign
-    //    0x or 0X
-    //    nonempty sequence of hexadecimal digits optionally containing a decimal-point character
-    //     (as determined by the current C locale) (defines significand)
-    //    (optional) p or P followed with optional minus or plus sign and nonempty sequence of decimal digits (defines exponent to base 2)
-    //
-    // Therefore in case of hexfloats, the decimal point should be the only thing requiring alteration here.
-    // Note that our hexfloatDecimalPoint is a QString.
-    //
-    // Replace the known '.' decimal point with the current locale decimal point:
-
-    QString s2(s);
-    s2.replace(QChar('.'), hexfloatDecimalPoint);
-    const QByteArray ba = s2.toUtf8();
-
-    const char *sc = ba.constData();
-    char *end;
-    const float rv = std::strtof(sc, &end);
+    const QByteArray ba = st.toLatin1();
+    float rv = 0.0f;
+    const bool good = cLocaleStrToNum(ba.constData(), rv);
     if(ok)
-      // "The function sets the pointer pointed to by str_end to point to the character past the last character interpreted."
-      *ok = (end - sc) == ba.size();
-
+      *ok = good;
     return rv;
   }
   else // Not a hex number.
   {
-    // Just use normal toFloat(). Does not care about locale. Uses 'C' locale.
-    return s.toFloat(ok);
+    // Plain decimal value (e.g. "0.5"). QString::toFloat() is locale-INDEPENDENT:
+    // it always uses '.' as the decimal separator regardless of the process/QLocale
+    // locale, so it is safe under a comma-locale (de_DE) and is consistent with the
+    // "C"-locale output of museStringFromFloat(). No uselocale("C") needed here.
+    return st.toFloat(ok);
   }
-
 #endif // HAVE_ISTRINGSTREAM_HEXFLOAT
 }
 
-} // namespace MusELib
 
+
+} // namespace MusELib

@@ -30,6 +30,11 @@
 #include <atomic>
 // For atomic<U*>, according to docs.
 #include <memory>
+// Guards 'cache'/'csize' against concurrent access from the audio
+// prefetch thread (live cache update while recording) and the GUI
+// thread (waveform painting). See SndFile::read(SampleV*...) and
+// SndFile::realWrite().
+#include <mutex>
 
 #include <QString>
 #include <QFileInfo>
@@ -95,6 +100,13 @@ class SndFile {
       SF_INFO sfinfo;
       SampleVtype* cache;
       sf_count_t csize;                    //!< frames in cache
+      // Protects 'cache' and 'csize': realWrite() (audio prefetch thread,
+      // live cache update while recording) resizes/reallocates the cache
+      // vectors while read(SampleV*...) (GUI thread, waveform painting)
+      // concurrently reads them. Without this, a vector reallocation on
+      // one thread invalidates pointers/iterators being dereferenced on
+      // the other -> heap-use-after-free.
+      mutable std::mutex cacheMutex;
 
       // For virtual (memory or stream) operation:
       SndFileVirtualData _virtualData;

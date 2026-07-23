@@ -50,6 +50,7 @@
 #include "midiseq.h"
 #include "driver/alsamidi.h"
 #include "driver/jackmidi.h"
+#include "driver/jackaudio.h"
 #include "audiodev.h"
 #include "menutitleitem.h"
 #include "utils.h"
@@ -101,6 +102,31 @@ protected:
     {
         QStyledItemDelegate::initStyleOption(option, index);
         option->displayAlignment = Qt::AlignRight;
+    }
+};
+
+// Role used to stash the friendly Jack Metadata pretty-name alias for a Jack
+//  midi device instance (see MPConfig constructor, fillSynths()). Only affects
+//  *painting* - the item's actual text (Qt::DisplayRole/EditRole) stays the
+//  raw, editable device name so renaming (DeviceItemRenamed()) keeps comparing
+//  against md->name() correctly, instead of accidentally trying to rename the
+//  device to its own displayed alias.
+static const int InstNameFriendlyRole = Qt::UserRole + 50;
+
+class InstNameDisplayDelegate: public QStyledItemDelegate{
+public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+protected:
+    void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override
+    {
+        QStyledItemDelegate::initStyleOption(option, index);
+        const QVariant alias = index.data(InstNameFriendlyRole);
+        if(alias.isValid())
+        {
+          const QString a = alias.toString();
+          if(!a.isEmpty())
+            option->text = a;
+        }
     }
 };
 
@@ -656,7 +682,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       
                       for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
                       {
-                        int idx = i->second;
                         const QString s = QString::fromStdString(i->first);
                         MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::ALSA_MIDI);
                         if(md)
@@ -664,7 +689,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                           if(md->deviceType() != MusECore::MidiDevice::ALSA_MIDI)  
                             continue;
                           act = pup->addAction(md->name());
-                          act->setData(idx);
+                          act->setData(QVariant::fromValue<void*>(md));
                           act->setCheckable(true);
                           act->setChecked(md == dev);
                         }  
@@ -678,16 +703,28 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       
                       for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
                       {
-                        int idx = i->second;
                         const QString s = QString::fromStdString(i->first);
                         MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::JACK_MIDI);
                         if(md)
                         {
                           if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)  
                             continue;
-                            
-                          act = pup->addAction(md->name());
-                          act->setData(idx);
+                          
+                          // Prefer the friendly connection alias over the raw "jack-midi-N"
+                          //  internal name. Safe now that selection is by pointer (below),
+                          //  not by matching this displayed text.
+                          QString label = md->name();
+                          void* jp = md->outClientPort();
+                          if(!jp)
+                            jp = md->inClientPort();
+                          if(jp)
+                          {
+                            const QString pretty = MusECore::jackPortPrettyName((jack_port_t*)jp);
+                            if(!pretty.isEmpty())
+                              label = pretty;
+                          }
+                          act = pup->addAction(label);
+                          act->setData(QVariant::fromValue<void*>(md));
                           act->setCheckable(true);
                           act->setChecked(md == dev);
                         }  
@@ -701,7 +738,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       
                       for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
                       {
-                        int idx = i->second;
                         const QString s = QString::fromStdString(i->first);
                         MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::SYNTH_MIDI);
                         if(md)
@@ -710,7 +746,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                             continue;
                             
                           act = pup->addAction(md->name());
-                          act->setData(idx);
+                          act->setData(QVariant::fromValue<void*>(md));
                           act->setCheckable(true);
                           act->setChecked(md == dev);
                         }  
@@ -724,13 +760,20 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       return;
                     }
                     
-                    n = act->data().toInt();
-                    const QString acttxt = act->text();
-                    delete pup;
-                    
                     MusECore::MidiDevice* sdev = 0;
-                    if(n < 0x10000000)
+                    if(act->data().canConvert<void*>() && act->data().value<void*>() != nullptr)
                     {
+                      // An existing-device entry (Alsa/Jack/Synth list) - resolved by the
+                      //  pointer stored on the action, not by its (possibly aliased) display
+                      //  text, so showing a friendly Jack alias here is safe.
+                      sdev = static_cast<MusECore::MidiDevice*>(act->data().value<void*>());
+                      // Is it the current device? Reset it to <none>.
+                      if(sdev == dev)
+                        sdev = 0;
+                    }
+                    else
+                    {
+                      n = act->data().toInt();
                       if(n <= 2)  
                       {
                         sdev = MusECore::MidiJackDevice::createJackMidiDevice(); 
@@ -747,23 +790,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                           sdev->setOpenFlags(of);
                         }  
                       }  
-                    }  
-                    else
-                    {
-                      int typ;
-                      if(n < 0x20000000)
-                        typ = MusECore::MidiDevice::ALSA_MIDI;
-                      else
-                      if(n < 0x30000000)
-                        typ = MusECore::MidiDevice::JACK_MIDI;
-                      else //if(n < 0x40000000)
-                        typ = MusECore::MidiDevice::SYNTH_MIDI;
-                      
-                      sdev = MusEGlobal::midiDevices.find(acttxt, typ);
-                      // Is it the current device? Reset it to <none>.
-                      if(sdev == dev)
-                        sdev = 0;
                     }    
+                    delete pup;
                     
                     MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
                     for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
@@ -1061,6 +1089,12 @@ MPConfig::MPConfig(QWidget* parent)
       RightIconDelegate *iconDelegate = new RightIconDelegate(mdevView);
       mdevView->setItemDelegate(iconDelegate);
 
+      // Show the friendly Jack alias in the "Device Name" column of the
+      //  instance table too, without touching the underlying editable text
+      //  (see InstNameDisplayDelegate / InstNameFriendlyRole above).
+      InstNameDisplayDelegate *instNameDelegate = new InstNameDisplayDelegate(instanceList);
+      instanceList->setItemDelegateForColumn(INSTCOL_NAME, instNameDelegate);
+
       mdevView->setRowCount(MusECore::MIDI_PORTS);
       mdevView->verticalHeader()->hide();
 //      mdevView->setShowGrid(false);
@@ -1322,7 +1356,20 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
             mdevView->blockSignals(false);
 
             if (dev) {
-	          itemname->setText(dev->name());            
+                  QString label = dev->name();
+                  if(dev->deviceType() == MusECore::MidiDevice::JACK_MIDI)
+                  {
+                    void* jp = dev->outClientPort();
+                    if(!jp)
+                      jp = dev->inClientPort();
+                    if(jp)
+                    {
+                      const QString friendly = MusECore::jackPortPrettyName((jack_port_t*)jp);
+                      if(!friendly.isEmpty())
+                        label = friendly;
+                    }
+                  }
+                  itemname->setText(label);
                   }
             else {
                   itemname->setText(tr("<none>"));            
@@ -1377,7 +1424,26 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
             iitem->setData(DeviceRole, QVariant::fromValue<void*>(md));
             // Is it a Jack midi device? Allow renaming.
             if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
+            {
               iitem->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+              // This cell's TEXT must stay the real, editable device name - renaming
+              //  (DeviceItemRenamed()) compares it against md->name() to detect a
+              //  change. Show the friendly connection alias via InstNameFriendlyRole
+              //  (painted by InstNameDisplayDelegate) and as a tooltip, instead of
+              //  replacing the text, so it doesn't break renaming.
+              void* jp = md->outClientPort();
+              if(!jp)
+                jp = md->inClientPort();
+              if(jp)
+              {
+                const QString pretty = MusECore::jackPortPrettyName((jack_port_t*)jp);
+                if(!pretty.isEmpty())
+                {
+                  iitem->setToolTip(pretty);
+                  iitem->setData(InstNameFriendlyRole, pretty);
+                }
+              }
+            }
             else
               iitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             addInstItem(row_cnt, INSTCOL_NAME, iitem, instanceList);
@@ -1692,6 +1758,10 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                       return;
                       
                     RoutePopupMenu* pup = new RoutePopupMenu();
+                    if(MusEGlobal::debugMsg)
+                      fprintf(stderr, "MPConfig::deviceItemClicked(): col=%s (%d) device=%s -> exec(isOutput=%d)\n",
+                              (col == INSTCOL_OUTROUTES) ? "INSTCOL_OUTROUTES" : "INSTCOL_INROUTES",
+                              col, md->name().toUtf8().constData(), (int)(col == INSTCOL_OUTROUTES));
                     pup->exec(QCursor::pos(), md, col == INSTCOL_OUTROUTES);
                     delete pup;
                   }

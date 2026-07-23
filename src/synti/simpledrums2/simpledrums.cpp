@@ -2030,7 +2030,7 @@ void SimpleSynth::setFxParameter(int fxid, int param, float val)
     \fn SimpleSynth::guiUpdateFxParameter(int fxid, int param, float val)
     \brief Notify gui of changed fx-parameter
  */
-void SimpleSynth::guiUpdateFxParameter(int fxid, int param, float val)
+void SimpleSynth::guiUpdateFxParameter(int fxid, int param, float val [[maybe_unused]] ) // TODO?:use val param
 {
    SS_TRACE_IN
    MusESimplePlugin::PluginI* plugin = sendEffects[fxid].plugin;

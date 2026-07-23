@@ -42,7 +42,9 @@ enum {
       COL_HNUM, COL_LNUM, COL_MIN, COL_MAX
       };
 
-MidiControllerList defaultMidiController;
+// Non-owning: holds pointers to the permanent, static-duration MidiController
+//  globals below (veloCtrl, pitchCtrl, ...). Must not delete them on exit.
+MidiControllerList defaultMidiController(false);
 //
 // some global controller which are always available:
 //

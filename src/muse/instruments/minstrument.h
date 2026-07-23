@@ -506,6 +506,7 @@ typedef MidiInstrumentList::const_iterator ciMidiInstrument;
 extern MidiInstrumentList midiInstruments;
 extern MidiInstrument* genericMidiInstrument;
 extern void initMidiInstruments();
+extern void freeMidiInstrumentTemplates();
 extern MidiInstrument* registerMidiInstrument(const QString&);
 extern void removeMidiInstrument(const QString& name);
 extern void removeMidiInstrument(const MidiInstrument* instr);

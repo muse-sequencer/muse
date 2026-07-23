@@ -31,6 +31,7 @@
 //#include <QFileInfoList>
 #include <QFileDevice>
 #include <QProcess>
+#include <QProcessEnvironment>
 #include <QByteArray>
 //#include <QByteArrayList>
 #include <QStringList>
@@ -40,6 +41,11 @@
 
 #include <cstdio>
 #include <cstring>
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 //#include <cstdint>
 #include "muse_math.h"
 
@@ -1609,6 +1615,23 @@ static bool pluginScan(
   if(scanPorts)
     args << QString("-p");
 
+  // NOTE: third-party plugin libraries routinely leave small allocations
+  //  unfreed at process exit (dlopen'd code, static/global state) - normal
+  //  and harmless for a short-lived scan child the OS is about to reap
+  //  anyway. If muse_plugin_scan is built with LeakSanitizer/ASan, its
+  //  default behaviour is to report any such leak and exit(1), which we'd
+  //  otherwise misinterpret below as "scan failed" for the plugin - even
+  //  though the scan itself completed fine and wrote valid output. Force
+  //  leak detection off for the child regardless of what MusE's own build/
+  //  launch environment set. Also strip LD_PRELOAD, in case it points at a
+  //  sanitizer runtime the scan binary itself wasn't built against.
+  QProcessEnvironment scanEnv = QProcessEnvironment::systemEnvironment();
+  scanEnv.remove("LD_PRELOAD");
+  const QString existingAsanOptions = scanEnv.value("ASAN_OPTIONS");
+  scanEnv.insert("ASAN_OPTIONS",
+                (existingAsanOptions.isEmpty() ? QString() : existingAsanOptions + ":") + "detect_leaks=0");
+  process.setProcessEnvironment(scanEnv);
+
   process.start(prog, args);
 
   bool fail = false;
@@ -1678,6 +1701,28 @@ static bool pluginScan(
   {
     std::fprintf(stderr, "\npluginScan FAILED: Scan exit code not 0: file: %s\n\n", filename_ba.constData());
     fail = true;
+  }
+
+  // NOTE: print the child's stdout/stderr on failure UNCONDITIONALLY (not just
+  //  when debugStdErr is set) - otherwise a crashing/aborting scan child gives
+  //  no clue why it failed, only the unhelpful exit-code line above.
+  if(fail)
+  {
+    QByteArray out_array = process.readAllStandardOutput();
+    if(!out_array.isEmpty())
+    {
+      out_array.append(char(0));
+      std::fprintf(stderr, "pluginScan: child stdout for %s:\n%s\n", filename_ba.constData(), out_array.constData());
+    }
+    QByteArray err_array = process.readAllStandardError();
+    if(!err_array.isEmpty())
+    {
+      err_array.append(char(0));
+      std::fprintf(stderr, "pluginScan: child stderr for %s:\n%s\n", filename_ba.constData(), err_array.constData());
+    }
+    if(out_array.isEmpty() && err_array.isEmpty())
+      std::fprintf(stderr, "pluginScan: child produced no output (likely crashed/killed, e.g. segfault) for %s\n",
+                   filename_ba.constData());
   }
 
   if(!fail)
@@ -1811,6 +1856,11 @@ void scanLadspaPlugins(const QString& museGlobalLib, PluginScanList* list, bool 
 
 void scanMessPlugins(const QString& museGlobalLib, PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
+  // scan_2: the expensive pass — actually dlopen()s/instantiates each MESS
+  // plugin found below to query its ports, then (re)writes the cache file.
+  // Only reached if scan_1 (findMessPluginFiles(), above) determined the
+  // cache is dirty, or a full rescan was forced (see checkPluginCacheFiles()).
+  std::fprintf(stderr, "INFO: [scan_2: cache rebuild] gathering MESS plugin directories...\n");
   QStringList sl = pluginGetMessDirectories(museGlobalLib);
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
     scanPluginDir(*it, MusEPlugin::PluginTypesAll, list, scanPorts, debugStdErr);
@@ -1857,6 +1907,50 @@ void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*de
 {
 }
 #endif // VST_NATIVE_SUPPORT
+
+//---------------------------------------------------------
+//   scanClapPlugins
+//---------------------------------------------------------
+
+#ifdef CLAP_SUPPORT
+static void scanClapPluginDir(
+  const QString& dirname,
+  PluginScanList* list,
+  bool scanPorts,
+  bool debugStdErr,
+  int recurseLevel = 0)
+{
+  const int max_levels = 10;
+  if(recurseLevel >= max_levels)
+  {
+    std::fprintf(stderr, "scanClapPluginDir: too deep (max:%d) at:%s\n",
+                 max_levels, dirname.toLocal8Bit().constData());
+    return;
+  }
+  QDir pluginDir(dirname, QString(), QDir::Name | QDir::IgnoreCase,
+                 QDir::Drives | QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
+  if(!pluginDir.exists())
+    return;
+  for(const QFileInfo& fi : pluginDir.entryInfoList())
+  {
+    if(fi.isDir())
+      scanClapPluginDir(fi.filePath(), list, scanPorts, debugStdErr, recurseLevel + 1);
+    else if(fi.suffix().toLower() == "clap")
+      pluginScan(fi.filePath(), MusEPlugin::PluginTypeCLAP, list, scanPorts, debugStdErr);
+  }
+}
+
+void scanClapPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
+{
+  const QStringList sl = pluginGetClapDirectories();
+  for(const QString& dir : sl)
+    scanClapPluginDir(dir, list, scanPorts, debugStdErr);
+}
+#else
+void scanClapPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugStdErr*/)
+{
+}
+#endif // CLAP_SUPPORT
 
 #ifdef LV2_USE_PLUGIN_CACHE
 #ifdef LV2_SUPPORT
@@ -2539,6 +2633,65 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
 
 
 //---------------------------------------------------------
+//   ScopedStderrSuppressor
+//   RAII helper: while alive (and constructed with active=true),
+//   temporarily redirects stderr to the null device, then restores it on
+//   destruction. Used around lilv_world_load_all() to optionally silence
+//   lilv's own internal warnings (e.g. lilv_world_compare_versions()
+//   "Ignoring duplicate version..." when the same LV2 bundle is reachable
+//   from two paths, such as /usr/lib and /usr/lib64) — lilv provides no
+//   log-callback/option to control those specific messages, only
+//   LILV_OPTION_FILTER_LANG / LILV_OPTION_DYN_MANIFEST / LILV_OPTION_LV2_PATH.
+//   NOTE: this suppresses ALL stderr output during its lifetime, including
+//   any genuine lilv errors (e.g. malformed manifests) — that's the
+//   necessary tradeoff of not having a targeted lilv API. Pass
+//   active=!debugStdErr so turning on MusE's own debug messages always
+//   shows everything, including these.
+//---------------------------------------------------------
+
+class ScopedStderrSuppressor
+{
+public:
+  explicit ScopedStderrSuppressor(bool active) : _active(active)
+  {
+    if(!_active)
+      return;
+    std::fflush(stderr);
+#ifdef _WIN32
+    _savedFd = _dup(_fileno(stderr));
+    if(!freopen("NUL", "w", stderr))
+      std::fprintf(stdout, "ScopedStderrSuppressor: freopen(NUL) failed\n");
+#else
+    _savedFd = dup(fileno(stderr));
+    if(!freopen("/dev/null", "w", stderr))
+      std::fprintf(stdout, "ScopedStderrSuppressor: freopen(/dev/null) failed\n");
+#endif
+  }
+
+  ~ScopedStderrSuppressor()
+  {
+    if(!_active || _savedFd < 0)
+      return;
+    std::fflush(stderr);
+#ifdef _WIN32
+    _dup2(_savedFd, _fileno(stderr));
+    _close(_savedFd);
+#else
+    dup2(_savedFd, fileno(stderr));
+    close(_savedFd);
+#endif
+  }
+
+  // Not copyable/movable — it owns a raw saved fd and a global side effect.
+  ScopedStderrSuppressor(const ScopedStderrSuppressor&) = delete;
+  ScopedStderrSuppressor& operator=(const ScopedStderrSuppressor&) = delete;
+
+private:
+  bool _active;
+  int  _savedFd = -1;
+};
+
+//---------------------------------------------------------
 //   scanLv2Plugins
 //---------------------------------------------------------
 
@@ -2599,7 +2752,12 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
   lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, ORGANIZATION_URL "lv2host#lv2_actionUpdatePresets");
   lv2CacheNodes.end                    = nullptr;
 
-  lilv_world_load_all(lilvWorld);
+  {
+    // Optionally silence lilv's own internal warnings (see
+    // ScopedStderrSuppressor above) — only when debugStdErr is off.
+    ScopedStderrSuppressor suppressLilvWarnings(!debugStdErr);
+    lilv_world_load_all(lilvWorld);
+  }
   const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
   LilvIter *pit = lilv_plugins_begin(plugins);
 
@@ -2678,6 +2836,12 @@ void scanAllPlugins(
   if(types & (MusEPlugin::PluginTypeLinuxVST))
     // Now do LinuxVST plugins...
     scanLinuxVSTPlugins(list, scanPorts, debugStdErr);
+
+#ifdef CLAP_SUPPORT
+  if(types & MusEPlugin::PluginTypeCLAP)
+    // Now do CLAP plugins...
+    scanClapPlugins(list, scanPorts, debugStdErr);
+#endif
 
 // SPECIAL for LV2: No need for a cache file. Do not create one here. Read directly into the list later.
 //   if(types & (MusEPlugin::PluginTypeLV2))
@@ -2759,6 +2923,10 @@ static void findLadspaPluginFiles(const QString& museGlobalLib, filepath_set& fp
 
 static void findMessPluginFiles(const QString& museGlobalLib, filepath_set& fplist, bool debugStdErr)
 {
+  // scan_1: cheap directory/file-list pass, used only to decide whether the
+  // cache is dirty (see checkPluginCacheFiles()). No plugin library is
+  // opened here, files are just stat()'d for path + mtime.
+  std::fprintf(stderr, "INFO: [scan_1: cache dirty-check] gathering MESS plugin directories...\n");
   const QStringList sl = pluginGetMessDirectories(museGlobalLib);
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
     findPluginFilesDir(*it, MusEPlugin::PluginTypesAll, fplist, debugStdErr);
@@ -2798,8 +2966,45 @@ static void findLinuxVSTPluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr
 }
 #endif // VST_NATIVE_SUPPORT
 
+//---------------------------------------------------------
+//   findClapPluginFiles
+//---------------------------------------------------------
 
-// SPECIAL for LV2: No need for a cache file.
+#ifdef CLAP_SUPPORT
+static void findClapPluginFilesDir(const QString& dirname, filepath_set& fplist,
+                                   bool debugStdErr, int recurseLevel = 0)
+{
+  const int max_levels = 10;
+  if(recurseLevel >= max_levels)
+  {
+    std::fprintf(stderr, "findClapPluginFilesDir: too deep (max:%d) at:%s\n",
+                 max_levels, dirname.toLocal8Bit().constData());
+    return;
+  }
+  QDir dir(dirname, QString(), QDir::Name | QDir::IgnoreCase,
+           QDir::Drives | QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
+  if(!dir.exists())
+    return;
+  for(const QFileInfo& fi : dir.entryInfoList())
+  {
+    if(fi.isDir())
+      findClapPluginFilesDir(fi.filePath(), fplist, debugStdErr, recurseLevel + 1);
+    else if(fi.suffix().toLower() == "clap")
+      fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toMSecsSinceEpoch()));
+  }
+}
+
+static void findClapPluginFiles(filepath_set& fplist, bool debugStdErr)
+{
+  const QStringList sl = pluginGetClapDirectories();
+  for(const QString& dir : sl)
+    findClapPluginFilesDir(dir, fplist, debugStdErr);
+}
+#else
+static void findClapPluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr*/)
+{
+}
+#endif // CLAP_SUPPORT
 // Do not find and compare LV2 library files here.
 // This caused problems with identically named plugins
 //  being excluded, and triggering rescans every time.
@@ -2886,7 +3091,12 @@ static void findLv2PluginFiles(filepath_set& fplist, bool debugStdErr)
   if(!lilvWorld)
     return;
 
-  lilv_world_load_all(lilvWorld);
+  {
+    // Optionally silence lilv's own internal warnings (see
+    // ScopedStderrSuppressor above) — only when debugStdErr is off.
+    ScopedStderrSuppressor suppressLilvWarnings(!debugStdErr);
+    lilv_world_load_all(lilvWorld);
+  }
   const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
   LilvIter *pit = lilv_plugins_begin(plugins);
 
@@ -2950,6 +3160,12 @@ static void findPluginFiles(const QString& museGlobalLib,
   {
     // Now do LinuxVST plugins...
     findLinuxVSTPluginFiles(fplist, debugStdErr);
+  }
+
+  if(types & MusEPlugin::PluginTypeCLAP)
+  {
+    // Now do CLAP plugins...
+    findClapPluginFiles(fplist, debugStdErr);
   }
 
   // SPECIAL for LV2: No need for a cache file.
@@ -3088,6 +3304,19 @@ bool createPluginCacheFiles(
     createPluginCacheFile(path, MusEPlugin::PluginTypeVST, list, writePorts,
       museGlobalLib, MusEPlugin::PluginTypeVST, debugStdErr);
 
+#ifdef CLAP_SUPPORT
+  if(types & MusEPlugin::PluginTypeCLAP)
+    // Hardcoded true, ignoring the writePorts argument: CLAP's port/param
+    // counts are ONLY knowable by instantiating the plugin (unlike LADSPA's
+    // LADSPA_Descriptor or VST's AEffect struct, both cheap to re-read live),
+    // so the cache is the only place ClapPluginWrapper can get them without
+    // probing every plugin live on every MusE startup. See
+    // queryClapPortCounts() in plugin_cache_writer_clap.cpp and
+    // ClapPluginWrapper::ClapPluginWrapper() in clap_host_effect.cpp.
+    createPluginCacheFile(path, MusEPlugin::PluginTypeCLAP, list, /*writePorts=*/true,
+      museGlobalLib, MusEPlugin::PluginTypeCLAP, debugStdErr);
+#endif
+
   if(types & MusEPlugin::PluginTypeUnknown)
     createPluginCacheFile(path, MusEPlugin::PluginTypeUnknown, list, writePorts,
       museGlobalLib, MusEPlugin::PluginTypeUnknown, debugStdErr);
@@ -3118,7 +3347,15 @@ bool checkPluginCacheFiles(
   // Read whatever we've got in our current cache files.
   //-----------------------------------------------------
 
-  if(!readPluginCacheFiles(path, list, false, false, types))
+  // readPorts/readEnums true: for types that never wrote port data (their
+  //  writePorts stayed false — LADSPA/VST/etc get port layout cheaply from
+  //  the live descriptor instead), this just finds no <port> tags to parse —
+  //  harmless. For CLAP, which now always writes real counts (see
+  //  createPluginCacheFiles() above), this is required — without it the
+  //  cached counts would never make it into the in-memory list, and
+  //  ClapPluginWrapper would keep falling back to a live probe regardless
+  //  of what's actually in the cache file.
+  if(!readPluginCacheFiles(path, list, true, true, types))
   {
     cache_dirty = true;
     std::fprintf(stderr, "checkPluginCacheFiles: readAllPluginCacheFiles() failed\n");
@@ -3136,13 +3373,38 @@ bool checkPluginCacheFiles(
 
     //-------------------------------------------------------------------------
     // Gather the unique (non-duplicate) plugin file paths found in our cache.
+    // Only entries matching this call's own 'types' — 'list' is shared
+    // across multiple checkPluginCacheFiles() calls (see the list->erase()
+    // comment below), so unfiltered this would pull in paths for types we
+    // aren't even scanning here, none of which could ever be found in
+    // 'fpset' above, permanently forcing cache_dirty true.
     //-------------------------------------------------------------------------
 
     for(iPluginScanList ips = list->begin(); ips != list->end(); ++ips)
     {
       PluginScanInfoRef inforef = *ips;
       const PluginScanInfoStruct& infos = inforef->info();
-      cache_fpset.insert(filepath_set_pair(PLUGIN_GET_QSTRING(infos.filePath()), infos._fileTime));
+      const bool type_matches = (infos._type & types);
+      // A plugin that fails pluginScan() (crashing scan child etc.) is
+      // still recorded, but tagged _type == PluginTypeUnknown (see
+      // pluginScan()'s failure path). That never matches 'types' (a real
+      // plugin type bit), so without this such an entry is invisible to
+      // this type family's dirty-check even though it's genuinely cached.
+      // The file is still found on disk in 'fpset' though, so it looks
+      // permanently "missing" and forces a full rescan on EVERY startup -
+      // forever, for as long as that one plugin keeps failing the same
+      // way. Attribute it back to this type family by checking whether
+      // its path is one 'fpset' already found under this call's own
+      // scan directories, rather than widening the type filter itself
+      // (which would just reintroduce the identical cross-type-family
+      // false-dirty problem the comment below already warns about, since
+      // 'list' is shared across multiple checkPluginCacheFiles() calls).
+      const QString file_path = PLUGIN_GET_QSTRING(infos.filePath());
+      const bool is_attributable_failure =
+        (infos._type == MusEPlugin::PluginTypeUnknown) && fpset.find(file_path) != fpset.end();
+      if(!type_matches && !is_attributable_failure)
+        continue;
+      cache_fpset.insert(filepath_set_pair(file_path, infos._fileTime));
     }
 
     //---------------------------------------
@@ -3156,16 +3418,18 @@ bool checkPluginCacheFiles(
       {
         cache_dirty = true;
 
-        if (debugStdErr) {
-            std::fprintf(stderr, "Setting cache to dirty due to missing or modified plugins:\n");
-            if(ifpset == fpset.end())
-                std::fprintf(stderr, "Missing plugin: %s:\n", icfps->first.toLocal8Bit().data());
-            else
-                std::fprintf(stderr, "Modified plugin: %s (Cache ts: %ld / File ts: %ld)\n",
-                             icfps->first.toLocal8Bit().data(),
-                             (long int) icfps->second,
-                             (long int) ifpset->second);
-        }
+        // NOTE: always report this, not just under debugStdErr - this is
+        //  what forces a rescan of ALL requested types (see comment below
+        //  at "If ANY of the cache files..."), so silently hiding the
+        //  trigger makes "why is it rescanning everything?" unanswerable.
+        std::fprintf(stderr, "checkPluginCacheFiles: cache dirty - ");
+        if(ifpset == fpset.end())
+            std::fprintf(stderr, "missing plugin: %s\n", icfps->first.toLocal8Bit().data());
+        else
+            std::fprintf(stderr, "modified plugin: %s (cache ts: %ld / file ts: %ld)\n",
+                         icfps->first.toLocal8Bit().data(),
+                         (long int) icfps->second,
+                         (long int) ifpset->second);
 
         break;
       }
@@ -3179,12 +3443,9 @@ bool checkPluginCacheFiles(
 
     // Any remaining items in fpset must be 'new' plugins.
     if(!cache_dirty && !fpset.empty()) {
-      if(debugStdErr)
-      {
-        std::fprintf(stderr, "Setting cache to dirty due to NEW plugins:\n");
-        for (auto &plug: fpset) {
-            std::fprintf(stderr, "New plugin %s:\n", plug.first.toLocal8Bit().data());
-        }
+      std::fprintf(stderr, "checkPluginCacheFiles: cache dirty - new plugin(s) found:\n");
+      for (auto &plug: fpset) {
+          std::fprintf(stderr, "  %s\n", plug.first.toLocal8Bit().data());
       }
       cache_dirty = true;
     }
@@ -3201,7 +3462,23 @@ bool checkPluginCacheFiles(
     if(debugStdErr)
       std::fprintf(stderr, "Re-scanning and creating plugin cache files...\n");
 
-    list->clear();
+    // NOTE: 'list' (MusEPlugin::pluginList) is shared across multiple
+    //  checkPluginCacheFiles() calls from main.cpp — one for
+    //  LADSPA/MESS/VST/LinuxVST/DSSI/LV2/Unknown, a separate one for CLAP
+    //  (since CLAP needs writePorts=true unconditionally, see main.cpp).
+    //  A blanket list->clear() here would silently discard every entry a
+    //  previous call already added for types NOT in this call's own
+    //  'types' bitmask (e.g. the CLAP-only call wiping out all previously
+    //  scanned LADSPA/MESS/VST/LinuxVST/DSSI entries). Only erase entries
+    //  matching the types we're about to rescan; leave everything else in
+    //  the list untouched.
+    for(iPluginScanList ips = list->begin(); ips != list->end(); )
+    {
+      if((*ips)->info()._type & types)
+        ips = list->erase(ips);
+      else
+        ++ips;
+    }
     if(!createPluginCacheFiles(path, list, writePorts, museGlobalLib, types, debugStdErr))
     {
       res = false;

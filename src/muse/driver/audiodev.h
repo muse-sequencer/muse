@@ -125,6 +125,13 @@ class AudioDevice {
       // Returns true if the ports are found and they CAN be connected.
       virtual bool portsCompatible(const char* src, const char* dst) const = 0;
       virtual void setPortName(void* p, const char* n) = 0;
+      // Sets a human-readable alias on our own midi port reflecting what it is (about to be)
+      //  connected to, e.g. "Muse >> fluidsynth-midi:midi_00" or "Muse << BLE MIDI 1:out".
+      // remote_port may be null (route target currently unavailable) - clears any alias we
+      //  previously set in that case. Self-connections (MusE-to-MusE, incl. a2j/Midi-Bridge
+      //  loops) are never labeled here - see JackAudioDevice::setMidiConnectionAlias().
+      // Default no-op: only the Jack driver currently supports port aliases.
+      virtual void setMidiConnectionAlias(void* /*our_port*/, bool /*is_input*/, void* /*remote_port*/) {}
       virtual void* findPort(const char* name) = 0;
       // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
       virtual char* portName(void* port, char* str, int str_size, int preferred_name_or_alias = -1) = 0;

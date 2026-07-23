@@ -677,6 +677,11 @@ class AudioTrack : public Track {
       int _totalOutChannels;
       // Total number of input channels.
       int _totalInChannels;
+      // The MusEGlobal::segmentSize that outBuffers/outBuffersExtraMix/_dataBuffers were
+      //  allocated for. If MusEGlobal::segmentSize no longer matches this (e.g. after a
+      //  live audio driver buffer-size change), initBuffers() must reallocate - otherwise
+      //  getData()/memset() calls sized for the new segmentSize overflow the old buffers.
+      int _allocatedSegmentSize;
       
       Pipeline* _efxPipe;
 

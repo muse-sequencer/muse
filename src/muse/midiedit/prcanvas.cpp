@@ -120,6 +120,7 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
 PianoCanvas::~PianoCanvas()
 {
   delete steprec;
+  delete lastEditedEvent;
 }
 //---------------------------------------------------------
 //   pitch2y

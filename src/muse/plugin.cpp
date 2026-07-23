@@ -66,6 +66,10 @@
 #include "vst_native.h"
 #endif
 
+#ifdef CLAP_SUPPORT
+#include "clap_host_effect.h"
+#endif
+
 #include "audio.h"
 #include "al/dsp.h"
 
@@ -1033,6 +1037,9 @@ void PluginConfiguration::writeProperties(int level, Xml& xml, bool isCopy, bool
     case MusEPlugin::PluginTypeLV2:
     case MusEPlugin::PluginTypeMESS:
     case MusEPlugin::PluginTypeMETRONOME:
+#ifdef CLAP_SUPPORT
+    case MusEPlugin::PluginTypeCLAP:
+#endif
       xml.strTag(level, "type", MusEPlugin::pluginTypeToString(_pluginType));
     break;
 
@@ -1628,6 +1635,9 @@ int Plugin::release()
     case MusEPlugin::PluginTypeMETRONOME:
     case MusEPlugin::PluginTypeNone:
     case MusEPlugin::PluginTypeUnknown:
+    #ifdef CLAP_SUPPORT
+    case MusEPlugin::PluginTypeCLAP:
+    #endif
       fprintf(stderr, "Error: Plugin::release(): Plugin type:%d is not LADSPA or DSSI or DSSIVST. "
              "_references:%d\n", pluginType(), _references);
       return 0;
@@ -1839,11 +1849,12 @@ void initPlugins()
             inf_uri,
             inf_label))
           {
-            fprintf(stderr, "Ignoring LADSPA effect label:%s uri:%s path:%s duplicate of path:%s\n",
-                    inf_label.toLocal8Bit().constData(),
-                    inf_uri.toLocal8Bit().constData(),
-                    inf_filepath.toLocal8Bit().constData(),
-                    pl->filePath().toLocal8Bit().constData());
+            if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+              fprintf(stderr, "Ignoring LADSPA effect label:%s uri:%s path:%s duplicate of path:%s\n",
+                      inf_label.toLocal8Bit().constData(),
+                      inf_uri.toLocal8Bit().constData(),
+                      inf_filepath.toLocal8Bit().constData(),
+                      pl->filePath().toLocal8Bit().constData());
           }
           else
           {
@@ -1872,11 +1883,12 @@ void initPlugins()
               inf_uri,
               inf_label))
             {
-              fprintf(stderr, "Ignoring DSSI effect label:%s uri:%s path:%s duplicate of path:%s\n",
-                      inf_label.toLocal8Bit().constData(),
-                      inf_uri.toLocal8Bit().constData(),
-                      inf_filepath.toLocal8Bit().constData(),
-                      pl->filePath().toLocal8Bit().constData());
+              if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+                fprintf(stderr, "Ignoring DSSI effect label:%s uri:%s path:%s duplicate of path:%s\n",
+                        inf_label.toLocal8Bit().constData(),
+                        inf_uri.toLocal8Bit().constData(),
+                        inf_filepath.toLocal8Bit().constData(),
+                        pl->filePath().toLocal8Bit().constData());
             }
             else
             {
@@ -1887,8 +1899,16 @@ void initPlugins()
           }
         }
 #endif
+
       }
       break;
+
+
+      #ifdef CLAP_SUPPORT
+      case MusEPlugin::PluginTypeCLAP:
+        // Registered via initCLAP() into synthis, not plugins.
+      break;
+      #endif
       
       case MusEPlugin::PluginTypeVST:
       case MusEPlugin::PluginTypeLV2:
@@ -2395,6 +2415,11 @@ bool Pipeline::hasNativeGui(int idx) const
       return ((VstNativePluginWrapper *)p->plugin())->hasNativeGui();
 #endif
 
+#ifdef CLAP_SUPPORT
+    if(p->pluginType() == MusEPlugin::PluginTypeCLAP)
+      return ((ClapPluginWrapper *)p->plugin())->hasNativeGui();
+#endif
+
 
       return !p->dssi_ui_filename().isEmpty();
   }
@@ -2417,7 +2442,7 @@ void Pipeline::showGui(int idx, bool flag)
 //   showNativeGui
 //---------------------------------------------------------
 
-#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+#if defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT) || defined(CLAP_SUPPORT)
 void Pipeline::showNativeGui(int idx, bool flag)
       {
          PluginI* p = (*this)[idx];
@@ -2440,16 +2465,25 @@ void Pipeline::showNativeGui(int idx, bool flag)
            }
 
 #endif
+
+#ifdef CLAP_SUPPORT
+           if(p->plugin() && p->pluginType() == MusEPlugin::PluginTypeCLAP)
+           {
+              ((ClapPluginWrapper *)p->plugin())->showNativeGui(p, flag);
+              return;
+           }
+
+#endif
       #ifdef OSC_SUPPORT
             p->oscIF().oscShowGui(flag);
       #endif
          }
       }
-#else // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+#else // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT) || defined(CLAP_SUPPORT)
 void Pipeline::showNativeGui(int /*idx*/, bool /*flag*/)
       {
       }
-#endif // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT)
+#endif // defined(LV2_SUPPORT) || defined(VST_NATIVE_SUPPORT) || defined(OSC_SUPPORT) || defined(CLAP_SUPPORT)
 
 //---------------------------------------------------------
 //   deleteGui
@@ -2475,6 +2509,13 @@ void Pipeline::deleteGui(int idx)
          if(p->plugin() && p->pluginType() == MusEPlugin::PluginTypeLinuxVST)
          {
             ((VstNativePluginWrapper *)p->plugin())->showNativeGui(p, false);
+         }
+#endif
+
+#ifdef CLAP_SUPPORT
+         if(p->plugin() && p->pluginType() == MusEPlugin::PluginTypeCLAP)
+         {
+            ((ClapPluginWrapper *)p->plugin())->showNativeGui(p, false);
          }
 #endif
   }
@@ -4158,6 +4199,9 @@ void PluginI::configure(const PluginConfiguration& config, ConfigureOptions_t op
       case MusEPlugin::PluginTypeLinuxVST:
       case MusEPlugin::PluginTypeMESS:
       case MusEPlugin::PluginTypeMETRONOME:
+      #ifdef CLAP_SUPPORT
+      case MusEPlugin::PluginTypeCLAP:
+      #endif
       break;
 
       // Special for LV2: We never stored the port values with the state data like we do with the synths.
@@ -4444,6 +4488,17 @@ PluginIBase::showNativeGui();
     return;
   }
 #endif
+
+#ifdef CLAP_SUPPORT
+  if(pluginType() == MusEPlugin::PluginTypeCLAP)
+  {
+    if(((ClapPluginWrapper *)plugin())->nativeGuiVisible(this))
+       ((ClapPluginWrapper *)plugin())->showNativeGui(this, false);
+    else
+       ((ClapPluginWrapper *)plugin())->showNativeGui(this, true);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
   if (_plugin)
   {
@@ -4474,6 +4529,14 @@ void PluginI::showNativeGui(bool flag)
     return;
   }
 #endif
+
+#ifdef CLAP_SUPPORT
+  if(pluginType() == MusEPlugin::PluginTypeCLAP)
+  {
+    ((ClapPluginWrapper *)plugin())->showNativeGui(this, flag);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
   if(_plugin)
   {
@@ -4495,6 +4558,10 @@ bool PluginI::nativeGuiVisible() const
 #ifdef VST_NATIVE_SUPPORT
     if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
       return ((VstNativePluginWrapper *)plugin())->nativeGuiVisible(this);
+#endif
+#ifdef CLAP_SUPPORT
+    if(pluginType() == MusEPlugin::PluginTypeCLAP)
+      return ((ClapPluginWrapper *)plugin())->nativeGuiVisible(this);
 #endif
   #ifdef OSC_SUPPORT
   return _oscif.oscGuiVisible();

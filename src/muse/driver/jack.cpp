@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <jack/midiport.h>
+#include <jack/metadata.h>
 #include <string.h>
 // TODO Switch dlsym stuff over to QLibrary.
 #include <dlfcn.h>
@@ -41,6 +42,7 @@
 
 #include "strntcpy.h"
 #include "audio.h"
+#include "rtlog.h"
 #include "globals.h"
 #include "song.h"
 #include "jackaudio.h"
@@ -101,11 +103,26 @@ bool checkAudioDevice()
 
 namespace MusECore {
 
+// Forward declarations for file-local helpers (defined further below, near getJackPorts/
+//  setMidiConnectionAlias) - needed here since checkNewRouteConnections() uses them and
+//  is defined earlier in the file.
+// isOwnBridgedMidiPort(), rawJackPortName(), jackPortPrettyName() are declared in
+//  jackaudio.h (shared with jackmidi.cpp). buildFriendlyPortLabel(), remoteJackPortDisplayName()
+//  and setMidiConnectionAlias() moved to jackmidi.cpp - Midi-only labeling logic.
+
 JackAudioDevice* jackAudio;
 
 int jack_ver_maj = 0, jack_ver_min = 0, jack_ver_micro = 0, jack_ver_proto = 0;
 muse_atomic_t atomicGraphChangedPending;
 bool jack1_port_by_name_workaround = false;
+
+} // namespace MusECore
+
+namespace MusEGlobal {
+bool useSimplePortLabels = false;
+}
+
+namespace MusECore {
 
 // Function pointers obtained with dlsym:
 jack_get_version_type             jack_get_version_fp = nullptr;  
@@ -303,7 +320,7 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
       }
       else {
             if (MusEGlobal::debugMsg)
-                 puts("jack calling when audio is disconnected!\n");
+                 MusECore::rtLog("jack calling when audio is disconnected!");
             }
 
   // Reset for next cycle.
@@ -927,7 +944,15 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
         }
         // Find a more appropriate name if necessary.
         char fin_name[ROUTE_PERSISTENT_NAME_SIZE];
-        portName(jp, fin_name, ROUTE_PERSISTENT_NAME_SIZE);
+        // Explicitly request the canonical name (0), not the default "no
+        //  preference" (-1) - persistentJackPortName is the literal
+        //  reconnect/find target used by findPort()/jack_port_by_name()
+        //  elsewhere, not a display string. "No preference" risks silently
+        //  picking up a stale alias (possibly one we ourselves set via
+        //  setMidiConnectionAlias() for a DIFFERENT port previously), which
+        //  jack_port_by_name() would then happily match on the wrong port
+        //  the next time this route is resolved.
+        portName(jp, fin_name, ROUTE_PERSISTENT_NAME_SIZE, 0);
         if(strcmp(ir->persistentJackPortName, fin_name) != 0)
         {
           DEBUG_PRST_ROUTES(stderr, "processJackCallbackEvents: Ports connected. Modifying route name: route_persistent_name:%s new name:%s\n", route_jpname, fin_name);
@@ -994,13 +1019,16 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
                   // Find a more appropriate name if necessary.
                   const char* s = ir->persistentJackPortName;
                   char fin_name[ROUTE_PERSISTENT_NAME_SIZE];
-                  portName(jp, fin_name, ROUTE_PERSISTENT_NAME_SIZE);
+                  // See comment in the connected-branch above: request
+                  //  canonical name (0) explicitly, not "no preference" (-1).
+                  portName(jp, fin_name, ROUTE_PERSISTENT_NAME_SIZE, 0);
                   if(strcmp(ir->persistentJackPortName, fin_name) != 0)
                   {
                     DEBUG_PRST_ROUTES(stderr, "processJackCallbackEvents: Ports connected. Modifying route name: route_persistent_name:%s new name:%s\n", route_jpname, fin_name);
                     s = fin_name;
                   }
                   operations.add(PendingOperationItem(Route(Route::JACK_ROUTE, 0, jp, ir->channel, 0, 0, s), &(*ir), PendingOperationItem::ModifyRouteNode));
+                  setMidiConnectionAlias(our_port, is_input, jp);
                 }
               }
             }
@@ -1022,7 +1050,7 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
   }
 
   if(our_port)
-    checkNewRouteConnections(our_port, our_node.channel, route_list);
+    checkNewRouteConnections(our_port, our_node.channel, route_list, is_input);
 }  
   
 //---------------------------------------------------------
@@ -1160,13 +1188,32 @@ void JackAudioDevice::processGraphChanges()
       // Support even if port == null.
       processJackCallbackEvents(Route(md, -1), port, md->inRoutes(), true);
     }  
+
+    // jack-midi-0 (Default) has zero routes, so the two processJackCallbackEvents()/
+    //  checkNewRouteConnections() calls above never find anything to call
+    //  setMidiConnectionAlias() on for it - that only happens for an actual new
+    //  connection. Its alias is otherwise set exactly once, immediately after
+    //  jack_port_register() inside MidiJackDevice::open() (jackmidi.cpp) - before
+    //  any connection or graph settling. Some backends don't reliably keep a
+    //  classic alias (jack_port_set_alias()) set that early. Re-apply it here too,
+    //  every graph-change pass, in parallel with how the other ports above get
+    //  (re-)aliased - cheap and idempotent either way.
+    if(md->name() == "jack-midi-0")
+    {
+      jack_port_t* out_port = (jack_port_t*)md->outClientPort();
+      if(out_port)
+        setMidiConnectionAlias(out_port, false, (void*)nullptr);
+      jack_port_t* in_port = (jack_port_t*)md->inClientPort();
+      if(in_port)
+        setMidiConnectionAlias(in_port, true, (void*)nullptr);
+    }
   }
 }
 
-void JackAudioDevice::checkNewRouteConnections(jack_port_t* our_port, int channel, RouteList* route_list)
+void JackAudioDevice::checkNewRouteConnections(jack_port_t* our_port, int channel, RouteList* route_list, bool is_input)
 {
-  DEBUG_PRST_ROUTES(stderr, "JackAudioDevice::checkNewRouteConnections(): client:%p our_port:%p channel:%d route_list:%p\n", 
-          _client, our_port, channel, route_list);
+  DEBUG_PRST_ROUTES(stderr, "JackAudioDevice::checkNewRouteConnections(): client:%p our_port:%p channel:%d route_list:%p is_input:%d\n", 
+          _client, our_port, channel, route_list, is_input);
   // Check for new connections...
   const char** ports = jack_port_get_all_connections(_client, our_port);
   if(ports) 
@@ -1229,12 +1276,27 @@ void JackAudioDevice::checkNewRouteConnections(jack_port_t* our_port, int channe
         }
         if(!found) 
         {
-          Route r(Route::JACK_ROUTE, 0, jp, channel, 0, 0, nullptr);
-          // Find a better name.
-          portName(jp, r.persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
-          DEBUG_PRST_ROUTES(stderr, " adding route: route_jp:%p portname:%s route_persistent_name:%s\n", 
-                  jp, *pn, r.persistentJackPortName);
-          operations.add(PendingOperationItem(route_list, r, PendingOperationItem::AddRouteNode));
+          // Self-connections (MusE-to-MusE, including a2j/Midi-Bridge loops) are not adopted
+          //  as persistent routes - see the "MusE-to-MusE midi" discussion. If someone makes
+          //  one manually (qjackctl etc.) it is left alone (not disconnected), it just won't
+          //  be remembered/restored by MusE and won't get a "Muse to/from - ..." alias.
+          if(jack_port_is_mine(_client, jp) ||
+             isOwnBridgedMidiPort(rawJackPortName(jp), QString(jack_get_client_name(_client))))
+          {
+            DEBUG_PRST_ROUTES(stderr, " ignoring self-connection, not adding as route: route_jp:%p portname:%s\n", 
+                    jp, *pn);
+          }
+          else
+          {
+            Route r(Route::JACK_ROUTE, 0, jp, channel, 0, 0, nullptr);
+            // Find a better name. Request canonical name (0) explicitly, not
+            //  "no preference" (-1) - see comment in processJackCallbackEvents().
+            portName(jp, r.persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE, 0);
+            DEBUG_PRST_ROUTES(stderr, " adding route: route_jp:%p portname:%s route_persistent_name:%s\n", 
+                    jp, *pn, r.persistentJackPortName);
+            operations.add(PendingOperationItem(route_list, r, PendingOperationItem::AddRouteNode));
+            setMidiConnectionAlias(our_port, is_input, jp);
+          }
         }
       }
       ++pn;
@@ -1822,6 +1884,70 @@ unsigned JackAudioDevice::curTransportFrame() const
   return jack_get_current_transport_frame(_client);
 }
 
+// Internal helpers shared with jackmidi.cpp (see jackaudio.h for declarations) -
+//  not part of the public driver API, just split across files by topic.
+bool isOwnBridgedMidiPort(const QString& name_or_alias, const QString& own_client_name)
+{
+  if(own_client_name.isEmpty() || name_or_alias.isEmpty())
+    return false;
+  // Direct MusE Jack ports (should already be caught by jack_port_is_mine(), kept as a fallback).
+  if(name_or_alias.startsWith(own_client_name + QString(":")))
+    return true;
+  // a2jmidid, e.g.: "a2j:MusE [129] (playback): MusE Port 0"
+  if(name_or_alias.startsWith(QString("a2j:") + own_client_name + QString(" [")))
+    return true;
+  // PipeWire's Alsa<->Jack Midi-Bridge, e.g.: "Midi-Bridge:MusE Port 0"
+  if(name_or_alias.startsWith(QString("Midi-Bridge:") + own_client_name))
+    return true;
+  return false;
+}
+
+//---------------------------------------------------------
+//   rawJackPortName
+//   Alias[0] if present, else the canonical Jack port name - unmodified. Used for
+//    self-connection detection, which must match against the real bridge naming
+//    scheme, not the cosmetically cleaned-up label from remoteJackPortDisplayName().
+//---------------------------------------------------------
+
+QString rawJackPortName(jack_port_t* port)
+{
+  if(!port)
+    return QString();
+  const int nsz = jack_port_name_size();
+  char a1[nsz];
+  char a2[nsz];
+  char* al[2] = { a1, a2 };
+  const int na = jack_port_get_aliases(port, al);
+  return QString(na >= 1 ? al[0] : jack_port_name(port));
+}
+
+//---------------------------------------------------------
+//   jackPortPrettyName
+//   Reads the JACK Metadata "pretty-name" property (http://jackaudio.org/metadata/
+//    pretty-name) if the port (or whoever created it, e.g. PipeWire/WirePlumber)
+//    has set one. This is the modern replacement for the old alias1/alias2 API -
+//    aliases are not reliably supported/persisted under PipeWire's Jack layer,
+//    metadata is. Also used by JackAudioDevice::portName() below, so MusE's own
+//    "show aliases" UI reflects the same labels we set in jackmidi.cpp.
+//---------------------------------------------------------
+
+QString jackPortPrettyName(jack_port_t* port)
+{
+  if(!port)
+    return QString();
+  char* value = nullptr;
+  char* type = nullptr;
+  const jack_uuid_t uuid = jack_port_uuid(port);
+  QString result;
+  if(jack_get_property(uuid, JACK_METADATA_PRETTY_NAME, &value, &type) == 0 && value)
+    result = QString(value);
+  if(value)
+    jack_free(value);
+  if(type)
+    jack_free(type);
+  return result;
+}
+
 //---------------------------------------------------------
 //   getJackPorts
 //---------------------------------------------------------
@@ -1829,10 +1955,15 @@ unsigned JackAudioDevice::curTransportFrame() const
 void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_list, bool midi, bool physical, int aliases)
       {
       DEBUG_JACK(stderr, "JackAudioDevice::getJackPorts()\n");
-      QString qname;
       QString cname(jack_get_client_name(_client));
       
       for (const char** p = ports; p && *p; ++p) {
+            // Declared fresh each iteration - a port with no alias must not
+            //  inherit the previous port's qname (was causing the mthrough
+            //  physical/non-physical ordering check below to sometimes use
+            //  stale data when jack_port_get_aliases() returns 0, which is
+            //  the normal case under PipeWire's Jack compatibility layer).
+            QString qname;
             // Should be safe and quick search here, we know that the port name is valid.
             jack_port_t* port = jack_port_by_name(_client, *p);
             int port_flags = jack_port_flags(port);
@@ -1843,6 +1974,16 @@ void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_
               if(MusEGlobal::debugMsg)
                 fprintf(stderr, "JackAudioDevice::getJackPorts ignoring own port: %s\n", *p);
               continue;         
+            }
+
+            // Ignore our own ports bridged back into the Jack graph by an Alsa<->Jack
+            //  midi bridge (a2jmidid, PipeWire Midi-Bridge) - these appear under a foreign
+            //  bridge client, so jack_port_is_mine() above cannot catch them.
+            if(midi && isOwnBridgedMidiPort(QString(*p), cname))
+            {
+              if(MusEGlobal::debugMsg)
+                fprintf(stderr, "JackAudioDevice::getJackPorts ignoring own bridged midi port: %s\n", *p);
+              continue;
             }
             
             int nsz = jack_port_name_size();
@@ -1861,12 +2002,13 @@ void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_
               if(na >= 1)
               {
                 qname = QString(al[0]);
-                    //fprintf(stderr, "Checking port name for: %s\n", (QString("alsa_pcm:") + cname + QString("/")).toLocal8Bit().constData());
-                // Ignore our own ALSA client!
-                if(qname.startsWith(QString("alsa_pcm:") + cname + QString("/")))
+                // Extra safety net: also check the alias for our own bridged midi ports
+                //  (the canonical-name check above already catches the common cases).
+                if(isOwnBridgedMidiPort(qname, cname))
                   continue;
                 // Put Midi Through after all others.
-                mthrough = qname.startsWith(QString("alsa_pcm:Midi-Through/"));  
+                mthrough = qname.startsWith(QString("alsa_pcm:Midi-Through/")) ||
+                           qname.startsWith(QString("a2j:Midi Through"));
                 //if((physical && mthrough) || (!physical && !mthrough))
                 //if(physical && mthrough)
                 //  continue;
@@ -1935,6 +2077,14 @@ std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
         getJackPorts(ports, clientList, midi, false, aliases);  // Get non-physical ports last.
         jack_free(ports);  
       }
+      
+      if(MusEGlobal::debugMsg)
+      {
+        fprintf(stderr, "JackAudioDevice::outputPorts(midi=%d): requested flag=JackPortIsOutput, got %zu port(s):\n",
+                (int)midi, clientList.size());
+        for(const QString& s : clientList)
+          fprintf(stderr, "  %s\n", s.toUtf8().constData());
+      }
         
       return clientList;
       }
@@ -1957,6 +2107,14 @@ std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
         getJackPorts(ports, clientList, midi, true, aliases);   // Get physical ports first.
         getJackPorts(ports, clientList, midi, false, aliases);  // Get non-physical ports last.
         jack_free(ports);  
+      }
+      
+      if(MusEGlobal::debugMsg)
+      {
+        fprintf(stderr, "JackAudioDevice::inputPorts(midi=%d): requested flag=JackPortIsInput, got %zu port(s):\n",
+                (int)midi, clientList.size());
+        for(const QString& s : clientList)
+          fprintf(stderr, "  %s\n", s.toUtf8().constData());
       }
         
       return clientList;
@@ -1991,6 +2149,33 @@ void JackAudioDevice::setPortName(void* p, const char* n)
 
 char* JackAudioDevice::portName(void* port, char* str, int str_size, int preferred_name_or_alias)
 {
+  // Prefer JACK Metadata pretty-name only on an EXPLICIT alias request
+  //  (preferred_name_or_alias == 1 or 2) - NOT for the default/auto case (-1).
+  // -1 is used throughout the codebase (e.g. routepopup.cpp, jackmidi.cpp) to derive
+  //  Route::persistentJackPortName for later jack_port_by_name() lookups; our pretty-name
+  //  text (e.g. "sys - midi through 1") is not a real, refindable Jack port name, so
+  //  preferring it for -1 broke reconnection - the route became unfindable after being
+  //  rediscovered. Only UI code that explicitly asks for "alias 1"/"alias 2" should see it.
+  if(preferred_name_or_alias == 1 || preferred_name_or_alias == 2)
+  {
+    // For midi ports, run it through the same friendly formatting we use for our own
+    //  connection labels (jackmidi.cpp) - otherwise routing popups listing candidate
+    //  ports (which are usually not ours, so never got a pretty-name from
+    //  setMidiConnectionAlias()) just show the raw, verbose a2j/Midi-Bridge text.
+    if(strcmp(jack_port_type((jack_port_t*)port), JACK_DEFAULT_MIDI_TYPE) == 0)
+    {
+      const QString friendly = midiPortFriendlyName((jack_port_t*)port);
+      if(!friendly.isEmpty())
+        return MusELib::strntcpy(str, friendly.toUtf8().constData(), str_size);
+    }
+    else
+    {
+      const QString pretty = jackPortPrettyName((jack_port_t*)port);
+      if(!pretty.isEmpty())
+        return MusELib::strntcpy(str, pretty.toUtf8().constData(), str_size);
+    }
+  }
+
   bool A = false, B = false, C = false;
   const char* p_name = jack_port_name((jack_port_t*)port);
   if(p_name && p_name[0] != '\0')
@@ -2083,6 +2268,18 @@ void JackAudioDevice::unregisterPort(void* p)
       if(!checkJackClient(_client) || !p) 
         return;
 //      fprintf(stderr, "JACK: unregister Port\n");
+      // Explicitly remove the Metadata pretty-name we may have set on this
+      //  port (see setMidiConnectionAlias() in jackmidi.cpp) before
+      //  unregistering it - don't rely on the Jack server auto-purging
+      //  metadata when a port is destroyed. Real Jack1/Jack2 do this, but
+      //  PipeWire's Jack-compat layer has already proven unreliable for
+      //  related port bookkeeping elsewhere in this codebase (see the alias
+      //  persistence comments in jackmidi.cpp) - if metadata for a UUID
+      //  outlives the port it described, and Jack/PipeWire later reuses that
+      //  UUID for an unrelated new port, the new port would silently inherit
+      //  the old, wrong pretty-name. Removing it here ourselves, on every
+      //  port we ever unregister, means we never depend on that behavior.
+      jack_remove_property(_client, jack_port_uuid((jack_port_t*)p), JACK_METADATA_PRETTY_NAME);
       jack_port_unregister(_client, (jack_port_t*)p);
       }
 

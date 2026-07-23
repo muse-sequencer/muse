@@ -41,6 +41,15 @@ file (GLOB plugin_cache_writer_source_files
       plugin_cache_writer.cpp
       )
 
+
+
+if(CLAP_SUPPORT)
+      list(APPEND plugin_cache_writer_source_files
+            plugin_cache_writer_clap.cpp
+            )
+endif(CLAP_SUPPORT)
+
+
 ##
 ## Define target
 ##
@@ -60,6 +69,9 @@ add_library ( plugin_cache_reader_module SHARED
 add_library ( plugin_cache_writer_module SHARED
       ${plugin_cache_writer_source_files}
       )
+
+
+
 
 ##
 ## Append to the list of translations

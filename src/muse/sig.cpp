@@ -69,8 +69,10 @@ SigList::SigList()
 
 SigList::~SigList()
       {
+      fprintf(stderr, "DEBUG ~SigList() this:%p size:%zu\n", (void*)this, size());
       for (iSigEvent i = begin(); i != end(); ++i)
             delete i->second;
+      fprintf(stderr, "DEBUG ~SigList() this:%p done\n", (void*)this);
       }
 
 //---------------------------------------------------------
@@ -176,6 +178,7 @@ void SigList::del(unsigned tick, bool do_normalize)
             }
       ne->second->sig = e->second->sig;
       ne->second->tick  = e->second->tick;
+      delete e->second;
       erase(e);
       if(do_normalize)
         normalize();
@@ -191,6 +194,7 @@ void SigList::del(iSigEvent e, bool do_normalize)
             }
       ne->second->sig = e->second->sig;
       ne->second->tick  = e->second->tick;
+      delete e->second;
       erase(e);
       if(do_normalize)
         normalize();
@@ -209,6 +213,7 @@ void SigList::normalize()
       for (iSigEvent e = begin(); e != end();) {
             if (sig.z == e->second->sig.z && sig.n == e->second->sig.n) {
                   e->second->tick = tick;
+                  delete ee->second;
                   erase(ee);
                   }
             sig  = e->second->sig;
@@ -249,7 +254,9 @@ void SigList::clear()
       for (iSigEvent i = begin(); i != end(); ++i)
             delete i->second;
       SIGLIST::clear();
-      insert(std::pair<const unsigned, SigEvent*> (MAX_TICK, new SigEvent(TimeSignature(4, 4), 0)));
+      SigEvent* default_event = new SigEvent(TimeSignature(4, 4), 0);
+      fprintf(stderr, "DEBUG SigList::clear() this:%p inserted SigEvent:%p\n", (void*)this, (void*)default_event);
+      insert(std::pair<const unsigned, SigEvent*> (MAX_TICK, default_event));
       }
 
 //---------------------------------------------------------
@@ -512,8 +519,10 @@ void SigList::read(MusECore::Xml& xml)
                               SigEvent* t = new SigEvent();
                               unsigned tick = t->read(xml);
                               iSigEvent pos = find(tick);
-                              if (pos != end())
+                              if (pos != end()) {
+                                    delete pos->second;
                                     erase(pos);
+                                    }
                               insert(std::pair<const unsigned, SigEvent*> (tick, t));
                               }
                         else

@@ -26,6 +26,8 @@
 
 #include <list>
 
+#include <set>
+
 #include <QString>
 
 #include "ctrl.h"
@@ -328,11 +330,33 @@ typedef Undo::reverse_iterator riUndoOp;
 typedef Undo::const_iterator ciUndoOp;
 typedef Undo::const_reverse_iterator criUndoOp;
 
+// Shared de-duplication context for a Song::clear()/cleanupForQuit()-style
+//  cleanup pass. A single Track/Part can end up referenced by more than one
+//  structure being torn down together - e.g. still live in a TrackList like
+//  _midis, while ALSO referenced by an "isolated" DeleteTrack UndoOp in
+//  undoList, or by a stale AddTrack UndoOp left in redoList after an undone
+//  delete that was never invalidated by a later edit. deleteUndoOp() trusts
+//  that its track/part pointer is exclusively owned and unconditionally
+//  deletes it; passing the SAME UndoClearDedup instance into both
+//  undoList->clearDelete() and redoList->clearDelete() (and pre-seeding it
+//  with any pointers about to be deleted elsewhere, e.g. from _midis/_waves)
+//  ensures each pointer is only ever deleted once.
+struct UndoClearDedup
+{
+  std::set<const Track*> tracks;
+  std::set<const Part*> parts;
+};
+
 class UndoList : public std::list<Undo> {
    protected:
       bool isUndo;
    public:
-      void clearDelete();
+      // dedup: optional shared de-duplication context - see UndoClearDedup above.
+      //  Pass the same instance across multiple clearDelete() calls (e.g. undoList
+      //  then redoList) that are part of one larger cleanup pass, to prevent a
+      //  pointer shared between them from being deleted twice. Defaults to nullptr,
+      //  which uses a call-local context (i.e. only dedupes within this one list).
+      void clearDelete(UndoClearDedup* dedup = nullptr);
       UndoList(bool _isUndo) : std::list<Undo>() { isUndo=_isUndo; }
 };
 

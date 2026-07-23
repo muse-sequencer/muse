@@ -1,0 +1,6 @@
+
+The misc/ directory contains various files: 
+
+lsan.supp - a suppressions file for LSAN (leak sanitizer)
+valgrind.supp - a suppresions file for valgrind tool (leak checker)
+

@@ -79,6 +79,15 @@ class MidiController {
 
    public:
       MidiController();
+
+
+      // Virtual: MidiNamCtrl (midnam.h) derives from this and MidiNamCtrls
+      //  deletes its contents via a MidiController* (see MidiControllerList
+      //  comment above) - without this, that delete is undefined behavior
+      //  (ASan: new-delete-type-mismatch).
+      virtual ~MidiController() = default;
+
+
       // If drumInit = -1, it means don't care - use the init val.
       MidiController(const QString& n, int num, int min, int max, int init, int drumInit, int show_in_track = (ShowInDrum | ShowInMidi));
       MidiController(const MidiController& mc);
@@ -135,16 +144,29 @@ typedef std::map<int, MidiController*, std::less<int> > MidiControllerList_t;
 class MidiControllerList : public MidiControllerList_t
 {
       bool _RPN_Ctrls_Reserved; 
+      // Whether this list owns its MidiController* elements and should delete
+      //  them on destruction. Global registries such as MusECore::defaultMidiController
+      //  and defaultManagedMidiController only store pointers to permanent,
+      //  static-duration MidiController objects (e.g. volumeCtrl, panCtrl, ...)
+      //  and must NOT delete them: they were never allocated with new, so deleting
+      //  them is undefined behavior. This previously caused a heap-use-after-free /
+      //  SIGSEGV during global static destruction at program exit, since two
+      //  separate global lists both held (and both tried to delete) the same pointer.
+      bool _ownsElements;
       
    public:
-      MidiControllerList();
+      // ownsElements: pass false for registries that only reference permanent/
+      //  static-duration MidiController objects (see note above).
+      explicit MidiControllerList(bool ownsElements = true);
       MidiControllerList(const MidiControllerList& mcl);
-      // NOTE: There is no destructor here, this container does not
-      //        delete its own contents, that is done in ~MidiInstrument
-      //        because some controls are shared (the ones in
-      //        defaultMidiController and defaultManagedMidiController).
-      //       However, an inheritor such as the class MidiNamCtrls
-      //        found in the MidNam module DOES delete its own.
+
+      virtual ~MidiControllerList()
+      {
+        if(_ownsElements)
+          for(const_iterator i = cbegin(); i != cend(); ++i)
+            delete i->second;
+      }
+
 
       // Like find() which finds a verbose ctl number, but this version also finds a per-note
       //  controller if there is one for the given ctl number, if no verbose one was found.
@@ -172,9 +194,24 @@ class MidiControllerList : public MidiControllerList_t
       // Manual check and update of the flag. For convenience, returns the flag.
       bool update_RPN_Ctrls_Reserved();
       
-      // NOTICE: If update is false or these are bypassed by using insert, erase, clear etc. for speed, 
+
+      // ==== NOTICE - add(mc) method - check return value ====
+      //
+      // If update is false or these are bypassed by using insert, erase, clear etc. for speed, 
       //          then BE SURE to call update_RPN_Ctrls_Reserved() later. 
       // Returns true if add is successful.
+      // 
+      // OWNERSHIP: On success, this list takes ownership of mc (it will be deleted along with the
+      //  rest of the list's contents, typically by ~MidiInstrument() - this list itself has no
+      //  destructor, see the class comment above).
+      //  
+      // On FAILURE (false, meaning mc->num() already exists in the list - insert() does not
+      //  overwrite), mc is NOT stored anywhere and ownership is NOT taken. 
+      //  ============================================================
+      //  ==>>>  The caller must then delete mc (param object) itself 
+      //  ============================================================
+      //  to avoid a leak, or otherwise dispose of it - do not simply discard the return
+      //  value. See MidiInstrument::read() for the pattern.
       bool add(MidiController* mc, bool update = true);
       void del(iterator ictl, bool update = true);
       size_type del(int num, bool update = true);
@@ -679,4 +716,3 @@ typedef std::pair<unsigned long int, unsigned long int> MidiCtl2LadspaPortInsert
 } // namespace MusECore
 
 #endif
-

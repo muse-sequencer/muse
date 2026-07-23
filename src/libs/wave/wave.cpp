@@ -627,6 +627,9 @@ void SndFile::createCache(const QString& path, bool showProgress, bool bWrite, s
          progress->setValue(i);
       seek(i * cacheMag, 0);
       read(srcChannels, fp, cacheMag);
+      // Locked: cache[ch][i] is written here while the GUI thread may
+      // concurrently be reading cache[] in read(SampleV*...).
+      std::lock_guard<std::mutex> lock(cacheMutex);
       for (int ch = 0; ch < srcChannels; ++ch) {
          float rms = 0.0;
          cache[ch][i].peak = 0;
@@ -664,23 +667,33 @@ void SndFile::readCache(const QString& path, bool showProgress)
    if(!finfo)
      return;
 
-   if (cache) {
-      delete[] cache;
+   {
+      // Locked: this replaces the whole 'cache' array (delete[] + new),
+      // which must not happen while the GUI thread is dereferencing the
+      // old array in read(SampleV*...).
+      std::lock_guard<std::mutex> lock(cacheMutex);
+
+      if (cache) {
+         delete[] cache;
+         cache = nullptr;
+      }
+      if (samples() == 0)
+         return;
+
+      const int srcChannels = channels();
+
+      csize = (samples() + cacheMag - 1)/cacheMag;
+      cache = new SampleVtype[srcChannels];
+      for (int ch = 0; ch < srcChannels; ++ch)
+      {
+         cache [ch].resize(csize);
+      }
    }
-   if (samples() == 0)
-      return;
 
    const int srcChannels = channels();
-   
-   csize = (samples() + cacheMag - 1)/cacheMag;
-   cache = new SampleVtype[srcChannels];
-   for (int ch = 0; ch < srcChannels; ++ch)
-   {
-      cache [ch].resize(csize);
-   }
-
    FILE* cfile = fopen(path.toLocal8Bit().constData(), "r");
    if (cfile) {
+      std::lock_guard<std::mutex> lock(cacheMutex);
       for (int ch = 0; ch < srcChannels; ++ch)
          fread(&cache[ch] [0], csize * sizeof(SampleV), 1, cfile);
       fclose(cfile);
@@ -704,8 +717,11 @@ void SndFile::writeCache(const QString& path)
       if (cfile == 0)
             return;
       const int srcChannels = channels();
-      for (int ch = 0; ch < srcChannels; ++ch)
-            fwrite(&cache[ch] [0], csize * sizeof(SampleV), 1, cfile);
+      {
+        std::lock_guard<std::mutex> lock(cacheMutex);
+        for (int ch = 0; ch < srcChannels; ++ch)
+              fwrite(&cache[ch] [0], csize * sizeof(SampleV), 1, cfile);
+      }
       fclose(cfile);
       }
 
@@ -788,10 +804,10 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
                   if(overwrite)
                     s[ch].peak = 0;
 
-                  float rms = 0.0;
+                  // float rms = 0.0;  // UNUSED VARIABLE - TODO ?
                   for (int i = 0; i < mag; i++) {
                         float fd = data[ch][i];
-                        rms += fd;
+                        // rms += fd;  TODO ?? 
                         int idata = int(fd * 255.0);
                         if (idata < 0)
                               idata = -idata;
@@ -803,6 +819,15 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
                   }
             }
       else {
+            // Locked: 'cache' can be concurrently resized/reallocated by
+            // realWrite() on the audio prefetch thread (live cache update
+            // while recording), which would otherwise invalidate the
+            // pointers dereferenced below (heap-use-after-free).
+            std::lock_guard<std::mutex> lock(cacheMutex);
+
+            if(!cache)
+              return;
+
             mag /= cacheMag;
             int rest = csize - (pos/cacheMag);
             int end  = mag;
@@ -885,10 +910,10 @@ void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, sf_count_t offs
                   if(overwrite)
                     s[ch].peak = 0;
 
-                  float rms = 0.0;
+                  // float rms = 0.0;  // UNSUED VARIABLE TODO ? 
                   for (int i = 0; i < mag; i++) {
                         float fd = data[ch][i];
-                        rms += fd;
+                        // rms += fd;   // TODO ?? 
                         int idata = int(fd * 255.0);
                         if (idata < 0)
                               idata = -idata;
@@ -1391,6 +1416,13 @@ size_t SndFile::realWrite(int srcChannels, float** src, size_t n, size_t offs, b
 
    if(liveWaveUpdate)
    { //update cache
+      // Locked: the GUI thread concurrently reads 'cache'/'csize' in
+      // read(SampleV*...) while painting the waveform during recording.
+      // resize() below can reallocate cache[ch]'s storage, which would
+      // otherwise invalidate pointers/iterators the GUI thread is
+      // dereferencing at the same time (heap-use-after-free).
+      std::lock_guard<std::mutex> lock(cacheMutex);
+
       if(!cache)
       {
          cache = new SampleVtype[sfinfo.channels];

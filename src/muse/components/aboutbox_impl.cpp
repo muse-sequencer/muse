@@ -108,6 +108,7 @@ AboutBoxImpl::AboutBoxImpl()
     internalDebugInformation->append(QString("loadVST:\t\t%1").arg(MusEGlobal::loadVST?"true":"false"));
     internalDebugInformation->append(QString("loadNativeVST:\t%1").arg(MusEGlobal::loadNativeVST?"true":"false"));
     internalDebugInformation->append(QString("loadDSSI:\t\t%1").arg(MusEGlobal::loadDSSI?"true":"false"));
+    internalDebugInformation->append(QString("loadCLAP:\t\t%1").arg(MusEGlobal::loadCLAP?"true":"false"));
     internalDebugInformation->append(QString("usePythonBridge:\t%1").arg(MusEGlobal::usePythonBridge?"true":"false"));
 
     internalDebugInformation->append(QString("useLASH:\t\t%1").arg(MusEGlobal::useLASH?"true":"false"));

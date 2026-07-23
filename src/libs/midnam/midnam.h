@@ -99,6 +99,10 @@ class MidiNamAvailableForChannels : public std::map<int /* channel */, MidiNamAv
     MidiNamAvailableForChannels() { }
     MidiNamAvailableForChannels(const MidiNamAvailableForChannels& m);
     ~MidiNamAvailableForChannels();
+    // Deletes all owned MidiNamAvailableChannel* pointers, then empties the map.
+    // NOTE: always use this instead of the inherited std::map::clear() directly -
+    //  that would only erase the map nodes and leak the pointed-to objects.
+    void clear();
     bool add(MidiNamAvailableChannel* a);
     void write(int level, MusECore::Xml& xml) const;
     void read(MusECore::Xml& xml);
@@ -164,6 +168,9 @@ class MidiNamChannelNameSetAssignments : public std::map<int /* channel */, Midi
     MidiNamChannelNameSetAssignments() : _hasChannelNameSetAssignments(false) { }
     MidiNamChannelNameSetAssignments(const MidiNamChannelNameSetAssignments& m);
     ~MidiNamChannelNameSetAssignments();
+    // Deletes all owned pointers, then empties the map. Always use this instead
+    //  of the inherited std::map::clear() - see MidiNamAvailableForChannels::clear().
+    void clear();
     bool hasChannelNameSetAssignments() const { return _hasChannelNameSetAssignments; }
     bool add(MidiNamChannelNameSetAssign* a);
     bool gatherReferences(MidNamReferencesList* refs) const;
@@ -259,6 +266,9 @@ class MidiNamNotes : public std::map<int /* number */, MidiNamNote*, std::less<i
     MidiNamNotes() { }
     MidiNamNotes(const MidiNamNotes& m);
     ~MidiNamNotes();
+    // Deletes all owned pointers, then empties the map. Always use this instead
+    //  of the inherited std::map::clear() - see MidiNamAvailableForChannels::clear().
+    void clear();
     MidiNamNoteGroups& noteGroups() { return _noteGroups; }
     const MidiNamNoteGroups& noteGroups() const { return _noteGroups; }
     bool isEmpty() const { return _noteGroups.empty() && empty(); }
@@ -351,6 +361,9 @@ class MidiNamValNames : public std::map<int /* number */, MidiNamVal*, std::less
     MidiNamValNames(const MidiNamValNames& m);
     MidiNamValNames& operator=(const MidiNamValNames& m);
     ~MidiNamValNames();
+    // Deletes all owned pointers, then empties the map. Always use this instead
+    //  of the inherited std::map::clear() - see MidiNamAvailableForChannels::clear().
+    void clear();
     MidiNamValNames* objectOrRef() { return (_isReference && _p_ref) ? _p_ref : this; }
     void setObjectOrRef(MidiNamValNames* l) { _p_ref = l; }
     void resetObjectOrRef() { _p_ref = nullptr; }
@@ -434,8 +447,10 @@ class MidiNamCtrls : public MidiControllerList
     MidiNamCtrls(const QString& name) :
       _name(name), _p_ref(nullptr), _isReference(false), _hasMidiNamCtrls(false) { }
     MidiNamCtrls(const MidiNamCtrls& mcl);
-    // We require a destructor here because MidiControllerList
-    //  does not delete its contents.
+    // NOTE: MidiControllerList DOES delete its contents by default (see
+    //  MidiControllerList::_ownsElements) - this destructor must NOT also
+    //  delete them (that caused a heap-use-after-free/double-free, ASan).
+    //  Declared only in case future members need explicit cleanup.
     ~MidiNamCtrls();
 
     bool hasMidiNamCtrls() const { return _hasMidiNamCtrls; }
@@ -518,6 +533,9 @@ class MidiNamPatchNameList : public std::map<int /* patchNumber */, MidiNamPatch
       _name(name), _p_ref(nullptr), _isReference(false) { }
     MidiNamPatchNameList(const MidiNamPatchNameList& m);
     ~MidiNamPatchNameList();
+    // Deletes all owned pointers, then empties the map. Always use this instead
+    //  of the inherited std::map::clear() - see MidiNamAvailableForChannels::clear().
+    void clear();
     bool add(MidiNamPatch* a);
     const MidiNamPatchNameList* objectOrRef() const { return (_isReference && _p_ref) ? _p_ref : this; }
     MidiNamPatchNameList* objectOrRef() { return (_isReference && _p_ref) ? _p_ref : this; }
@@ -593,6 +611,9 @@ class MidiNamPatchBankList : public std::map<int /* bankHL */, MidiNamPatchBank*
     MidiNamPatchBankList() { }
     MidiNamPatchBankList(const MidiNamPatchBankList& m);
     ~MidiNamPatchBankList();
+    // Deletes all owned pointers, then empties the map. Always use this instead
+    //  of the inherited std::map::clear() - see MidiNamAvailableForChannels::clear().
+    void clear();
     bool add(MidiNamPatchBank* a);
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
@@ -657,6 +678,9 @@ class MidiNamChannelNameSetList : public std::map<QString /* name */, MidNamChan
     MidiNamChannelNameSetList() { }
     MidiNamChannelNameSetList(const MidiNamChannelNameSetList& m);
     ~MidiNamChannelNameSetList();
+    // Deletes all owned pointers, then empties the map. Always use this instead
+    //  of the inherited std::map::clear() - see MidiNamAvailableForChannels::clear().
+    void clear();
     bool add(MidNamChannelNameSet* a);
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
@@ -807,6 +831,9 @@ class MidNamDeviceModeList : public std::map<QString /* name */, MidNamDeviceMod
     MidNamDeviceModeList() { }
     MidNamDeviceModeList(const MidNamDeviceModeList& m);
     ~MidNamDeviceModeList();
+    // Deletes all owned pointers, then empties the map. Always use this instead
+    //  of the inherited std::map::clear() - see MidiNamAvailableForChannels::clear().
+    void clear();
     bool add(MidNamDeviceMode* a);
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
@@ -861,6 +888,9 @@ class MidiNamModelList : public std::map<QString /* model */, MidNamModel*, std:
     MidiNamModelList() { }
     MidiNamModelList(const MidiNamModelList& m);
     ~MidiNamModelList();
+    // Deletes all owned pointers, then empties the map. Always use this instead
+    //  of the inherited std::map::clear() - see MidiNamAvailableForChannels::clear().
+    void clear();
     bool add(MidNamModel* a);
     void write(int level, MusECore::Xml& xml) const;
 };
@@ -936,6 +966,9 @@ class MidNamExtendingDeviceNamesList : public std::list<MidNamExtendingDeviceNam
     MidNamExtendingDeviceNamesList() { }
     MidNamExtendingDeviceNamesList(const MidNamExtendingDeviceNamesList& m);
     ~MidNamExtendingDeviceNamesList();
+    // Deletes all owned pointers, then empties the list. Always use this instead
+    //  of the inherited std::list::clear() - see MidiNamAvailableForChannels::clear().
+    void clear();
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
 };
@@ -985,6 +1018,9 @@ class MidNamMasterDeviceNamesList : public std::list<MidNamMasterDeviceNames*>
     MidNamMasterDeviceNamesList() { }
     MidNamMasterDeviceNamesList(const MidNamMasterDeviceNamesList& m);
     ~MidNamMasterDeviceNamesList();
+    // Deletes all owned pointers, then empties the list. Always use this instead
+    //  of the inherited std::list::clear() - see MidiNamAvailableForChannels::clear().
+    void clear();
     bool gatherReferences(MidNamReferencesList* refs) const;
     void write(int level, MusECore::Xml& xml) const;
 };
