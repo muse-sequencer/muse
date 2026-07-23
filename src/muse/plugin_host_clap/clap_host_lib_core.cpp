@@ -532,7 +532,36 @@ void ClapInstanceCore::deactivate()
   }
   _curActiveState     = false;
   _startProcessingReq = false;
-  _stopProcessingReq  = true;
+
+  // Actually stop processing on the correct (audio) thread before returning,
+  //  rather than only requesting it via _stopProcessingReq and hoping a
+  //  future process() callback for THIS instance picks it up. Mid-session
+  //  callers (SynthI::deactivate3(), e.g. deleting a track) proceed straight
+  //  to `delete _sif` -> shutdown() right after this returns - and a plugin
+  //  being removed from the graph may never get another process() callback
+  //  to ever consume that flag. Without this, shutdown() finds
+  //  _clapProcessing still true and destroys the plugin while it believes
+  //  it's still processing - CLAP hosts must stop_processing()+deactivate()
+  //  before destroy(); violating that made Diva (and presumably other
+  //  strict CLAP plugins) abort/terminate on track removal.
+  //  Reuses the same audio-thread round-trip deactivateAllBeforeAudioShutdown()
+  //  already relies on at quit time - it stops ALL live CLAP instances, not
+  //  just this one (a brief, harmless glitch on other concurrently-playing
+  //  CLAP plugins is an acceptable trade-off for not crashing; a more
+  //  surgical single-instance stop would need a new AudioMsg parameter and
+  //  isn't done here).
+  if(_clapProcessing)
+  {
+    if(MusEGlobal::audio && MusEGlobal::audio->isRunning())
+      MusEGlobal::audio->msgClapStopProcessing();
+    else
+      fprintf(stderr,
+        "ClapInstanceCore::deactivate: '%s' still processing but audio engine "
+        "not running - cannot stop_processing() on the audio thread\n",
+        _displayName.toLocal8Bit().constData());
+  }
+
+  _stopProcessingReq  = false;
 }
 
 //---------------------------------------------------------
