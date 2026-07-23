@@ -1,0 +1,2 @@
+
+## note: the ArrangerToolbar gets constructed in src/muse/arranger/arranger.cpp 

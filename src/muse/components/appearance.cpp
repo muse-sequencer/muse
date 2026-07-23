@@ -655,7 +655,7 @@ void Appearance::populateThemeCombos()
     //  drawControl()/drawPrimitive() painting). The files are left in
     //  place under themes/old_themes/ for reference / possible future
     //  conversion to proper Qlementine JSON themes, but no longer
-    //  offered as selectable "Main Theme" options. loadMuseChromeTheme()
+    //  offered as selectable "Main Theme" options. loadQlementineTheme()
     //  still has the legacy .qss/.cfc fallback path in case it's ever
     //  needed again, it's just not advertised in this dropdown.
     populateThemeCombo(themeComboBox, QString(), QStringList() << "*.json");
@@ -918,11 +918,11 @@ bool Appearance::changeTheme()
     // Apply the new chrome theme immediately: prefers a Qlementine JSON
     //  theme (themes/<name>.json) if one exists for this name, otherwise
     //  falls back to the legacy .qss + .cfc mechanism (themes/old_themes/).
-    //  Either way, no restart required - loadMuseChromeTheme() is also
+    //  Either way, no restart required - loadQlementineTheme() is also
     //  what main.cpp calls once at startup, so this stays in sync with
     //  that as the underlying mechanism evolves instead of reimplementing
     //  theme-loading here.
-    MusEGui::loadMuseChromeTheme(currentTheme);
+    MusEGui::loadQlementineTheme(currentTheme);
 
     backgroundTree->reset();
 
@@ -999,7 +999,7 @@ bool Appearance::apply()
       if (changeTheme()) {
           *config = MusEGlobal::config;
           // NOTE: no restart_required here - changeTheme() now applies the
-          //  new theme's colors and stylesheet live via MusEGui::loadMuseChromeTheme().
+          //  new theme's colors and stylesheet live via MusEGui::loadQlementineTheme().
       }
 
       if (changeColorPalette()) {

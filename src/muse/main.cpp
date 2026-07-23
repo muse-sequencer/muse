@@ -713,7 +713,7 @@ int main(int argc, char* argv[])
         //  happen after the QApplication is constructed (QApplication::
         //  setStyle(QStyle*) takes ownership of the style object and
         //  requires an application instance to exist), and before
-        //  MusEGui::loadMuseChromeTheme() is called further down, since that's
+        //  MusEGui::loadQlementineTheme() is called further down, since that's
         //  what actually sets the theme's colors on this style instance.
         //  This supersedes the by-name QApplication::setStyle() call above.
         QApplication::setStyle(new oclero::qlementine::QlementineStyle(&app));
@@ -1288,7 +1288,7 @@ int main(int argc, char* argv[])
                  << "Load theme...";
 
         MusEGui::seedUserThemeFiles();
-        MusEGui::loadMuseChromeTheme(MusEGlobal::config.theme);
+        MusEGui::loadQlementineTheme(MusEGlobal::config.theme);
         MusEGui::loadMuseColorPalette(MusEGlobal::config.museColorPalette);
 //        MusEGui::loadThemeColors(MusEGlobal::config.theme);
 

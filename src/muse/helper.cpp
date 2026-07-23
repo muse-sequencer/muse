@@ -71,6 +71,8 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QFileSystemWatcher>
+#include <QTimer>
 #include <QByteArray>
 #include <QStyle>
 #include <QStyleFactory>
@@ -2350,15 +2352,72 @@ void loadTheme(const QString& theme)
     loadThemeColors(theme);
 }
 
+#ifdef QLEMENTINE_SUPPORT
 //---------------------------------------------------------
-//   loadMuseChromeTheme
+//   Theme file live-reload
+//    While iterating on theme colors, editing an active theme JSON and
+//    saving it reloads it immediately - no restart, no re-opening the
+//    Appearance dialog. Applies to both loadQlementineTheme()'s and
+//    loadMuseColorPalette()'s files; watchThemeFile() is called from
+//    both, below, once each has successfully loaded its file.
+//---------------------------------------------------------
+
+namespace {
+
+void reloadThemeFiles()
+{
+    if (MusEGlobal::debugMsg)
+        fprintf(stderr, "reloadThemeFiles: watched theme file(s) changed, reloading live\n");
+
+    // Don't try to track which of the two theme axes the changed path
+    //  belongs to - just reload both from the current config. Each is a
+    //  cheap, idempotent no-op if its own file didn't actually change.
+    loadQlementineTheme(MusEGlobal::config.theme);
+    loadMuseColorPalette(MusEGlobal::config.museColorPalette);
+}
+
+QFileSystemWatcher* themeFileWatcher()
+{
+    static QFileSystemWatcher* const watcher = []()
+    {
+        QFileSystemWatcher* const w = new QFileSystemWatcher(qApp);
+        QObject::connect(w, &QFileSystemWatcher::fileChanged, qApp, [](const QString&)
+        {
+            // Debounce: many editors save by writing a temp file and
+            //  renaming it over the original, which both drops the path
+            //  from the watch list and can fire this signal slightly
+            //  before the new content is fully on disk. Re-adding the
+            //  path and reloading happens together in reloadThemeFiles()
+            //  (via watchThemeFile(), called from the load functions
+            //  themselves), shortly after rather than immediately.
+            QTimer::singleShot(150, qApp, []() { reloadThemeFiles(); });
+        });
+        return w;
+    }();
+    return watcher;
+}
+
+void watchThemeFile(const QString& path)
+{
+    if (path.isEmpty())
+        return;
+    QFileSystemWatcher* const watcher = themeFileWatcher();
+    if (!watcher->files().contains(path))
+        watcher->addPath(path);
+}
+
+} // namespace
+#endif // QLEMENTINE_SUPPORT
+
+//---------------------------------------------------------
+//   loadQlementineTheme
 //    "Main Theme (Qlementine)" in Appearance - standard-widget chrome.
 //    Prefers themes/<theme>.json (Qlementine Theme); falls back to the
 //    legacy themes/old_themes/<theme>.qss + .cfc pair if no such JSON
 //    exists (or Qlementine isn't compiled in).
 //---------------------------------------------------------
 
-void loadMuseChromeTheme(const QString& theme)
+void loadQlementineTheme(const QString& theme)
 {
     if (theme.isEmpty())
         return;
@@ -2387,7 +2446,7 @@ void loadMuseChromeTheme(const QString& theme)
 
     if (jsonPath.isEmpty())
     {
-        fprintf(stderr, "loadMuseChromeTheme: no JSON theme found for <%s> in themes/ - "
+        fprintf(stderr, "loadQlementineTheme: no JSON theme found for <%s> in themes/ - "
                          "leaving the current chrome theme unchanged (NOT falling back to "
                          "legacy .qss, which would break QlementineStyle for the rest of "
                          "this session - see comment above).\n",
@@ -2398,7 +2457,7 @@ void loadMuseChromeTheme(const QString& theme)
     auto* style = qobject_cast<oclero::qlementine::QlementineStyle*>(QApplication::style());
     if (!style)
     {
-        fprintf(stderr, "loadMuseChromeTheme: found <%s> but QApplication's style is not a "
+        fprintf(stderr, "loadQlementineTheme: found <%s> but QApplication's style is not a "
                          "QlementineStyle (either it was never installed in main(), or a "
                          "prior legacy .qss load already corrupted it this session - see "
                          "comment above). Not applying.\n",
@@ -2421,8 +2480,10 @@ void loadMuseChromeTheme(const QString& theme)
         //  needed.
 
         if (MusEGlobal::debugMsg)
-            fprintf(stderr, "loadMuseChromeTheme: applied Qlementine/JSON theme <%s>\n",
+            fprintf(stderr, "loadQlementineTheme: applied Qlementine/JSON theme <%s>\n",
                     qPrintable(jsonPath));
+
+        watchThemeFile(jsonPath);
     }
     // fromJsonPath() already printed the reason it failed, if it did -
     //  either way, do NOT fall back to loadTheme() here.
@@ -2466,6 +2527,8 @@ void loadMuseColorPalette(const QString& paletteName)
     {
         if (MusEGlobal::debugMsg)
             fprintf(stderr, "loadMuseColorPalette: applied <%s>\n", qPrintable(jsonPath));
+
+        watchThemeFile(jsonPath);
     }
     // loadColorPaletteFromJsonPath() already printed the reason it failed, if it did.
 #else
