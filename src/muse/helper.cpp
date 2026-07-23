@@ -2409,6 +2409,17 @@ void loadMuseChromeTheme(const QString& theme)
     if (const auto museTheme = MuseTheme::fromJsonPath(jsonPath))
     {
         style->setTheme(*museTheme);
+
+        // NOTE: previously also called qApp->setPalette(style->standardPalette())
+        //  here. Turned out to be a redundant no-op: QlementineStyle::setTheme()
+        //  already does exactly this internally (see triggerCompleteRepaint() in
+        //  QlementineStyle.cpp), using a QPalette that Theme::initializePalette()
+        //  already builds correctly (including QPalette::WindowText) from the
+        //  loaded JSON colors. So the app-wide QPalette was never actually stale -
+        //  whatever causes specific labels to look washed out has a different,
+        //  still-unidentified cause. Don't re-add this without new evidence it's
+        //  needed.
+
         if (MusEGlobal::debugMsg)
             fprintf(stderr, "loadMuseChromeTheme: applied Qlementine/JSON theme <%s>\n",
                     qPrintable(jsonPath));
