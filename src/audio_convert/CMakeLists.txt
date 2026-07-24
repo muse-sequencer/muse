@@ -46,6 +46,7 @@ add_library(audio_converter_plugin ${MODULES_BUILD}
 ## Linkage
 ##
 target_link_libraries(audio_converter_plugin
+      audio_convert
       xml_module
       dl
       )

@@ -114,6 +114,13 @@ class TopWin : public QMainWindow
       QMdiSubWindow* mdisubwin;
       bool _sharesToolsAndMenu;
       std::list<QToolBar*> _toolbars;
+      // Toolbars in _toolbars that are borrowed from MusE (see
+      //  MusE::sharedOptionalToolBar()) rather than constructed/owned by this
+      //  TopWin. Must NOT be deleted in ~TopWin() - MusE owns and destroys
+      //  them. Deleting them here too caused a heap-use-after-free (ASan)
+      //  since MusE's own destructor already deletes its children.
+      std::list<QToolBar*> _borrowedToolbars;
+      bool isBorrowedToolBar(QToolBar* tb) const;
       bool _initalizing;
 
       void createMdiWrapper();

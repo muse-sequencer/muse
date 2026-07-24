@@ -40,6 +40,7 @@
 #include "tlist.h"
 #include "mididev.h"
 #include "midiport.h"
+#include "driver/jackaudio.h"
 #include "midictrl.h"
 #include "midiseq.h"
 #include "comment.h"
@@ -218,7 +219,7 @@ bool TList::event(QEvent *event)
     if (event->type() == QEvent::ToolTip) {
         QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
         MusECore::TrackList* l = MusEGlobal::song->tracks();
-        int idx = 0;
+        int idx [[maybe_unused]] = 0;
         int yy  = -ypos;
         for (MusECore::iTrack i = l->begin(); i != l->end(); ++idx, yy += (*i)->height(), ++i) {
             MusECore::Track* track = *i;
@@ -248,6 +249,35 @@ bool TList::event(QEvent *event)
 //---------------------------------------------------------
 //   paint
 //---------------------------------------------------------
+
+//---------------------------------------------------------
+//   midiPortColumnLabel
+//   Display text for the OPORT column: the friendly connection alias for Jack
+//   midi devices (read as-is via jackPortPrettyName() - it's already the
+//   finished "Muse >>/<<..." text our own setMidiConnectionAlias() wrote, so
+//   it must NOT be re-run through midiPortFriendlyName()'s formatting, which
+//   would double it up). Alsa devices/unassigned ports use portname() as before.
+//---------------------------------------------------------
+
+static QString midiPortColumnLabel(int outport)
+{
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];
+  MusECore::MidiDevice* md = mp->device();
+  QString label = mp->portname();
+  if(md && md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
+  {
+    void* jp = md->outClientPort();
+    if(!jp)
+      jp = md->inClientPort();
+    if(jp)
+    {
+      const QString pretty = MusECore::jackPortPrettyName((jack_port_t*)jp);
+      if(!pretty.isEmpty())
+        label = pretty;
+    }
+  }
+  return label;
+}
 
 void TList::paint(const QRect& r)
 {
@@ -317,7 +347,7 @@ void TList::paint(const QRect& r)
 
     MusECore::TrackList* l = MusEGlobal::song->tracks();
     const MusECore::Track* cur_sel_track = l->currentSelection();
-    int idx = 0;
+    int idx [[maybe_unused]] = 0;
     int yy  = -ypos;
     for (MusECore::iTrack i = l->begin(); i != l->end(); ++idx, yy += (*i)->height(), ++i) {
         MusECore::Track* track = *i;
@@ -459,7 +489,7 @@ void TList::paint(const QRect& r)
                     }
                     else {
                         // show number of ports
-                        n = ((MusECore::WaveTrack*)track)->channels();
+                        n = track->channels();
                     }
                     s.setNum(n);
                     p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, s);
@@ -471,7 +501,7 @@ void TList::paint(const QRect& r)
                     QString s;
                     if (track->isMidiTrack()) {
                         int outport = ((MusECore::MidiTrack*)track)->outPort();
-                        s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
+                        s = QString("%1:%2").arg(outport+1).arg(midiPortColumnLabel(outport));
                     }
                     else if(track->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                     {
@@ -480,7 +510,7 @@ void TList::paint(const QRect& r)
                         {
                             int outport = md->midiPort();
                             if((outport >= 0) && (outport < MusECore::MIDI_PORTS))
-                                s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
+                                s = QString("%1:%2").arg(outport+1).arg(midiPortColumnLabel(outport));
                             else
                                 s = tr("<none>");
                         }
@@ -654,7 +684,7 @@ void TList::paint(const QRect& r)
 void TList::maybeUpdateVolatileCustomColumns()
 {
     MusECore::TrackList* l = MusEGlobal::song->tracks();
-    int idx = 0;
+    int idx [[maybe_unused]] = 0;
     int yy  = -ypos;
     for (MusECore::iTrack i = l->begin(); i != l->end(); ++idx, yy += (*i)->height(), ++i)
     {
@@ -1346,6 +1376,11 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
         else if (mSubPresets != nullptr && ract != nullptr && ract->data().canConvert<void *>()) {
             static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
         }
+        // p->addMenu(mSubPresets) only borrows mSubPresets' menuAction() -
+        //  it does not reparent/take ownership of the QMenu itself, so it
+        //  must be deleted here or it leaks (ASan: indirect leak via
+        //  QMenu::QMenu() at this call site).
+        delete mSubPresets;
 #endif
         delete p;
         return;
@@ -1452,6 +1487,9 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
             static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
         }
     }
+    // See matching comment in the AUDIO_SOFTSYNTH branch above - p->addMenu()
+    //  does not take ownership of mSubPresets, so it must be deleted here.
+    delete mSubPresets;
 #endif
 
     delete p;

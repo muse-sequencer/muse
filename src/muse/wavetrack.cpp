@@ -34,6 +34,7 @@
 #include "gconfig.h"
 #include "al/dsp.h"
 #include "audioprefetch.h"
+#include "rtlog.h"
 //#include "latency_compensator.h"
 #include "config.h"
 #include "xml_statistics.h"
@@ -403,7 +404,11 @@ bool WaveTrack::getPrefetchData(
     MuseCount_t pos;
     if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
     {
-      fprintf(stderr, "WaveTrack::getPrefetchData(%s) (prefetch peek A) fifo underrun\n", name().toLocal8Bit().constData());
+      // RT-safe: queues the message instead of printing directly on this
+      // (real-time) thread. debugMsg still controls whether we bother at
+      // all; rtLog() is what makes it safe to do so unconditionally.
+      if(MusEGlobal::debugMsg)
+        MusECore::rtLog("WaveTrack::getPrefetchData(%s) (prefetch peek A) fifo underrun", name().toLocal8Bit().constData());
       return false;
     }
 
@@ -436,14 +441,15 @@ bool WaveTrack::getPrefetchData(
 
         if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
         {
-          fprintf(stderr, "WaveTrack::getPrefetchData(%s) (prefetch peek B) fifo underrun\n", name().toLocal8Bit().constData());
+          if(MusEGlobal::debugMsg)
+            MusECore::rtLog("WaveTrack::getPrefetchData(%s) (prefetch peek B) fifo underrun", name().toLocal8Bit().constData());
           return false;
         }
 
         if(corr_frame_end_pos <= pos)
         {
           if(MusEGlobal::debugMsg)
-            fprintf(stderr, "fifo get(%s) (A) error expected %ld, got %ld\n", name().toLocal8Bit().constData(), (long int) frame_pos, (long int) pos);
+            MusECore::rtLog("fifo get(%s) (A) error expected %ld, got %ld", name().toLocal8Bit().constData(), (long int) frame_pos, (long int) pos);
           return false;
         }
       }
@@ -511,14 +517,15 @@ bool WaveTrack::getPrefetchData(
       //  since the rest of it will be required next cycle.
       if(_prefetchFifo.peek(dstChannels, nframe, pf_buf, &pos))
       {
-        fprintf(stderr, "WaveTrack::getPrefetchData(%s) (prefetch peek C) fifo underrun\n", name().toLocal8Bit().constData());
+        if(MusEGlobal::debugMsg)
+          MusECore::rtLog("WaveTrack::getPrefetchData(%s) (prefetch peek C) fifo underrun", name().toLocal8Bit().constData());
         return false;
       }
       
       if(pos != expect_nextpos)
       {
         if(MusEGlobal::debugMsg)
-          fprintf(stderr, "fifo get(%s) (B) error expected %ld, got %ld\n", name().toLocal8Bit().constData(), (long int) expect_nextpos, (long int) pos);
+          MusECore::rtLog("fifo get(%s) (B) error expected %ld, got %ld", name().toLocal8Bit().constData(), (long int) expect_nextpos, (long int) pos);
         return false;
       }
 

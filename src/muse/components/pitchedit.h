@@ -34,7 +34,7 @@ namespace MusEGui {
 class PitchEdit : public SpinBox {
       Q_OBJECT
 
-      bool deltaMode;
+      bool deltaMode = false;
       QSizePolicy originalPolicy;
 
    protected:

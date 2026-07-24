@@ -27,6 +27,7 @@
 #include <QFileInfo>
 #include <QDateTime>
 #include <QStandardPaths>
+#include <QSet>
 
 // For sorting port enum values.
 #include <map>
@@ -481,8 +482,44 @@ QStringList pluginGetLadspaDirectories(const QString& museGlobalLib)
 QStringList pluginGetMessDirectories(const QString& museGlobalLib)
 {
   QStringList sl;
+  // De-dupe by canonical (symlink-resolved) path. Distros commonly symlink
+  // an unversioned /usr/local/lib/muse -> /usr/local/lib/muse-X.Y, and
+  // without this, adding both the versioned museGlobalLib path AND a
+  // hardcoded unversioned fallback below made the exact same files show up
+  // under two different path strings — which the cache dirty-check (string-
+  // keyed, not inode/realpath-aware) then saw as 'new' plugins on every
+  // single startup, forcing a full rescan every time. QDir::canonicalPath()
+  // returns empty for a non-existent directory, so non-existent dirs never
+  // collide with each other here — the existence/empty check below still
+  // runs on those.
+  QSet<QString> seenCanonical;
+  auto addDirUnlessAlias = [&](const QString& dir) -> bool
+  {
+    const QString canon = QDir(dir).canonicalPath();
+    const QString key = canon.isEmpty() ? dir : canon;
+    if(seenCanonical.contains(key))
+      return false;
+    seenCanonical.insert(key);
+    sl.append(dir);
+    return true;
+  };
+
   // Add our own MESS plugin directory...
-  sl.append(museGlobalLib + QString("/synthi"));
+  {
+    const QString primaryMessDir = museGlobalLib + QString("/synthi");
+    const QDir qdir(primaryMessDir);
+    if(!qdir.exists())
+      std::fprintf(stderr, "INFO: could not find MESS type plugins (linux only) : %s - does not exist.\n",
+                   primaryMessDir.toLocal8Bit().constData());
+    else if(qdir.entryList(QDir::Files | QDir::NoDotAndDotDot).isEmpty())
+      std::fprintf(stderr, "INFO: could not find MESS type plugins (linux only) : %s - is empty.\n",
+                   primaryMessDir.toLocal8Bit().constData());
+    else if(!addDirUnlessAlias(primaryMessDir))
+      std::fprintf(stderr, "INFO: skipping MESS type plugin dir : %s - alias of an already-added directory.\n",
+                   primaryMessDir.toLocal8Bit().constData());
+    else
+      std::fprintf(stderr, "INFO: found MESS type plugins in : %s\n", primaryMessDir.toLocal8Bit().constData());
+  }
   // Now add other directories...
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
   QString messPath = qEnvironmentVariable("MESS_PATH");
@@ -497,12 +534,62 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib)
     messPath = homePath + QString("/usr/local/lib64/MESS:/usr/lib64/MESS:/usr/local/lib/MESS:/usr/lib/MESS");
   }
   if(!messPath.isEmpty())
+  {
 // QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
 #if QT_VERSION >= 0x050e00
-    sl.append(messPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
+    const QStringList envDirs = messPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive);
 #else
-    sl.append(messPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
+    const QStringList envDirs = messPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive);
 #endif
+    for(const QString& dir : envDirs)
+      addDirUnlessAlias(dir);
+  }
+
+  // MESS synths conventionally live in a "synthi" dir (see museGlobalLib
+  // above). Unlike pluginGetLinuxVstDirectories(), not guarded by
+  // Q_OS_WIN — MESS itself only ships a Linux build at present, so there
+  // is no equivalent Windows path scheme defined here yet.
+  //
+  // NOTE: there used to be an additional "plugins" (effect) entry here
+  // too, but MESS has no such directory convention — that only ever
+  // duplicated LADSPA's own museGlobalLib+"/plugins" directory (see
+  // pluginGetLadspaDirectories()) under a second, unversioned path. Since
+  // that's a *different function's* directory list, our own addDirUnlessAlias()
+  // dedup above can't see it, so the duplicate files kept looking 'new' to
+  // the cache dirty-check on every single startup. Removed rather than
+  // attempting cross-function dedup.
+  //
+  // IMPORTANT: this does NOT mean the "plugins" effect directory goes
+  // unscanned — museGlobalLib+"/plugins" is still scanned every run, just
+  // via pluginGetLadspaDirectories()/scanLadspaPlugins() instead of here.
+  // Nothing was dropped; this function simply no longer scans it a second
+  // time under a different type.
+  const QStringList defaultMessDirs
+  {
+    // /usr/local preferred over /usr.
+    QString("/usr/local/lib/muse/synthi"),
+    QString("/usr/lib/muse/synthi"),
+  };
+  for(const QString& dir : defaultMessDirs)
+  {
+    const QDir qdir(dir);
+    if(!qdir.exists())
+      std::fprintf(stderr, "INFO: could not find MESS type plugins (linux only) : %s - does not exist.\n",
+                   dir.toLocal8Bit().constData());
+    else if(qdir.entryList(QDir::Files | QDir::NoDotAndDotDot).isEmpty())
+      std::fprintf(stderr, "INFO: could not find MESS type plugins (linux only) : %s - is empty.\n",
+                   dir.toLocal8Bit().constData());
+    else if(!addDirUnlessAlias(dir))
+      std::fprintf(stderr, "INFO: skipping MESS type plugin dir : %s - alias of an already-added directory.\n",
+                   dir.toLocal8Bit().constData());
+    else
+    {
+      // Previously silent on success — added so /usr/local vs /usr/lib
+      // outcomes are both visible in the log, not just failures.
+      std::fprintf(stderr, "INFO: found MESS type plugins in : %s\n", dir.toLocal8Bit().constData());
+    }
+  }
+
   return sl;
 }
 
@@ -549,10 +636,18 @@ QStringList pluginGetLinuxVstDirectories()
 #endif
   if(vstPath.isEmpty())
   {
+    // NOTE: this used to redeclare a new local `vstPath` here, shadowing the
+    // outer one above. Any fallback value computed further down in this
+    // block was then discarded once the block ended, so the outer vstPath
+    // checked below always stayed empty unless LXVST_PATH was literally set
+    // in the environment — silently disabling the built-in fallback search
+    // paths (e.g. /usr/lib/vst, /usr/local/lib/vst) whenever neither
+    // LXVST_PATH nor VST_PATH were set. Fixed by reassigning the same outer
+    // variable instead of shadowing it.
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
-    QString vstPath = qEnvironmentVariable("VST_PATH");
+    vstPath = qEnvironmentVariable("VST_PATH");
 #else
-    QString vstPath = QString::fromLocal8Bit(qgetenv("VST_PATH"));
+    vstPath = QString::fromLocal8Bit(qgetenv("VST_PATH"));
 #endif
     if(vstPath.isEmpty())
     {
@@ -677,6 +772,37 @@ QStringList pluginGetLv2Directories()
 }
 
 //---------------------------------------------------------
+//   pluginGetClapDirectories
+//---------------------------------------------------------
+
+#ifdef CLAP_SUPPORT
+QStringList pluginGetClapDirectories()
+{
+  QStringList sl;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+  QString clapPath = qEnvironmentVariable("CLAP_PATH");
+#else
+  QString clapPath = QString::fromLocal8Bit(qgetenv("CLAP_PATH"));
+#endif
+  if(clapPath.isEmpty())
+  {
+    QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+    if(!homePath.isEmpty())
+      homePath += QString("/.clap:");
+    clapPath = homePath + QString("/usr/local/lib/clap:/usr/lib/clap");
+  }
+  if(!clapPath.isEmpty())
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+    sl.append(clapPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
+#else
+    sl.append(clapPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
+#endif
+  return sl;
+}
+#endif // CLAP_SUPPORT
+
+//---------------------------------------------------------
 //   pluginGetDirectories
 //---------------------------------------------------------
 
@@ -703,6 +829,10 @@ QStringList pluginGetDirectories(const QString& museGlobalLib, MusEPlugin::Plugi
 
     case MusEPlugin::PluginTypeLV2:
       return pluginGetLv2Directories();
+    break;
+
+    case MusEPlugin::PluginTypeCLAP:
+      return pluginGetClapDirectories();
     break;
 
     case MusEPlugin::PluginTypeVST:
@@ -748,6 +878,10 @@ const char* pluginCacheFilename(MusEPlugin::PluginType type)
     // Keep so we can delete old files.
     case MusEPlugin::PluginTypeLV2:
       return "lv2_plugins.scan";
+    break;
+
+    case MusEPlugin::PluginTypeCLAP:
+      return "clap_plugins.scan";
     break;
 
     case MusEPlugin::PluginTypeVST:
@@ -808,6 +942,11 @@ MusEPlugin::PluginTypes_t pluginCacheFilesExist(
 
   if(types & MusEPlugin::PluginTypeLV2)
     res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeLV2);
+
+#ifdef CLAP_SUPPORT
+  if(types & MusEPlugin::PluginTypeCLAP)
+    res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeCLAP);
+#endif
 
   if(types & MusEPlugin::PluginTypeVST)
     res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeVST);
@@ -914,6 +1053,14 @@ bool readPluginCacheFiles(
     if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeVST))
       res = false;
   }
+
+#ifdef CLAP_SUPPORT
+  if(types & MusEPlugin::PluginTypeCLAP)
+  {
+    if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeCLAP))
+      res = false;
+  }
+#endif
 
   if(types & MusEPlugin::PluginTypeUnknown)
   {

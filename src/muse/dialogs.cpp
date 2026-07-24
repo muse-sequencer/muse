@@ -78,19 +78,39 @@ void init_function_dialogs()
 //
 void destroy_function_dialogs()
 {
-        if(gatetime_dialog) delete gatetime_dialog;
-        if(velocity_dialog) delete velocity_dialog;
-        if(quantize_dialog) delete quantize_dialog;
-        if(erase_dialog) delete erase_dialog;
-        if(del_overlaps_dialog) delete del_overlaps_dialog;
-        if(set_notelen_dialog) delete set_notelen_dialog;
-        if(move_notes_dialog) delete move_notes_dialog;
-        if(transpose_dialog) delete transpose_dialog;
-        if(crescendo_dialog) delete crescendo_dialog;
-        if(legato_dialog) delete legato_dialog;
-        if(paste_dialog) delete paste_dialog;
-        if(paste_events_dialog) delete paste_events_dialog;
+      delete gatetime_dialog;      gatetime_dialog = nullptr;
+      delete velocity_dialog;      velocity_dialog = nullptr;
+      delete quantize_dialog;      quantize_dialog = nullptr;
+      delete erase_dialog;         erase_dialog = nullptr;
+      delete del_overlaps_dialog;  del_overlaps_dialog = nullptr;
+      delete set_notelen_dialog;   set_notelen_dialog = nullptr;
+      delete move_notes_dialog;    move_notes_dialog = nullptr;
+      delete transpose_dialog;     transpose_dialog = nullptr;
+      delete crescendo_dialog;     crescendo_dialog = nullptr;
+      delete legato_dialog;        legato_dialog = nullptr;
+      delete paste_dialog;         paste_dialog = nullptr;
+      delete paste_events_dialog;  paste_events_dialog = nullptr;
 }
+// OLD, buggy:
+// void destroy_function_dialogs()
+// {
+//         if(gatetime_dialog) delete gatetime_dialog;
+//         if(velocity_dialog) delete velocity_dialog;
+//         if(quantize_dialog) delete quantize_dialog;
+//         if(erase_dialog) delete erase_dialog;
+//         if(del_overlaps_dialog) delete del_overlaps_dialog;
+//         if(set_notelen_dialog) delete set_notelen_dialog;
+//         if(move_notes_dialog) delete move_notes_dialog;
+//         if(transpose_dialog) delete transpose_dialog;
+//         if(crescendo_dialog) delete crescendo_dialog;
+//         if(legato_dialog) delete legato_dialog;
+//         if(paste_dialog) delete paste_dialog;
+//         if(paste_events_dialog) delete paste_events_dialog;
+// }
+
+
+
+
 
 void retranslate_function_dialogs()
 {

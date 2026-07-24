@@ -27,6 +27,8 @@
 
 #include <QDir>
 #include <QMenu>
+#include <QApplication>
+#include <QMessageBox>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -55,6 +57,7 @@
 #include "song.h"
 
 #include "vst_native.h"
+#include "rtlog.h"
 #include "pluglist.h"
 
 #define OLD_PLUGIN_ENTRY_POINT "main"
@@ -94,6 +97,8 @@
 #endif
 
 namespace MusECore {
+
+static void showPluginAllocError(const QString &pluginName); // forward decl.
 
 extern JackAudioDevice* jackAudio;
 
@@ -378,21 +383,24 @@ void initVST_Native()
 
           if(plug_found)
           {
-            fprintf(stderr, "Ignoring LinuxVST effect name:%s uri:%s path:%s duplicate of path:%s\n",
-                    inf_name.toLocal8Bit().constData(),
-                    inf_uri.toLocal8Bit().constData(),
-                    PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
-                    plug_found->filePath().toLocal8Bit().constData());
+            if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+              fprintf(stderr, "Ignoring LinuxVST effect name:%s uri:%s path:%s duplicate of path:%s\n",
+                      inf_name.toLocal8Bit().constData(),
+                      inf_uri.toLocal8Bit().constData(),
+                      PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+                      plug_found->filePath().toLocal8Bit().constData());
           }
           if(synth_found)
           {
-            fprintf(stderr, "Ignoring LinuxVST synth name:%s uri:%s path:%s duplicate of path:%s\n",
-                    inf_name.toLocal8Bit().constData(),
-                    inf_uri.toLocal8Bit().constData(),
-                    PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
-                    synth_found->filePath().toLocal8Bit().constData());
+            if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+              fprintf(stderr, "Ignoring LinuxVST synth name:%s uri:%s path:%s duplicate of path:%s\n",
+                      inf_name.toLocal8Bit().constData(),
+                      inf_uri.toLocal8Bit().constData(),
+                      PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+                      synth_found->filePath().toLocal8Bit().constData());
           }
-          
+
+                    
           const bool is_effect = info._class & MusEPlugin::PluginClassEffect;
           const bool is_synth  = info._class & MusEPlugin::PluginClassInstrument;
           
@@ -441,6 +449,9 @@ void initVST_Native()
       case MusEPlugin::PluginTypeLV2:
       case MusEPlugin::PluginTypeMESS:
       case MusEPlugin::PluginTypeMETRONOME:
+#ifdef CLAP_SUPPORT
+      case MusEPlugin::PluginTypeCLAP:   // handled by initCLAP(), ignore here
+#endif
       case MusEPlugin::PluginTypeUnknown:
       case MusEPlugin::PluginTypeNone:
       break;
@@ -617,17 +628,33 @@ bool VstNativeSynth::openPlugin(AEffect* plugin)
 //   createSIF
 //---------------------------------------------------------
 
+
 SynthIF* VstNativeSynth::createSIF(SynthI* s)
       {
-      VstNativeSynthIF* sif = new VstNativeSynthIF(s);
-      if(!sif->init(this))
+      VstNativeSynthIF* sif = nullptr;
+      try
       {
+          sif = new VstNativeSynthIF(s);
+          if(!sif->init(this))
+          {
+              delete sif;
+              sif = nullptr;
+          }
+      }
+      catch(const std::bad_alloc &e)
+      {
+          // Out of (lockable) memory: skip this synth instead of aborting MusE.
+          // SynthI::initInstance() tolerates a nullptr SIF (track still loads).
+          fprintf(stderr, "VstNativeSynth::createSIF: out of memory - "
+                          "skipping synth. Check memlock/'ulimit -l'. (%s)\n", e.what());
+          showPluginAllocError(name());
           delete sif;
           sif = nullptr;
       }
 
       return sif;
       }
+
 
 //---------------------------------------------------------
 //   VstNativeSynthIF
@@ -1758,6 +1785,11 @@ void VstNativeSynthIF::deactivate3()
       {
         // Don't delete the editor directly here. Call close.
         _editor->close();
+        // close() only schedules the editor's deletion (Qt::WA_DeleteOnClose
+        // uses deleteLater()). This SynthIF may be destroyed before that
+        // deferred deletion runs, so detach now to prevent the editor's
+        // destructor from later calling back into freed memory.
+        _editor->detachOwner();
         _editor = nullptr;
         _guiVisible = false;
       }
@@ -2619,7 +2651,10 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
   fprintf(stderr, "VstNativeSynthIF::getData: Handling inputs...\n");
   #endif
   
-  bool used_in_chan_array[in_ports]; // Don't bother initializing if not 'running'. 
+  bool used_in_chan_array[in_ports ? in_ports : 1]; // Don't bother initializing if not 'running'.
+  // Note: array is clamped to size >=1 above only to avoid a zero-length VLA
+  // (UB, flagged by UBSan) when in_ports is 0 - all loops below still use
+  // the real in_ports count, so nothing extra is ever accessed.
   
   // Gather input data from connected input routes.
   // Don't bother if not 'running'.
@@ -3020,8 +3055,8 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       // Protection. Observed this condition. Why? Supposed to be linear timestamps.
       if(found && evframe < frame)
       {
-        fprintf(stderr, 
-          "VstNativeSynthIF::getData *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%u nframes:%u v.frame:%lu\n",
+        MusECore::rtLog(
+          "VstNativeSynthIF::getData *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%u nframes:%u v.frame:%lu",
           evframe, frame, v.idx, v.value, v.unique, syncFrame, nframes, v.frame);
 
         // No choice but to ignore it.
@@ -3144,8 +3179,11 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
             ++nevents;
           }
 
-          VstMidiEvent events[nevents];
-          char evbuf[sizeof(VstMidiEvent*) * nevents + sizeof(VstEvents)];
+          // Clamped to size >=1 to avoid a zero-length VLA (UB, flagged by
+          // UBSan) when nevents is 0 - the while loop below only ever writes
+          // events[0..event_counter), and event_counter <= nevents.
+          VstMidiEvent events[nevents ? nevents : 1];
+          char evbuf[sizeof(VstMidiEvent*) * (nevents ? nevents : 1) + sizeof(VstEvents)];
           VstEvents *vst_events = (VstEvents*)evbuf;
           vst_events->numEvents = 0;
           vst_events->reserved  = 0;
@@ -3222,8 +3260,11 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       // Don't bother if not 'running'.
       if(_curActiveState)
       {
-        float* in_bufs[in_ports];
-        float* out_bufs[out_ports];
+        // Clamped to size >=1 to avoid a zero-length VLA (UB, flagged by
+        // UBSan) when in_ports/out_ports is 0 - loops below still use the
+        // real in_ports/out_ports counts.
+        float* in_bufs[in_ports ? in_ports : 1];
+        float* out_bufs[out_ports ? out_ports : 1];
         for(unsigned long k = 0; k < out_ports; ++k)
         {
           if(!connectToDummyAudioPorts && k < nop)
@@ -3492,20 +3533,54 @@ VstNativePluginWrapper::~VstNativePluginWrapper()
    delete [] _fakePds;
 }
 
+
+//---------------------------------------------------------
+//   showPluginAllocError
+//    Inform the user via GUI popup that a plugin was skipped due to
+//    memory/memlock exhaustion. Safe to call from any thread: the
+//    message box is marshalled to the GUI thread and never blocks the caller.
+//---------------------------------------------------------
+
+static void showPluginAllocError(const QString &pluginName)
+{
+   if(!MusEGlobal::muse)   // GUI not up yet? -> silent (only pointer compare, no full type needed)
+      return;
+   const QString msg = QObject::tr(
+      "Out of lockable memory while loading plugin:\n  %1\n\n"
+      "The plugin was skipped so MusE can keep running.\n\n"
+      "Raise the memlock limit: set 'memlock unlimited' for the audio group "
+      "in /etc/security/limits.conf, then re-login.").arg(pluginName);
+   // Marshal to GUI thread via qApp (QApplication lives in the main thread).
+   // Avoids needing the full MusEGui::MusE type here.
+   QMetaObject::invokeMethod(qApp, [msg]() {
+         QMessageBox::critical(QApplication::activeWindow(), QString("MusE"), msg);
+      }, Qt::QueuedConnection);
+}
+
+
 LADSPA_Handle VstNativePluginWrapper::instantiate(PluginI *pluginI)
 {
-  VstNativePluginWrapper_State *state = new VstNativePluginWrapper_State;
-  if(!state)
+  VstNativePluginWrapper_State *state = nullptr;
+  try
   {
-    abort();
+    state = new VstNativePluginWrapper_State;
+    state->plugin = _synth->instantiate(&state->userData);
   }
-  state->plugin = _synth->instantiate(&state->userData);
+  catch(const std::bad_alloc &e)
+  {
+    // Was: abort(). Inform the user and skip the plugin instead of killing MusE.
+    fprintf(stderr, "VstNativePluginWrapper::instantiate: out of memory - "
+                    "skipping plugin. Check memlock/'ulimit -l'. (%s)\n", e.what());
+    showPluginAllocError(name());
+    delete state;
+    return 0;
+  }
   if(!state->plugin)
   {
     delete state;
     return 0;
   }
-
+  
   if(!_synth->openPlugin(state->plugin))
   {
     delete state;
@@ -3604,6 +3679,10 @@ void VstNativePluginWrapper::cleanup(LADSPA_Handle handle)
    if(state->editor)
    {
      state->editor->close();
+     // See VstNativeSynthIF::deactivate3(): close() only schedules deletion
+     // (deleteLater()), and 'state' is deleted below, so detach now to avoid
+     // a later use-after-free in the editor's destructor.
+     state->editor->detachOwner();
      state->editor = nullptr;
      state->guiVisible = false;
    }

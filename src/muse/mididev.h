@@ -85,6 +85,8 @@ typedef LockFreeMPSCRingBuffer<MidiRecordEvent> MidiRecFifo;
 
 class MidiDevice {
    public:
+      friend class ClapSynthIF;
+
       // Types of MusE midi devices.
       enum MidiDeviceType { ALSA_MIDI=0, JACK_MIDI=1, SYNTH_MIDI=2 };
       
@@ -373,6 +375,14 @@ typedef std::list<MidiDevice*>::const_iterator ciMidiDevice;
 class MidiDeviceList : public std::list<MidiDevice*> 
 {
    public:
+      // Owns the MidiDevice pointers it holds. Without this, std::list's
+      //  default destructor only destroys the pointers, not the pointees...
+      ~MidiDeviceList()
+      {
+        for(iterator i = begin(); i != end(); ++i)
+          delete *i;
+      }
+
       void add(MidiDevice* dev);
       void remove(MidiDevice* dev);
       MidiDevice* find(const QString& name, int typeHint = -1);
