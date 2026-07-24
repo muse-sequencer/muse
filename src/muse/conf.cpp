@@ -750,6 +750,14 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 #else
                               MusEGlobal::config.pluginDssiPathList = xml.parse1().split(":", QString::SkipEmptyParts);
 #endif
+#ifdef CLAP_SUPPORT
+                        else if (tag == "pluginClapPathList")
+#if QT_VERSION >= 0x050e00
+                              MusEGlobal::config.pluginClapPathList = xml.parse1().split(":", Qt::SkipEmptyParts);
+#else
+                              MusEGlobal::config.pluginClapPathList = xml.parse1().split(":", QString::SkipEmptyParts);
+#endif
+#endif // CLAP_SUPPORT
                         // Obsolete. Replaced with one below.
                         else if (tag == "pluginVstPathList")
                               xml.parse1();
@@ -2027,6 +2035,11 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
 
       xml.strTag(level, "pluginLadspaPathList", MusEGlobal::config.pluginLadspaPathList.join(":"));
       xml.strTag(level, "pluginDssiPathList", MusEGlobal::config.pluginDssiPathList.join(":"));
+
+      #ifdef CLAP_SUPPORT
+            xml.strTag(level, "pluginClapPathList", MusEGlobal::config.pluginClapPathList.join(":"));
+      #endif
+
       xml.strTag(level, "pluginVstsPathList", MusEGlobal::config.pluginVstPathList.join(":"));
       xml.strTag(level, "pluginLinuxVstsPathList", MusEGlobal::config.pluginLinuxVstPathList.join(":"));
       xml.strTag(level, "pluginLv2PathList", MusEGlobal::config.pluginLv2PathList.join(":"));

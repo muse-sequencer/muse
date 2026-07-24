@@ -51,6 +51,9 @@ QStringList pluginGetMessDirectories(const QString& museGlobalLib);
 QStringList pluginGetDssiDirectories();
 QStringList pluginGetLinuxVstDirectories();
 QStringList pluginGetLv2Directories();
+#ifdef CLAP_SUPPORT
+QStringList pluginGetClapDirectories();
+#endif
 QStringList pluginGetVstDirectories();
 QStringList pluginGetDirectories(const QString& museGlobalLib,
                                  MusEPlugin::PluginType type = MusEPlugin::PluginTypeNone);

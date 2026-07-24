@@ -24,6 +24,8 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+#include "config.h"
+
 #define NUM_PARTCOLORS 18
 #define NUM_FONTS 7
 
@@ -164,6 +166,9 @@ enum CONF_LV2_UI_BEHAVIOR {
 struct GlobalConfigValues {
       QStringList pluginLadspaPathList;
       QStringList pluginDssiPathList;
+      #ifdef CLAP_SUPPORT
+            QStringList pluginClapPathList;
+      #endif
       QStringList pluginVstPathList;
       QStringList pluginLinuxVstPathList;
       QStringList pluginLv2PathList;

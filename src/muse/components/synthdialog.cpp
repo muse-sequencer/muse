@@ -66,6 +66,9 @@ SynthDialog::SynthDialog(QWidget* parent)
     ui.pluginType->addItem("DSSI", SEL_TYPE_DSSI);
     ui.pluginType->addItem("LV2", SEL_TYPE_LV2);
     ui.pluginType->addItem("VST", SEL_TYPE_VST);
+  #ifdef CLAP_SUPPORT
+    ui.pluginType->addItem("CLAP", SEL_TYPE_CLAP);
+  #endif
 
     connect (ui.pluginType,SIGNAL(currentIndexChanged(int)), SLOT(filterType(int)));
 
@@ -425,6 +428,13 @@ void SynthDialog::fillSynths()
             if(selType != SEL_TYPE_VST && selType != SEL_TYPE_ALL)
                 continue;
           break;
+
+#ifdef CLAP_SUPPORT
+          case MusEPlugin::PluginTypeCLAP:
+            if(selType != SEL_TYPE_CLAP && selType != SEL_TYPE_ALL)
+                continue;
+          break;
+#endif
 
           case MusEPlugin::PluginTypeLADSPA:
           case MusEPlugin::PluginTypeVST:

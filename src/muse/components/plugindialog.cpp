@@ -463,7 +463,9 @@ void PluginDialog::fillPlugs()
             break;
          }
          if (found && addFlag) {
-            int plugInstanceType;
+            // Default to ALL so the switch below (which has no default case)
+            // can never leave this read uninitialized at the filter check.
+            int plugInstanceType = SEL_TYPE_ALL;
             const MusEPlugin::PluginType ptype = (*i)->pluginType();
             const MusEPlugin::PluginClass_t pclass = (*i)->pluginClass();
 
@@ -498,6 +500,12 @@ void PluginDialog::fillPlugs()
                 plugInstanceType = SEL_TYPE_VST;
               break;
 
+              #ifdef CLAP_SUPPORT
+              case MusEPlugin::PluginTypeCLAP:
+                plugInstanceType = SEL_TYPE_CLAP;
+              break;
+              #endif
+ 
               case MusEPlugin::PluginTypeMESS:
               case MusEPlugin::PluginTypeMETRONOME:
               case MusEPlugin::PluginTypeVST:

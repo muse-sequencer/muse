@@ -20,7 +20,14 @@ class SynthDialog : public QDialog {
     Q_OBJECT
 
     enum SynthCategory { SEL_CAT_ALL = 0, SEL_CAT_SYNTH = 1, SEL_CAT_EFFECT = 2 };
-    enum SynthType { SEL_TYPE_MESS, SEL_TYPE_DSSI, SEL_TYPE_LV2, SEL_TYPE_VST, SEL_TYPE_ALL};
+
+    enum SynthType { SEL_TYPE_MESS, SEL_TYPE_DSSI, SEL_TYPE_LV2, SEL_TYPE_VST,
+        #ifdef CLAP_SUPPORT
+            SEL_TYPE_CLAP,
+        #endif
+            SEL_TYPE_ALL };
+                     
+
     enum Tab { TAB_ALL = 0, TAB_FAV = 1 };
     enum Col { COL_NAME = 0, COL_LABEL, COL_TYPE, COL_CAT, COL_AUTHOR, COL_VERSION, COL_URI, COL_DESCRIPTION };
     enum UserData {

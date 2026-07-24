@@ -31,6 +31,7 @@
 #cmakedefine HAVE_LRDF
 #cmakedefine OSC_SUPPORT
 #cmakedefine DSSI_SUPPORT
+#cmakedefine CLAP_SUPPORT
 #cmakedefine LV2_SUPPORT
 #cmakedefine LV2_MAKE_PATH_SUPPORT
 #cmakedefine LV2_USE_PLUGIN_CACHE

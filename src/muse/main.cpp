@@ -115,6 +115,7 @@ extern void initVST();
 extern void initVST_Native();
 //extern void initPlugins();
 extern void initDSSI();
+extern void initCLAP();
 #ifdef LV2_SUPPORT
 extern void initLV2();
 extern void deinitLV2();
@@ -527,6 +528,12 @@ CommandLineParseResult parseCommandLine(
     MusEGlobal::loadDSSI = false;
 #endif
 
+#ifdef CLAP_SUPPORT
+  if(parser.isSet(option_I))
+    MusEGlobal::loadCLAP = false;
+#endif
+
+
 #ifdef HAVE_LASH
   if(parser.isSet(option_L))
     MusEGlobal::useLASH = false;
@@ -903,6 +910,26 @@ int main(int argc, char* argv[])
         }
         if(!found && qputenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(list_separator).toLocal8Bit()) == 0)
           fprintf(stderr, "Error setting DSSI_PATH\n");
+
+
+
+
+#ifdef CLAP_SUPPORT
+        // found = false; reset not needed since CLAP_PATH always needs setting
+        if(MusEGlobal::config.pluginClapPathList.isEmpty())
+        {
+            MusEGlobal::config.pluginClapPathList
+              << QDir::homePath() + "/.clap"
+              << "/usr/lib/clap"
+              << "/usr/local/lib/clap";
+        }
+        const QString clap_path = qEnvironmentVariable("CLAP_PATH");
+        if(!clap_path.isEmpty())
+            MusEGlobal::config.pluginClapPathList = clap_path.split(list_separator, Qt::SkipEmptyParts);
+        if(qputenv("CLAP_PATH", MusEGlobal::config.pluginClapPathList.join(list_separator).toLocal8Bit()) == 0)
+          fprintf(stderr, "Error setting CLAP_PATH\n");
+#endif
+
 
         //=======================
         //  Win VST (*.dll) paths:
@@ -1295,6 +1322,10 @@ int main(int argc, char* argv[])
                     MusEPlugin::PluginTypeDSSIVST);
         if(MusEGlobal::loadLV2)
           types |= MusEPlugin::PluginTypeLV2;
+        #ifdef CLAP_SUPPORT
+                if(MusEGlobal::loadCLAP)
+                  types |= MusEPlugin::PluginTypeCLAP;
+        #endif
 
         types |= MusEPlugin::PluginTypeUnknown;
         
@@ -1557,6 +1588,14 @@ int main(int argc, char* argv[])
 
         if(MusEGlobal::loadLV2)
               MusECore::initLV2();
+  #endif
+
+
+  #ifdef CLAP_SUPPORT
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Init CLAP plugins...";
+        if(MusEGlobal::loadCLAP)
+              MusECore::initCLAP();
   #endif
 
         // Now that all the plugins are done loading from the global plugin cache list,

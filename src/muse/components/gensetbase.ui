@@ -641,6 +641,33 @@
                </item>
               </layout>
              </widget>
+             <widget class="QWidget" name="pluginClapPathTab">
+              <attribute name="title">
+               <string>CLAP</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_clap">
+               <item>
+                <widget class="QLabel" name="label_clap">
+                 <property name="text">
+                  <string>Directories containing CLAP plugins (*.clap files). Standard paths: ~/.clap, /usr/lib/clap, /usr/local/lib/clap</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QListWidget" name="pluginClapPathList">
+                 <property name="alternatingRowColors">
+                  <bool>true</bool>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
             </widget>
            </item>
           </layout>

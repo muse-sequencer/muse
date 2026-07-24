@@ -707,6 +707,12 @@ void Audio::shutdown()
 void Audio::process(unsigned frames)
       {
       _curCycleFrames = frames;
+
+      // Capture the RT thread once (cheap store; the value is stable per backend).
+      const std::thread::id curId = std::this_thread::get_id();
+      if(_audioThreadId.load(std::memory_order_relaxed) != curId)
+        _audioThreadId.store(curId, std::memory_order_relaxed);
+        
       if (!MusEGlobal::checkAudioDevice()) return;
       if (msg) {
             processMsg(msg);

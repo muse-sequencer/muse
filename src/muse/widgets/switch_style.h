@@ -134,4 +134,3 @@ namespace SwitchStyle {
 } // namespace MusEGui
 
 #endif // SWITCH_STYLE_H
-

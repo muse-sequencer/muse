@@ -217,17 +217,21 @@ void StretchList::normalizeListFrames()
   double duntime;
   MuseFrame_t dframe;
   
-  MuseFrame_t thisFrame, prevFrame;
-  double prevNewFrame;
-  double prevNewUnFrame;
-  double prevNewStretchFrame;
-  double prevNewUnStretchFrame;
-  double prevNewSamplerateFrame;
-  double prevNewUnSamplerateFrame;
+  MuseFrame_t thisFrame, prevFrame = 0;
+  // Initialized to keep the compiler from warning "may be used uninitialized":
+  // they are all set on the first loop iteration (ise == begin()) before any
+  // use in the else branch, but GCC can't prove that. Ratios default to 1.0
+  // (neutral, and avoids a div-by-zero in factor should they ever be read early).
+  double prevNewFrame = 0.0;
+  double prevNewUnFrame = 0.0;
+  double prevNewStretchFrame = 0.0;
+  double prevNewUnStretchFrame = 0.0;
+  double prevNewSamplerateFrame = 0.0;
+  double prevNewUnSamplerateFrame = 0.0;
   
-  double prevStretch;
-  double prevSamplerate;
-  double prevPitch;
+  double prevStretch = 1.0;
+  double prevSamplerate = 1.0;
+  double prevPitch = 1.0;
   
   // If any intrinsic value has a stretch or samplerate other than 1.0,
   //  the map is stretched, a stretcher or samplerate converter must be engaged.

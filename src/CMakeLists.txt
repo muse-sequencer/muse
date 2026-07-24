@@ -21,6 +21,8 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
+
 project(muse)
 
 include(FindPkgConfig)
@@ -64,7 +66,6 @@ if (CheckAtomic_Result STREQUAL "NOTFOUND")
   include(cmake/CheckAtomic.cmake)
 endif (CheckAtomic_Result STREQUAL "NOTFOUND")
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
 if (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
     cmake_policy (SET CMP0007 NEW)
@@ -187,7 +188,7 @@ SET(MusE_AUDIO_CONVERTER_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/con
 
 ## Top documentation dir
 IF(NOT DEFINED MusE_DOC_DIR)
-      SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${MusE_INSTALL_NAME}/)
+    SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${MusE_INSTALL_NAME})
 ENDIF(NOT DEFINED MusE_DOC_DIR)
 
 ## Data directory
@@ -198,20 +199,23 @@ SET(MusE_LIB_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME})
 
 include(FindGit)
 if (GIT_FOUND)
-      EXEC_PROGRAM( ${GIT_EXECUTABLE}
-            ARGS "status"
+      execute_process(
+            COMMAND ${GIT_EXECUTABLE} status
             OUTPUT_VARIABLE GIT_RET_NOTUSED
-            RETURN_VALUE IS_GIT_REPO )
+            RESULT_VARIABLE IS_GIT_REPO )
     if(IS_GIT_REPO EQUAL 0)
-        EXEC_PROGRAM( ${GIT_EXECUTABLE}
-            ARGS "log -1 --format='%ci'"
-            OUTPUT_VARIABLE MusE_GITDATE )
-        EXEC_PROGRAM( ${GIT_EXECUTABLE}
-            ARGS "rev-parse --abbrev-ref HEAD"
-            OUTPUT_VARIABLE MusE_GITBRANCH )
-        EXEC_PROGRAM( ${GIT_EXECUTABLE}
-            ARGS "describe --dirty --always"
-            OUTPUT_VARIABLE MusE_GITDESCRIBE )
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} log -1 --format=%ci
+            OUTPUT_VARIABLE MusE_GITDATE
+            OUTPUT_STRIP_TRAILING_WHITESPACE )
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+            OUTPUT_VARIABLE MusE_GITBRANCH
+            OUTPUT_STRIP_TRAILING_WHITESPACE )
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} describe --dirty --always
+            OUTPUT_VARIABLE MusE_GITDESCRIBE
+            OUTPUT_STRIP_TRAILING_WHITESPACE )
         SET(MusE_GITSTRING "${MusE_GITBRANCH} | ${MusE_GITDESCRIBE} | ${MusE_GITDATE}")
     else (IS_GIT_REPO EQUAL 0)
         SET(MusE_GITSTRING "")
@@ -223,7 +227,7 @@ endif (GIT_FOUND)
 
 option ( ENABLE_RTAUDIO      "Multi platform rtaudio audio compatibility fallback" ON)
 option ( ENABLE_ALSA         "Enable Advanced Linux Sound Architecture (ALSA)" ON)
-option ( ENABLE_LASH         "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
+option ( ENABLE_LASH         "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     OFF)
 option ( ENABLE_LRDF         "Enable LADSPA RDF (lrdf) Provides extra info for LADSPA plugins"  ON)
 option ( ENABLE_OSC          "Enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)
 option ( ENABLE_DSSI         "Enable Disposable Soft Synth Interface (dssi) (OSC also needed)" ON)
@@ -235,7 +239,7 @@ option ( ENABLE_DSSI         "Enable Disposable Soft Synth Interface (dssi) (OSC
 option ( ENABLE_VST_NATIVE   "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE  "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_LV2          "Enable LV2 plugins and synths support" ON)
-option ( ENABLE_LV2_GTK2     "Enable LV2 user interface GTK2 support" ON)
+option ( ENABLE_LV2_GTK2     "Enable LV2 user interface GTK2 support" OFF)
 
 # Disabled but kept in case anyone really wants it.
 # It's just too undesirable for most users, and some packagers were trying to turn it on.
@@ -488,14 +492,19 @@ endif (ENABLE_RTAUDIO)
 ##
 
 if (ENABLE_PYTHON)
-      include(FindPythonLibs)
-      if (PYTHONLIBS_FOUND)
+      find_package(Python3 COMPONENTS Development)
+      if (Python3_Development_FOUND)
+            set(PYTHONLIBS_FOUND TRUE)
+            set(PYTHONLIBS_VERSION_STRING ${Python3_VERSION})
+            set(PYTHON_LIBRARIES ${Python3_LIBRARIES})
+            set(PYTHON_INCLUDE_DIRS ${Python3_INCLUDE_DIRS})
             if (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 3.5)
                   set(PYTHON_SUPPORT ON)
             endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 3.5)
-      endif (PYTHONLIBS_FOUND)
-#  TODO Check for Pyro5?
+      endif (Python3_Development_FOUND)
+      #  TODO Check for Pyro5 ?
 endif (ENABLE_PYTHON)
+
 
 ##
 ## check for dssi and liblo
@@ -674,6 +683,28 @@ else (ENABLE_ZITA_RESAMPLER)
       message("Zita resampler disabled")
 endif (ENABLE_ZITA_RESAMPLER)
 
+
+
+##
+## check for CLAP
+##
+
+option ( ENABLE_CLAP  "Enable CLAP (CLever Audio Plugin) support" ON)
+
+
+if (ENABLE_CLAP)
+      CHECK_INCLUDE_FILE_CXX(clap/clap.h HAVE_CLAP_H)
+      if (HAVE_CLAP_H)
+            set(CLAP_SUPPORT ON CACHE INTERNAL "")
+            message("CLAP support enabled")
+      else (HAVE_CLAP_H)
+            message("CLAP support disabled (clap/clap.h not found - install clap-dev or clap headers)")
+      endif (HAVE_CLAP_H)
+else (ENABLE_CLAP)
+      message("CLAP disabled")
+endif (ENABLE_CLAP)
+
+
 ##
 ## check for libinstpatch
 ##
@@ -771,17 +802,17 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-security -Wextra -Winvali
 # set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC" CACHE STRING "Release CXX flags" FORCE)
 # set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
 # Release is usually -O3. Previously we forced it to -O2. Let's leave it at -O3, but default to -O2 and see what shakes out...
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG ${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
 
 # set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC" CACHE STRING "Release w/deb info CXX flags" FORCE)
 # set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
 # Release with debug is usually -O2.
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
 
 # set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC" CACHE STRING "Debug CXX flags" FORCE)
 # set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
 # Debug usually has no -O setting. Let's give it a default one.
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g ${CMAKE_CXX_FLAGS_DEBUG} -DQT_DEBUG -Werror")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DQT_DEBUG -Werror")
 
 message("Final CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 message("Final CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
@@ -939,6 +970,11 @@ if (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
         message("** HINT: Check the VST_HEADER_PATH variable. Points to ./vestige by default.")
 endif (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
 
+if (ENABLE_CLAP AND (NOT CLAP_SUPPORT))
+        message("** WARNING: CLAP was enabled, but clap/clap.h was not found.")
+        message("** HINT: Install clap development headers (e.g. 'clap-dev' or 'clap' package).")
+endif (ENABLE_CLAP AND (NOT CLAP_SUPPORT))
+
 if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
         message("** WARNING: fluidsynth (>= 1.1.9) was enabled, but development files were not found.")
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
@@ -986,6 +1022,7 @@ if(LV2_SUPPORT)
 endif(LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)
+summary_add("CLAP support" CLAP_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
 summary_add("RubberBand support" RUBBERBAND_SUPPORT)
 #~ summary_add("Zita Resampler support" ZITA_RESAMPLER_SUPPORT)

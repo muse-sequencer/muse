@@ -2189,12 +2189,17 @@ int n_accidentials(MusECore::key_enum t)
 note_pos_t note_pos_(int note, MusECore::key_enum key)
 {
     note_pos_t result;
+    result.height = 0;  // set some default values
+    result.vorzeichen = NONE;
+    //
                //C CIS D DIS E F FIS G GIS A AIS H
     int foo[12]={0,-1, 1,-1, 2,3,-1, 4,-1, 5, -1,6};
 
-    if ((note<0) || (note>=12))
+    if ((note<0) || (note>=12)){
         cerr << "ERROR: ILLEGAL FUNCTION CALL (note_pos, note out of range)" << endl;
-
+        return result;  // result uses random default values 
+    }
+    
     if (foo[note]!=-1)
     {
         result.height=foo[note];
