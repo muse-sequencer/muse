@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <cstring>
 #include <algorithm>
+#include <cmath>
 
 #include <QCoreApplication>
 #include <QMetaObject>
@@ -893,10 +894,42 @@ clap_process_status ClapInstanceCore::runProcess(int64_t steadyTime, uint32_t nf
     }
   }
 
+  // Was: `proc.transport = nullptr; // TODO: fill transport info`.
+  // Leaving this null means plugin_base's pb_plugin.cpp falls back to
+  // `block.shared.bpm = 0` (see pb_plugin.cpp around line 663-668: it only
+  // reads process->transport->tempo when process->transport is non-null).
+  // Firefly's default patch has a tempo-synced feedback delay active out
+  // of the box (fx.cpp's init_global_default() sets the global FX slot to
+  // "Delay" / "Feedback" / "Tempo Sync: On"). With bpm=0, converting a
+  // note-division time signature to seconds divides by tempo -> inf, which
+  // then gets cast to int for the delay buffer's tap index
+  // (process_dly_fdbk_sync in fx.cpp) -- an out-of-range float-to-int cast,
+  // undefined behavior in C++ but deterministic in practice on x86 (yields
+  // INT_MIN). That corrupts the feedback tap position into something that
+  // no longer decays as intended, which is what's producing the runaway
+  // growth several seconds into playback. A real host must always provide
+  // *some* valid tempo; 120 BPM / 4:4 / playing is a reasonable default
+  // until this is wired up to the actual host transport/song state.
+  clap_event_transport_t transport{};
+  transport.header.size     = sizeof(transport);
+  transport.header.type     = CLAP_EVENT_TRANSPORT;
+  transport.header.time     = 0;
+  transport.header.space_id = CLAP_CORE_EVENT_SPACE_ID;
+  transport.flags = CLAP_TRANSPORT_HAS_TEMPO | CLAP_TRANSPORT_HAS_BEATS_TIMELINE |
+                     CLAP_TRANSPORT_HAS_SECONDS_TIMELINE | CLAP_TRANSPORT_HAS_TIME_SIGNATURE |
+                     CLAP_TRANSPORT_IS_PLAYING;
+  transport.tempo     = 120.0;
+  transport.tempo_inc = 0.0;
+  const double songPosSeconds = (double)steadyTime / (double)MusEGlobal::sampleRate;
+  transport.song_pos_seconds = (clap_sectime)std::llround(songPosSeconds * CLAP_SECTIME_FACTOR);
+  transport.song_pos_beats   = (clap_beattime)std::llround(songPosSeconds * (transport.tempo / 60.0) * CLAP_BEATTIME_FACTOR);
+  transport.tsig_num   = 4;
+  transport.tsig_denom = 4;
+
   clap_process_t proc{};
   proc.steady_time         = steadyTime;
   proc.frames_count        = nframes;
-  proc.transport           = nullptr; // TODO: fill transport info
+  proc.transport           = &transport;
   proc.audio_inputs        = (nInPorts > 0) ? inBufs : nullptr;
   proc.audio_inputs_count  = static_cast<uint32_t>(nInPorts);
   proc.audio_outputs       = (nOutPorts > 0) ? outBufs : nullptr;
