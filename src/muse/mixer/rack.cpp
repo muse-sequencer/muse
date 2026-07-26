@@ -211,12 +211,18 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
           // FIXME: put into external stylesheet
           // I tried, but there is a bug in QT, not possible to address scrollbar in individual widget (kybos)
           QFile file(":/qss/scrollbar_small_vertical.qss");
-          file.open(QFile::ReadOnly);
-          QString style = file.readAll();
-          style.replace("darkgrey", MusEGlobal::config.rackItemBackgroundColor.name());
-          style.replace("lightgrey", MusEGlobal::config.rackItemBackgroundColor.lighter().name());
-          style.replace("grey", MusEGlobal::config.rackItemBackgroundColor.darker().name());
-          verticalScrollBar()->setStyleSheet(style);
+          if(!file.open(QFile::ReadOnly))
+          {
+            fprintf(stderr, "EffectRack::EffectRack(): failed to open scrollbar_small_vertical.qss resource\n");
+          }
+          else
+          {
+            QString style = file.readAll();
+            style.replace("darkgrey", MusEGlobal::config.rackItemBackgroundColor.name());
+            style.replace("lightgrey", MusEGlobal::config.rackItemBackgroundColor.lighter().name());
+            style.replace("grey", MusEGlobal::config.rackItemBackgroundColor.darker().name());
+            verticalScrollBar()->setStyleSheet(style);
+          }
       }
 
       setSelectionMode(QAbstractItemView::SingleSelection);

@@ -540,7 +540,11 @@ void DeicsOnzeGui::saveConfiguration() {
     lastDir = fi.path();
     if(!filename.endsWith(".dco")) filename+=".dco";
     QFile f(filename);
-    f.open(QIODevice::WriteOnly);
+    if(!f.open(QIODevice::WriteOnly))
+    {
+      fprintf(stderr, "DeicsOnzeGui::saveConfiguration(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+      return;
+    }
     AL::Xml* xml = new AL::Xml(&f);
     xml->header();
     _deicsOnze->writeConfiguration(xml);
@@ -555,7 +559,11 @@ void DeicsOnzeGui::saveDefaultConfiguration() {
   QString filename = DEI_hostConfigPath + QString("/" DEICSONZESTR ".dco");
   if(!filename.isEmpty()) {
     QFile f(filename);
-    f.open(QIODevice::WriteOnly);
+    if(!f.open(QIODevice::WriteOnly))
+    {
+      fprintf(stderr, "DeicsOnzeGui::saveDefaultConfiguration(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+      return;
+    }
    
     AL::Xml* xml = new AL::Xml(&f);
     xml->header();
@@ -1832,7 +1840,11 @@ void DeicsOnzeGui::saveSetDialog() {
     lastDir = fi.path();
     if(!filename.endsWith(".dei")) filename+=".dei";
     QFile f(filename);
-    f.open(QIODevice::WriteOnly);
+    if(!f.open(QIODevice::WriteOnly))
+    {
+      fprintf(stderr, "DeicsOnzeGui::saveSetDialog(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+      return;
+    }
     
     AL::Xml* xml = new AL::Xml(&f);
     xml->header();
@@ -2077,7 +2089,11 @@ void DeicsOnzeGui::saveCategoryDialog() {
       lastDir = fi.path();
       if(!filename.endsWith(".dec")) filename+=".dec";
       QFile f(filename);
-      f.open(QIODevice::WriteOnly);
+      if(!f.open(QIODevice::WriteOnly))
+      {
+        fprintf(stderr, "DeicsOnzeGui::saveCategoryDialog(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+        return;
+      }
       AL::Xml* xml = new AL::Xml(&f);
       xml->header();
       cat->_category->writeCategory(xml, false);
@@ -2250,7 +2266,11 @@ void DeicsOnzeGui::saveSubcategoryDialog() {
       lastDir = fi.path();
       if(!filename.endsWith(".des")) filename+=".des";
       QFile f(filename);
-      f.open(QIODevice::WriteOnly);
+      if(!f.open(QIODevice::WriteOnly))
+      {
+        fprintf(stderr, "DeicsOnzeGui::saveSubcategoryDialog(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+        return;
+      }
 
       AL::Xml* xml = new AL::Xml(&f);
       xml->header();
@@ -2426,7 +2446,11 @@ void DeicsOnzeGui::savePresetDialog() {
       lastDir = fi.path();
       if(!filename.endsWith(".dep")) filename+=".dep";
       QFile f(filename);
-      f.open(QIODevice::WriteOnly);
+      if(!f.open(QIODevice::WriteOnly))
+      {
+        fprintf(stderr, "DeicsOnzeGui::savePresetDialog(): failed to open %s for writing\n", filename.toLocal8Bit().constData());
+        return;
+      }
       AL::Xml* xml = new AL::Xml(&f);
 
       xml->header();

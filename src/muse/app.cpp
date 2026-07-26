@@ -465,7 +465,11 @@ void MusE::saveProjectRecentList()
     QString prjPath(MusEGlobal::configPath);
     prjPath += "/projects";
     QFile f(prjPath);
-    f.open(QIODevice::WriteOnly | QIODevice::Text);
+    if(!f.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+      fprintf(stderr, "MusE::saveProjectRecentList(): failed to open %s for writing\n", prjPath.toLocal8Bit().constData());
+      return;
+    }
     if (f.exists()) {
         QTextStream out(&f);
         for (int i = 0; i < projectRecentList.size(); ++i) {

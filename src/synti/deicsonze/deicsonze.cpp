@@ -2309,7 +2309,13 @@ void DeicsOnze::setupInitBuffer(int len)
 void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   //write the set in a temporary file and in a QByteArray
   QTemporaryFile file;
-  file.open();
+  if(!file.open())
+  {
+    fprintf(stderr, "DeicsOnze::getInitData(): failed to open temporary file\n");
+    *length = 0;
+    *data = nullptr;
+    return;
+  }
   AL::Xml* xml=new AL::Xml(&file);
   xml->header();
   _set->writeSet(xml, _saveOnlyUsed);
@@ -2797,52 +2803,58 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
   //save the set in a temporary file and
   // read the XML file and create DOM tree
   QTemporaryFile file;
-  file.open();
-  file.write(baUncomp);
-  QDomDocument domTree;
-  file.reset(); //seek the start of the file
-  domTree.setContent(&file);
-  file.close();
-  QDomNode node = domTree.documentElement();
-
-  while (!node.isNull()) {
-    QDomElement e = node.toElement();
-    if (e.isNull())
-      continue;
-    if (e.tagName() == "deicsOnzeSet") {
-      QString version = e.attribute(QString("version"));
-      if (version == "1.0") {
-        for(int c = 0; c < NBRCHANNELS; c++) _preset[c]=_initialPreset;
-        //read the set
-        if((bool)data[NUM_SAVEONLYUSED]) {
-          //printf("Mini\n");
-          //updateSaveOnlyUsed(true);
-        }
-        else {
-          //printf("Huge\n");
-          while(!_set->_categoryVector.empty())
-            delete(*_set->_categoryVector.begin());
-          //updateSaveOnlyUsed(false);
-        }
-        _set->readSet(node.firstChild());
-        //display load preset
-        //setSet();
-      }
-      else printf("Wrong set version : %s\n",
-                  version.toLocal8Bit().constData());
-    }
-    node = node.nextSibling();
+  if(!file.open())
+  {
+    fprintf(stderr, "DeicsOnze::parseInitData(): failed to open temporary file\n");
   }
-  //send sysex to the gui to load the set (actually not because it doesn't
-  //work -the code is just zapped in the middle???-, so it is done above
-  //int dL=2+baUncomp.size();
-  int dL = 2;
-  char dataSend[dL];
-  dataSend[0]=SYSEX_LOADSET;
-  dataSend[1]=data[NUM_SAVEONLYUSED];
-  //for(int i=2; i<dL; i++) dataSend[i]=baUncop.at(i-2);
-  MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataSend, dL);
-  _gui->writeEvent(evSysex);
+  else
+  {
+    file.write(baUncomp);
+    QDomDocument domTree;
+    file.reset(); //seek the start of the file
+    domTree.setContent(&file);
+    file.close();
+    QDomNode node = domTree.documentElement();
+
+    while (!node.isNull()) {
+      QDomElement e = node.toElement();
+      if (e.isNull())
+        continue;
+      if (e.tagName() == "deicsOnzeSet") {
+        QString version = e.attribute(QString("version"));
+        if (version == "1.0") {
+          for(int c = 0; c < NBRCHANNELS; c++) _preset[c]=_initialPreset;
+          //read the set
+          if((bool)data[NUM_SAVEONLYUSED]) {
+            //printf("Mini\n");
+            //updateSaveOnlyUsed(true);
+          }
+          else {
+            //printf("Huge\n");
+            while(!_set->_categoryVector.empty())
+              delete(*_set->_categoryVector.begin());
+            //updateSaveOnlyUsed(false);
+          }
+          _set->readSet(node.firstChild());
+          //display load preset
+          //setSet();
+        }
+        else printf("Wrong set version : %s\n",
+                    version.toLocal8Bit().constData());
+      }
+      node = node.nextSibling();
+    }
+    //send sysex to the gui to load the set (actually not because it doesn't
+    //work -the code is just zapped in the middle???-, so it is done above
+    //int dL=2+baUncomp.size();
+    int dL = 2;
+    char dataSend[dL];
+    dataSend[0]=SYSEX_LOADSET;
+    dataSend[1]=data[NUM_SAVEONLYUSED];
+    //for(int i=2; i<dL; i++) dataSend[i]=baUncop.at(i-2);
+    MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataSend, dL);
+    _gui->writeEvent(evSysex);
+  }
 
   //select programs per channel
   for(int c = 0; c < NBRCHANNELS; c++) {
