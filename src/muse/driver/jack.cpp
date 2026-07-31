@@ -36,6 +36,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QDateTime>
 
 #include <jack/thread.h>
 
@@ -61,12 +62,23 @@
 
 #include "al/al.h"
 
-#define JACK_DEBUG 0 
+#define JACK_DEBUG 0
 
 #define JACK_CALLBACK_FIFO_SIZE 512
 
-// For debugging output: Uncomment the fprintf section.
-#define DEBUG_JACK(dev, format, args...) // fprintf(dev, format, ##args);
+
+#if JACK_DEBUG
+  #define DEBUG_JACK_TRANSPORT(dev, format, args...) \
+    fprintf(dev, "%s ", QString( "[%1]" ).arg( QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" ) ).toLocal8Bit().constData() ); \
+    fprintf(dev, format, ##args);
+#else
+  #define DEBUG_JACK_TRANSPORT(dev, format, args...) // no output
+#endif
+
+// For debugging output: Uncomment the fprintf sections.
+#define DEBUG_JACK(dev, format, args...) \
+  fprintf(dev, "%s ", QString( "[%1]" ).arg( QDateTime::currentDateTime().toString( "hh:mm:ss.zzz" ) ).toLocal8Bit().constData() ); \
+  fprintf(dev, format, ##args);
 
 // For debugging some of the 'persistent routes' code: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
@@ -320,14 +332,15 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void* arg)
 static int processSync(jack_transport_state_t state, jack_position_t* pos, void*)
       {
 #if JACK_DEBUG
-      fprintf(stderr, "processSync frame:%u state:%d\n", pos->frame, state);
+      DEBUG_JACK_TRANSPORT(stderr, "processSync frame:%u state:%d\n", pos->frame, state);
     
       if(pos->valid & JackPositionBBT)
       {
-        fprintf(stderr, "processSync BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+        DEBUG_JACK_TRANSPORT(stderr, "processSync BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
                 pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
-        if(pos->valid & JackBBTFrameOffset)
-          fprintf(stderr, "processSync BBTFrameOffset: %u\n", pos->bbt_offset);
+        if(pos->valid & JackBBTFrameOffset) {
+          DEBUG_JACK_TRANSPORT(stderr, "processSync BBTFrameOffset: %u\n", pos->bbt_offset);
+        }
       }
 #endif
         
@@ -406,7 +419,7 @@ static void pos_to_jack_position(const Pos& p, jack_position_t* pos) {
       double tempo = MusEGlobal::tempomap.tempo(p.tick());
       pos->beats_per_minute = ((double)MusEGlobal::tempomap.globalTempo() * 600000.0) / tempo;
 #if JACK_DEBUG
-      fprintf(stderr, "pos_to_jack_position new: bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+      DEBUG_JACK_TRANSPORT(stderr, "pos_to_jack_position new: bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
               pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
 #endif
 
@@ -439,18 +452,23 @@ static void timebase_callback(jack_transport_state_t,
     }
 
 #if JACK_DEBUG
-    fprintf(stderr, "timebase_callback() state:%d\n", state);
-    if(pos->valid & JackPositionBBT)
-      fprintf(stderr, "timebase_callback BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+    DEBUG_JACK_TRANSPORT(stderr, "timebase_callback() state:%d\n", state);
+    if(pos->valid & JackPositionBBT) {
+      DEBUG_JACK_TRANSPORT(stderr, "timebase_callback BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
               pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
-    if(pos->valid & JackBBTFrameOffset)
-      fprintf(stderr, "timebase_callback BBTFrameOffset: %u\n", pos->bbt_offset);
-    if(pos->valid & JackPositionTimecode)
-      fprintf(stderr, "timebase_callback JackPositionTimecode: frame_time:%f next_time:%f\n", pos->frame_time, pos->next_time);
-    if(pos->valid & JackAudioVideoRatio)
-      fprintf(stderr, "timebase_callback JackAudioVideoRatio: %f\n", pos->audio_frames_per_video_frame);
-    if(pos->valid & JackVideoFrameOffset)
-      fprintf(stderr, "timebase_callback JackVideoFrameOffset: %u\n", pos->video_offset);
+    }
+    if(pos->valid & JackBBTFrameOffset) {
+      DEBUG_JACK_TRANSPORT(stderr, "timebase_callback BBTFrameOffset: %u\n", pos->bbt_offset);
+    }
+    if(pos->valid & JackPositionTimecode) {
+      DEBUG_JACK_TRANSPORT(stderr, "timebase_callback JackPositionTimecode: frame_time:%f next_time:%f\n", pos->frame_time, pos->next_time);
+    }
+    if(pos->valid & JackAudioVideoRatio) {
+      DEBUG_JACK_TRANSPORT(stderr, "timebase_callback JackAudioVideoRatio: %f\n", pos->audio_frames_per_video_frame);
+    }
+    if(pos->valid & JackVideoFrameOffset) {
+      DEBUG_JACK_TRANSPORT(stderr, "timebase_callback JackVideoFrameOffset: %u\n", pos->video_offset);
+    }
 #endif
     
     //Pos p(pos->frame, false);
@@ -461,7 +479,7 @@ static void timebase_callback(jack_transport_state_t,
       pos_to_jack_position(p, pos);
 
 #if JACK_DEBUG
-      // fprintf(stderr, "timebase_callback is new_pos:%d nframes:%u frame:%u tickPos:%d cpos:%d\n", new_pos, nframes, pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
+      DEBUG_JACK_TRANSPORT(stderr, "timebase_callback is new_pos:%d nframes:%u frame:%u tickPos:%d cpos:%d\n", new_pos, nframes, pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
 #endif
   }
 
@@ -1677,10 +1695,11 @@ bool JackAudioDevice::timebaseQuery(unsigned frames, unsigned* bar, unsigned* be
   if(jp.valid & JackPositionBBT)
   {
 #if JACK_DEBUG
-    fprintf(stderr, "timebaseQuery BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+    DEBUG_JACK_TRANSPORT(stderr, "timebaseQuery BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
             jp.bar, jp.beat, jp.tick, jp.bar_start_tick, jp.beats_per_bar, jp.beat_type, jp.ticks_per_beat, jp.beats_per_minute);
-    if(jp.valid & JackBBTFrameOffset)
-      fprintf(stderr, "timebaseQuery BBTFrameOffset: %u\n", jp.bbt_offset);
+    if(jp.valid & JackBBTFrameOffset) {
+      DEBUG_JACK_TRANSPORT(stderr, "timebaseQuery BBTFrameOffset: %u\n", jp.bbt_offset);
+    }
 #endif
     
     if(jp.ticks_per_beat > 0.0)
@@ -1708,12 +1727,15 @@ bool JackAudioDevice::timebaseQuery(unsigned frames, unsigned* bar, unsigned* be
   }
 
 #if JACK_DEBUG
-  if(jp.valid & JackPositionTimecode)
-    fprintf(stderr, "timebaseQuery JackPositionTimecode: frame_time:%f next_time:%f\n", jp.frame_time, jp.next_time);
-  if(jp.valid & JackAudioVideoRatio)
-    fprintf(stderr, "timebaseQuery JackAudioVideoRatio: %f\n", jp.audio_frames_per_video_frame);
-  if(jp.valid & JackVideoFrameOffset)
-    fprintf(stderr, "timebaseQuery JackVideoFrameOffset: %u\n", jp.video_offset);
+  if(jp.valid & JackPositionTimecode) {
+    DEBUG_JACK_TRANSPORT(stderr, "timebaseQuery JackPositionTimecode: frame_time:%f next_time:%f\n", jp.frame_time, jp.next_time);
+  }
+  if(jp.valid & JackAudioVideoRatio) {
+    DEBUG_JACK_TRANSPORT(stderr, "timebaseQuery JackAudioVideoRatio: %f\n", jp.audio_frames_per_video_frame);
+  }
+  if(jp.valid & JackVideoFrameOffset) {
+    DEBUG_JACK_TRANSPORT(stderr, "timebaseQuery JackVideoFrameOffset: %u\n", jp.video_offset);
+  }
 #endif
   
   return false;
