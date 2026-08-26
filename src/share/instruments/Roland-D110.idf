@@ -8,6 +8,9 @@
          What Program Change actually selects (these 128 entries, 
          organised as Bank A 1-64 / Bank B 1-64, shown on the D-110's own display
          is what the instrument's firmware calls "Timbre Memory" - a single preset sound.
+         
+         The last bank (I, for Internal) is for custom tones for the user 
+         but it's not reachable by program change.
     -->
 
     <MidiInstrument name="Roland D-110">
