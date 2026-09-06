@@ -3178,12 +3178,28 @@ void Audio::processMidiMetronome(unsigned int frames)
       if (playing)
       {
             const bool md_writable = midiDeviceWritable(md);
+
+            // WINMM_METRONOME_DEBUG: temporary tracing for the "no
+            // metronome sound" investigation. Printed once (not every
+            // cycle) via a static latch. Ask before removing.
+            {
+              static bool logged = false;
+              if(!logged && MusEGlobal::debugMsg)
+              {
+                logged = true;
+                fprintf(stderr, "WINMM_METRONOME_DEBUG: processMidiMetronome: midiClickFlag=%d clickPort=%d precount_mute=%d "
+                        "md=%p md_writeEnable=%d md_isSynti=%d md_writable=%d\n",
+                        metro_settings->midiClickFlag, metro_settings->clickPort, precount_mute_metronome,
+                        (void*)md, md ? md->writeEnable() : -1, md ? md->isSynti() : -1, md_writable);
+              }
+            }
+
             int bar, beat, z, n;
             unsigned tick;
             AudioTickSound audioTickSound = MusECore::beatSound;
             const MusECore::MetroAccents* accents;
             int accents_sz;
-            
+
             unsigned int lat_offset_midi = 0;
             unsigned int cur_tick_midi = curTickPos;
             unsigned int next_tick_midi = nextTickPos;
@@ -3407,6 +3423,23 @@ void Audio::processAudioMetronome(unsigned int frames)
       if (playing)
       {
             const bool metro_writable = midiDeviceWritable(metronome);
+
+            // WINMM_METRONOME_DEBUG: temporary tracing for the "no
+            // metronome sound" investigation. Printed once (not every
+            // cycle) via a static latch. Ask before removing.
+            {
+              static bool logged = false;
+              if(!logged && MusEGlobal::debugMsg)
+              {
+                logged = true;
+                fprintf(stderr, "WINMM_METRONOME_DEBUG: processAudioMetronome: audioClickFlag=%d "
+                        "metronome=%p metronome_writeEnable=%d metronome_isSynti=%d metronome_off=%d metro_writable=%d\n",
+                        metro_settings->audioClickFlag, (void*)metronome,
+                        metronome ? metronome->writeEnable() : -1, metronome ? metronome->isSynti() : -1,
+                        metronome ? metronome->off() : -1, metro_writable);
+              }
+            }
+
             int bar, beat, z, n;
             unsigned tick;
             AudioTickSound audioTickSound = MusECore::beatSound;
