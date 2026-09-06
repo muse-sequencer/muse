@@ -46,6 +46,7 @@
 #include <windows.h>
 #include <mmsystem.h>
 
+#include <atomic>
 #include <vector>
 
 #include "mididev.h"
@@ -105,6 +106,13 @@ class MidiWinMMDevice : public MidiDevice {
 
       HMIDIIN _inHandle;
       HMIDIOUT _outHandle;
+
+      // Set just before closeIn() starts tearing the input handle down
+      // (midiInStop()/midiInReset()/.../midiInClose()) - checked by
+      // midiInProc()'s MIM_LONGDATA handler so it stops re-queueing the
+      // sysex buffer once a close is in progress. See the comment in
+      // midiInProc() for why this exists.
+      std::atomic<bool> _closingIn;
 
       // Self-pipe (platform_pipe.h) used purely to wake MidiSeq's
       // poll() loop the instant midiInProc() delivers something -

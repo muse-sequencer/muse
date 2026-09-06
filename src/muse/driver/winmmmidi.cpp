@@ -55,6 +55,7 @@ MidiWinMMDevice::MidiWinMMDevice(const QString& n, UINT inDeviceId, bool hasIn, 
       _hasOut = hasOut;
       _inHandle = nullptr;
       _outHandle = nullptr;
+      _closingIn = false;
       _wakeupFds[0] = _wakeupFds[1] = -1;
       _rawInEvents = new WinMMRawInFifo(256);
       memset(&_sysexInHdr, 0, sizeof(_sysexInHdr));
@@ -171,7 +172,22 @@ void CALLBACK MidiWinMMDevice::midiInProc(HMIDIIN handle, UINT msg, DWORD_PTR in
         // "MidiSeq thread never started" bug.
         if(hdr)
           hdr->dwBytesRecorded = 0;
-        if(dev->_inHandle)
+        // Do NOT re-queue once closeIn() has started tearing this
+        // device down. midiInReset() (called by closeIn()) itself
+        // returns every pending buffer via this same MIM_LONGDATA path
+        // - if we re-add the buffer in response to THAT, the device is
+        // already stopped/reset, and at least this user's CASIO driver
+        // immediately completes it again, forever: a tight callback
+        // loop racing closeIn()'s midiInUnprepareHeader()/midiInClose()/
+        // _inHandle=nullptr on another thread, which is a use-after-free
+        // once _inHandle is closed and this callback is still firing.
+        // Confirmed via WINMM_MIDI_INPUT_DEBUG tracing: a debug_log.txt
+        // showed this callback firing nonstop with dwBytesRecorded=0
+        // starting exactly at "deleting midiport controllers" (i.e.
+        // app shutdown), consistent with the user's "crashes 3 times
+        // out of 4 when quitting" report. Ask before removing this
+        // comment.
+        if(dev->_inHandle && !dev->_closingIn)
           midiInAddBuffer(dev->_inHandle, hdr, sizeof(MIDIHDR));
       }
 
@@ -194,6 +210,8 @@ bool MidiWinMMDevice::openIn()
       {
       if(_inHandle || !_hasIn)
         return _inHandle != nullptr;
+
+      _closingIn = false;
 
       MMRESULT rv = midiInOpen(&_inHandle, _inDeviceId, (DWORD_PTR)&MidiWinMMDevice::midiInProc,
                                 (DWORD_PTR)this, CALLBACK_FUNCTION);
@@ -240,6 +258,9 @@ void MidiWinMMDevice::closeIn()
       {
       if(!_inHandle)
         return;
+      // Set before midiInReset(): see the comment in midiInProc()'s
+      // MIM_LONGDATA branch. Ask before removing.
+      _closingIn = true;
       midiInStop(_inHandle);
       midiInReset(_inHandle);
       // Only unprepare if it's not (still) queued - after midiInReset()
