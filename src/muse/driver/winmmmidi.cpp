@@ -31,6 +31,7 @@
 
 #include <QByteArray>
 
+#include "audio.h"
 #include "globals.h"
 #include "gconfig.h"
 #include "midi_consts.h"
@@ -346,17 +347,31 @@ void MidiWinMMDevice::processInput()
         fprintf(stderr, "WINMM_MIDI_INPUT_DEBUG: processInput() called for <%s>\n",
                 name().toLocal8Bit().constData());
 
+      // Real, current-frame timestamp for this whole batch - same
+      // granularity/approach as alsaProcessMidiInput() (alsamidi.cpp),
+      // which reads MusEGlobal::audio->curFrame() once per wakeup and
+      // stamps every event drained in that batch with it. WinMM events
+      // were previously constructed with a hardcoded time of 0
+      // (regardless of when they actually arrived), which made every
+      // recorded note-on/note-off land at tick 0 with near-zero
+      // length - the "notes vanish/collapse on record-stop" bug.
+      // curFrame() is explicitly documented (audio.cpp) as safe to call
+      // from a thread other than the audio process thread, which is
+      // exactly this (MidiSeq's thread). Ask before removing this
+      // comment.
+      const unsigned frame_ts = MusEGlobal::audio->curFrame();
+
       WinMMRawInEvent raw;
       while(_rawInEvents->get(raw))
       {
         MidiRecordEvent event;
         if(!raw.sysex.empty())
-          event = MidiRecordEvent(0, _port, ME_SYSEX, raw.sysex.data(), (int)raw.sysex.size());
+          event = MidiRecordEvent(frame_ts, _port, ME_SYSEX, raw.sysex.data(), (int)raw.sysex.size());
         else
         {
           int type = raw.status & 0xf0;
           int chan = raw.status & 0x0f;
-          event = MidiRecordEvent(0, _port, chan, type, raw.data1, raw.data2);
+          event = MidiRecordEvent(frame_ts, _port, chan, type, raw.data1, raw.data2);
         }
         recordEvent(event);
       }
