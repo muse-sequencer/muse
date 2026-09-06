@@ -17383,9 +17383,13 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
 <context>
     <name>MusEGui::PopupMenu</name>
     <message>
-        <location filename="../../muse/components/popupmenu.cpp" line="+433"/>
         <source>&lt;More...&gt; %1</source>
-        <translation>&lt;Więcej...&gt; %1</translation>
+        <translation type="vanished">&lt;Więcej...&gt; %1</translation>
+    </message>
+    <message>
+        <location filename="../../muse/components/popupmenu.cpp" line="+513"/>
+        <source>&lt;More...&gt; </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17562,7 +17566,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <translation>Kanał</translation>
     </message>
     <message>
-        <location line="+2659"/>
+        <location line="+2664"/>
         <source>Soloing chain</source>
         <translation>Łańcuch trybu solo</translation>
     </message>
@@ -17577,7 +17581,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <translation>Uwaga: brak urządzeń wejściowych!</translation>
     </message>
     <message>
-        <location line="-3393"/>
+        <location line="-3398"/>
         <source>Channel grouping:</source>
         <translation>Grupowanie kanałów:</translation>
     </message>
@@ -17597,7 +17601,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <location line="+106"/>
         <location line="+269"/>
         <location line="+142"/>
-        <location line="+2614"/>
+        <location line="+2619"/>
         <location line="+194"/>
         <location line="+102"/>
         <source>Channels</source>
@@ -17608,14 +17612,14 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <translation type="vanished">Porty/urządzenia MIDI</translation>
     </message>
     <message>
-        <location line="-3336"/>
-        <location line="+3209"/>
+        <location line="-3341"/>
+        <location line="+3214"/>
         <location line="+102"/>
         <source>Omni</source>
         <translation>Omni</translation>
     </message>
     <message>
-        <location line="-3097"/>
+        <location line="-3102"/>
         <source>Show aliases:</source>
         <translation>Pokaż aliasy:</translation>
     </message>
@@ -17664,7 +17668,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <translation type="vanished">Otwórz Konfigurację Połączeń...</translation>
     </message>
     <message>
-        <location line="+2476"/>
+        <location line="+2481"/>
         <source>Warning: No output devices!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17681,7 +17685,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <translation type="vanished">Otwórz konfigurację MIDI...</translation>
     </message>
     <message>
-        <location line="-3041"/>
+        <location line="-3046"/>
         <location line="+106"/>
         <source>ALSA devices</source>
         <translation type="unfinished"></translation>
@@ -17709,7 +17713,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2692"/>
+        <location line="+2697"/>
         <source>Advanced Router...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17771,12 +17775,12 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <translation>Więcej...</translation>
     </message>
     <message>
-        <location line="-3552"/>
+        <location line="-3557"/>
         <source>Stereo </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3654"/>
+        <location line="+3659"/>
         <location line="+102"/>
         <source>Tracks</source>
         <translation>Ślady</translation>

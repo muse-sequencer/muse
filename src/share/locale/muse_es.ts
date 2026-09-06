@@ -16680,8 +16680,8 @@ Right-click on plugins to add/remove from a category.</source>
 <context>
     <name>MusEGui::PopupMenu</name>
     <message>
-        <location filename="../../muse/components/popupmenu.cpp" line="+433"/>
-        <source>&lt;More...&gt; %1</source>
+        <location filename="../../muse/components/popupmenu.cpp" line="+513"/>
+        <source>&lt;More...&gt; </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -16859,7 +16859,7 @@ Right-click on plugins to add/remove from a category.</source>
         <translation>Canal</translation>
     </message>
     <message>
-        <location line="+2659"/>
+        <location line="+2664"/>
         <source>Soloing chain</source>
         <translation>Cadena de solos</translation>
     </message>
@@ -16874,7 +16874,7 @@ Right-click on plugins to add/remove from a category.</source>
         <translation>Atención: no hay entradas</translation>
     </message>
     <message>
-        <location line="-3393"/>
+        <location line="-3398"/>
         <source>Channel grouping:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16894,21 +16894,21 @@ Right-click on plugins to add/remove from a category.</source>
         <location line="+106"/>
         <location line="+269"/>
         <location line="+142"/>
-        <location line="+2614"/>
+        <location line="+2619"/>
         <location line="+194"/>
         <location line="+102"/>
         <source>Channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-3336"/>
-        <location line="+3209"/>
+        <location line="-3341"/>
+        <location line="+3214"/>
         <location line="+102"/>
         <source>Omni</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-3097"/>
+        <location line="-3102"/>
         <source>Show aliases:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16960,7 +16960,7 @@ Right-click on plugins to add/remove from a category.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2476"/>
+        <location line="+2481"/>
         <source>Warning: No output devices!</source>
         <translation type="unfinished">Atencion: No hay salidas disponibles</translation>
     </message>
@@ -16969,7 +16969,7 @@ Right-click on plugins to add/remove from a category.</source>
         <translation type="vanished">Abrir la configuraciòn MIDI</translation>
     </message>
     <message>
-        <location line="-3041"/>
+        <location line="-3046"/>
         <location line="+106"/>
         <source>ALSA devices</source>
         <translation type="unfinished"></translation>
@@ -16987,7 +16987,7 @@ Right-click on plugins to add/remove from a category.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2901"/>
+        <location line="+2906"/>
         <source>Advanced Router...</source>
         <translation type="unfinished"></translation>
     </message>

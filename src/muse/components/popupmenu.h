@@ -64,6 +64,8 @@ Q_OBJECT
     PopupMenu* _cur_menu; // For auto-breakup.
     int _cur_menu_count;
     int _max_items_in_breakup;
+    // Holds the size of the screen containing the point given to exec or popup.
+    QSize _screenSize;
 
     QMenu* _contextMenu;
     QAction* _lastHoveredAction;
@@ -71,9 +73,6 @@ Q_OBJECT
     
     void init();
     void showContextMenu(const QPoint&);
-    // Auto-breakup a too-wide menu.
-    // If a new menu is created, parentText will be used as the parent item's text.
-    PopupMenu* getMenu(const QString& parentText);
     
   private slots:
     void popHovered(QAction*);
@@ -93,8 +92,12 @@ Q_OBJECT
     // For auto-breakup of a too-wide menu. Virtual.
     virtual PopupMenu* cloneMenu(const QString& title, QWidget* parent = 0, bool stayOpen = false, bool showTooltips = false);
 
+    void rebuildMenu(PopupMenu* menu);
+
   public: signals:
     void aboutToShowContextMenu(PopupMenu* menu, QAction* menuAction, QMenu* ctxMenu);
+    // NOTE: Use this instead of aboutToShow(), so that the auto-breakup can work properly.
+    void aboutToPopup();
     
   public:
     PopupMenu(bool stayOpen);
@@ -110,15 +113,9 @@ Q_OBJECT
     static PopupMenu* contextMenuFocus();
     static QAction* contextMenuFocusAction();
 
-    // Need to catch these to auto-breakup a too-big menu.
-    QAction* addAction(const QString& text);
-    QAction* addAction(const QIcon& icon, const QString& text);
-    QAction* addAction(const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut = 0);
-    QAction* addAction(const QIcon& icon, const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut = 0);
-    void     addAction(QAction* action);
-    QAction* addMenu(QMenu* menu);
-    QMenu*   addMenu(const QString &title);
-    QMenu*   addMenu(const QIcon &icon, const QString &title);
+    QAction *exec();
+    QAction *exec(const QPoint &p, QAction *action = nullptr);
+    void popup(const QPoint &p, QAction *atAction = nullptr);
 };
 
 // A handy structure for use with PopupMenu context menu action data.

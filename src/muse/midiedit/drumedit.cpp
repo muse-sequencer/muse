@@ -412,16 +412,16 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       pianoConfigMenu = new PopupMenu(tr("Note Names, Piano Settings"), this, true);
       pianoConfigMenu->setIcon(*pianoConfigSVGIcon);
       settingsMenu->addMenu(pianoConfigMenu);
-      connect(pianoConfigMenu, &QMenu::aboutToShow, [this]() { pianoConfigMenuAboutToShow(); } );
-      connect(pianoConfigMenu, &QMenu::aboutToHide, [this]() { pianoConfigMenuAboutToHide(); } );
-      connect(pianoConfigMenu, &QMenu::triggered, [](QAction* act) { pianoConfigPopupTriggered(act); } );
+      connect(pianoConfigMenu, &PopupMenu::aboutToPopup, [this]() { pianoConfigMenuAboutToShow(); } );
+      connect(pianoConfigMenu, &PopupMenu::aboutToHide, [this]() { pianoConfigMenuAboutToHide(); } );
+      connect(pianoConfigMenu, &PopupMenu::triggered, [](QAction* act) { pianoConfigPopupTriggered(act); } );
 
       addControllerMenu = new PopupMenu(tr("Add Controller View"), this, true);
       addControllerMenu->setIcon(*midiControllerNewSVGIcon);
       settingsMenu->addMenu(addControllerMenu);
-      connect(addControllerMenu, &QMenu::aboutToShow, [this]() { ctrlMenuAboutToShow(); } );
-      connect(addControllerMenu, &QMenu::aboutToHide, [this]() { ctrlMenuAboutToHide(); } );
-      connect(addControllerMenu, &QMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
+      connect(addControllerMenu, &PopupMenu::aboutToPopup, [this]() { ctrlMenuAboutToShow(); } );
+      connect(addControllerMenu, &PopupMenu::aboutToHide, [this]() { ctrlMenuAboutToHide(); } );
+      connect(addControllerMenu, &PopupMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
 
       //---------------------------------------------------
       //    Toolbars

@@ -13742,8 +13742,8 @@ Right-click on plugins to add/remove from a category.</source>
 <context>
     <name>MusEGui::PopupMenu</name>
     <message>
-        <location filename="../../muse/components/popupmenu.cpp" line="433"/>
-        <source>&lt;More...&gt; %1</source>
+        <location filename="../../muse/components/popupmenu.cpp" line="513"/>
+        <source>&lt;More...&gt; </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13921,17 +13921,17 @@ Right-click on plugins to add/remove from a category.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3556"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3561"/>
         <source>Soloing chain</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3558"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3563"/>
         <source>Audio returns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3478"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3483"/>
         <source>Warning: No input devices!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13952,16 +13952,16 @@ Right-click on plugins to add/remove from a category.</source>
         <location filename="../../muse/components/routepopup.cpp" line="552"/>
         <location filename="../../muse/components/routepopup.cpp" line="821"/>
         <location filename="../../muse/components/routepopup.cpp" line="963"/>
-        <location filename="../../muse/components/routepopup.cpp" line="3577"/>
-        <location filename="../../muse/components/routepopup.cpp" line="3771"/>
-        <location filename="../../muse/components/routepopup.cpp" line="3873"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3582"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3776"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3878"/>
         <source>Channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/components/routepopup.cpp" line="537"/>
-        <location filename="../../muse/components/routepopup.cpp" line="3746"/>
-        <location filename="../../muse/components/routepopup.cpp" line="3848"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3751"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3853"/>
         <source>Omni</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14003,7 +14003,7 @@ Right-click on plugins to add/remove from a category.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3476"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3481"/>
         <source>Warning: No output devices!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14036,60 +14036,60 @@ Right-click on plugins to add/remove from a category.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3450"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3455"/>
         <source>Advanced Router...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3482"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3487"/>
         <source>Midi Ports/Soft Synths...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3496"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3501"/>
         <source>Output Routes:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3498"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3503"/>
         <source>Input Routes:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3520"/>
-        <location filename="../../muse/components/routepopup.cpp" line="3722"/>
-        <location filename="../../muse/components/routepopup.cpp" line="3814"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3525"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3727"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3819"/>
         <source>Soloing Chain</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3522"/>
-        <location filename="../../muse/components/routepopup.cpp" line="3724"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3527"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3729"/>
         <source>Audio Returns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3652"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3657"/>
         <source>&lt;none&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3818"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3823"/>
         <source>Audio Sends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3825"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3830"/>
         <source>Midi Sends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3878"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3883"/>
         <source>Sources:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3644"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3649"/>
         <source>More...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14099,13 +14099,13 @@ Right-click on plugins to add/remove from a category.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3746"/>
-        <location filename="../../muse/components/routepopup.cpp" line="3848"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3751"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3853"/>
         <source>Tracks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routepopup.cpp" line="3776"/>
+        <location filename="../../muse/components/routepopup.cpp" line="3781"/>
         <source>Destinations:</source>
         <translation type="unfinished"></translation>
     </message>

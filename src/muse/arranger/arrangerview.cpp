@@ -355,9 +355,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   pianoConfigMenu = new PopupMenu(tr("Note Names, Piano Settings"), this, true);
   pianoConfigMenu->setIcon(*pianoConfigSVGIcon);
   menuSettings->addMenu(pianoConfigMenu);
-  connect(pianoConfigMenu, &QMenu::aboutToShow, [this]() { pianoConfigMenuAboutToShow(); } );
-  connect(pianoConfigMenu, &QMenu::aboutToHide, [this]() { pianoConfigMenuAboutToHide(); } );
-  connect(pianoConfigMenu, &QMenu::triggered, [](QAction* act) { pianoConfigPopupTriggered(act); } );
+  connect(pianoConfigMenu, &PopupMenu::aboutToPopup, [this]() { pianoConfigMenuAboutToShow(); } );
+  connect(pianoConfigMenu, &PopupMenu::aboutToHide, [this]() { pianoConfigMenuAboutToHide(); } );
+  connect(pianoConfigMenu, &PopupMenu::triggered, [](QAction* act) { pianoConfigPopupTriggered(act); } );
 
   QAction *trackHeightAction = new QAction(tr("&Toggle Track Heights"), this);
   trackHeightAction->setShortcut(shortcuts[SHRT_TOGGLE_TRACK_HEIGHTS].key);

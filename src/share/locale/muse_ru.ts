@@ -14161,7 +14161,7 @@ Right-click on plugins to add/remove from a category.</source>
 <context>
     <name>MusEGui::PopupMenu</name>
     <message>
-        <source>&lt;More...&gt; %1</source>
+        <source>&lt;More...&gt; </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
