@@ -3021,6 +3021,12 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
       else
             e = events.end();
 
+      // WINMM_RECORD_DEBUG: temporary tracing for the "recorded part
+      // vanishes on stop" investigation. Ask before removing.
+      if(MusEGlobal::debugMsg)
+        fprintf(stderr, "WINMM_RECORD_DEBUG: cmdAddRecordedEvents track <%s> startTick=%u endTick=%u loopCount=%d punchin=%d punchout=%d lpos=%u rpos=%u\n",
+                mt->name().toLocal8Bit().constData(), startTick, endTick,
+                MusEGlobal::audio->loopCount(), punchin(), punchout(), lpos(), rpos());
       if (startTick > endTick) {
             if (MusEGlobal::debugMsg)
                   fprintf(stderr, "no events in record area\n");
