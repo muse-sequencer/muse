@@ -1,27 +1,33 @@
-# Building MusE on Windows. 
+# Building MusE on Windows
 
 The file is named win32 though it extends to windows in general but the word Windows is just too ambiguous.
 
 There is a thread in the forum with the most recent effort to bring Windows support to MusE:
 https://linuxmusicians.com/viewtopic.php?f=61&t=19353
 
-Be warned that the Windows build of MusE is work-in-progress and is mostly of interest to tinkerers that wish
-to pursue this effort.
+## Status (2026-09, `windows_port` branch)
+
+This branch is a **working, user-tested native Windows port** (MSYS2/MinGW-w64,
+Qt5, RtAudio, a native WinMM MIDI backend). It has been run on real hardware
+(a Focusrite Scarlett 18i8 audio interface and a Casio USB-MIDI keyboard, on
+Windows 7) by the user driving this effort, not just under CI. MIDI input,
+MIDI recording, MIDI output, audio output, and the metronome (both MIDI and
+audio click) all work. See "Known limitations" below for what still needs
+attention, and "What was fixed to get here" for the full technical history -
+useful if you hit a similar-looking bug in the future, since several of these
+were quite unintuitive (Windows API contracts silently violated, not compile
+errors).
+
+Tracked upstream at issue #1237. GitHub Actions workflow:
+`.github/workflows/windows_build.yml` (`workflow_dispatch`-only - trigger
+manually with `gh workflow run "Windows build (MSYS2/MinGW) [experimental]"
+--ref windows_port`, it does not run on every push).
 
 ## Instructions
 
-The following steps allow native Muse (git) compilation under Windows with the mingw64 compiler. Optional steps or alternatives are commented out.
-It is available in it's original formatting here:
-    https://musicsecrets.euniversity.pub/muse.html
-
-    Support files:
-
-        Required dependencies
-        Fix make paths script (place it in muse/src)
-        Compile components script (place it in muse/src)
-        Compile Muse script (place it in muse/src)
-        Pack script (TODO)
-
+The following steps allow native MusE (git) compilation under Windows with the mingw64 compiler.
+The CI workflow (`.github/workflows/windows_build.yml`) is the authoritative, currently-tested
+build recipe - if these manual instructions and the workflow ever disagree, trust the workflow.
 
     1. Install msys2 from http://www.msys2.org/ in a short path (i.e. f:/a)
     # From the msys2 terminal
@@ -29,129 +35,303 @@ It is available in it's original formatting here:
     # Close the msys2 terminal and open it again
     pacman -Su
 
-    2. From mingw64 shell from now on, install common packages:
+    2. From the MINGW64 shell from now on (not the plain msys2 shell), install packages:
     pacman -S \
+    base-devel git \
     mingw-w64-x86_64-toolchain \
-    python3 \
-    python3-setuptools \
-    mingw-w64-x86_64-python3 \
-    mingw-w64-x86_64-python3-setuptools \
-    python2 \
-    python2-setuptools \
-    pkg-config \
+    mingw-w64-x86_64-cmake \
+    mingw-w64-x86_64-extra-cmake-modules \
     mingw-w64-x86_64-pkg-config \
-    autoconf \
-    automake \
-    perl \
-    gtk-doc \
-    flex \
-    bison \
-    patch \
-    libtool \
-    mingw-w64-x86_64-libtool \
-    wget \
-    git \
-    nasm \
-    mingw-w64-x86_64-nasm \
-    dos2unix \
-    mingw-w64-x86_64-cmake
-
-    3. Install pre-built dependencies
-    pacman -S \
-    base-devel \
-    mercurial \
-    cvs \
-    p7zip \
-    ruby \
-    mingw-w64-x86_64-qt5 \
+    mingw-w64-x86_64-ninja \
+    mingw-w64-x86_64-qt5-base \
+    mingw-w64-x86_64-qt5-svg \
+    mingw-w64-x86_64-qt5-tools \
+    mingw-w64-x86_64-qt5-translations \
     mingw-w64-x86_64-ladspa-sdk \
     mingw-w64-x86_64-libsndfile \
     mingw-w64-x86_64-libsamplerate \
     mingw-w64-x86_64-fluidsynth \
-    mingw-w64-x86_64-gtkmm \
+    mingw-w64-x86_64-liblo \
+    mingw-w64-x86_64-lv2 \
+    mingw-w64-x86_64-serd \
+    mingw-w64-x86_64-sord \
+    mingw-w64-x86_64-sratom \
+    mingw-w64-x86_64-lilv \
+    mingw-w64-x86_64-rtaudio \
+    mingw-w64-x86_64-jack2 \
     mingw-w64-x86_64-dlfcn
 
-    # Build the following packages with these commands in /usr/src:
-    cd /usr/src
-    cd #PACKAGE_DIR#
-    makepkg-mingw -g >> PKGBUILD
-    makepkg-mingw
-    pacman -U *.pkg.tar.xz
-    cd ..
+    (Everything above is a prebuilt mingw-w64 package today - no more
+    makepkg-mingw source builds needed for liblo/serd/sord/lv2/sratom/lilv/
+    jack2, unlike older instructions for this file.)
 
-    mingw-w64-liblo
-    mingw-w64-serd
-    mingw-w64-sord
-    mingw-w64-lv2
-    mingw-w64-sratom
-    mingw-w64-lilv
-    mingw-w64-portaudio
-    mingw-w64-jack
+    3. Clone and configure
+    git clone -b windows_port https://github.com/luginf/muse.git
+    cd muse
+    mkdir build && cd build
+    cmake ../src -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DENABLE_RTAUDIO=ON -DENABLE_ALSA=OFF -DENABLE_LASH=OFF -DENABLE_LRDF=OFF \
+      -DENABLE_OSC=OFF -DENABLE_DSSI=OFF -DENABLE_VST_NATIVE=ON -DENABLE_VST_VESTIGE=ON \
+      -DENABLE_LV2=OFF -DENABLE_LV2_GTK2=OFF -DENABLE_FLUID=ON -DENABLE_RUBBERBAND=OFF \
+      -DENABLE_MIDNAM=ON -DENABLE_INSTPATCH=OFF -DENABLE_PYTHON=OFF \
+      -DMODULES_BUILD_STATIC=ON
 
-    4. Build Muse
-    cd /usr/src
-    git clone --recurse-submodules -b master git://github.com/muse-sequencer/muse.git
-    cd /usr/src/muse/src
-    export LIBRARY_PATH=/mingw64/lib
-    export CPATH=/mingw64/include
-    # Copy here the files compile_muse_mingw.sh and CMakeLists.txt
-    ./compile_muse_mingw.sh
+    (See the CMake flags' rationale in the "What was fixed" section below -
+    ENABLE_LV2/ENABLE_OSC are OFF because of startup crashes unrelated to this
+    port's own code, MODULES_BUILD_STATIC works around Windows DLLs not
+    auto-exporting symbols the way ELF .so's do.)
 
-    5. Pack files (TODO)
-    # Place muse_pack.sh in /usr/src
-    ./muse_pack.sh
+    4. Build
+    ninja -j"$(nproc)"
 
-## Known startup issue on Windows and the `windows_port` branch fix (2026-09)
+    5. Package for distribution outside MSYS2 (the build only runs as-is from
+       inside the MINGW64 shell, which has /mingw64/bin on PATH - a plain
+       double-click on a machine without MSYS2 installed needs every DLL
+       muse4.exe depends on copied next to it first):
+    cd muse
+    WINDEPLOYQT=$(find /mingw64 -iname "windeployqt*.exe" | head -1)
+    "$WINDEPLOYQT" --no-angle --no-opengl-sw muse4.exe
+    find .. -name "*.dll" -not -path "./*" -exec cp -n {} . \;   # MusE's own internal module DLLs
+    for dll in $(ldd muse4.exe | awk '{print $3}' | grep -i '^/mingw64/'); do cp -n "$dll" .; done
+    mkdir -p share/muse-4.3 && cp -r ../../src/share/* share/muse-4.3/   # instruments, templates, metronome sounds, themes
 
-A previous porting attempt (see issue #1237) reported that MusE compiles
-with MinGW but does not start, even with Jack for Windows installed.
-Reading the GUI <-> audio/sequencer thread messaging code (thread.cpp,
-audio.cpp, seqmsg.cpp, song.cpp, midi.cpp) turned up concrete, code-level
-causes that plausibly explain this:
+    For debugging: run with `muse4.exe -D > debug_log.txt 2>&1` to enable
+    MusE's own verbose logging (see "Diagnosing issues on Windows" below for
+    why this matters more than it does on Linux).
 
-  - `Thread`, `Audio` and `Song::seqSignal()` communicate over anonymous
-    pipes created with `_pipe()` on Windows. `QSocketNotifier`
-    (used in app.cpp to wake the GUI on audio-thread messages) only
-    supports *sockets* on Windows, not arbitrary pipe descriptors -
-    this is a documented Qt platform restriction, so the GUI is never
-    notified of messages coming back from the audio thread.
-  - The non-blocking mode set on the audio->GUI pipe write end via
-    `fcntl(F_SETFL, O_NONBLOCK)` was explicitly skipped under `_WIN32`
-    (fcntl does not support this on Windows pipes), leaving the
-    realtime audio callback able to block on a blocking pipe write.
-  - Nothing in the codebase ever called `WSAStartup()`, yet
-    `poll_win.c` (already used unconditionally on `_WIN32` by
-    thread.cpp) makes raw Winsock calls (`recv`, `select`,
-    `WSAEnumNetworkEvents`). Verified with a standalone MinGW build run
-    under Wine: without `WSAStartup()`, `WSAEnumNetworkEvents()` fails,
-    which makes `poll_win.c`'s socket detection silently treat every
-    fd as a non-socket handle.
+## What was fixed to get here
 
-The `windows_port` branch replaces the Windows pipe implementation with
-a loopback TCP socket pair (`src/muse/platform_pipe.h`, `muse_pipe()` /
-`muse_pipe_read()` / `muse_pipe_write()` / `muse_pipe_set_nonblock()`),
-which is directly usable with `QSocketNotifier`, works correctly with
-`poll_win.c`'s existing (and already correct) socket-polling path, and
-supports proper non-blocking mode via `ioctlsocket(FIONBIO)`. It also
-adds `WSAStartup()`/`WSACleanup()` calls around `main()`.
+In roughly chronological order (see `git log --oneline windows_port` for the
+exact commits and their full messages - each one documents what broke and
+why in detail, written so a fresh contributor doesn't have to re-derive the
+reasoning).
 
-This was verified with the MinGW-w64 cross-compiler and Wine:
-`muse_pipe()` + `poll()` correctly detect data availability end-to-end,
-and reproducibly fail with `WSAENOTINITIALISED`-type errors without
-`WSAStartup()`. What was **not** verified (no access to real Windows,
-and Wine's own pipe/`WaitForMultipleObjects` behaviour does not
-reliably reproduce real Windows semantics here) is whether the
-*original* anonymous-pipe + `WaitForMultipleObjects` path in
-`poll_win.c` actually failed to signal readability on real Windows -
-that part of the original hypothesis remains unconfirmed. The
-QSocketNotifier and O_NONBLOCK issues above do not depend on that
-question and are the primary justification for this change.
+### 1. The app didn't start at all: pipe/socket IPC was broken on Windows
 
-This is groundwork, not a finished port: it has not been build- or
-run-tested on real Windows. If you pick this up, the next steps are
-(1) a real MinGW/MSYS2 build against Qt5, and (2) confirming the app
-now reaches a usable UI and can start/stop audio without hanging. The
-MIDI backend question (no ALSA/JACK-MIDI equivalent readily available
-on native Windows) raised in issue #1237 is a separate, larger piece
-of work not addressed here.
+`Thread`, `Audio` and `Song::seqSignal()` communicate over anonymous pipes
+created with `_pipe()`. Three separate, compounding problems on Windows:
+- `QSocketNotifier` (used to wake the GUI thread on audio-thread messages)
+  only supports *sockets* on Windows, not arbitrary pipe descriptors - a
+  documented Qt platform restriction.
+- The non-blocking mode set via `fcntl(F_SETFL, O_NONBLOCK)` on the
+  audio->GUI pipe was silently skipped under `_WIN32` (`fcntl` doesn't
+  support this on Windows pipes), leaving the realtime audio callback able
+  to block on a blocking pipe write.
+- Nothing called `WSAStartup()`, yet `poll_win.c` (already used
+  unconditionally on `_WIN32`) makes raw Winsock calls.
 
+**Fix**: `src/muse/platform_pipe.h` replaces the Windows pipe with a
+loopback TCP socket pair (`muse_pipe()`/`muse_pipe_read()`/
+`muse_pipe_write()`/`muse_pipe_set_nonblock()` macros - a no-op on
+non-Windows platforms, where they just expand to plain `pipe()`/`read()`/
+`write()`/`fcntl()`), used throughout `thread.cpp`, `audio.cpp`,
+`seqmsg.cpp`, `song.cpp`, `midi.cpp`, and the WinMM MIDI backend (below).
+Directly usable with `QSocketNotifier`, works with `poll_win.c`'s existing
+socket-polling path, supports real non-blocking mode via
+`ioctlsocket(FIONBIO)`. `WSAStartup()`/`WSACleanup()` added around `main()`.
+
+### 2. Heap corruption crash: `_aligned_malloc()`/`free()` mismatch
+
+Found via Windows page heap (`gflags.exe`/Application Verifier's mechanism,
+set via the Image File Execution Options registry key - see the CI
+workflow's comments for the exact recipe, no third-party tool needed; Dr.
+Memory was tried first and is a dead end on current `windows-latest`
+runners, incompatible client-injection mechanism).
+
+`AudioTrack::init_buffers()` 16-byte-aligns SIMD audio buffers with
+`_aligned_malloc()` on `_WIN32` (matching `posix_memalign()` on
+Linux/macOS) - but every release site (`AudioTrack`/`AudioAux`
+destructors, `AudioAux::setChannels()`, `AudioTrack::setTotalOutChannels()`)
+called plain `free()` regardless of platform. `_aligned_malloc()`'s block
+layout is incompatible with `free()` - it keeps its own header just ahead
+of the returned pointer for `_aligned_free()` to find the real block, and
+`free()`-ing it corrupts the heap, with the actual crash typically
+surfacing much later at an unrelated allocation (which is what made this
+hard to localize with a plain debugger backtrace).
+
+**Fix**: `museAlignedFree()` in `track.h` - `_aligned_free()` on Windows,
+plain `free()` everywhere else - replacing all `free()` calls on
+`_aligned_malloc()`'d buffers.
+
+### 3. No MIDI on native Windows at all: a new WinMM backend
+
+There was no ALSA/JACK-MIDI equivalent for native Windows MIDI hardware
+access (JACK for Windows exists but was unusable on the testing machine).
+Added `src/muse/driver/winmmmidi.h`/`.cpp` - a `MidiWinMMDevice` class
+mirroring `MidiJackDevice`'s event-translation logic, using the Win32
+`winmm.dll` MIDI API (`midiInOpen`/`midiOutOpen`/etc.) directly. A physical
+WinMM device shows up as **two** separate entries (input and output, e.g.
+"CASIO USB-MIDI" / "CASIO USB-MIDI_1") - this mirrors the native API's
+separate `MIDI_IN`/`MIDI_OUT` handles, unlike JACK's single bidirectional
+port; not a bug, just a UX difference worth knowing about.
+
+Building this exposed/required fixing several more issues, roughly in the
+order they were found (each only surfaced once actually testing with real
+hardware, not just compiling):
+
+- **UI/dispatch gaps**: the device-name assignment dropdown
+  (`confmport.cpp`), the per-track Input/Output Routes popup
+  (`routepopup.cpp`), and the "Unused Devices" listing (`helper.cpp`) all
+  had hardcoded lists of known `MidiDeviceType`s that didn't include the
+  new `WINMM_MIDI` value - a WinMM device was invisible in all three
+  without adding it explicitly to each.
+- **Poll registration**: `Audio::msgSetMidiDevice()` (the one chokepoint
+  every port-assignment call site goes through) never refreshed
+  `MidiSeq`'s poll-fd set after assigning a device to a port. ALSA never
+  needed this (one always-registered fd for all devices); JACK MIDI input
+  is read directly by the audio thread, no `poll()` involved. WinMM's
+  input is the first backend that genuinely needs `updatePollFd()` called
+  on every port (re)assignment, since each device has its own dedicated fd.
+- **`Thread::stop()`'s `pthread_cancel()`-based wakeup broke a reused pipe
+  after a restart.** Used to interrupt `AudioPrefetch`/`MidiSeq`'s
+  indefinite `poll()` wait. On Windows (MinGW/winpthreads), cancelling a
+  thread blocked in `poll()` left the *reused* message pipe unable to
+  signal `POLLIN` again the next time the same `Thread` object restarted
+  (e.g. on project reload) - hanging transport sync for the full sync
+  timeout. **Fix**: replaced cancellation with a cooperative self-pipe
+  wakeup (`stopFdr`/`stopFdw`, always in the poll set) - the standard,
+  portable way to interrupt a `poll()` loop on any platform, not a
+  Windows-only hack.
+- **`MusEGlobal::midiSeq` was never constructed on Windows at all.**
+  `initMidiSequencer()` (which does `MusEGlobal::midiSeq = new
+  MidiSeq(...)`) has exactly one call site in the whole codebase:
+  `initMidiAlsa()`. Windows has no `ALSA_SUPPORT`, so that call site never
+  ran - `midiSeq` stayed `nullptr` for the whole process. Every use is
+  guarded with `if(MusEGlobal::midiSeq)`, so this never crashed or logged
+  anything; it just meant the one thread that polls per-device MIDI input
+  (and drives output flushing/clock sync) never ran, silently. **Fix**:
+  `initMidiWinMM()` now calls `MusECore::initMidiSequencer()` itself
+  (idempotent, mirrors `initMidiAlsa()`'s own call).
+- **Sysex buffer re-arm flood.** `midiInProc()`'s `MIM_LONGDATA` handler
+  never reset `hdr->dwBytesRecorded` before calling `midiInAddBuffer()`
+  again - leaving it stale made at least one real USB-MIDI driver
+  immediately re-fire `MIM_LONGDATA` in a tight loop (~23000 callbacks/
+  minute measured for ~38 real note messages), and every spurious callback
+  fed a fixed-size ring buffer that drops new entries once full, capable
+  of silently discarding real notes. **Fix**: reset
+  `dwBytesRecorded = 0` before re-adding, matching Microsoft's own sample
+  code.
+- **Crash ~3/4 times on quit.** Same `MIM_LONGDATA` handler: closing a
+  device calls `midiInStop()`+`midiInReset()`, and `midiInReset()` itself
+  returns every pending buffer via `MIM_LONGDATA` - but the handler
+  unconditionally re-queued it regardless of why it fired, including in
+  response to the reset. With the device already stopped, re-adding
+  caused instant re-completion forever, racing the close sequence's very
+  next lines on another thread - a use-after-free once the handle was
+  actually torn down while the loop kept spinning. **Fix**: an
+  `std::atomic<bool> _closingIn` flag, set before `midiInStop()`/
+  `midiInReset()`, checked by the handler before re-queueing.
+- **`QtTimer` (the MIDI thread's own timer) used a raw CRT pipe.**
+  `MidiSeq`'s timer fd goes straight into `MidiSeq`'s `poll()` set, which
+  on Windows requires a real WinSock `SOCKET` (see `platform_pipe.h`'s own
+  comment on this exact constraint). `QtTimer::initTimer()` instead used
+  `_pipe()` - undefined behavior once passed into `select()`. This had
+  never crashed before simply because `MidiSeq`'s thread never ran before
+  the previous bug was fixed. **Fix**: switched `QtTimer` to
+  `muse_pipe()`/`muse_pipe_read()`/`muse_pipe_write()`/
+  `muse_pipe_set_nonblock()`, matching every other poll()-registered fd in
+  the codebase.
+- **The actual root cause of unusable recordings: every recorded MIDI
+  event was timestamped `0`.** `MidiWinMMDevice::processInput()`
+  constructed every `MidiRecordEvent` with a hardcoded time of 0,
+  regardless of when the note actually arrived. Compare
+  `alsaProcessMidiInput()` (`alsamidi.cpp`): it reads
+  `MusEGlobal::audio->curFrame()` once per wakeup (explicitly documented
+  as safe to call from a thread other than the audio process thread - i.e.
+  exactly `MidiSeq`'s thread) and stamps every event drained in that batch
+  with it. With WinMM always using 0, every note-on/note-off collapsed
+  onto the same tick, producing notes with near-zero length, all bunched
+  at the start of the recording regardless of when they were actually
+  played, and total rejection of the whole recording whenever it didn't
+  start at tick 0 (an internal `startTick > endTick` sanity check).
+  **Fix**: capture `MusEGlobal::audio->curFrame()` once per
+  `processInput()` wakeup and use it for every event drained in that
+  call - matching ALSA's exact approach (including its "one timestamp per
+  batch, not per individual event" resolution limit, which is a
+  pre-existing characteristic, not a new restriction introduced here).
+
+### 4. Metronome silence - a configuration issue, not a bug
+
+Reported alongside the MIDI fixes above, but turned out to need no code
+change: the metronome's MIDI click routes through
+`Réglages > Métronome`'s "Midi Port" field, a plain port-number spinbox
+independent of the MIDI-device-assignment dialog - if that port number
+doesn't have a device assigned to it (`Configure MIDI ports` dialog), the
+click silently has nowhere to go. Once the two were pointed at the same
+port, it worked correctly. The metronome's *audio* click, and general
+internal-audio-to-speakers output, needed no fix either once local
+Windows audio output was itself configured correctly.
+
+One side-note found while investigating this, **not a bug**: RtAudio's
+`connect()`/`disconnect()` (`rtaudio.h`) are permanent stubs that always
+return `false` - every track's "Advanced Router" popup shows all
+system-playback routes as "Unavailable"/red under RtAudio, even for
+tracks confirmed to produce correct audible output. Real audio flow does
+not depend on this UI's "connected" state under RtAudio (unlike JACK,
+where it is load-bearing) - cosmetic only, not worth fixing unless it
+actively confuses users.
+
+## Known limitations (as of 2026-09, user-tested on real hardware)
+
+- **Tested on Windows 7** with a Focusrite Scarlett 18i8 audio interface;
+  the test machine was not tuned for low-latency audio work (no specific
+  Windows audio-performance optimization applied) - some of what follows
+  may be a machine/OS-tuning issue rather than a MusE bug, but is recorded
+  here since it's what a real user actually hit.
+- **Audio crackling/underruns** occur during use, even with the Focusrite
+  interface. Not yet root-caused - could be buffer size/latency
+  configuration, the RtAudio Windows backend specifically, or the
+  untuned-Windows-7 factor above. Worth profiling with a larger buffer
+  size first if you hit this.
+- **Occasional slowdowns during MIDI recording.** MIDI input/output and
+  recording work correctly (see the fixes above), but the user
+  occasionally observed slowdowns specifically while recording. Not yet
+  investigated further - no root cause identified yet.
+- **VST plugins do not work.** Native VST hosting is not yet implemented -
+  see "Future work" below. **Workaround confirmed to work by the user**:
+  external tools bridge the gap in the meantime - a standalone VST host
+  such as SaviHost can run a VST plugin outside MusE, and a MIDI loopback
+  driver (e.g. loopMIDI) can route MIDI between MusE and that external
+  host process. Not as convenient as in-process VST hosting, but usable.
+
+## Future work
+
+- **Native VST hosting.** VST plugins currently load via VESTIGE (a
+  Wine-bridge mechanism designed for running *Windows* VSTs *on Linux*)
+  plus Linux-native VSTs (`ENABLE_VST_VESTIGE`/`ENABLE_VST_NATIVE` in the
+  CMake flags above). Since this port now runs natively on Windows, VST
+  DLLs could be hosted directly with no Wine bridge involved at all. This
+  is a substantial, separate effort - not started, not yet scoped. Likely
+  starting point: audit `vst_native.cpp`/`vst.cpp` and the VESTIGE
+  integration to see how much of the existing plugin-hosting
+  infrastructure can be reused versus needing a distinct direct-Windows-
+  VST-host code path.
+- Audio crackling and MIDI-recording slowdowns above, once/if reproducible
+  enough to profile.
+
+## Diagnosing issues on Windows
+
+A few gotchas specific to debugging this port, worth knowing before
+chasing a Windows-only bug:
+
+- **`qDebug()`/`qWarning()` output is invisible in a normal run** - a
+  GUI-subsystem exe with no attached console has Qt send it to the
+  debugger (`OutputDebugString`) instead of stderr by default. `main.cpp`
+  installs a `qInstallMessageHandler` (Windows-only) that forces it to
+  `fprintf(stderr, ...)` + `fflush` instead - always suspect this before
+  trusting "the last line I saw" as a true stopping point.
+- **Run with `-D`** (`muse4.exe -D > debug_log.txt 2>&1`) to enable
+  MusE's own verbose debug logging - this is what every fix above was
+  actually diagnosed from. Do NOT use `-d` (lowercase - "no threads, no
+  RT") when chasing a threading/audio bug, since that bypasses the exact
+  code path most of these fixes touch.
+- A plain `timeout <seconds> ./muse4.exe args` in an MSYS2 shell gives an
+  unambiguous exit code (124 = still running when the deadline hit, i.e.
+  survived; anything else is the process's real exit code) - avoid
+  backgrounding + `wait`, which produces a confusing bare "exit code 127"
+  under MSYS's POSIX layer with no diagnostic information.
+- For a genuine Windows-only heap-corruption-style crash that a local
+  Linux+ASan build can't reproduce: Windows page heap (see the CI
+  workflow's own extensive comments in the relevant steps) is the
+  practical escalation path, not Dr. Memory (confirmed incompatible with
+  current `windows-latest` runner images).
