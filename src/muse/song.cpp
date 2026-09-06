@@ -6515,6 +6515,15 @@ void Song::stopRolling(Undo* operations)
 
       if(!operations)
         MusEGlobal::song->applyOperationGroup(ops);
+
+      // WINMM_RECORD_DEBUG: temporary tracing for the "recorded part
+      // vanishes on stop" investigation. Ask before removing.
+      if(MusEGlobal::debugMsg)
+      {
+        for(ciMidiTrack it = _midis.begin(); it != _midis.end(); ++it)
+          fprintf(stderr, "WINMM_RECORD_DEBUG: stopRolling after applyOperationGroup track <%s> parts()->size()=%zu\n",
+                  (*it)->name().toLocal8Bit().constData(), (*it)->parts()->size());
+      }
 }
 
 //---------------------------------------------------------
