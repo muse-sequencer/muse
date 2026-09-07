@@ -13881,34 +13881,34 @@ Right-click on plugins to add/remove from a category.</source>
 <context>
     <name>MusEGui::RouteDialog</name>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="2037"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2042"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="2038"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2043"/>
         <source>Alias 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="2039"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2044"/>
         <source>Alias 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="2060"/>
-        <location filename="../../muse/components/routedialog.cpp" line="2094"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2065"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2099"/>
         <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="2069"/>
-        <location filename="../../muse/components/routedialog.cpp" line="2095"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2074"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2100"/>
         <source>Destination</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="3584"/>
+        <location filename="../../muse/components/routedialog.cpp" line="3589"/>
         <source>&lt;none&gt;</source>
         <translation type="unfinished"></translation>
     </message>

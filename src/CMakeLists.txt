@@ -308,7 +308,7 @@ find_package(Threads REQUIRED)
 ##
 
 
-set(QT_MIN_VERSION "5.9.5")
+set(QT_MIN_VERSION "5.10")
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
 set(QT_USE_QTSVG TRUE)
@@ -316,7 +316,7 @@ set(QT_USE_QTSVG TRUE)
 find_package(Qt5Widgets)
 
 if (NOT Qt5Widgets_FOUND)
-      message(FATAL_ERROR "Fatal error: QT (version >= 5.9.5) required.\n"
+      message(FATAL_ERROR "Fatal error: QT (version >= 5.10) required.\n"
       "Cmake tries to detect QT5 by searching for 'Qt5Widgets' package\n"
       "If you have QT5 installed, make sure 'Qt5Widgets' package is in PKG_CONFIG_PATH."
       )

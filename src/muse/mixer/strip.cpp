@@ -1721,7 +1721,12 @@ void Strip::computeExtraWidth()
   if(isEmbedded())
     _extraWidth = 0;
   else
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
     _extraWidth = QFontMetrics(MusEGlobal::config.fonts[6]).horizontalAdvance("W:");
+#else
+    _extraWidth = QFontMetrics(MusEGlobal::config.fonts[6]).width("W:");
+#endif
 }
 
 QSize Strip::sizeHint() const

@@ -17695,34 +17695,34 @@ Klepnutí pravým tlačítkem myši na přídavné moduly pro přidání/odstran
 <context>
     <name>MusEGui::RouteDialog</name>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="2037"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2042"/>
         <source>Normal</source>
         <translation>Normální</translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="2038"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2043"/>
         <source>Alias 1</source>
         <translation>Přezdívka 1</translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="2039"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2044"/>
         <source>Alias 2</source>
         <translation>Přezdívka 2</translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="2060"/>
-        <location filename="../../muse/components/routedialog.cpp" line="2094"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2065"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2099"/>
         <source>Source</source>
         <translation>Zdroj</translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="2069"/>
-        <location filename="../../muse/components/routedialog.cpp" line="2095"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2074"/>
+        <location filename="../../muse/components/routedialog.cpp" line="2100"/>
         <source>Destination</source>
         <translation>Cíl</translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="3584"/>
+        <location filename="../../muse/components/routedialog.cpp" line="3589"/>
         <source>&lt;none&gt;</source>
         <translation>&lt;Žádný&gt;</translation>
     </message>

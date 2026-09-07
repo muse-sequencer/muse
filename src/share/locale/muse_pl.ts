@@ -17526,7 +17526,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
 <context>
     <name>MusEGui::RouteDialog</name>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="+2037"/>
+        <location filename="../../muse/components/routedialog.cpp" line="+2042"/>
         <source>Normal</source>
         <translation>Normalny</translation>
     </message>
@@ -20486,7 +20486,7 @@ Only one is allowed.</source>
         <translation>Włącz tryb Yamaha XG</translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="-3515"/>
+        <location filename="../../muse/components/routedialog.cpp" line="-3520"/>
         <source>Tracks:</source>
         <translation>Ślady:</translation>
     </message>

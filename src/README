@@ -54,7 +54,7 @@ details.
       - CMake >= 3.10.2 
           http:/www.cmake.org/HTML/Download.html
 
-      - Qt: Qt >= 5.9.5 (development files)
+      - Qt: Qt >= 5.10 (development files)
           http://qt-project.org/
           MusE does _not_ compile with older versions
           For ubuntu packages can be installed via:

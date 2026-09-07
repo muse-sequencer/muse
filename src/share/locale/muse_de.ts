@@ -17966,7 +17966,7 @@ Right-click on plugins to add/remove from a category.</source>
 <context>
     <name>MusEGui::RouteDialog</name>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="+2037"/>
+        <location filename="../../muse/components/routedialog.cpp" line="+2042"/>
         <source>Normal</source>
         <translation>Normal</translation>
     </message>
@@ -20947,7 +20947,7 @@ Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/routedialog.cpp" line="-3515"/>
+        <location filename="../../muse/components/routedialog.cpp" line="-3520"/>
         <source>Tracks:</source>
         <translation>Spuren:</translation>
     </message>
