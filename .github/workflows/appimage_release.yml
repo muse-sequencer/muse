@@ -5,7 +5,7 @@ on:
     inputs:
       tag:
         description: 'Release tag'
-        default: '4.0.0'
+        default: '4.2.1'
         required: true
 #on: push
 #  push:
@@ -19,36 +19,30 @@ env:
 
 jobs:
   release:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    #   with:
-    #     ref: ${{ env.TAG }}
-                 
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ env.TAG }}
+                  
     - name: Install Deps
       run: |
-        #sudo add-apt-repository -y ppa:beineri/opt-qt-5.15.2-bionic
         sudo apt-get update
         # See PR 1077. Required to find libatomic for some archs.
         sudo apt-get install -y cmake extra-cmake-modules
         sudo apt-get install -y libsndfile1-dev libsamplerate0-dev \
           libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
-          libsamplerate0-dev libfluidsynth-dev libgtkmm-2.4-dev \
+          libfluidsynth-dev libgtkmm-2.4-dev \
           libinstpatch-dev librubberband-dev python3-dev librtaudio-dev liblrdf0-dev
-        # liblash-compat-dev 
-        # liblilv-dev lv2-dev liblrdf0-dev
         sudo apt-get install -y qttools5-dev qttools5-dev-tools libqt5svg5-dev
         sudo apt-get install -y mesa-common-dev libglu1-mesa-dev
-        #sudo apt-get install -y qt515base qt515tools qt515svg
-        sudo apt-get install -y fuse
+        
+        # libfuse2 is required on newer Ubuntu runners to execute AppImages inside the container
+        sudo apt-get install -y fuse libfuse2
         
         sudo apt-get remove -y libsord-0-0 libserd-0-0
-        
-        # wget http://mirrors.kernel.org/ubuntu/pool/universe/r/rtaudio/librtaudio6_5.0.0~ds-2_amd64.deb
-        # wget http://mirrors.kernel.org/ubuntu/pool/universe/r/rtaudio/librtaudio-dev_5.0.0~ds-2_amd64.deb 
-        # sudo apt-get install ./librtaudio6_5.0.0~ds-2_amd64.deb ./librtaudio-dev_5.0.0~ds-2_amd64.deb 
-                      
+                    
     - name: Build lv2
       run: |     
         mkdir ${{runner.workspace}}/lv2_build
@@ -101,7 +95,6 @@ jobs:
         
     - name: Check Qt Installation
       run: |
-        #cat /opt/qt515/bin/qt515-env.sh
         QT_BASE_DIR=/opt/qt515
         export QTDIR=$QT_BASE_DIR
         export PATH=$QT_BASE_DIR/bin:$PATH
@@ -148,10 +141,7 @@ jobs:
         export LD_LIBRARY_PATH=$LIB_MODULES:$LIB_PLUGINS:$LIB_SYNTHI:$LIB_CONV:$LD_LIBRARY_PATH
         
         # install GTK library dependencies for LV2 uis
-        sudo apt install patchelf
-        sudo apt install libgtk2.0-dev
-        sudo apt install libglib2.0-dev
-        sudo apt install librsvg2-dev 
+        sudo apt-get install -y patchelf libgtk2.0-dev libglib2.0-dev librsvg2-dev
 
         export DEPLOY_GTK_VERSION=2
         ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin=gtk
@@ -169,7 +159,7 @@ jobs:
         ./linuxdeploy-plugin-appimage-x86_64.AppImage --appdir appdir 
     
     - name: Upload AppImage  
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: AppImage release
+        name: AppImage-release-${{ env.TAG }}
         path: ${{runner.workspace}}/build/MusE-*-x86_64.AppImage
