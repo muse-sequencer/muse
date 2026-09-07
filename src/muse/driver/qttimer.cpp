@@ -24,13 +24,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "qttimer.h"
+#include "platform_pipe.h"
 
 #ifndef TIMER_DEBUG
 #define TIMER_DEBUG 1
-#endif
-
-#ifdef _WIN32
-#define pipe(fds) _pipe(fds, 4096, _O_BINARY)
 #endif
 
 namespace MusECore {
@@ -58,20 +55,25 @@ namespace MusECore {
     if(TIMER_DEBUG)
       printf("QtTimer::initTimer(this=%p)\n",this);
 
+    // This fd ends up in MidiSeq's poll() set (see MidiSeq::updatePollFd(),
+    // MidiSeq::selectTimer()) - on Windows that's poll_win.c's select()-
+    // based emulation, which requires a real WinSock SOCKET (see the
+    // comment in platform_pipe.h). A plain _pipe()/pipe() fd is a CRT
+    // file descriptor, not a SOCKET, and passing one into select() is
+    // undefined behaviour - this crashed the app the moment the Midi
+    // thread's poll() loop actually ran for the first time (previously
+    // masked entirely: MidiSeq's thread never started on Windows before
+    // its own separate "never constructed" bug was fixed). muse_pipe()
+    // is the cross-platform-safe equivalent used everywhere else this
+    // codebase creates a poll()-able fd. Ask before removing this
+    // comment.
     int filedes[2];         // 0 - reading   1 - writing
-    if (pipe(filedes) == -1) {
+    if (muse_pipe(filedes) == -1) {
           perror("QtTimer - creating pipe failed");
           exit(-1);
           }
-#ifndef _WIN32
-    int rv = fcntl(filedes[1], F_SETFL, O_NONBLOCK);
-    if (rv == -1)
-          perror("set pipe O_NONBLOCK");
-#endif
-    if (pipe(filedes) == -1) {
-          perror("QtTimer - creating pipe1");
-          exit(-1);
-          }
+    muse_pipe_set_nonblock(filedes[1]);
+
     writePipe = filedes[1];
     readPipe = filedes[0];
 
@@ -125,7 +127,7 @@ namespace MusECore {
         fprintf(stderr,"QtTimer::getTimerTicks(): no pipe open to read!\n");
         return 0;
     }
-    if (read(readPipe, &nn, sizeof(char)) != sizeof(char)) {
+    if (muse_pipe_read(readPipe, &nn, sizeof(char)) != sizeof(char)) {
         fprintf(stderr,"QtTimer::getTimerTicks(): error reading pipe\n");
         return 0;
         }
@@ -166,7 +168,7 @@ namespace MusECore {
 
     if (event->timerId() == timer.timerId()) {
       tickCount++;
-      write(writePipe,"t",1);
+      muse_pipe_write(writePipe,"t",1);
     }
 
   }

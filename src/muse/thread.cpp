@@ -24,7 +24,9 @@
 #include "thread.h"
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #ifdef _WIN32
 #include "poll.h"
 #include "poll_win.c"
@@ -36,10 +38,7 @@
 
 #include "globals.h"
 #include "errno.h"
-
-#ifdef _WIN32
-#define pipe(fds) _pipe(fds, 4096, _O_BINARY)
-#endif
+#include "platform_pipe.h"
 
 namespace MusECore {
 
@@ -68,6 +67,9 @@ static void* loop(void* mops)
 
 void Thread::start(int prio, void* ptr)
       {
+      fprintf(stderr, "DIAG: Thread::start(%s) entering, prio=%d, realTimeScheduling=%d\n",
+        _name, prio, MusEGlobal::realTimeScheduling);
+      fflush(stderr);
       userPtr = ptr;
       pthread_attr_t* attributes = 0;
       _realTimePriority = prio;
@@ -109,6 +111,8 @@ void Thread::start(int prio, void* ptr)
                      _realTimePriority, strerror(errno));
                   }
             }
+      fprintf(stderr, "DIAG: Thread::start(%s) about to pthread_create, attributes=%p\n", _name, (void*)attributes);
+      fflush(stderr);
 
 
       /* DELETETHIS 8
@@ -122,7 +126,9 @@ void Thread::start(int prio, void* ptr)
       */
 
 
-      int rv = pthread_create(&thread, attributes, MusECore::loop, this); 
+      int rv = pthread_create(&thread, attributes, MusECore::loop, this);
+      fprintf(stderr, "DIAG: Thread::start(%s) pthread_create returned %d\n", _name, rv);
+      fflush(stderr);
       if(rv)
       {
         // p4.0.16: MusEGlobal::realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
@@ -150,19 +156,55 @@ void Thread::start(int prio, void* ptr)
 
 void Thread::stop(bool force)
       {
+      (void)force;
       if (thread == 0)
             return;
-      if (force) {
-            pthread_cancel(thread);
-            threadStop();
-            }
       _running = false;
+      // Wake the thread out of a possibly-indefinite poll() wait (_pollWait
+      // can be -1) so it notices _running is now false and returns from
+      // loop() normally, which then calls threadStop() itself (as it always
+      // did at the bottom of the while(_running) loop).
+      // This replaces a previous pthread_cancel()-based wakeup: Windows
+      // debug logging (MinGW/winpthreads) showed that cancelling a thread
+      // blocked in poll() left the *reused* message pipe unable to signal
+      // POLLIN again on the next start() of the same Thread object (e.g.
+      // AudioPrefetch after a project reload) - the seek acknowledgement
+      // was sent but never seen, hanging transport sync for the full
+      // setSyncTimeout() and explaining both silent recording and silent
+      // metronome playback reports. A self-pipe wakeup is the standard way
+      // to interrupt a poll() loop and avoids cancellation entirely, on
+      // every platform. Ask before removing this comment.
+      char c = 'x';
+      muse_pipe_write(stopFdw, &c, 1);
       if (thread) {
           if (pthread_join(thread, 0)) {
                 // perror("Failed to join sequencer thread"); DELETETHIS and the if around?
                 }
           }
       }
+
+//---------------------------------------------------------
+//   clearPollFd
+//---------------------------------------------------------
+
+void Thread::clearPollFd()
+      {
+      plist.clear();
+      npfd = 0;
+      addPollFd(stopFdr, POLLIN, stopWakeHandler, this, 0);
+      }
+
+//---------------------------------------------------------
+//   stopWakeHandler
+//---------------------------------------------------------
+
+void Thread::stopWakeHandler(void* p, void*)
+      {
+      Thread* t = (Thread*)p;
+      char c;
+      muse_pipe_read(t->stopFdr, &c, 1);
+      }
+
 //---------------------------------------------------------
 //   Thread
 //    prio = 0    no realtime scheduling
@@ -183,19 +225,26 @@ Thread::Thread(const char* s)
 
       // create message channels
       int filedes[2];         // 0 - reading   1 - writing
-      if (pipe(filedes) == -1) {
+      if (muse_pipe(filedes) == -1) {
             perror("thread:creating pipe");
             exit(-1);
             }
       toThreadFdr = filedes[0];
       toThreadFdw = filedes[1];
 
-      if (pipe(filedes) == -1) {
+      if (muse_pipe(filedes) == -1) {
             perror("thread: creating pipe");
             exit(-1);
             }
       fromThreadFdr = filedes[0];
       fromThreadFdw = filedes[1];
+
+      if (muse_pipe(filedes) == -1) {
+            perror("thread: creating pipe");
+            exit(-1);
+            }
+      stopFdr = filedes[0];
+      stopFdw = filedes[1];
 
 //      pthread_mutexattr_t mutexattr; DELETETHIS 5
 //      pthread_mutexattr_init(&mutexattr);
@@ -259,6 +308,8 @@ void Thread::removePollFd(int fd, int action)
 
 void Thread::loop()
       {
+      fprintf(stderr, "DIAG: Thread::loop(%s) entering (new thread, id %p)\n", _name, (void*)pthread_self());
+      fflush(stderr);
 #ifndef _WIN32
       if (!MusEGlobal::debugMode) {
             if (mlockall(MCL_CURRENT | MCL_FUTURE))
@@ -275,8 +326,14 @@ void Thread::loop()
             buf[i] = i;
 #undef BIG_ENOUGH_STACK
 
+      fprintf(stderr, "DIAG: Thread::loop(%s) touched stack buffer OK\n", _name);
+      fflush(stderr);
+
       pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
       pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
+
+      fprintf(stderr, "DIAG: Thread::loop(%s) past setcancelstate/type\n", _name);
+      fflush(stderr);
 
       int policy = buf[0]; // Initialize using buf[0] to keep the compiler from complaining about unused buf.
       policy = 0;          // Now set the true desired initial value.
@@ -337,7 +394,7 @@ bool Thread::sendMsg(const ThreadMsg* m)
 {
       if (_running) 
       {
-            int rv = write(toThreadFdw, &m, sizeof(ThreadMsg*));
+            int rv = muse_pipe_write(toThreadFdw, &m, sizeof(ThreadMsg*));
             if (rv != sizeof(ThreadMsg*)) {
                   perror("Thread::sendMessage(): write pipe failed");
                   return true;
@@ -345,7 +402,7 @@ bool Thread::sendMsg(const ThreadMsg* m)
 
            // wait for sequencer to finish operation
             char c;
-            rv = read(fromThreadFdr, &c, 1);
+            rv = muse_pipe_read(fromThreadFdr, &c, 1);
             if (rv != 1) 
             {
                   perror("Thread::sendMessage(): read pipe failed");
@@ -375,7 +432,7 @@ bool Thread::sendMsg(const ThreadMsg* m)
 
 bool Thread::sendMsg1(const void* m, int n)
       {
-      int rv = write(toThreadFdw, m, n);
+      int rv = muse_pipe_write(toThreadFdw, m, n);
       if (rv != n) {
             perror("Thread::sendMessage1(): write pipe failed");
             return true;
@@ -390,13 +447,13 @@ bool Thread::sendMsg1(const void* m, int n)
 void Thread::readMsg()
       {
       ThreadMsg* p;
-      if (read(toThreadFdr, &p, sizeof(p)) != sizeof(p)) {
+      if (muse_pipe_read(toThreadFdr, &p, sizeof(p)) != sizeof(p)) {
             perror("Thread::readMessage(): read pipe failed");
             exit(-1);
             }
       processMsg(p);
       char c = 'x';
-      int rv = write(fromThreadFdw, &c, 1);
+      int rv = muse_pipe_write(fromThreadFdw, &c, 1);
       if (rv != 1)
             perror("Thread::readMessage(): write pipe failed");
       //int c = p->serialNo; DELETETHIS 4
@@ -413,7 +470,7 @@ void Thread::readMsg()
 void Thread::readMsg1(int size)
       {
       char buffer[size];
-      int n = read(toThreadFdr, buffer, size);
+      int n = muse_pipe_read(toThreadFdr, buffer, size);
       if (n != size) {
             fprintf(stderr, "Thread::readMsg1(): read pipe failed, get %d, expected %d: %s\n",
                n, size, strerror(errno));

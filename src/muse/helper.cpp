@@ -1072,6 +1072,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
       QVector<int> alsa_list;
       QVector<int> jack_list;
       QVector<int> synth_list;
+      QVector<int> winmm_list;
       QVector<int> *cur_list = nullptr;
       QVector<int> unused_list;
 
@@ -1111,11 +1112,15 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
           case MusECore::MidiDevice::SYNTH_MIDI:
             synth_list.push_back(i);
           break;
+
+          case MusECore::MidiDevice::WINMM_MIDI:
+            winmm_list.push_back(i);
+          break;
         }
-      }  
-      
+      }
+
       // Order the entire listing by device type.
-      for(int dtype = 0; dtype <= MusECore::MidiDevice::SYNTH_MIDI; ++dtype)
+      for(int dtype = 0; dtype <= MusECore::MidiDevice::WINMM_MIDI; ++dtype)
       {
         switch(dtype)
         {
@@ -1124,7 +1129,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
               p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "ALSA")), p));
             cur_list = &alsa_list;
           break;
-          
+
           case MusECore::MidiDevice::JACK_MIDI:
             if(!jack_list.isEmpty())
               p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "JACK")), p));
@@ -1135,6 +1140,12 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
             if(!synth_list.isEmpty())
               p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synth")), p));
             cur_list = &synth_list;
+          break;
+
+          case MusECore::MidiDevice::WINMM_MIDI:
+            if(!winmm_list.isEmpty())
+              p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "WinMM")), p));
+            cur_list = &winmm_list;
           break;
         }
               
@@ -1260,36 +1271,43 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
               asmap mapALSA;
               asmap mapJACK;
               asmap mapSYNTH;
+              asmap mapWinMM;
 
               int aix = 0x10000000;
               int jix = 0x20000000;
               int six = 0x30000000;
+              int wix = 0x40000000;
               for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
               {
                 // don't add devices which are used somewhere
                 if((*i)->midiPort() >= 0 && (*i)->midiPort() < MusECore::MIDI_PORTS)
                   continue;
-                  
+
                 switch((*i)->deviceType())
                 {
                   case MusECore::MidiDevice::ALSA_MIDI:
                     mapALSA.insert(std::pair<std::string, int> ((*i)->name().toStdString(), aix));
                     ++aix;
                   break;
-                  
+
                   case MusECore::MidiDevice::JACK_MIDI:
                     mapJACK.insert(std::pair<std::string, int> ((*i)->name().toStdString(), jix));
                     ++jix;
                   break;
-                  
+
                   case MusECore::MidiDevice::SYNTH_MIDI:
                     mapSYNTH.insert(std::pair<std::string, int> ((*i)->name().toStdString(), six));
                     ++six;
                   break;
+
+                  case MusECore::MidiDevice::WINMM_MIDI:
+                    mapWinMM.insert(std::pair<std::string, int> ((*i)->name().toStdString(), wix));
+                    ++wix;
+                  break;
                 }
               }
 
-              if (!mapALSA.empty() || !mapJACK.empty() || !mapSYNTH.empty())
+              if (!mapALSA.empty() || !mapJACK.empty() || !mapSYNTH.empty() || !mapWinMM.empty())
               {
                 QMenu* pup = p->addMenu(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Unused Devices")));
                 QAction* act;
@@ -1346,6 +1364,26 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
                     if(md)
                     {
                       if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
+                        continue;
+
+                      act = pup->addAction(md->name());
+                      act->setData(idx);
+                    }
+                  }
+                }
+
+                if (!mapWinMM.empty())
+                {
+                  pup->addAction(new MusEGui::MenuTitleItem("WinMM", pup));
+
+                  for(imap i = mapWinMM.begin(); i != mapWinMM.end(); ++i)
+                  {
+                    int idx = i->second;
+                    QString s(i->first.c_str());
+                    MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::WINMM_MIDI);
+                    if(md)
+                    {
+                      if(md->deviceType() != MusECore::MidiDevice::WINMM_MIDI)
                         continue;
 
                       act = pup->addAction(md->name());

@@ -1340,10 +1340,11 @@ bool initMidiAlsa()
 
           case MidiDevice::JACK_MIDI:
           case MidiDevice::SYNTH_MIDI:
+          case MidiDevice::WINMM_MIDI:
           break;
         }
-      }                
-            
+      }
+
       return false;
       }
 

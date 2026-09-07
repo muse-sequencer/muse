@@ -48,6 +48,7 @@
 #include <QVBoxLayout>
 #include <QStringList>
 
+#include "globaldefs.h"
 #include "pluglist.h"
 #include "lv2host.h"
 #include "synth.h"
@@ -1304,21 +1305,12 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
     uint32_t numAllPorts = lilv_plugin_get_num_ports(synth->_handle);
 
     state->pluginCVPorts = new float *[numAllPorts];
-#ifdef _WIN32
-    state->pluginCVPorts = (float **) _aligned_malloc(16, sizeof(float *) * numAllPorts);
+    state->pluginCVPorts = (float **) museAlignedMalloc(16, sizeof(float *) * numAllPorts);
     if(state->pluginCVPorts == nullptr)
     {
-        fprintf(stderr, "ERROR: LV2Synth::lv2state_PostInstantiate: _aligned_malloc returned error: nullptr. Aborting!\n");
+        fprintf(stderr, "ERROR: LV2Synth::lv2state_PostInstantiate: museAlignedMalloc returned error: nullptr. Aborting!\n");
         abort();
     }
-#else
-    int rv = posix_memalign((void **)&state->pluginCVPorts, 16, sizeof(float *) * numAllPorts);
-    if(rv != 0)
-    {
-        fprintf(stderr, "ERROR: LV2Synth::lv2state_PostInstantiate: posix_memalign returned error:%d. Aborting!\n", rv);
-        abort();
-    }
-#endif
 
     memset(state->pluginCVPorts, 0, sizeof(float *) * numAllPorts);
 
@@ -1328,21 +1320,12 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
         {
             size_t idx = synth->_controlInPorts [i].index;
 
-#ifdef _WIN32
-            state->pluginCVPorts [idx] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-            if(state->pluginCVPorts == nullptr)
+            state->pluginCVPorts [idx] = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
+            if(state->pluginCVPorts [idx] == nullptr)
             {
-                fprintf(stderr, "ERROR: LV2Synth::lv2state_PostInstantiate: _aligned_malloc returned error: nullptr. Aborting!\n");
+                fprintf(stderr, "ERROR: LV2Synth::lv2state_PostInstantiate: museAlignedMalloc returned error: nullptr. Aborting!\n");
                 abort();
             }
-#else
-            rv = posix_memalign((void **)&state->pluginCVPorts [idx], 16, sizeof(float) * MusEGlobal::segmentSize);
-            if(rv != 0)
-            {
-                fprintf(stderr, "ERROR: LV2Synth::lv2state_PostInstantiate: posix_memalign returned error:%d. Aborting!\n", rv);
-                abort();
-            }
-#endif
             for(size_t k = 0; k < MusEGlobal::segmentSize; ++k)
             {
                 state->pluginCVPorts [idx] [k] = synth->_controlInPorts [i].defVal;
@@ -1357,22 +1340,12 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
         {
             size_t idx = synth->_controlOutPorts [i].index;
 
-#ifdef _WIN32
-            state->pluginCVPorts [idx] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-            if(state->pluginCVPorts == 0)
+            state->pluginCVPorts [idx] = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
+            if(state->pluginCVPorts [idx] == nullptr)
             {
-                fprintf(stderr, "ERROR: LV2Synth::lv2state_PostInstantiate: _aligned_malloc returned error: nullptr. Aborting!\n");
+                fprintf(stderr, "ERROR: LV2Synth::lv2state_PostInstantiate: museAlignedMalloc returned error: nullptr. Aborting!\n");
                 abort();
             }
-#else
-            rv = posix_memalign((void **)&state->pluginCVPorts [idx], 16, sizeof(float) * MusEGlobal::segmentSize);
-
-            if(rv != 0)
-            {
-                fprintf(stderr, "ERROR: LV2Synth::lv2state_PostInstantiate: posix_memalign returned error:%d. Aborting!\n", rv);
-                abort();
-            }
-#endif
             for(size_t k = 0; k < MusEGlobal::segmentSize; ++k)
             {
                 state->pluginCVPorts [idx] [k] = synth->_controlOutPorts [i].defVal;
@@ -2288,7 +2261,10 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                     else
                     {
                         if (uiW) {
-                            QWindow *xwin = QWindow::fromWinId(reinterpret_cast<unsigned long>(uiW));
+                            // WId is quintptr (pointer-sized). unsigned long is only
+                            // 32 bits on LLP64 targets (Windows/MinGW even in 64-bit
+                            // builds), which would truncate the handle there.
+                            QWindow *xwin = QWindow::fromWinId(reinterpret_cast<quintptr>(uiW));
                             ewWin = QWidget::createWindowContainer(xwin, win);
                             state->pluginQWindow = xwin;
                             win->setCentralWidget(ewWin);
@@ -3944,21 +3920,21 @@ LV2SynthIF::~LV2SynthIF()
 
     for(; _itA != _audioInPorts.end(); ++_itA)
     {
-        free((*_itA).buffer);
+        museAlignedFree((*_itA).buffer);
     }
 
     _itA = _audioOutPorts.begin();
 
     for(; _itA != _audioOutPorts.end(); ++_itA)
     {
-        free((*_itA).buffer);
+        museAlignedFree((*_itA).buffer);
     }
 
     if(_audioInSilenceBuf)
-        free(_audioInSilenceBuf);
+        museAlignedFree(_audioInSilenceBuf);
 
     if(_audioOutDummyBuf)
-        free(_audioOutDummyBuf);
+        museAlignedFree(_audioOutDummyBuf);
 
     if(_audioInBuffers)
     {
@@ -4129,39 +4105,19 @@ bool LV2SynthIF::init(LV2Synth *s)
             lilv_instance_connect_port(_handle, idx, &_controlsOut[i].val);
     }
 
-#ifdef _WIN32
-    _audioInSilenceBuf = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+    _audioInSilenceBuf = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
     if(_audioInSilenceBuf == nullptr)
     {
-        fprintf(stderr, "ERROR: LV2SynthIF::init: _aligned_malloc returned error: nullptr. Aborting!\n");
+        fprintf(stderr, "ERROR: LV2SynthIF::init: museAlignedMalloc returned error: nullptr. Aborting!\n");
         abort();
     }
-#else
-    int rv = posix_memalign((void **)&_audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
 
-    if(rv != 0)
-    {
-        fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
-        abort();
-    }
-#endif
-
-#ifdef _WIN32
-    _audioOutDummyBuf = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+    _audioOutDummyBuf = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
     if(_audioOutDummyBuf == nullptr)
     {
-        fprintf(stderr, "ERROR: LV2SynthIF::init: _aligned_malloc returned error: nullptr. Aborting!\n");
+        fprintf(stderr, "ERROR: LV2SynthIF::init: museAlignedMalloc returned error: nullptr. Aborting!\n");
         abort();
     }
-#else
-    rv = posix_memalign((void **)&_audioOutDummyBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
-
-    if(rv != 0)
-    {
-        fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
-        abort();
-    }
-#endif
 
     if(MusEGlobal::config.useDenormalBias)
     {
@@ -4188,22 +4144,12 @@ bool LV2SynthIF::init(LV2Synth *s)
 
         for(size_t i = 0; i < _inports; i++)
         {
-#ifdef _WIN32
-            _audioInBuffers [i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-            if(_audioInBuffers == nullptr)
+            _audioInBuffers [i] = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
+            if(_audioInBuffers [i] == nullptr)
             {
-                fprintf(stderr, "ERROR: LV2SynthIF::init: _aligned_malloc returned error: nullptr. Aborting!\n");
+                fprintf(stderr, "ERROR: LV2SynthIF::init: museAlignedMalloc returned error: nullptr. Aborting!\n");
                 abort();
             }
-#else
-            int rvl = posix_memalign((void **)&_audioInBuffers [i], 16, sizeof(float) * MusEGlobal::segmentSize);
-
-            if(rvl != 0)
-            {
-                fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rvl);
-                abort();
-            }
-#endif
 
             if(MusEGlobal::config.useDenormalBias)
             {
@@ -4228,22 +4174,12 @@ bool LV2SynthIF::init(LV2Synth *s)
 
         for(size_t i = 0; i < _outports; i++)
         {
-#ifdef _WIN32
-            _audioOutBuffers [i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-            if(_audioOutBuffers == nullptr)
+            _audioOutBuffers [i] = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
+            if(_audioOutBuffers [i] == nullptr)
             {
-                fprintf(stderr, "ERROR: LV2SynthIF::init: _aligned_malloc returned error: nullptr. Aborting!\n");
+                fprintf(stderr, "ERROR: LV2SynthIF::init: museAlignedMalloc returned error: nullptr. Aborting!\n");
                 abort();
             }
-#else
-            int rvl = posix_memalign((void **)&_audioOutBuffers [i], 16, sizeof(float) * MusEGlobal::segmentSize);
-
-            if(rvl != 0)
-            {
-                fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rvl);
-                abort();
-            }
-#endif
 
             if(MusEGlobal::config.useDenormalBias)
             {

@@ -114,21 +114,12 @@ void AudioTrack::initBuffers()
     outBuffers = new float*[chans];
     for(int i = 0; i < chans; ++i)
     {
-#ifdef _WIN32
-      outBuffers[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+      outBuffers[i] = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
       if(outBuffers[i] == nullptr)
       {
-          fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc returned error: NULL. Aborting!\n");
+          fprintf(stderr, "ERROR: AudioTrack::init_buffers: museAlignedMalloc returned error: NULL. Aborting!\n");
           abort();
       }
-#else
-      int rv = posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
-      if(rv != 0)
-      {
-        fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign returned error:%d. Aborting!\n", rv);
-        abort();
-      }
-#endif
     }
   }
   for(int i = 0; i < chans; ++i)
@@ -147,21 +138,12 @@ void AudioTrack::initBuffers()
     outBuffersExtraMix = new float*[MusECore::MAX_CHANNELS];
     for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
     {
-#ifdef _WIN32
-      outBuffersExtraMix[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+      outBuffersExtraMix[i] = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
       if(outBuffersExtraMix[i] == nullptr)
       {
-          fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc outBuffersMonoMix returned error: NULL. Aborting!\n");
+          fprintf(stderr, "ERROR: AudioTrack::init_buffers: museAlignedMalloc outBuffersMonoMix returned error: NULL. Aborting!\n");
           abort();
       }
-#else
-      int rv = posix_memalign((void**)&outBuffersExtraMix[i], 16, sizeof(float) * MusEGlobal::segmentSize);
-      if(rv != 0)
-      {
-        fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign outBuffersMonoMix returned error:%d. Aborting!\n", rv);
-        abort();
-      }
-#endif
     }
   }
   for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
@@ -180,21 +162,12 @@ void AudioTrack::initBuffers()
     _dataBuffers = new float*[_totalOutChannels];
     for(int i = 0; i < _totalOutChannels; ++i)
     {
-#ifdef _WIN32
-      _dataBuffers[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+      _dataBuffers[i] = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
       if(_dataBuffers[i] == nullptr)
       {
-          fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc _dataBuffers returned error: NULL. Aborting!\n");
+          fprintf(stderr, "ERROR: AudioTrack::init_buffers: museAlignedMalloc _dataBuffers returned error: NULL. Aborting!\n");
           abort();
       }
-#else
-      int rv = posix_memalign((void**)&_dataBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
-      if(rv != 0)
-      {
-        fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign _dataBuffers returned error:%d. Aborting!\n", rv);
-        abort();
-      }
-#endif
     }
   }
   for(int i = 0; i < _totalOutChannels; ++i)
@@ -210,21 +183,12 @@ void AudioTrack::initBuffers()
 
   if(!audioInSilenceBuf)
   {
-#ifdef _WIN32
-    audioInSilenceBuf = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+    audioInSilenceBuf = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
     if(audioInSilenceBuf == nullptr)
     {
-      fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc returned error: NULL. Aborting!\n");
+      fprintf(stderr, "ERROR: AudioTrack::init_buffers: museAlignedMalloc returned error: NULL. Aborting!\n");
       abort();
     }
-#else
-    int rv = posix_memalign((void**)&audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
-    if(rv != 0)
-    {
-      fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign returned error:%d. Aborting!\n", rv);
-      abort();
-    }
-#endif
     if(MusEGlobal::config.useDenormalBias)
     {
       for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
@@ -236,21 +200,12 @@ void AudioTrack::initBuffers()
 
   if(!audioOutDummyBuf)
   {
-#ifdef _WIN32
-    audioOutDummyBuf = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+    audioOutDummyBuf = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
     if(audioOutDummyBuf == nullptr)
     {
-      fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc returned error: NULL. Aborting!\n");
+      fprintf(stderr, "ERROR: AudioTrack::init_buffers: museAlignedMalloc returned error: NULL. Aborting!\n");
       abort();
     }
-#else
-    int rv = posix_memalign((void**)&audioOutDummyBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
-    if(rv != 0)
-    {
-      fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign returned error:%d. Aborting!\n", rv);
-      abort();
-    }
-#endif
     if(MusEGlobal::config.useDenormalBias)
     {
       for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
@@ -565,20 +520,20 @@ AudioTrack::~AudioTrack()
       delete _efxPipe;
 
       if(audioInSilenceBuf)
-        free(audioInSilenceBuf);
+        museAlignedFree(audioInSilenceBuf);
 
       if(audioOutDummyBuf)
-        free(audioOutDummyBuf);
+        museAlignedFree(audioOutDummyBuf);
 
       if(_latencyComp)
         delete _latencyComp;
-      
+
       if(_dataBuffers)
       {
         for(int i = 0; i < _totalOutChannels; ++i)
         {
           if(_dataBuffers[i])
-            free(_dataBuffers[i]);
+            museAlignedFree(_dataBuffers[i]);
         }
         delete[] _dataBuffers;
       }
@@ -588,7 +543,7 @@ AudioTrack::~AudioTrack()
         for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
         {
           if(outBuffersExtraMix[i])
-            free(outBuffersExtraMix[i]);
+            museAlignedFree(outBuffersExtraMix[i]);
         }
         delete[] outBuffersExtraMix;
       }
@@ -602,7 +557,7 @@ AudioTrack::~AudioTrack()
         for(int i = 0; i < chans; ++i)
         {
           if(outBuffers[i])
-            free(outBuffers[i]);
+            museAlignedFree(outBuffers[i]);
         }
         delete[] outBuffers;
       }
@@ -2852,21 +2807,12 @@ AudioAux::AudioAux()
       {
         if(i < channels())
         {
-#ifdef _WIN32
-          buffer[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+          buffer[i] = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
           if(buffer[i] == nullptr)
           {
-            fprintf(stderr, "ERROR: AudioAux ctor: _aligned_malloc returned error: NULL. Aborting!\n");
+            fprintf(stderr, "ERROR: AudioAux ctor: museAlignedMalloc returned error: NULL. Aborting!\n");
             abort();
           }
-#else
-          int rv = posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
-          if(rv != 0)
-          {
-            fprintf(stderr, "ERROR: AudioAux ctor: posix_memalign returned error:%d. Aborting!\n", rv);
-            abort();
-          }
-#endif
           if(MusEGlobal::config.useDenormalBias)
           {
             for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
@@ -2888,21 +2834,12 @@ AudioAux::AudioAux(const AudioAux& t, int flags)
       {
         if(i < channels())
         {
-#ifdef _WIN32
-          buffer[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+          buffer[i] = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
           if(buffer[i] == nullptr)
           {
-            fprintf(stderr, "ERROR: AudioAux ctor: _aligned_malloc returned error: NULL. Aborting!\n");
+            fprintf(stderr, "ERROR: AudioAux ctor: museAlignedMalloc returned error: NULL. Aborting!\n");
             abort();
           }
-#else
-          int rv = posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
-          if(rv != 0)
-          {
-            fprintf(stderr, "ERROR: AudioAux ctor: posix_memalign returned error:%d. Aborting!\n", rv);
-            abort();
-          }
-#endif
           if(MusEGlobal::config.useDenormalBias)
           {
             for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
@@ -2923,7 +2860,7 @@ AudioAux::~AudioAux()
 {
       for (int i = 0; i < MusECore::MAX_CHANNELS; ++i) {
             if (buffer[i])
-                free(buffer[i]);
+                museAlignedFree(buffer[i]);
       }
 }
 
@@ -3014,21 +2951,12 @@ void AudioAux::setChannels(int n)
   {
     for(int i = old_chans; i < new_chans; ++i)
     {
-#ifdef _WIN32
-      buffer[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+      buffer[i] = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
       if(buffer[i] == nullptr)
       {
-        fprintf(stderr, "ERROR: AudioTrack::setChannels: _aligned_malloc returned error: NULL. Aborting!\n");
+        fprintf(stderr, "ERROR: AudioTrack::setChannels: museAlignedMalloc returned error: NULL. Aborting!\n");
         abort();
       }
-#else
-      int rv = posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
-      if(rv != 0)
-      {
-        fprintf(stderr, "ERROR: AudioAux::setChannels: posix_memalign returned error:%d. Aborting!\n", rv);
-        abort();
-      }
-#endif
       if(MusEGlobal::config.useDenormalBias)
       {
         for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
@@ -3043,7 +2971,7 @@ void AudioAux::setChannels(int n)
     for(int i = new_chans; i < old_chans; ++i)
     {
       if(buffer[i])
-        free(buffer[i]);
+        museAlignedFree(buffer[i]);
     }
   }
 }

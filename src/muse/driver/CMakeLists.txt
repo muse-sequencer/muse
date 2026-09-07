@@ -33,6 +33,7 @@ file (GLOB driver_source_files
        jackmidi.cpp
        posixtimer.cpp
        rtctimer.cpp
+       winmmmidi.cpp
        )
 if (HAVE_RTAUDIO)
        file (GLOB driver_source_files
@@ -81,6 +82,11 @@ target_link_libraries ( driver
       ${RTAUDIO_LIBRARIES}
       mplugins
       )
+
+if (WIN32)
+      # winmmmidi.cpp uses the WinMM MIDI API (midiIn*/midiOut*).
+      target_link_libraries ( driver winmm )
+endif (WIN32)
 
 ##
 ## Install location

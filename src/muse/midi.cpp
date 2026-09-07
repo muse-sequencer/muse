@@ -24,6 +24,7 @@
 
 #include "muse_math.h"
 #include <errno.h>
+#include "platform_pipe.h"
 
 #include "song.h"
 #include "midi.h"
@@ -774,7 +775,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
 
 void Audio::midiPortsChanged()
       {
-      write(sigFd, "P", 1);
+      muse_pipe_write(sigFd, "P", 1);
       }
 
 //---------------------------------------------------------
@@ -2220,6 +2221,13 @@ void Audio::processMidi(unsigned int frames)
                           MidiRecFifo *rf = dev->recordEvents(channel);
 
                           int count = dev->tmpRecordCount(channel);
+                          // WINMM_RECORD_DEBUG: temporary tracing for the
+                          // "notes vanish on record-stop" investigation.
+                          // Ask before removing.
+                          if(MusEGlobal::debugMsg && count > 0)
+                            fprintf(stderr, "WINMM_RECORD_DEBUG: processMidi track <%s> dev <%s> channel %d count=%d track_rec_flag=%d track_rec_monitor=%d recording=%d\n",
+                                    track->name().toLocal8Bit().constData(), dev->name().toLocal8Bit().constData(),
+                                    channel, count, track_rec_flag, track_rec_monitor, recording);
                           for(int i = 0; i < count; ++i)
                           {
                                 MidiRecordEvent event(rf->peek(i));
@@ -2594,9 +2602,16 @@ void Audio::processMidi(unsigned int frames)
                                   track->setActivity(event.dataB());
                               }
 
+                              // WINMM_RECORD_DEBUG: temporary tracing for the
+                              // "notes vanish on record-stop" investigation.
+                              // Ask before removing.
+                              if(MusEGlobal::debugMsg)
+                                fprintf(stderr, "WINMM_RECORD_DEBUG: processMidi track <%s> record-gate recording=%d song_record=%d extsync=%d track_rec_flag=%d\n",
+                                        track->name().toLocal8Bit().constData(), recording,
+                                        MusEGlobal::song->record(), extsync, track_rec_flag);
                               // Is the transport recording, or, is it about to be from external sync?
-                              if((recording || 
-                                 (MusEGlobal::song->record() && extsync && MusEGlobal::midiSyncContainer.isPlaying())) 
+                              if((recording ||
+                                 (MusEGlobal::song->record() && extsync && MusEGlobal::midiSyncContainer.isPlaying()))
                                  && track_rec_flag)
                               {
                                     unsigned int et = event.time();
@@ -2606,7 +2621,7 @@ void Audio::processMidi(unsigned int frames)
                                       const unsigned int xt = extClockHistoryFrame2Tick(event.time());
                                       DEBUG_MIDI(stderr, "processMidi: event time:%d dataA:%d dataB:%d curTickPos:%u set time:%u\n",
                                                       event.time(), event.dataA(), event.dataB(), curTickPos, xt);
-                                      
+
                                       event.setTime(xt);
                                     }
                                     else
@@ -3013,6 +3028,7 @@ void Audio::processMidi(unsigned int frames)
 
           case MidiDevice::JACK_MIDI:
           case MidiDevice::SYNTH_MIDI:
+          case MidiDevice::WINMM_MIDI:
             // The frame is not used by these devices but we pass it along anyway.
             // Only ALSA devices need the frame.
             pl_md->processMidi(syncFrame);
@@ -3162,12 +3178,28 @@ void Audio::processMidiMetronome(unsigned int frames)
       if (playing)
       {
             const bool md_writable = midiDeviceWritable(md);
+
+            // WINMM_METRONOME_DEBUG: temporary tracing for the "no
+            // metronome sound" investigation. Printed once (not every
+            // cycle) via a static latch. Ask before removing.
+            {
+              static bool logged = false;
+              if(!logged && MusEGlobal::debugMsg)
+              {
+                logged = true;
+                fprintf(stderr, "WINMM_METRONOME_DEBUG: processMidiMetronome: midiClickFlag=%d clickPort=%d precount_mute=%d "
+                        "md=%p md_writeEnable=%d md_isSynti=%d md_writable=%d\n",
+                        metro_settings->midiClickFlag, metro_settings->clickPort, precount_mute_metronome,
+                        (void*)md, md ? md->writeEnable() : -1, md ? md->isSynti() : -1, md_writable);
+              }
+            }
+
             int bar, beat, z, n;
             unsigned tick;
             AudioTickSound audioTickSound = MusECore::beatSound;
             const MusECore::MetroAccents* accents;
             int accents_sz;
-            
+
             unsigned int lat_offset_midi = 0;
             unsigned int cur_tick_midi = curTickPos;
             unsigned int next_tick_midi = nextTickPos;
@@ -3391,6 +3423,23 @@ void Audio::processAudioMetronome(unsigned int frames)
       if (playing)
       {
             const bool metro_writable = midiDeviceWritable(metronome);
+
+            // WINMM_METRONOME_DEBUG: temporary tracing for the "no
+            // metronome sound" investigation. Printed once (not every
+            // cycle) via a static latch. Ask before removing.
+            {
+              static bool logged = false;
+              if(!logged && MusEGlobal::debugMsg)
+              {
+                logged = true;
+                fprintf(stderr, "WINMM_METRONOME_DEBUG: processAudioMetronome: audioClickFlag=%d "
+                        "metronome=%p metronome_writeEnable=%d metronome_isSynti=%d metronome_off=%d metro_writable=%d\n",
+                        metro_settings->audioClickFlag, (void*)metronome,
+                        metronome ? metronome->writeEnable() : -1, metronome ? metronome->isSynti() : -1,
+                        metronome ? metronome->off() : -1, metro_writable);
+              }
+            }
+
             int bar, beat, z, n;
             unsigned tick;
             AudioTickSound audioTickSound = MusECore::beatSound;

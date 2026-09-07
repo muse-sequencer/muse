@@ -168,6 +168,7 @@ extern void exitJackAudio();
 extern void exitDummyAudio();
 extern void exitOSC();
 extern void exitMidiAlsa();
+extern void exitMidiWinMM();
 
 #ifdef HAVE_RTAUDIO
 extern void exitRtAudio();
@@ -2840,6 +2841,10 @@ void MusE::closeEvent(QCloseEvent* event)
     if(MusEGlobal::debugMsg)
         fprintf(stderr, "Muse: Exiting ALSA midi\n");
     MusECore::exitMidiAlsa();
+
+    if(MusEGlobal::debugMsg)
+        fprintf(stderr, "Muse: Exiting WinMM midi\n");
+    MusECore::exitMidiWinMM();
 
     if(MusEGlobal::debugMsg)
         fprintf(stderr, "Muse: Cleaning up temporary wavefiles + peakfiles\n");

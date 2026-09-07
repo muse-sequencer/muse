@@ -35,6 +35,7 @@
 //#include "config.h"
 #include "audio.h"
 #include "audiodev.h"
+#include "globaldefs.h"
 #include "globals.h"
 #include "song.h"
 // #include "driver/alsatimer.h"
@@ -91,8 +92,8 @@ class DummyAudioDevice : public AudioDevice {
 
       DummyAudioDevice();
       virtual ~DummyAudioDevice()
-      { 
-        free(buffer); 
+      {
+        museAlignedFree(buffer);
       }
 
       virtual inline int deviceType() const { return DUMMY_AUDIO; }
@@ -196,21 +197,12 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
       MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
       
-#ifdef _WIN32
-  buffer = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+  buffer = (float *) museAlignedMalloc(16, sizeof(float) * MusEGlobal::segmentSize);
   if(buffer == nullptr)
   {
-      fprintf(stderr, "ERROR: DummyAudioDevice ctor: _aligned_malloc returned error: NULL. Aborting!\n");
+      fprintf(stderr, "ERROR: DummyAudioDevice ctor: museAlignedMalloc returned error: NULL. Aborting!\n");
       abort();
   }
-#else
-      int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
-      if(rv != 0)
-      {
-        fprintf(stderr, "ERROR: DummyAudioDevice ctor: posix_memalign returned error:%d. Aborting!\n", rv);
-        abort();
-      }
-#endif
       if(MusEGlobal::config.useDenormalBias)
       {
         for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
