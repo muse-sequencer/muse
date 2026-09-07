@@ -19,12 +19,18 @@ jobs:
         sudo apt-get update
 
         # See PR 1077. Required to find libatomic for some archs.
+        sudo apt-get install -y cmake extra-cmake-modules
         sudo apt-get install -y libsndfile1-dev libsamplerate0-dev \
           libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
           libfluidsynth-dev libgtkmm-2.4-dev \
           libinstpatch-dev librubberband-dev python3-dev librtaudio-dev \
-          liblilv-dev lv2-dev liblrdf0-dev cmake extra-cmake-modules
-                
+          liblrdf0-dev
+          
+        # libfuse2 is required on newer Ubuntu runners to execute AppImages inside the container
+        sudo apt-get install -y fuse libfuse2
+
+        sudo apt-get install -y lv2-dev libserd-dev libsord-dev libsratom-dev liblilv-dev
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
