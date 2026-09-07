@@ -368,7 +368,7 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 #if QT_VERSION >= 0x050b00
             const int tw = fm.horizontalAdvance(s);
 #else
-            const int tw = fm.size(s);
+            const int tw = fm.width(s);
 #endif
             // Avoid fooling around with Qt alignment. Force right alignment.
             // For text, y is the baseline of the font.
@@ -539,7 +539,7 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 #if QT_VERSION >= 0x050b00
             const int tw = fm.horizontalAdvance(s);
 #else
-            const int tw = fm.size(s);
+            const int tw = fm.width(s);
 #endif
             // Avoid fooling around with Qt alignment. Force right alignment.
             // For text, y is the baseline of the font.
