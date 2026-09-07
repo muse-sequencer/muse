@@ -28,7 +28,7 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
-        version: '5.9.5'
+        version: '5.10'
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
