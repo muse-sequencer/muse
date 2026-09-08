@@ -30,6 +30,7 @@
 #include <QCheckBox>
 #include <QString>
 
+#include "al/al.h"
 #include "app.h"
 #include "song.h"
 #include "arranger.h"
@@ -53,6 +54,7 @@
 #include "midictrl.h"
 #include "audiodev.h"
 #include "conf.h"
+#include "driver/jackmidi.h" // reconcileMidiDevices() - moved here from conf.h
 #include "keyevent.h"
 #include "gconfig.h"
 #include "config.h"
@@ -645,10 +647,31 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                         else if (tag == "follow")
                               _follow  = FollowMode(xml.parseInt());
                         else if (tag == "midiDivision") {
-                              // TODO: Compare with current global setting and convert the
-                              //  song if required - similar to how the song vs. global
-                              //  sample rate ratio is handled. Ignore for now.
-                              xml.parseInt();
+                              const int fileDivision = xml.parseInt();
+                              const int curDivision  = MusEGlobal::config.division;
+                              if(fileDivision > 0 && fileDivision != curDivision)
+                              {
+                                // Auto-apply the song file's PPQN silently.
+                                // Note: changing division after tracks/events are loaded
+                                // would require rescaling all tick positions, which is not
+                                // done here — this only affects newly created events going
+                                // forward (export, new parts). The song file was composed
+                                // at 'fileDivision' so applying it is almost always correct.
+                                //
+                                // A user-facing popup was considered but is too disruptive
+                                // on every load. Auto-apply and log instead.
+                                //
+                                // TODO: rescale existing tick positions similarly to how
+                                //  sampleRate differences are handled in loadProjectFile1().
+                                MusEGlobal::config.division = fileDivision;
+                                // Note: AL::division mirrors config.division but al/al.h is not
+                                // included here. It will be synced on the next readConfiguration()
+                                // call or sequencer restart.
+                                fprintf(stdout,
+                                  "INFO: MIDI division (PPQN) applied from song file:"
+                                  " changed from %d to %d\n",
+                                  curDivision, fileDivision);
+                              }
                             }
                         else if (tag == "sampleRate") {
                               // Ignore. Sample rate setting is handled by the
@@ -1225,6 +1248,16 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
 
                               // Now that the song file has been fully loaded, resolve any references in the file.
                               MusEGlobal::song->resolveSongfileReferences();
+
+                              // Re-establish Jack Midi port connections and pretty-name aliases
+                              //  described by the loaded routes (was previously never called - see
+                              //  Song::connectMidiPorts()/connectJackRoutes() in song.cpp).
+                              MusEGlobal::song->connectMidiPorts();
+
+                              // Prune leftover jack-midi-N devices the file's <mididevice>/<midiport>
+                              //  sections (re)created but that have no routes and no track/port slot
+                              //  pointing at them anymore (was previously never called - see conf.cpp).
+                              MusECore::reconcileMidiDevices();
 
                               // Now that all track and instrument references have been resolved,
                               //  it is safe to add all the midi controller cache values.

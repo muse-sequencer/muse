@@ -61,6 +61,7 @@ uint64_t AudioDevice::systemTimeUS() const {
 
 bool AudioDevice::processTransport(unsigned int frames)
 {
+  MusEGlobal::segmentSize = frames;
   const int state_pending = _dummyStatePending;  // Snapshots.
   const int pos_pending   = _dummyPosPending;    //
   _dummyStatePending = -1;                       // Reset.

@@ -51,9 +51,11 @@
 #include "pitchedit.h"
 #include "midiport.h"
 #include "mididev.h"
+#include "operations.h"
 #include "instruments/minstrument.h"
 #include "driver/audiodev.h"
 #include "driver/jackmidi.h"
+#include "driver/jackaudio.h"
 #include "driver/alsamidi.h"
 #include "waveedit.h"
 #include "midi_consts.h"
@@ -196,7 +198,7 @@ static void readConfigMidiDevice(Xml& xml)
                                 {
                                   if(MusEGlobal::debugMsg)
                                     fprintf(stderr, "readConfigMidiDevice: creating jack midi device %s with rwFlags:%d\n", device.toLocal8Bit().constData(), rwFlags);
-                                  dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
+                                  dev = MidiJackDevice::createAndOpenJackMidiDevice(device, rwFlags);
                                 }
 #ifdef ALSA_SUPPORT
                                 else
@@ -334,16 +336,21 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                                     idx = 0;
                                     }
                               
-                              MidiDevice* dev = MusEGlobal::midiDevices.find(device, pre_mididevice_ver_found ? type : -1);
-                              
-                              if(!dev && type == MidiDevice::JACK_MIDI)
+                              MidiDevice* dev = device.isEmpty() ? nullptr :
+                                MusEGlobal::midiDevices.find(device, pre_mididevice_ver_found ? type : -1);
+
+                              if(!dev && !device.isEmpty() && type == MidiDevice::JACK_MIDI)
                               {
                                 if(MusEGlobal::debugMsg)
                                   fprintf(stderr, "readConfigMidiPort: creating jack midi device %s with rwFlags:%d\n", device.toLocal8Bit().constData(), rwFlags);
-                                dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
+                                dev = MidiJackDevice::createAndOpenJackMidiDevice(device, rwFlags);
                               }
                               
-                              if(MusEGlobal::debugMsg && !dev)
+                              // NOTE: an empty 'device' just means this port has no device
+                              //  assigned in the song file (a normal, unused port slot) -
+                              //  not an error, so don't warn about it. Only warn when a
+                              //  name was actually specified but couldn't be resolved.
+                              if(MusEGlobal::debugMsg && !dev && !device.isEmpty())
                                 fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLocal8Bit().constData());
                               
                               MidiPort* mp = &MusEGlobal::midiPorts[idx];
@@ -383,9 +390,13 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
             }
       }
 
-//---------------------------------------------------------
-//   loadConfigMetronom
-//---------------------------------------------------------
+// NOTE: reconcileMidiDevices(), autoCreateMidiPorts(), and their shared
+//  ensureDefaultMidiDevice()/findMidiPortSlot()/assignFreeMidiPortSlot()
+//  helpers moved to jackmidi.cpp - they are pure Jack-Midi-driver logic
+//  (jack-midi-N naming, MidiJackDevice::createJackMidiDevice(), etc.), only
+//  ever triggered from here/songfile.cpp, same pattern as
+//  enumerateJackMidiDevices() (helper.cpp) forwarding to
+//  enumerateJackMidiDevicesImpl() (jackmidi.cpp).
 
 static void loadConfigMetronom(Xml& xml, MetronomeSettings* metro_settings)
       {
@@ -750,6 +761,14 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 #else
                               MusEGlobal::config.pluginDssiPathList = xml.parse1().split(":", QString::SkipEmptyParts);
 #endif
+#ifdef CLAP_SUPPORT
+                        else if (tag == "pluginClapPathList")
+#if QT_VERSION >= 0x050e00
+                              MusEGlobal::config.pluginClapPathList = xml.parse1().split(":", Qt::SkipEmptyParts);
+#else
+                              MusEGlobal::config.pluginClapPathList = xml.parse1().split(":", QString::SkipEmptyParts);
+#endif
+#endif // CLAP_SUPPORT
                         // Obsolete. Replaced with one below.
                         else if (tag == "pluginVstPathList")
                               xml.parse1();
@@ -1300,6 +1319,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               // Make sure the AL namespace variable mirrors our variable.
                               AL::division = MusEGlobal::config.division;
                         }
+                        else if (tag == "defaultDivision")
+                              MusEGlobal::config.defaultDivision = xml.parseInt();
                         else if (tag == "guiDivision")  // Obsolete. Was never used.
                               xml.parseInt();
                         else if (tag == "rtcTicks")
@@ -2027,6 +2048,11 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
 
       xml.strTag(level, "pluginLadspaPathList", MusEGlobal::config.pluginLadspaPathList.join(":"));
       xml.strTag(level, "pluginDssiPathList", MusEGlobal::config.pluginDssiPathList.join(":"));
+
+      #ifdef CLAP_SUPPORT
+            xml.strTag(level, "pluginClapPathList", MusEGlobal::config.pluginClapPathList.join(":"));
+      #endif
+
       xml.strTag(level, "pluginVstsPathList", MusEGlobal::config.pluginVstPathList.join(":"));
       xml.strTag(level, "pluginLinuxVstsPathList", MusEGlobal::config.pluginLinuxVstPathList.join(":"));
       xml.strTag(level, "pluginLv2PathList", MusEGlobal::config.pluginLv2PathList.join(":"));
@@ -2038,6 +2064,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
                         
       xml.intTag(level, "enableAlsaMidiDriver", MusEGlobal::config.enableAlsaMidiDriver);
       xml.intTag(level, "division", MusEGlobal::config.division);
+      xml.intTag(level, "defaultDivision", MusEGlobal::config.defaultDivision);
       xml.intTag(level, "rtcTicks", MusEGlobal::config.rtcTicks);
       xml.intTag(level, "curMidiSyncInPort", MusEGlobal::config.curMidiSyncInPort);
       xml.intTag(level, "midiSendInit", MusEGlobal::config.midiSendInit);

@@ -125,6 +125,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       setStatusTip(tr("Drum canvas: Use Pencil tool to create and edit events, Pointer tool to select, Cursor tool for special keyboard entry mode (arrow keys, V, B, N, M, Del). Press F1 for help."));
 
       ourDrumMap=nullptr;
+      must_delete_our_drum_map=false;
       rebuildOurDrumMap();
       
       setVirt(false);

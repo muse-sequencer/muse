@@ -47,6 +47,7 @@
 #include <QtGui/QWindow>
 #include <QVBoxLayout>
 #include <QStringList>
+#include <QMessageBox>
 
 #include "pluglist.h"
 #include "lv2host.h"
@@ -126,9 +127,28 @@
 #define LV2_WRK_FIFO_SIZE 8192
 
 #define LV2_RT_FIFO_SIZE 128
-#define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16)))
-#define LV2_EVBUF_SIZE (2*LV2_RT_FIFO_ITEM_SIZE)
-#define OPERATIONS_FIFO_SIZE 256 // ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(1024)) )
+
+#define LV2_RT_FIFO_ITEM_SIZE (size_t(4096 * 2)) 
+// note: sizeof(LV2_Atom_Event)==16 bytes .
+// note: segmentSize is runtime-variable, not compile-time var
+// // invalid, remove:  #define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16))) 
+
+
+// Output atom buffers (notify/automate) must hold large bursts. e.g. sfizz emits
+// the full CC/description list after loading an instrument, which overflows an
+// 8 KiB buffer and trips the plugin's internal forge:
+//   assert(frame == forge->stack) in lv2_atom_forge_pop().
+// Give output ports much more headroom than input ports.
+#define LV2_EVBUF_OUT_SIZE (size_t(1024 * 1024))   // 1 MiB
+
+#define LV2_EVBUF_SIZE (LV2_RT_FIFO_ITEM_SIZE * 2)   // EVENT IN BUF 
+
+#define OPERATIONS_FIFO_SIZE 256 
+// note: operationsFifo is a LockFreeMPSCRingBuffer<LV2OperationMessage> with 256 entries, 
+//       a notification channel from Plugin → to GUI, no Audio-data path.
+// // invalid, remove: ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(1024)) )
+
+
 
 namespace MusECore
 {
@@ -1303,7 +1323,6 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
 
     uint32_t numAllPorts = lilv_plugin_get_num_ports(synth->_handle);
 
-    state->pluginCVPorts = new float *[numAllPorts];
 #ifdef _WIN32
     state->pluginCVPorts = (float **) _aligned_malloc(16, sizeof(float *) * numAllPorts);
     if(state->pluginCVPorts == nullptr)
@@ -1485,6 +1504,58 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
         state->lastControlsOut = nullptr;
     }
 
+    // Per-port CV buffers and the pluginCVPorts array itself were allocated with
+    //  _aligned_malloc()/posix_memalign() in lv2state_PostInstantiate() - never
+    //  freed before, leaking one array plus one buffer per CV port on every
+    //  plugin load (LeakSanitizer-caught).
+    if(state->pluginCVPorts)
+    {
+        const uint32_t numAllPorts = state->synth ? lilv_plugin_get_num_ports(state->synth->_handle) : 0;
+        for(uint32_t i = 0; i < numAllPorts; ++i)
+        {
+            if(state->pluginCVPorts[i])
+            {
+#ifdef _WIN32
+                _aligned_free(state->pluginCVPorts[i]);
+#else
+                free(state->pluginCVPorts[i]);
+#endif
+            }
+        }
+#ifdef _WIN32
+        _aligned_free(state->pluginCVPorts);
+#else
+        free(state->pluginCVPorts);
+#endif
+        state->pluginCVPorts = nullptr;
+    }
+
+    // Midi port event buffers allocated in lv2state_InitMidiPorts() - never
+    //  freed before (LeakSanitizer-caught).
+    for(size_t i = 0; i < state->midiInPorts.size(); ++i)
+    {
+        delete state->midiInPorts[i].buffer;
+        state->midiInPorts[i].buffer = nullptr;
+    }
+    for(size_t i = 0; i < state->midiOutPorts.size(); ++i)
+    {
+        delete state->midiOutPorts[i].buffer;
+        state->midiOutPorts[i].buffer = nullptr;
+    }
+
+    // Feature arrays allocated in LV2SynthIF::init() - never freed before
+    //  (LeakSanitizer-caught).
+    if(state->_ifeatures)
+    {
+        delete [] state->_ifeatures;
+        state->_ifeatures = nullptr;
+    }
+    if(state->_ppifeatures)
+    {
+        delete [] state->_ppifeatures;
+        state->_ppifeatures = nullptr;
+    }
+
     LV2Synth::lv2ui_FreeDescriptors(state);
 
     if(state->handle != nullptr)
@@ -1621,41 +1692,43 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state,
       uint8_t   pos_buf[1024];
       memset(pos_buf, 0, sizeof(pos_buf));
       LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
+
       /* Build an LV2 position object to report change to plugin */
-      LV2_Atom_Forge* atomForge = &state->atomForge;
-      lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
+      // FIX: use local Forge, independent of shared state->atomForge
+      LV2_Atom_Forge localForge;
+      lv2_atom_forge_init(&localForge, &synth->_lv2_urid_map);
+      lv2_atom_forge_set_buffer(&localForge, pos_buf, sizeof(pos_buf));
       LV2_Atom_Forge_Frame frame;
-      lv2_atom_forge_object(atomForge, &frame, 1, synth->_uTime_Position);
+      lv2_atom_forge_object(&localForge, &frame, 1, synth->_uTime_Position);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_frame);
-      lv2_atom_forge_long(atomForge, cur_frame);
+      lv2_atom_forge_key(&localForge, synth->_uTime_frame);
+      lv2_atom_forge_long(&localForge, cur_frame);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_framesPerSecond);
-      lv2_atom_forge_float(atomForge, frames_per_second);
+      lv2_atom_forge_key(&localForge, synth->_uTime_framesPerSecond);
+      lv2_atom_forge_float(&localForge, frames_per_second);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_speed);
-      lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0f : 0.0f);
+      lv2_atom_forge_key(&localForge, synth->_uTime_speed);
+      lv2_atom_forge_float(&localForge, curIsPlaying ? 1.0f : 0.0f);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_beatsPerMinute);
-      lv2_atom_forge_float(atomForge, curBpm);
+      lv2_atom_forge_key(&localForge, synth->_uTime_beatsPerMinute);
+      lv2_atom_forge_float(&localForge, curBpm);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_beatsPerBar);
-      lv2_atom_forge_float(atomForge, z);
+      lv2_atom_forge_key(&localForge, synth->_uTime_beatsPerBar);
+      lv2_atom_forge_float(&localForge, z);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_beat);
-      lv2_atom_forge_double(atomForge, lin_beat);
+      lv2_atom_forge_key(&localForge, synth->_uTime_beat);
+      lv2_atom_forge_double(&localForge, lin_beat);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_bar);
-      lv2_atom_forge_long(atomForge, bar);
+      lv2_atom_forge_key(&localForge, synth->_uTime_bar);
+      lv2_atom_forge_long(&localForge, bar);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_barBeat);
-      lv2_atom_forge_float(atomForge, bar_beat);
+      lv2_atom_forge_key(&localForge, synth->_uTime_barBeat);
+      lv2_atom_forge_float(&localForge, bar_beat);
 
-      lv2_atom_forge_key(atomForge, synth->_uTime_beatUnit);
-      lv2_atom_forge_int(atomForge, n);
+      lv2_atom_forge_key(&localForge, synth->_uTime_beatUnit);
+      lv2_atom_forge_int(&localForge, n);
 
-      // REMOVE Tim. lv2. Added. TESTING. This should be required. Seems OK so far.
-      lv2_atom_forge_pop(atomForge, &frame);
+      lv2_atom_forge_pop(&localForge, &frame);
 
 #ifdef LV2_EVENT_BUFFER_SUPPORT
       buffer->write(sample, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
@@ -1700,7 +1773,8 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
 #endif
             synth->_uAtom_Sequence,
             synth->_uAtom_Chunk,
-            LV2_EVBUF_SIZE);
+            LV2_EVBUF_OUT_SIZE);
+            // was: LV2_EVBUF_SIZE); // OLD
         if(!newEvBuffer)
         {
             abort();
@@ -3534,6 +3608,11 @@ LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const Lil
 
     lilv_plugin_get_port_ranges_float(_handle, _pluginControlsMin, _pluginControlsMax, _pluginControlsDefault);
 
+    // One slot per real port index, filled in below. Owns its data, so
+    // LV2PluginWrapper::portName() can hand back a stable pointer without
+    // re-querying lilv (which would otherwise leak a fresh LilvNode per call).
+    _portNames.resize(numPorts);
+
     for(uint32_t j = 0; j < numPorts; j++)
     {
         const LilvPort *_port = lilv_plugin_get_port_by_index(_handle, j);
@@ -3553,6 +3632,10 @@ LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const Lil
 
         if(_nPsym != nullptr)
             _portSym = lilv_node_as_string(_nPsym);
+
+        // Cache now, while _portName is still valid (either the lilv string,
+        // still backed by _nPname below, or the auto-generated fallback).
+        _portNames[j] = QByteArray(_portName);
 
         const bool optional = lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_connectionOptional);
 
@@ -5304,7 +5387,10 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
         icl_first = cll->lower_bound(genACnum(plug_id, 0));
     }
 
-    bool used_in_chan_array[_inports]; // Don't bother initializing if not 'running'.
+    // Guard against a zero-size VLA (undefined behavior, UBSan-flagged) for
+    //  plugins with no control input ports - the loop below only ever indexes
+    //  up to the real _inports, so this size-1 fallback is never touched.
+    bool used_in_chan_array[_inports > 0 ? _inports : 1]; // Don't bother initializing if not 'running'.
 
     // Don't bother if not 'running'.
     if(_curActiveState)
@@ -5740,6 +5826,28 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
                   evBuf->dump();
               }
   #endif
+
+
+
+              // FIX: Drain any pending work responses BEFORE run().
+              // Some plugins (e.g. sfizz) schedule work during state restore/activate
+              // and leave an unfinished internal forge stack until work_response is called.
+              // Calling run() before draining those responses causes an assertion failure.
+              {
+                  const unsigned int pre_rsp_sz = _state->wrkRespDataBuffer->getSize(false);
+                  for(unsigned int i_sz = 0; i_sz < pre_rsp_sz; ++i_sz)
+                  {
+                      if(_state->wrkIface && _state->wrkIface->work_response)
+                      {
+                          void *wrk_data = nullptr;
+                          size_t wrk_data_sz = 0;
+                          if(_state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz))
+                              _state->wrkIface->work_response(lilv_instance_get_handle(_handle), wrk_data_sz, wrk_data);
+                      }
+                      _state->wrkRespDataBuffer->remove();
+                  }
+              }
+
 
               lilv_instance_run(_handle, slice_samps);
           }
@@ -6659,6 +6767,17 @@ void LV2PluginWrapper_Worker::setClosing() {_closing = true; _mSem.release();}
 
 void LV2PluginWrapper_Window::hideEvent(QHideEvent *e)
 {
+    // _state can already be null here: closeEvent() nulls it after freeing
+    //  the state when deleteLater was set (see closeEvent() below), and Qt's
+    //  close() sequence can still call hideEvent() afterward in the same
+    //  close/hide chain. Without this guard that was a null-pointer SEGV.
+    if(_state == nullptr)
+    {
+        e->ignore();
+        QMainWindow::hideEvent(e);
+        return;
+    }
+
     if (_state->deleteLater || _closing)
         return;
 
@@ -6673,6 +6792,15 @@ void LV2PluginWrapper_Window::hideEvent(QHideEvent *e)
 
 void LV2PluginWrapper_Window::showEvent(QShowEvent *e)
 {
+    // Same reasoning as hideEvent() above: _state may already have been
+    //  freed and nulled by closeEvent().
+    if(_state == nullptr)
+    {
+        e->ignore();
+        QMainWindow::showEvent(e);
+        return;
+    }
+
     int x = 0, y = 0, w = 0, h = 0;
     if(_state->plugInst != nullptr)
         _state->plugInst->savedNativeGeometry(&x, &y, &w, &h);
@@ -6767,19 +6895,22 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 
     if(_state->deleteLater)
     {
+        // NOTE: lv2state_FreeState() deletes *_state. Nothing may touch
+        //  _state after this call - this used to fall through to
+        //  '_state->uiIsOpening = false;' below unconditionally, writing
+        //  into freed memory (heap-use-after-free).
         LV2Synth::lv2state_FreeState(_state);
-
+        _state = nullptr;
+        return;
     }
-    else
-    {
-        //_state->uiTimer->stopNextTime(false);
-        _state->widget = nullptr;
-        _state->pluginWindow = nullptr;
-        _state->uiDoSelectPrg = false;
-        _state->uiPrgIface = nullptr;
 
-        LV2Synth::lv2ui_FreeDescriptors(_state);
-    }
+    //_state->uiTimer->stopNextTime(false);
+    _state->widget = nullptr;
+    _state->pluginWindow = nullptr;
+    _state->uiDoSelectPrg = false;
+    _state->uiPrgIface = nullptr;
+
+    LV2Synth::lv2ui_FreeDescriptors(_state);
 
     // Reset the flag, just to be sure.
     _state->uiIsOpening = false;
@@ -6843,6 +6974,16 @@ void LV2PluginWrapper_Window::setClosing(bool closing) {_closing = closing; }
 
 void LV2PluginWrapper_Window::updateGui()
 {
+    // Same reasoning as hideEvent()/showEvent(): _state may already have
+    //  been freed and nulled by closeEvent(). updateTimer should normally
+    //  be stopped before that happens, but this is timer-driven and can
+    //  still race it.
+    if(_state == nullptr)
+    {
+        stopUpdateTimer();
+        return;
+    }
+
     if(_state->deleteLater || _closing)
     {
         stopNextTime();
@@ -7030,20 +7171,65 @@ LV2PluginWrapper::~LV2PluginWrapper()
 
 LV2Synth *LV2PluginWrapper::synth() const { return _synth; }
 
+
+
+//---------------------------------------------------------
+//   showPluginAllocError
+//    Inform the user via GUI popup that a plugin was skipped due to
+//    memory/memlock exhaustion. Safe to call from any thread: the
+//    message box is marshalled to the GUI thread and never blocks the caller.
+//---------------------------------------------------------
+
+
+static void showPluginAllocError(const QString &pluginName)
+{
+   if(!MusEGlobal::muse)   // GUI not up yet? -> silent (only pointer compare, no full type needed)
+      return;
+   const QString msg = QObject::tr(
+      "Out of lockable memory while loading plugin:\n  %1\n\n"
+      "The plugin was skipped so MusE can keep running.\n\n"
+      "Raise the memlock limit: set 'memlock unlimited' for the audio group "
+      "in /etc/security/limits.conf, then re-login.").arg(pluginName);
+   // Marshal to GUI thread via qApp (QApplication lives in the main thread).
+   // Avoids needing the full MusEGui::MusE type here.
+   QMetaObject::invokeMethod(qApp, [msg]() {
+         QMessageBox::critical(QApplication::activeWindow(), QString("MusE"), msg);
+      }, Qt::QueuedConnection);
+}
+
+
 LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
 {
-    LV2PluginWrapper_State *state = new LV2PluginWrapper_State;
-    state->inst = this;
-    state->widget = nullptr;
-    state->uiInst = nullptr;
-    state->plugInst = plugi;
-    state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
-    state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
-    state->sif = nullptr;
-    state->synth = _synth;
-    state->wrkDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
-    state->wrkRespDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
+    LV2PluginWrapper_State *state = nullptr;
+    try
+    {
+        state = new LV2PluginWrapper_State;
+        state->inst = this;
+        state->widget = nullptr;
+        state->uiInst = nullptr;
+        state->plugInst = plugi;
+        state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
+        state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
+        state->sif = nullptr;
+        state->synth = _synth;
+        state->wrkDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
+        state->wrkRespDataBuffer = new LockFreeDataRingBuffer(LV2_WRK_FIFO_SIZE);
+    }
+    catch(const std::bad_alloc &e)
+    {
+        // Do not abort the whole app: report and skip this plugin instead.
+        // state is either nullptr (ctor threw, already unwound) or partially
+        // built (delete runs ~LV2PluginWrapper_State for cleanup; delete nullptr is safe).
+        fprintf(stderr,
+           "LV2PluginWrapper::instantiate: out of memory creating plugin state - "
+           "skipping plugin. Check memlock/'ulimit -l'. (%s)\n", e.what());
+           
+        showPluginAllocError(name()); // popup info for user
+        delete state;
+        return nullptr;
+    }
 
+    
     LV2Synth::lv2state_FillFeatures(state);
 
     state->handle = lilv_plugin_instantiate(_synth->_handle, (double)MusEGlobal::sampleRate, state->_ppifeatures);
@@ -7208,8 +7394,8 @@ LADSPA_PortRangeHint LV2PluginWrapper::range(unsigned long i) const
     hint.LowerBound = _synth->_pluginControlsMin [i];
     hint.UpperBound = _synth->_pluginControlsMax [i];
 
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7258,8 +7444,8 @@ LADSPA_PortRangeHint LV2PluginWrapper::range(unsigned long i) const
 }
 void LV2PluginWrapper::range(unsigned long i, float *min, float *max) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7319,13 +7505,28 @@ double LV2PluginWrapper::defaultValue(unsigned long port) const
 }
 const char *LV2PluginWrapper::portName(unsigned long i) const
 {
-    return lilv_node_as_string(lilv_port_get_name(_synth->_handle, lilv_plugin_get_port_by_index(_synth->_handle, i)));
+    if(!_synth)
+    {
+      fprintf(stderr, "LV2PluginWrapper::portName(): no synth - port %lu\n", i);
+      return "";
+    }
+    if(i >= (unsigned long)_synth->_portNames.size())
+    {
+      fprintf(stderr, "LV2PluginWrapper::portName(): port %lu out of range (%d ports)\n",
+        i, _synth->_portNames.size());
+      return "";
+    }
+    // Owned by _synth->_portNames (filled once at port-setup time), so this
+    // pointer stays valid for the plugin's lifetime. Previously this called
+    // lilv_port_get_name() directly and never freed the returned LilvNode -
+    // a leak on every single call (see lilv_node_duplicate leaks in LSAN reports).
+    return _synth->_portNames[i].constData();
 }
 
 const CtrlVal::CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7357,8 +7558,8 @@ CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 {
     CtrlValueType vt = VAL_LINEAR;
 
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7398,8 +7599,8 @@ CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 }
 CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7430,8 +7631,8 @@ CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
 
 QString LV2PluginWrapper::unitSymbol(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7460,8 +7661,8 @@ QString LV2PluginWrapper::unitSymbol(unsigned long i) const
 
 int LV2PluginWrapper::valueUnit(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = NULL;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7630,15 +7831,25 @@ void LV2PluginWrapper_Worker::makeWork()
 }
 
 #ifdef LV2_EVENT_BUFFER_SUPPORT
-LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t /*size*/)
+//LV2EvBuf::LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size) // OLD
+LV2EvBuf::LV2EvBuf(bool isInput, bool oldApi, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size)
     :_isInput(isInput), _oldApi(oldApi), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 #else
-LV2EvBuf::LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t /*size*/)
+//LV2EvBuf::LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t /*size*/) // OLD
+LV2EvBuf::LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size)
     :_isInput(isInput), _uAtomTypeSequence(atomTypeSequence), _uAtomTypeChunk(atomTypeChunk)
 #endif
 {
     // Resize and fill with initial value.
-    _buffer.resize(LV2_EVBUF_SIZE, 0);
+    // _buffer.resize(LV2_EVBUF_SIZE, 0); // OLD , fix below
+
+    // Honor the requested size. Floor it so the atom/event header always fits;
+    // output ports need a large buffer (see LV2_EVBUF_OUT_SIZE).
+    const size_t min_sz = sizeof(LV2_Atom_Sequence) + sizeof(LV2_Atom_Event) + 64;
+    if(size < min_sz)
+        size = LV2_EVBUF_SIZE;
+    _buffer.resize(size, 0);
+    
 
 #ifdef LV2_DEBUG
     std::cerr << "LV2EvBuf ctor: _buffer size:" << _buffer.size() << " capacity:" << _buffer.capacity() << std::endl;
@@ -7884,11 +8095,30 @@ LV2SimpleRTFifo::LV2SimpleRTFifo(size_t size):
     eventsBuffer.resize(fifoSize);
     assert(eventsBuffer.size() == fifoSize);
     readIndex = writeIndex = 0;
+
+
     for(size_t i = 0; i < fifoSize; ++i)
     {
-        eventsBuffer [i].port_index = 0;
-        eventsBuffer [i].buffer_size = 0;
-        eventsBuffer [i].data = new char [itemSize];
+        eventsBuffer[i].port_index = 0;
+        eventsBuffer[i].buffer_size = 0;
+        eventsBuffer[i].data = nullptr;  // secure init , else bad_alloc 
+    }
+
+
+    for(size_t i = 0; i < fifoSize; ++i)
+    {
+        // Use nothrow so we can emit a meaningful diagnostic identifying the
+        // exhausted resource before unwinding (caught in LV2PluginWrapper::instantiate()).
+        eventsBuffer[i].data = new (std::nothrow) char[itemSize];
+        if(eventsBuffer[i].data == nullptr)
+        {
+            fprintf(stderr,
+               "LV2SimpleRTFifo: allocation FAILED at item %zu/%zu (itemSize=%zu). "
+               "Out of lockable memory? Check 'ulimit -l' / memlock limit "
+               "(mlockall(MCL_FUTURE) is active). - LV2SimpleRTFifo()\n",
+               i, fifoSize, itemSize);
+            throw std::bad_alloc();
+        }
     }
 
 }

@@ -109,6 +109,61 @@ void AudioTrack::initBuffers()
   // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less.
   if(chans < MusECore::MAX_CHANNELS)
     chans = MusECore::MAX_CHANNELS;
+
+  // Grow-only: if a bigger MusEGlobal::segmentSize has been requested than what
+  //  our buffers were allocated for (e.g. a live JACK/PipeWire buffer-size
+  //  increase), the existing buffers below are too small. Free them so the
+  //  '!outBuffers' etc. guards below reallocate at the correct new size.
+  // Without this, getData()/memset() calls sized for the new segmentSize
+  //  overflow these buffers (heap-buffer-overflow).
+  // NOTE: intentionally '>' not '!=' - MusEGlobal::segmentSize mirrors the
+  //  CURRENT cycle's frame count and can fluctuate cycle-to-cycle (e.g.
+  //  PipeWire adaptive quantum). Reallocating on every mismatch would call
+  //  posix_memalign() on every RT audio callback - an RT thread livelock/hang.
+  if(_allocatedSegmentSize != 0 && (int)MusEGlobal::segmentSize > _allocatedSegmentSize)
+  {
+    if(outBuffers)
+    {
+      for(int i = 0; i < chans; ++i)
+      {
+        if(outBuffers[i])
+          free(outBuffers[i]);
+      }
+      delete[] outBuffers;
+      outBuffers = nullptr;
+    }
+    if(outBuffersExtraMix)
+    {
+      for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
+      {
+        if(outBuffersExtraMix[i])
+          free(outBuffersExtraMix[i]);
+      }
+      delete[] outBuffersExtraMix;
+      outBuffersExtraMix = nullptr;
+    }
+    if(_dataBuffers)
+    {
+      for(int i = 0; i < _totalOutChannels; ++i)
+      {
+        if(_dataBuffers[i])
+          free(_dataBuffers[i]);
+      }
+      delete[] _dataBuffers;
+      _dataBuffers = nullptr;
+    }
+    if(audioInSilenceBuf)
+    {
+      free(audioInSilenceBuf);
+      audioInSilenceBuf = nullptr;
+    }
+    if(audioOutDummyBuf)
+    {
+      free(audioOutDummyBuf);
+      audioOutDummyBuf = nullptr;
+    }
+  }
+
   if(!outBuffers)
   {
     outBuffers = new float*[chans];
@@ -281,6 +336,8 @@ void AudioTrack::initBuffers()
       _controls[k].enCtrl = true;
     }
   }
+
+  _allocatedSegmentSize = MusEGlobal::segmentSize;
 }
 
 //---------------------------------------------------------
@@ -324,6 +381,7 @@ AudioTrack::AudioTrack(TrackType t, int channels)
       audioInSilenceBuf = 0;
       audioOutDummyBuf = 0;
       _dataBuffers = 0;
+      _allocatedSegmentSize = 0;
 
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
@@ -367,6 +425,7 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       audioInSilenceBuf = 0;
       audioOutDummyBuf = 0;
       _dataBuffers = 0;
+      _allocatedSegmentSize = 0;
 
       _totalOutChannels = 0;
 
@@ -1909,7 +1968,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
 void AudioTrack::readAuxSend(Xml& xml)
       {
       unsigned idx = 0;
-      double val;
+      double val = 0.0; 
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();

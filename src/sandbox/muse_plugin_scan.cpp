@@ -63,6 +63,11 @@
 #define DEBUG_PLUGIN_SCAN(dev, format, args...) // std::fprintf(dev, format, ##args);
 
 
+#ifdef CLAP_SUPPORT
+#include <clap/clap.h>
+#include <clap/factory/plugin-factory.h>
+#endif
+
 // #include <semaphore.h>
 // static sem_t _vstIdLock;
 // #include <QSemaphore>
@@ -259,6 +264,36 @@ static bool loadPluginLib(MusEPlugin::PluginTypes_t types,
       }
     }
 #endif // VST_NATIVE_SUPPORT
+
+
+#ifdef CLAP_SUPPORT
+    if(!found)
+    {
+      if(types & MusEPlugin::PluginTypeCLAP)
+      {
+        const clap_plugin_entry_t* entry =
+          reinterpret_cast<const clap_plugin_entry_t*>(qlib.resolve("clap_entry"));
+        if(entry)
+        {
+          DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a CLAP library\n");
+
+          MusECore::Xml xml(&outfile);
+          xml.header();
+          int level = 0;
+          level = xml.putFileVersion(level);
+
+          MusEPlugin::writeClapInfo(filename, entry, do_ports, level, xml);
+
+          xml.tag(1, "/muse");
+          found = true;
+        }
+        else
+        {
+          DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Not a CLAP library...\n");
+        }
+      }
+    }
+#endif // CLAP_SUPPORT
       
   }
   

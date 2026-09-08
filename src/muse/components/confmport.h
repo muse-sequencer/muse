@@ -80,7 +80,9 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
         SYNTHCOL_NAME, SYNTHCOL_VERSION, SYNTHCOL_DESCRIPTION };
 
       PopupMenu* defpup;
-      int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
+      int _showAliases; // unused??? -1: None. 0: First aliases. 1: Second aliases etc. Set once in the
+                        //  constructor, never read - the Device Name column shows dev->name() (or, after
+                        //  this session's fix, midiPortFriendlyName() for Jack devices) unconditionally.
       QTimer *guiTimer;
       void setWhatsThis(QTableWidgetItem *item, int col);
       void setToolTip(QTableWidgetItem *item, int col);

@@ -623,7 +623,7 @@ class LockFreeMPSCRingBuffer
       
       // Rounds to the nearest or equal power of 2.
       // For 0, 1, and 2, always returns 2.
-      unsigned int roundCapacity(unsigned int reqCap) const
+      static unsigned int roundCapacity(unsigned int reqCap) 
       {
         unsigned int i;
         for(i = 1; (1U << i) < reqCap; i++);
@@ -633,6 +633,8 @@ class LockFreeMPSCRingBuffer
    public:
       // Start simple with just 2, like a flipping buffer for example.
       LockFreeMPSCRingBuffer(unsigned int capacity = 2)
+          : _capacity(roundCapacity(capacity)),
+            _capacityMask(_capacity - 1)
       {
         _capacity = roundCapacity(capacity);
         _capacityMask = _capacity - 1;

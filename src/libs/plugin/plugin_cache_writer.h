@@ -48,6 +48,10 @@
 #endif // LV2_SUPPORT
 #endif // LV2_USE_PLUGIN_CACHE
 
+#ifdef CLAP_SUPPORT
+#include <clap/clap.h>
+#endif
+
 #ifdef VST_NATIVE_SUPPORT
 #ifdef VST_SDK_QUIRK_DEF
 #ifndef __cdecl
@@ -104,6 +108,7 @@ typedef AEffect* (*LinuxVST_Instance_Function)(audioMasterCallback);
 #endif // VST_NATIVE_SUPPORT
 
 
+
 // Forward declarations:
 namespace MusECore {
 class Xml;
@@ -132,6 +137,10 @@ bool scanDssiDescriptor(const char* filename, const DSSI_Descriptor* dssi_descr,
 bool writeDssiInfo(const char* filename, DSSI_Descriptor_Function dssi, bool do_ports, int level, MusECore::Xml& xml);
 #endif
 
+#ifdef CLAP_SUPPORT
+bool writeClapInfo(const char* filename, const clap_plugin_entry_t* entry, bool do_ports, int level, MusECore::Xml& xml);
+#endif
+
 #ifdef VST_NATIVE_SUPPORT
 bool scanLinuxVstPorts(AEffect *plugin, PluginScanInfoStruct* info);
 bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, PluginScanInfoStruct* info, bool do_ports);
@@ -153,6 +162,9 @@ void scanLadspaPlugins(const QString& museGlobalLib, PluginScanList* list, bool 
 void scanMessPlugins(const QString& museGlobalLib, PluginScanList* list, bool scanPorts, bool debugStdErr);
 void scanDssiPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr);
 void scanLinuxVSTPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr);
+#ifdef CLAP_SUPPORT
+void scanClapPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr);
+#endif
 #ifdef LV2_USE_PLUGIN_CACHE
 void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr);
 #endif

@@ -27,6 +27,7 @@
 
 #include <stdint.h>
 #include <atomic>
+#include <thread>
 
 #include "type_defs.h"
 #include "thread.h"
@@ -76,7 +77,8 @@ enum {
       AUDIO_SET_SEND_METRONOME,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
       SEQM_IDLE, SEQM_SEEK,
-      AUDIO_WAIT  // Do nothing. Just wait for an audio cycle to pass.
+      AUDIO_WAIT,  // Do nothing. Just wait for an audio cycle to pass.
+      AUDIO_CLAP_STOP_PROCESSING  // Call stop_processing() on all live CLAP instances (audio-thread only).
       };
 
 extern const char* seqMsgList[];  // for debug
@@ -118,6 +120,14 @@ class Audio {
    public:
       enum State {STOP, START_PLAY, PLAY, LOOP1, LOOP2, SYNC, PRECOUNT};
       enum BounceState { BounceOff = 0, BounceStart, BounceOn };
+
+
+      // The thread id of the real audio/RT thread. Captured on first entry to
+      // process() because the RT thread is owned by the backend (JACK's client
+      // thread, or the dummy device's Thread), so there is no single creation
+      // site to grab it from. Used by the CLAP host clap.thread-check extension.
+      std::atomic<std::thread::id> _audioThreadId { std::thread::id() };
+      bool isAudioThread() const { return std::this_thread::get_id() == _audioThreadId.load(std::memory_order_relaxed); }
 
    private:
       bool _running;          // audio is active
@@ -296,6 +306,13 @@ class Audio {
       void msgResetMidiDevices();
       void msgIdle(bool);
       void msgAudioWait();
+#ifdef CLAP_SUPPORT
+      // Runs stop_processing() on every live CLAP instance ON THE AUDIO THREAD
+      // (via processMsg). Needed at shutdown: Diva/u-he require stop_processing()
+      // on the real audio thread, and the passive getData()->runProcess() path
+      // can't be relied on when the engine is idle at quit.
+      void msgClapStopProcessing();
+#endif
       void msgBounce();
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);

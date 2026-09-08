@@ -80,6 +80,18 @@ class MidiJackDevice : public MidiDevice {
       virtual ~MidiJackDevice(); 
       
       static MidiDevice* createJackMidiDevice(QString name = "", int rwflags = 3); // 1:Writable 2: Readable 3: Writable + Readable
+
+      // Convenience wrapper: createJackMidiDevice() followed by open().
+      // createJackMidiDevice() alone only constructs and registers the device - it does
+      //  NOT register a real Jack port, so writeEnable()/readEnable() stay false until
+      //  open() is called. That gap has caused more than one silently-dead device (no
+      //  port ever created, so putEvent() quietly no-ops forever) because individual call
+      //  sites forgot the follow-up open() call. Use this for the common case.
+      // Only use the raw createJackMidiDevice() + a manually-deferred open() call if the
+      //  caller specifically needs routes to be added first, so open()'s own
+      //  auto-connect-to-route logic has something to connect to (see
+      //  enumerateJackMidiDevicesImpl() in jackmidi.cpp for that case).
+      static MidiDevice* createAndOpenJackMidiDevice(QString name = "", int rwflags = 3);
       virtual inline MidiDeviceType deviceType() const { return JACK_MIDI; } 
       virtual void setName(const QString&);
       
@@ -103,6 +115,31 @@ class MidiJackDevice : public MidiDevice {
       };
 
 extern bool initMidiJack();
+
+// Scans currently available Jack midi ports and auto-creates/pairs MidiJackDevice
+//  instances for them (matching capture/playback port name suffixes where possible).
+// Actual implementation lives here in jackmidi.cpp; enumerateJackMidiDevices() in
+//  helper.cpp/helper.h is kept as a thin forwarder for existing callers (main.cpp, song.cpp).
+extern void enumerateJackMidiDevicesImpl();
+
+// Called once after a song file has been fully loaded (see songfile.cpp) -
+//  prunes genuinely orphaned MusE-owned Jack Midi devices (no routes, no
+//  track using their midiPorts[] slot) and ensures the permanent "Default"
+//  (jack-midi-0) device exists. Safe to run silently on every project load -
+//  see the function's own header comment in jackmidi.cpp for exactly how
+//  this differs from, and must not be replaced by, autoCreateMidiPorts()
+//  below.
+extern void reconcileMidiDevices();
+
+// "Midi" menu action ("Autocreate Midi Ports"). More aggressive/disruptive
+//  than reconcileMidiDevices() above - deletes every unused MusE Jack Midi
+//  device regardless of track usage, and creates new devices for currently-
+//  unconnected external Jack Midi ports. NOT undo-able - callers should
+//  confirm with the user first unless skipConfirmation is true (e.g. right
+//  after creating a brand new, still-empty project). See the function's own
+//  header comment in jackmidi.cpp for the full comparison with
+//  reconcileMidiDevices().
+extern void autoCreateMidiPorts(bool skipConfirmation = false);
 
 } // namespace MusECore
 

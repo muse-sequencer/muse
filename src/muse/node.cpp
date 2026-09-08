@@ -828,6 +828,18 @@ void AudioTrack::copyData(unsigned pos,
 
   int i;
 
+  // Protection for pre-allocated buffers: if the audio driver's buffer size
+  //  changed since outBuffers/_dataBuffers were allocated (e.g. a live
+  //  JACK/PipeWire buffer-size change), reallocate them now, before anything
+  //  below writes into them at the new (larger) segmentSize.
+  // Cheap no-op in the common case - just one int compare.
+  // Grow-only: MusEGlobal::segmentSize is the CURRENT cycle's frame count and can
+  //  fluctuate cycle-to-cycle (e.g. PipeWire adaptive quantum). Only reallocate when
+  //  it's genuinely bigger than what we have - reallocating on every '!=' mismatch
+  //  would call posix_memalign() on every RT callback (RT thread livelock/hang).
+  if(_allocatedSegmentSize < (int)MusEGlobal::segmentSize)
+    initBuffers();
+
   // Protection for pre-allocated _dataBuffers.
   if(nframes > MusEGlobal::segmentSize)
   {
@@ -835,8 +847,14 @@ void AudioTrack::copyData(unsigned pos,
     nframes = MusEGlobal::segmentSize;
   }
 
-  float* buffer[srcTotalOutChans];
-  double meter[trackChans];
+  // Note: sized with a minimum of 1, not srcTotalOutChans/trackChans directly -
+  //  a bare zero-size VLA is undefined behavior (UBSan: "variable length array
+  //  bound evaluates to non-positive value 0"), even though it's never
+  //  dereferenced in that case. All loops below already correctly iterate
+  //  0 times when srcTotalOutChans/trackChans is 0, so this changes nothing
+  //  functionally - it just avoids declaring the degenerate array shape.
+  float* buffer[srcTotalOutChans > 0 ? srcTotalOutChans : 1];
+  double meter[trackChans > 0 ? trackChans : 1];
 
   #ifdef NODE_DEBUG_PROCESS
     fprintf(stderr, "MusE: AudioTrack::copyData "

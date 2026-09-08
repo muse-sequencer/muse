@@ -52,7 +52,7 @@ inline float DENORMALISE(float fv)
 
 // A fast, truncating towards 0 modulo function. ANSI C doesn't define
 // which % will do, most truncate towards -inf
-#define MOD(v,m) (v<0?v+m:(v>m?v-m:v))
+#define MOD(v,m) (v<0?v+m:(v>=m?v-m:v))
 
 // Limit values
 #define LIMIT(v,l,u) (v<l?l:(v>u?u:v))

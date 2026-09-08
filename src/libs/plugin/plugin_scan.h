@@ -78,6 +78,7 @@ enum PluginType {
   PluginTypeMESS      = 0x40,
   // Built-in metronome is not actually a loadable plugin, but is a synth.
   PluginTypeMETRONOME = 0x80,
+  PluginTypeCLAP      = 0x100,   // add
   PluginTypeUnknown   = 0x8000 };
 
 // Can be Or'd together, along with PluginType.
@@ -86,7 +87,7 @@ enum PluginTypes {
                    PluginTypeVST      | PluginTypeDSSIVST |
                    PluginTypeLinuxVST | PluginTypeLV2 |
                    PluginTypeMESS     | PluginTypeUnknown |
-                   PluginTypeMETRONOME };
+                   PluginTypeMETRONOME | PluginTypeCLAP };
 typedef int PluginTypes_t;
 
 // Can be Or'd together.
