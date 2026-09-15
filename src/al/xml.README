@@ -1,0 +1,2 @@
+
+xml.h and xml.cpp - in this directory conflicted with xml from libs/xml directory, thus disabled and renamed. 

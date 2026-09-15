@@ -58,6 +58,7 @@
 #include "audio.h"
 #include "audiodev.h"
 #include "audioprefetch.h"
+#include "rtlog.h"
 // FIXME Move cliplist into components ?
 #include "cliplist/cliplist.h"
 //#include "debug.h"
@@ -137,6 +138,7 @@
 #include "marker/markerview.h"
 #include "metronome.h"
 #include "conf.h"
+#include "driver/jackmidi.h" // autoCreateMidiPorts() - moved here, see jackmidi.cpp
 #include "midifilterimpl.h"
 #include "midiitransform.h"
 #include "miditransform.h"
@@ -173,6 +175,14 @@ extern void exitMidiAlsa();
 extern void exitRtAudio();
 #endif
 }
+
+
+#ifdef CLAP_SUPPORT
+namespace MusECore {
+    extern void clapDeactivateAllBeforeAudioShutdown(); 
+}
+#endif
+
 
 namespace MusEGui {
 
@@ -828,6 +838,11 @@ MusE::MusE() : QMainWindow()
 #endif
       midiResetInstAction = new QAction(*MusEGui::midiResetSVGIcon, tr("Reset Instrument"), this);
       midiResetInstAction->setStatusTip(tr("Send 'note-off' command to all midi channels."));
+
+      midiAutoCreatePortsAction = new QAction(tr("Autocreate Midi Ports"), this);
+      midiAutoCreatePortsAction->setStatusTip(tr(
+        "Delete unused Jack Midi ports (except Default), and create new ones "
+        "for any unconnected external Jack Midi ports. Not undo-able."));
       midiInitInstActions = new QAction(*MusEGui::midiInitSVGIcon, tr("Init Instrument"), this);
       midiInitInstActions->setStatusTip(tr("Send initialization messages as found in instrument definition."));
       midiLocalOffAction = new QAction(*MusEGui::midiLocalOffSVGIcon, tr("Local Off"), this);
@@ -928,6 +943,7 @@ MusE::MusE() : QMainWindow()
       //-------- Midi connections
       connect(midiEditInstAction, SIGNAL(triggered()), SLOT(startEditInstrument()));
       connect(midiResetInstAction, SIGNAL(triggered()), SLOT(resetMidiDevices()));
+      connect(midiAutoCreatePortsAction, &QAction::triggered, [this]() { midiAutoCreatePorts(); });
       connect(midiInitInstActions, SIGNAL(triggered()), SLOT(initMidiDevices()));
       connect(midiLocalOffAction, SIGNAL(triggered()), SLOT(localOff()));
 
@@ -1016,7 +1032,12 @@ MusE::MusE() : QMainWindow()
       cpuLoadToolbar->hide(); // hide as a default, the info is now in status bar too
       connect(cpuLoadToolbar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
 
-      QToolBar* songpos_tb = addToolBar(tr("Timeline"));
+      // NOTE: Previously this toolbar was added twice: once implicitly via the
+      //  plain addToolBar(title) overload (which adds+shows it in the top area),
+      //  then again via addToolBar(area, toolbar). That produced a visible
+      //  duplicate "Timeline" toolbar. Construct it directly and add it to the
+      //  main window exactly once, in its intended area.
+      QToolBar* songpos_tb = new QToolBar(tr("Timeline"), this);
       songpos_tb->setObjectName("Timeline tool");
       songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
       songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -1033,22 +1054,40 @@ MusE::MusE() : QMainWindow()
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
       transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
+      // NOTE: object names below are required. MusE::setCurrentMenuSharingTopwin()
+      //  matches toolbars by objectName() to REPLACE a MusE toolbar with a TopWin's
+      //  equivalent (insertToolBar()). Without a name set here, no match is found and
+      //  the TopWin's toolbar gets appended alongside this one instead - i.e. a
+      //  visible duplicate (same icons twice). This was missing for Recording/Sync/
+      //  Tempo/Position and is the likely cause of the duplicated toolbars reported
+      //  (transport, sync, tempo, position/marker buttons).
       RecToolbar *recToolbar = new RecToolbar(tr("Recording"), this);
+      recToolbar->setObjectName("Recording tool");
       addToolBar(recToolbar);
 
       SyncToolbar *syncToolbar = new SyncToolbar(tr("Sync"), this);
+      syncToolbar->setObjectName("Sync tool");
       addToolBar(syncToolbar);
 
       addToolBarBreak();
 
       TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
+      tempo_tb->setObjectName("Tempo tool");
       addToolBar(tempo_tb);
       
       SigToolbar* sig_tb = new SigToolbar(tr("Signature"), this);
+      sig_tb->setObjectName("Signature tool");
       addToolBar(sig_tb);
       
       PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
+      posToolbar->setObjectName("Position tool");
       addToolBar(posToolbar);
+
+      // Route to whichever TopWin is currently active/focused, rather than a
+      //  fixed target. This is what makes it safe for Position to be a single
+      //  shared instance (see TopWin::TopWin()) instead of one per editor window.
+      connect(posToolbar, &PosToolbar::returnPressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
+      connect(posToolbar, &PosToolbar::escapePressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
 
       requiredToolbars.push_back(tools);
       requiredToolbars.push_back(cpuLoadToolbar);
@@ -1170,6 +1209,9 @@ MusE::MusE() : QMainWindow()
       menu_functions->addAction(midiInitInstActions);
       menu_functions->addAction(midiLocalOffAction);
 
+      menu_functions->addSeparator();
+      menu_functions->addAction(midiAutoCreatePortsAction);
+
       panicPopupMenu->addAction(midiResetInstAction);
       panicPopupMenu->addAction(midiInitInstActions);
       panicPopupMenu->addAction(midiLocalOffAction);
@@ -1273,12 +1315,16 @@ MusE::MusE() : QMainWindow()
 //      arrangerView->hide();
       _arranger=arrangerView->getArranger();
 
-      connect(tempo_tb, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
-      connect(tempo_tb, SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
+      // Route to whichever TopWin is currently active/focused, rather than a
+      //  fixed target (arrangerView). This is what makes Tempo/Signature safe
+      //  to be single shared instances (see TopWin::TopWin() and
+      //  MusE::sharedOptionalToolBar()) instead of one per editor window.
+      connect(tempo_tb, &TempoToolbar::returnPressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
+      connect(tempo_tb, &TempoToolbar::escapePressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
       connect(tempo_tb, SIGNAL(masterTrackChanged(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
       
-      connect(sig_tb,   SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
-      connect(sig_tb,   SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
+      connect(sig_tb, &SigToolbar::returnPressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
+      connect(sig_tb, &SigToolbar::escapePressed, [this]() { if(activeTopWin) activeTopWin->focusCanvas(); });
 
       //---------------------------------------------------
       //  read list of "Recent Projects"
@@ -1423,6 +1469,11 @@ void MusE::stopHeartBeat()
 
 void MusE::heartBeat()
 {
+    // Drain anything real-time threads (JACK/ALSA callbacks, the audio
+    // prefetch thread's RT-context senders, etc.) queued via rtLog().
+    // This is the only place that may call rtLogFlush() - see rtlog.h.
+    MusECore::rtLogFlush();
+
     if (cpuLoadToolbar->isVisible())
         cpuLoadToolbar->setValues(MusEGlobal::song->cpuLoad(),
                                   MusEGlobal::song->dspLoad(),
@@ -1518,7 +1569,17 @@ void MusE::loadDefaultSong(const QString& filename_override, bool use_template, 
         }
         fprintf(stderr, "starting with pre configured song %s\n", name.toLocal8Bit().constData());
   }
-  loadProjectFile(name, useTemplate, loadConfig);
+  const bool isOk = loadProjectFile(name, useTemplate, loadConfig);
+  if(isOk && useTemplate)
+  {
+    // New, still-empty project loaded from a template (this is the actual
+    //  application-startup path - see main.cpp) - create/sync the Default
+    //  (jack-midi-0) device and any other missing Jack Midi ports here, same
+    //  as the "File > New" menu action does via finishLoadDefaultTemplate().
+    // Without this, the Default port simply never appears until the user
+    //  manually runs "Autocreate Midi Ports" from the Midi menu.
+    MusECore::autoCreateMidiPorts(true);
+  }
 }
 
 //---------------------------------------------------------
@@ -1528,6 +1589,15 @@ void MusE::loadDefaultSong(const QString& filename_override, bool use_template, 
 void MusE::resetMidiDevices()
       {
       MusEGlobal::audio->msgResetMidiDevices();
+      }
+
+//---------------------------------------------------------
+//   midiAutoCreatePorts
+//---------------------------------------------------------
+
+void MusE::midiAutoCreatePorts()
+      {
+      MusECore::autoCreateMidiPorts();
       }
 
 //---------------------------------------------------------
@@ -2533,6 +2603,14 @@ void MusE::finishFileClose(bool restartSequencer)
 void MusE::setUntitledProject()
       {
       setConfigDefaults();
+      // A brand new/blank project must start at the user's configured default PPQN,
+      //  not whatever the previously loaded song's division happened to be.
+      //  setConfigDefaults() is also called mid-load (loadProjectFile1()/
+      //  finishLoadProjectFile1()) where the loaded file's own division must be
+      //  left alone, so this reset lives here instead - setUntitledProject() is
+      //  used exclusively for "start a blank project" (including the load-error
+      //  fallback), never for loading an actual file's content.
+      MusEGlobal::config.division = MusEGlobal::config.defaultDivision;
       QString name(MusEGui::getUniqueUntitledName());
       MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
       QDir::setCurrent(QDir::homePath());
@@ -2647,7 +2725,14 @@ void MusE::loadDefaultTemplate()
     bool isOk = loadProjectFile(MusEGlobal::museGlobalShare + QString("/templates/default.med"), true, false);
 
     if (isOk)
+    {
       setUntitledProject();
+      // New, still-empty project - safe to skip the confirmation dialog here.
+      // (See the #else variant's finishLoadDefaultTemplate() - this build
+      //  path was missing the same call, so the "Default" (jack-midi-0)
+      //  device never got created here.)
+      MusECore::autoCreateMidiPorts(true);
+    }
 }
 
 #else
@@ -2688,6 +2773,8 @@ void MusE::finishLoadDefaultTemplate()
     DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishLoadDefaultTemplate\n");
 
     setUntitledProject();
+    // New, still-empty project - safe to skip the confirmation dialog here.
+    MusECore::autoCreateMidiPorts(true);
 }
 #endif
 
@@ -2793,6 +2880,22 @@ void MusE::closeEvent(QCloseEvent* event)
             return;
         }
     }
+
+
+    #ifdef CLAP_SUPPORT
+        if(MusEGlobal::debugMsg)
+            fprintf(stderr, "MusE: Deactivating CLAP plugins before audio shutdown\n");
+        // MUST run BEFORE seqStop(): Diva/u-he require plugin->stop_processing()
+        // on MusE's real audio thread and abort otherwise. seqStop() stops the
+        // audio engine (Audio::_running == false), after which the JACK/RtAudio
+        // callback no longer calls Audio::process() -> runProcess(), so there'd
+        // be no live audio thread left to drive the stop. Called here (engine
+        // still ticking), each instance's stop_processing() is serviced on the
+        // audio thread and deactivate() on this (main) thread, so the later
+        // ~ClapSynthIF/shutdown() only has to destroy() an already-inactive
+        // plugin.
+        MusECore::clapDeactivateAllBeforeAudioShutdown();
+    #endif
 
 
     seqStop();
@@ -5239,6 +5342,21 @@ void MusE::activeTopWinChangedSlot(MusEGui::TopWin* win)
 
 
 
+//---------------------------------------------------------
+//   sharedOptionalToolBar
+//---------------------------------------------------------
+
+QToolBar* MusE::sharedOptionalToolBar(const QString& objName) const
+{
+  for(const auto& tb : optionalToolbars)
+    if(tb && tb->objectName() == objName)
+      return tb;
+  for(const auto& tb : requiredToolbars)
+    if(tb && tb->objectName() == objName)
+      return tb;
+  return nullptr;
+}
+
 void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
 {
   if (win && (win->sharesToolsAndMenu()==false))
@@ -5272,6 +5390,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
         {
           // Check for existing toolbar with same object name, and replace it.
           bool found = false;
+          bool isShared = false;
           for(list<QToolBar*>::iterator i_atb = add_toolbars.begin(); i_atb!=add_toolbars.end(); ++i_atb)
           {
             QToolBar* atb = *i_atb;
@@ -5279,12 +5398,26 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
             {
               if(tb->objectName() == atb->objectName())
               {
+                found = true;
+
+                if(tb == atb)
+                {
+                  // Shared single-instance toolbar (see MusE::sharedOptionalToolBar):
+                  //  tb and atb are literally the same object, already in place
+                  //  and shown. Nothing to swap - just keep the bookkeeping in sync.
+                  if(MusEGlobal::heavyDebugMsg)
+                    fprintf(stderr, "  toolbar '%s' is a shared instance, nothing to swap\n", atb->windowTitle().toLocal8Bit().data());
+                  isShared = true;
+                  add_foreign_toolbars.push_back(atb);
+                  add_toolbars.remove(atb);
+                  break;
+                }
+
                 //tb->hide();
                 
                 if(MusEGlobal::heavyDebugMsg) 
                   fprintf(stderr, "  inserting toolbar '%s'\n", atb->windowTitle().toLocal8Bit().data());
 
-                found = true;
                 insertToolBar(tb, atb);
                 add_foreign_toolbars.push_back(atb);
                 add_toolbars.remove(atb);
@@ -5293,6 +5426,9 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
               }
             }
           }
+
+          if(isShared)
+            continue; // Same object as its own replacement - don't remove it!
           
           // Remove any toolbar break that may exist before the toolbar - unless there 
           //  is a replacement is to be made, in which case leave the break intact.
@@ -5307,7 +5443,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
           if(MusEGlobal::heavyDebugMsg) 
             fprintf(stderr, "  removing sharer's toolbar '%s'\n", tb->windowTitle().toLocal8Bit().data());
           removeToolBar(tb); // this does not delete *it, which is good
-          tb->setParent(nullptr);
+          // tb->setParent(nullptr);  // DO NOT !
         }
       }
         
@@ -5321,6 +5457,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
         QToolBar* tb = *it;
         if (tb)
         {
+          bool isShared = false;
           // Check for existing toolbar with same object name, and replace it.
           for(list<QToolBar*>::iterator i_atb = add_toolbars.begin(); i_atb!=add_toolbars.end(); ++i_atb)
           {
@@ -5329,6 +5466,19 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
             {
               if(tb->objectName() == atb->objectName())
               {
+                if(tb == atb)
+                {
+                  // Shared single-instance toolbar (see MusE::sharedOptionalToolBar):
+                  //  tb and atb are literally the same object, already in place
+                  //  and shown. Nothing to swap - just keep the bookkeeping in sync.
+                  if(MusEGlobal::heavyDebugMsg)
+                    fprintf(stderr, "  toolbar '%s' is a shared instance, nothing to swap\n", atb->windowTitle().toLocal8Bit().data());
+                  isShared = true;
+                  foreignToolbars.push_back(atb);
+                  add_toolbars.remove(atb);
+                  break;
+                }
+
                 //tb->hide();
                 
                 if(MusEGlobal::heavyDebugMsg) 
@@ -5342,11 +5492,14 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
               }
             }
           }
+
+          if(isShared)
+            continue; // Same object as its own replacement - don't remove it!
           
           if (MusEGlobal::heavyDebugMsg) 
             fprintf(stderr, "  removing optional toolbar '%s'\n", tb->windowTitle().toLocal8Bit().data());
           removeToolBar(tb); // this does not delete *it, which is good
-          tb->setParent(nullptr);
+          // tb->setParent(nullptr); // DO NOT !
         }
       }
     }
@@ -5824,7 +5977,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
           sf_count_t szBufInFrames = szBuf / sChannels;
           sf_count_t szFInFrames = f.samples();
           sf_count_t nFramesRead = 0;
-          sf_count_t nFramesWrote = 0;
+          sf_count_t nFramesWrote [[maybe_unused]] = 0; //TODO?:unused var
           sd.end_of_input = 0;
           bool bEndOfInput = false;
           pDlg.setValue(0);

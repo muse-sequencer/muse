@@ -23,6 +23,7 @@
 //=========================================================
 
 #include <stdarg.h>
+#include <cstdlib>
 
 #include "xml.h"
 
@@ -145,8 +146,13 @@ void Xml::token(int cc)
             i++;
             next();
             }
-      buffer.append(char(0));
-      _s2 = buffer;     // deep copy !?
+
+
+      // // buffer.append(char(0)); // NO !
+      
+      // No trailing '\0': QByteArray->QString keeps full size(), which would embed
+      // a null char into _s2 and break strict length checks (e.g. hex-float parsing).
+      _s2 = QString::fromUtf8(buffer);
       }
 
 //---------------------------------------------------------
@@ -217,8 +223,9 @@ void Xml::stoken()
                   break;
             next();
             }
-      buffer.append(char(0));
-      _s2 = buffer;
+      // // buffer.append(char(0));  // NO !
+      // See note in token(): do not append a trailing '\0' here.
+      _s2 = QString::fromUtf8(buffer);
       }
 
 //---------------------------------------------------------
@@ -656,11 +663,23 @@ float Xml::parseFloat()
 //   parseDouble
 //---------------------------------------------------------
 
+// OLD CODE , trouble with hex-style values, see below 
+// double Xml::parseDouble()
+//       {
+//       QString s(parse1().simplified());
+//       return s.toDouble();
+//       }
+
 double Xml::parseDouble()
-      {
-      QString s(parse1().simplified());
-      return s.toDouble();
-      }
+{
+    QString s(parse1().simplified());
+    
+    // Parse C99 hexadecimal floating-point numbers correctly (e.g. 0x1.0137p-2).
+    // Standard Qt string-to-double methods (s.toDouble()) fail on 'x' and return 0.0.
+    char* endptr;
+    return std::strtod(s.toLocal8Bit().constData(), &endptr);
+}
+
 
 //---------------------------------------------------------
 //   Xml::skip

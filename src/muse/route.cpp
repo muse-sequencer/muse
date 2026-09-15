@@ -58,7 +58,14 @@ Route::Route(void* t, int ch)
       jackPort = t;
       persistentJackPortName[0] = 0;
       if(MusEGlobal::checkAudioDevice())
-        MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
+        // Explicitly request the canonical name (0), not the default "no
+        //  preference" (-1) - persistentJackPortName is used later as the
+        //  literal reconnect/find target (see Song::connectMidiPorts(),
+        //  MidiJackDevice::open()), not a display string. "No preference"
+        //  risks silently picking up a stale alias (e.g. one MusE itself
+        //  set via setMidiConnectionAlias() in a previous session) instead
+        //  of the port's real, stable name.
+        MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE, 0);
       
       midiPort = -1;
       channel  = ch;
@@ -121,7 +128,9 @@ Route::Route(const QString& s, bool dst, int ch, int rtype)
         jackPort = node.jackPort;
         char* res = 0;
         if(jackPort && MusEGlobal::checkAudioDevice())
-          res = MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
+          // See comment in Route::Route(void*, int) above: request canonical
+          //  name (0) explicitly, not the default "no preference" (-1).
+          res = MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE, 0);
         if(!res)
           MusELib::strntcpy(persistentJackPortName, s.toUtf8().constData(), ROUTE_PERSISTENT_NAME_SIZE);
         midiPort = -1;
@@ -172,6 +181,7 @@ Route::Route(const Route& a)
       channel       = a.channel;
       channels      = a.channels;
       remoteChannel = a.remoteChannel;
+      audioLatencyOut = a.audioLatencyOut;
       persistentJackPortName[0] = 0;
       strcpy(persistentJackPortName, a.persistentJackPortName);
 }
@@ -184,6 +194,7 @@ Route& Route::operator=(const Route& a)
       channel       = a.channel;
       channels      = a.channels;
       remoteChannel = a.remoteChannel;
+      audioLatencyOut = a.audioLatencyOut;
       persistentJackPortName[0] = 0;
       strcpy(persistentJackPortName, a.persistentJackPortName);
       return *this;
@@ -787,10 +798,16 @@ QString Route::name(int preferred_name_or_alias) const
       else
       if(type == JACK_ROUTE) 
       {
-        if(MusEGlobal::checkAudioDevice() && jackPort)
+        if(MusEGlobal::checkAudioDevice())
         {
-          char s[ROUTE_PERSISTENT_NAME_SIZE];
-          return QString(MusEGlobal::audioDevice->portName(jackPort, s, ROUTE_PERSISTENT_NAME_SIZE, preferred_name_or_alias));
+          void* jp = jackPort;
+          if(!jp)
+            jp = MusEGlobal::audioDevice->findPort(persistentJackPortName);
+          if(jp)
+          {
+            char s[ROUTE_PERSISTENT_NAME_SIZE];
+            return QString(MusEGlobal::audioDevice->portName(jp, s, ROUTE_PERSISTENT_NAME_SIZE, preferred_name_or_alias));
+          }
         }
         return QString(persistentJackPortName);
         
@@ -815,8 +832,14 @@ char* Route::name(char* str, int str_size, int preferred_name_or_alias) const
       else
       if(type == JACK_ROUTE) 
       {
-        if(MusEGlobal::checkAudioDevice() && jackPort)
-          return MusEGlobal::audioDevice->portName(jackPort, str, str_size, preferred_name_or_alias);
+        if(MusEGlobal::checkAudioDevice())
+        {
+          void* jp = jackPort;
+          if(!jp)
+            jp = MusEGlobal::audioDevice->findPort(persistentJackPortName);
+          if(jp)
+            return MusEGlobal::audioDevice->portName(jp, str, str_size, preferred_name_or_alias);
+        }
         return MusELib::strntcpy(str, persistentJackPortName, str_size);
       }
       else
@@ -845,10 +868,16 @@ QString Route::displayName(int preferred_name_or_alias) const
       else
       if(type == JACK_ROUTE) 
       {
-        if(MusEGlobal::checkAudioDevice() && jackPort)
+        if(MusEGlobal::checkAudioDevice())
         {
-          char s[ROUTE_PERSISTENT_NAME_SIZE];
-          return QString(MusEGlobal::audioDevice->portName(jackPort, s, ROUTE_PERSISTENT_NAME_SIZE, preferred_name_or_alias));
+          void* jp = jackPort;
+          if(!jp)
+            jp = MusEGlobal::audioDevice->findPort(persistentJackPortName);
+          if(jp)
+          {
+            char s[ROUTE_PERSISTENT_NAME_SIZE];
+            return QString(MusEGlobal::audioDevice->portName(jp, s, ROUTE_PERSISTENT_NAME_SIZE, preferred_name_or_alias));
+          }
         }
         return QString(persistentJackPortName);
         
@@ -1744,11 +1773,22 @@ void Route::read(Xml& xml)
                               jackPort = MusEGlobal::audioDevice->findPort(s.toUtf8().constData());
                               if(jackPort)
                                 // Replace the name with a more appropriate one at this time.
-                                MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
+                                // NOTE: explicitly request the canonical name (0), not the
+                                //  default "no preference" (-1) - persistentJackPortName is
+                                //  the literal reconnect/find target used later (see
+                                //  Song::connectMidiPorts(), MidiJackDevice::open()), not a
+                                //  display string. "No preference" risked silently picking up
+                                //  a stale alias (e.g. one MusE itself set via
+                                //  setMidiConnectionAlias() in a previous session) here,
+                                //  corrupting the persisted route target on every load.
+                                MusEGlobal::audioDevice->portName(jackPort, persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE, 0);
                             }
                             // The graph change handler will replace persistentJackPortName with a more appropriate name if necessary.
                             if(!jackPort)
+                            {
+                              fprintf(stderr, "Route::read(): jack port <%s> not found (yet) - keeping persistent name\n", s.toLocal8Bit().constData());
                               MusELib::strntcpy(persistentJackPortName, s.toUtf8().constData(), ROUTE_PERSISTENT_NAME_SIZE);
+                            }
                           }
                           else
                           if(rtype == MIDI_DEVICE_ROUTE)

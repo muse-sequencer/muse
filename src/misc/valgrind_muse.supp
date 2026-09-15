@@ -1,0 +1,258 @@
+{
+   NV-GLX
+   Memcheck:ReallocZero
+   fun:realloc
+   obj:/usr/lib/libnvidia-glcore.so.575.64.05
+   obj:/usr/lib/libGLX_nvidia.so.575.64.05
+   obj:/usr/lib/libGLX_nvidia.so.575.64.05
+   obj:/usr/lib/libGLX_nvidia.so.575.64.05
+   fun:_dl_init
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+}
+
+{
+   NON-INIT-VALUE
+   Memcheck:Cond
+   obj:*
+   obj:*
+}
+
+{
+   HARFBUZZ-A
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:/usr/lib/libharfbuzz.so.0.61420.0
+   fun:hb_aat_layout_has_substitution
+   obj:/usr/lib/libharfbuzz.so.0.61420.0
+   fun:hb_shape_plan_create2
+   fun:hb_shape_plan_create_cached2
+   fun:hb_shape_full
+   fun:_ZNK11QTextEngine23shapeTextWithHarfbuzzNGERK11QScriptItemPKtiP11QFontEngineRK7QVectorIjEbb
+   fun:_ZNK11QTextEngine9shapeTextEi
+   fun:_ZN9QTextLine13layout_helperEi
+   fun:_ZN11QTextLayout9endLayoutEv
+}
+
+{
+   NV-GLX - POSIX MEM ALIGN - SIZE0
+   Memcheck:BadSize
+   fun:posix_memalign
+   obj:/usr/lib/libnvidia-glcore.so.575.64.05
+   obj:/usr/lib/libGLX_nvidia.so.575.64.05
+   obj:/usr/lib/libGLX_nvidia.so.575.64.05
+   obj:/usr/lib/libGLX_nvidia.so.575.64.05
+   fun:_dl_init
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+}
+
+
+{
+   QT - QProcessPrivate -- Syscall param waitid(infop) points to unaddressable byte -- MusEPlugin -- plugin_cache_writer.cpp
+   Memcheck:Param
+   waitid(infop)
+   fun:syscall
+   fun:UnknownInlinedFun
+   fun:UnknownInlinedFun
+   fun:UnknownInlinedFun
+   fun:UnknownInlinedFun
+   fun:UnknownInlinedFun
+   fun:_ZN15QProcessPrivate5startE6QFlagsIN9QIODevice12OpenModeFlagEE
+   fun:_ZN10MusEPluginL10pluginScanERK7QStringiPNS_14PluginScanListEbb.isra.0
+   fun:_ZN10MusEPluginL17scanClapPluginDirERK7QStringPNS_14PluginScanListEbbi
+   fun:_ZN10MusEPluginL17scanClapPluginDirERK7QStringPNS_14PluginScanListEbbi
+   fun:_ZN10MusEPlugin15scanClapPluginsEPNS_14PluginScanListEbb
+   fun:_ZN10MusEPlugin21createPluginCacheFileERK7QStringNS_10PluginTypeEPNS_14PluginScanListEbS2_ib
+   fun:_ZN10MusEPlugin22createPluginCacheFilesERK7QStringPNS_14PluginScanListEbS2_ib
+   fun:_ZN10MusEPlugin21checkPluginCacheFilesERK7QStringPNS_14PluginScanListEbbbS2_ib
+   fun:main
+}
+{
+   LibInstPatch D -- ipatch_init -- _ipatch_type_prop_init (IpatchTypeProp.c-147)
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:g_type_create_instance
+   fun:g_param_spec_internal
+   fun:g_param_spec_gtype
+   fun:_ipatch_type_prop_init
+   fun:UnknownInlinedFun
+   fun:ipatch_init
+   fun:main
+}
+{
+   LibInstPatch A -- ipatch_init -- _ipatch_type_prop_init (IpatchTypeProp.c-147)
+   Memcheck:Leak
+   match-leak-kinds: all
+   fun:g_type_create_instance
+   fun:g_param_spec_internal
+   fun:g_param_spec_gtype
+   fun:_ipatch_type_prop_init
+   fun:UnknownInlinedFun
+   fun:ipatch_init
+   fun:main
+}
+{
+   LibInstPatch_X
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:g_type_create_instance
+   fun:g_param_spec_internal
+   fun:g_param_spec_boolean
+   fun:_ipatch_type_prop_init
+   fun:UnknownInlinedFun
+   fun:ipatch_init
+   fun:main
+}
+
+{
+   DL-catch-exc D
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_dl_init
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+}
+{
+   DL-catch-exc D
+   Memcheck:Leak
+   match-leak-kinds: all
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_dl_init
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+}
+
+{
+   XCB-Wayland D
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN13QXcbGlxWindow12createVisualEv
+   fun:_ZN10QXcbWindow6createEv
+}
+{
+   XCB-Wayland A
+   Memcheck:Leak
+   match-leak-kinds: all
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN13QXcbGlxWindow12createVisualEv
+   fun:_ZN10QXcbWindow6createEv
+}
+{
+   XCB-GLX D
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN13QXcbGlxWindow12createVisualEv
+}
+{
+   XCB-GLX D
+   Memcheck:Leak
+   match-leak-kinds: all
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN13QXcbGlxWindow12createVisualEv
+}
+{
+   DBUS_REGISTER_D
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:dbus_message_new_empty_header
+   fun:_dbus_message_loader_queue_messages
+   fun:_dbus_transport_get_dispatch_status
+   fun:_dbus_transport_queue_messages
+   fun:do_reading
+   fun:socket_do_iteration
+   fun:UnknownInlinedFun
+   fun:UnknownInlinedFun
+   fun:_dbus_connection_do_iteration_unlocked
+   fun:UnknownInlinedFun
+   fun:dbus_pending_call_block
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   fun:internal_bus_get
+}
+{
+   DBUS_REGISTER_A
+   Memcheck:Leak
+   match-leak-kinds: all
+   fun:calloc
+   fun:dbus_message_new_empty_header
+   fun:_dbus_message_loader_queue_messages
+   fun:_dbus_transport_get_dispatch_status
+   fun:_dbus_transport_queue_messages
+   fun:do_reading
+   fun:socket_do_iteration
+   fun:UnknownInlinedFun
+   fun:UnknownInlinedFun
+   fun:_dbus_connection_do_iteration_unlocked
+   fun:UnknownInlinedFun
+   fun:dbus_pending_call_block
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   fun:internal_bus_get
+}

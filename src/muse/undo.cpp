@@ -444,6 +444,9 @@ void deleteUndoOp(UndoOp& op, bool doUndos = true, bool doRedos = true)
   switch(op.type)
   {
     case UndoOp::DeleteTrack:
+
+          fprintf(stderr, "deleteUndoOp: DeleteTrack op.track:%p doUndos:%d\n", op.track, doUndos);
+
           if(op.track && doUndos)
           {
             delete const_cast<Track*>(op.track);
@@ -611,17 +614,51 @@ Undo::iterator Undo::deleteAndErase(Undo::iterator iuo)
 //    clearDelete
 //---------------------------------------------------------
 
-void UndoList::clearDelete()
+void UndoList::clearDelete(UndoClearDedup* dedup)
 {
   if(!empty())
   {
+    // Guard against the same Track/Part pointer being deleted twice by this pass.
+    // Two separate DeleteTrack (or AddTrack) UndoOp entries can end up referencing the
+    //  same Track - e.g. two applyOperation()/applyOperationGroup() calls for the same
+    //  track before it was actually removed from the earlier one's undo bookkeeping.
+    // PendingOperationList::add() already guards the underlying RT-stage operation against
+    //  this ("Double DeleteTrack. Ignoring."), but that guard doesn't cover the parallel
+    //  Undo-list entries, and deleteUndoOp() has no visibility across entries to catch it -
+    //  it just blindly deletes op.track/op.part. Without this, the second entry for an
+    //  already-freed pointer double-deletes it (crash in the Track/Part destructor).
+    // Same idea for Part via DeletePart/AddPart.
+    // If the caller passed a shared UndoClearDedup (see undo.h), reuse it so a pointer
+    //  duplicated ACROSS lists (e.g. a DeleteTrack in undoList and a stale AddTrack for
+    //  the same track left in redoList) - or pre-seeded by the caller with pointers about
+    //  to be deleted elsewhere (e.g. still-live tracks in Song::_midis/_waves) - is also
+    //  only ever deleted once. Otherwise fall back to a call-local context, so this only
+    //  dedupes within this one list, matching the previous behavior.
+    UndoClearDedup localDedup;
+    UndoClearDedup& dd = dedup ? *dedup : localDedup;
+
     if (this->isUndo)
     {
       for(iUndo iu = begin(); iu != end(); ++iu)
       {
         Undo& u = *iu;
         for(iUndoOp i = u.begin(); i != u.end(); ++i)
-          deleteUndoOp(*i, true, false);
+        {
+          UndoOp& op = *i;
+          // This branch calls deleteUndoOp(op, true, false) below, so only DeleteTrack/
+          //  DeletePart entries actually delete anything here (doUndos == true).
+          if(op.type == UndoOp::DeleteTrack && op.track && !dd.tracks.insert(op.track).second)
+          {
+            fprintf(stderr, "UndoList::clearDelete: duplicate DeleteTrack track:%p in undo list, skipping\n", op.track);
+            op.track = nullptr;
+          }
+          else if(op.type == UndoOp::DeletePart && op.part && !dd.parts.insert(op.part).second)
+          {
+            fprintf(stderr, "UndoList::clearDelete: duplicate DeletePart part:%p in undo list, skipping\n", op.part);
+            op.part = nullptr;
+          }
+          deleteUndoOp(op, true, false);
+        }
         u.clear();
       }
     }
@@ -631,7 +668,22 @@ void UndoList::clearDelete()
       {
         Undo& u = *iu;
         for(riUndoOp i = u.rbegin(); i != u.rend(); ++i)
-          deleteUndoOp(*i, false, true);
+        {
+          UndoOp& op = *i;
+          // This branch calls deleteUndoOp(op, false, true) below, so only AddTrack/
+          //  AddPart entries actually delete anything here (doRedos == true).
+          if(op.type == UndoOp::AddTrack && op.track && !dd.tracks.insert(op.track).second)
+          {
+            fprintf(stderr, "UndoList::clearDelete: duplicate AddTrack track:%p in redo list, skipping\n", op.track);
+            op.track = nullptr;
+          }
+          else if(op.type == UndoOp::AddPart && op.part && !dd.parts.insert(op.part).second)
+          {
+            fprintf(stderr, "UndoList::clearDelete: duplicate AddPart part:%p in redo list, skipping\n", op.part);
+            op.part = nullptr;
+          }
+          deleteUndoOp(op, false, true);
+        }
         u.clear();
       }
     }
@@ -2324,11 +2376,61 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
 
 UndoOp::UndoOp()
 {
-  type=UndoOp::DoNothing;
+  // Every UndoType only sets the union arm(s) and members it actually
+  // uses. Since all the arms of the two anonymous unions alias the same
+  // bytes, and copies of UndoOp (e.g. into std::list<UndoOp> via
+  // push_back/insert) read every member regardless of 'type', an
+  // uninitialized arm can be read as e.g. an indeterminate bool - which
+  // is UB and trips UBSan ("load of invalid value for type bool").
+  // Explicitly zero every member of every arm so there's always a
+  // well-defined baseline. (NOTE: memset/offsetof was tried here first,
+  // but UndoOp is not standard-layout, so both are rejected by
+  // -Werror=invalid-offsetof / -Werror=class-memaccess. Writing to a
+  // union member is always well-defined, unlike reading an inactive one,
+  // so explicit per-member assignment is the correct fix, not a
+  // workaround.)
+  a = 0; b = 0; c = 0; d = 0; e = 0;
+  oldTrack = nullptr; old_partlen_or_pos = 0; new_partlen_or_pos = 0; old_partlen = 0; new_partlen = 0;
+  channel = 0; ctrl = 0; oVal = 0; nVal = 0;
+  startframe = 0; endframe = 0; tmpwavfile = nullptr;
+  oldMarker = nullptr; newMarker = nullptr;
+  _oldPropValue = 0; _newPropValue = 0;
+  _audioCtrlIdModify = 0; _eraseCtrlList = nullptr; _addCtrlList = nullptr;
+  _recoverableEraseCtrlList = nullptr; _recoverableAddCtrlList = nullptr; _doNotEraseCtrlList = nullptr;
+  _pluginI = nullptr; _pluginConfiguration = nullptr; _ctrlListList = nullptr; _midiAudioCtrlMap = nullptr;
+  _effectRackPos = 0; _newEffectRackPos = 0;
+  _plugMoveSrcTrack = nullptr; _plugMoveDstConfiguration = nullptr; _plugMoveDstCtrlListList = nullptr;
+  _plugMoveDstMidiAudioCtrlMap = nullptr; _plugMoveSrcEffectRackPos = 0; _plugMoveDstEffectRackPos = 0;
+  _audioCtrlID = 0; _audioCtrlFrame = 0; _audioNewCtrlFrame = 0; _audioCtrlVal = 0.0; _audioNewCtrlVal = 0.0;
+  _midiPort = nullptr; _oldMidiInstrument = nullptr; _newMidiInstrument = nullptr;
+  _audioCtrlListSelect = nullptr; _audioCtrlSelectFrame = 0;
+  _audioCtrlIdStruct = 0; _audioCtrlFrameStruct = 0; _audioCtrlValStruct = nullptr;
+  _audioCtrlIdAddDel = 0; _audioCtrlFrameAddDel = 0; _audioCtrlValAddDel = 0.0;
+  _audioCtrlValFlagsAddDel = static_cast<CtrlVal::CtrlValueFlags>(0);
+  _oldAudCtrlMoveMode = false; _newAudCtrlMoveMode = false;
+  _audioCtrlOldPasteEraseOpts = static_cast<CtrlList::PasteEraseOptions>(0);
+  _audioCtrlNewPasteEraseOpts = static_cast<CtrlList::PasteEraseOptions>(0);
+  routeFrom = nullptr; routeTo = nullptr;
+  _oldName = nullptr; _newName = nullptr;
+  trackno = 0;
+
+  // Second (smaller) anonymous union.
+  events_offset = 0;
+  events_offset_time_type = static_cast<Pos::TType>(0);
+  _noEndAudioCtrlMoveMode = false;
+
+  type = UndoOp::DoNothing;
+  selected = false;
+  selected_old = false;
+  doCtrls = false;
+  doClones = false;
+  track = nullptr;
+  part = nullptr;
   _noUndo = true;
 }
 
 UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==AddKey || type_==DeleteKey || type_== ModifyKey ||
              type_==AddTempo || type_==DeleteTempo || type_==ModifyTempo || 
@@ -2466,7 +2568,8 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
       }
 
 UndoOp::UndoOp(UndoType type_, int tick, const MusECore::TimeSignature old_sig, const MusECore::TimeSignature new_sig, bool noUndo)
-{
+: UndoOp()
+      {
       assert(type_==ModifySig);
       type    = type_;
       a  = tick;
@@ -2478,6 +2581,7 @@ UndoOp::UndoOp(UndoType type_, int tick, const MusECore::TimeSignature old_sig, 
 }
 
 UndoOp::UndoOp(UndoType type_, int n, const Track* track_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==AddTrack || type_==DeleteTrack);
       assert(track_);
@@ -2489,6 +2593,7 @@ UndoOp::UndoOp(UndoType type_, int n, const Track* track_, bool noUndo)
       }
 
 UndoOp::UndoOp(UndoType type_, const Part* part_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==AddPart || type_==DeletePart);
       assert(part_);
@@ -2499,7 +2604,8 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool noUndo)
       }
       
 UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_, bool noUndo)
-{
+: UndoOp()
+      {
     assert(type_==SelectPart);
     assert(part_);
     
@@ -2512,7 +2618,8 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_,
 
 UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, unsigned int new_len_or_pos,
                Pos::TType new_time_type_, const Track* oTrack, const Track* nTrack, bool noUndo)
-{
+: UndoOp()
+      {
     assert(type_== MovePart);
     assert(part_);
 
@@ -2563,7 +2670,8 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, u
 
 UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_pos, unsigned int new_pos, unsigned int old_len, unsigned int new_len,
                int64_t events_offset_, Pos::TType new_time_type_, bool noUndo)
-{
+: UndoOp()
+      {
     assert(type_ == ModifyPartStart);
     assert(part_);
 
@@ -2580,7 +2688,8 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_pos, unsigned
 
 UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len, unsigned int new_len,
                int64_t events_offset_, Pos::TType new_time_type_, bool noUndo)
-{
+: UndoOp()
+      {
     assert(type_== ModifyPartLength);
     assert(part_);
 
@@ -2594,6 +2703,7 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len, unsigned
 }
 
 UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* part_, bool doCtrls_, bool doClones_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==ModifyEvent);
       assert(part_);
@@ -2608,6 +2718,7 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* p
       }
 
 UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, bool b_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==DeleteEvent || type_==AddEvent || type_==SelectEvent);
       assert(part_);
@@ -2629,6 +2740,7 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, boo
       }
       
 UndoOp::UndoOp(UndoType type_, const Marker& oldMarker_, const Marker& newMarker_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==ModifyMarker);
       type    = type_;
@@ -2638,6 +2750,7 @@ UndoOp::UndoOp(UndoType type_, const Marker& oldMarker_, const Marker& newMarker
       }
 
 UndoOp::UndoOp(UndoType type_, const Marker& marker_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==AddMarker || type_==DeleteMarker);
       type    = type_;
@@ -2652,6 +2765,7 @@ UndoOp::UndoOp(UndoType type_, const Marker& marker_, bool noUndo)
       }
 
 UndoOp::UndoOp(UndoType type_, const Marker& marker_, unsigned int new_pos, Pos::TType new_time_type, bool noUndo)
+      : UndoOp()
       {
       assert(type_==SetMarkerPos);
       type    = type_;
@@ -2662,6 +2776,7 @@ UndoOp::UndoOp(UndoType type_, const Marker& marker_, unsigned int new_pos, Pos:
       }
 
 UndoOp::UndoOp(UndoType type_, const Event& changedEvent, const QString& changeData, int startframe_, int endframe_, bool noUndo)
+      : UndoOp()
       {
       assert(type_==ModifyClip);
       
@@ -2674,7 +2789,8 @@ UndoOp::UndoOp(UndoType type_, const Event& changedEvent, const QString& changeD
       }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_name, const QString& new_name, bool noUndo)
-{
+: UndoOp()
+      {
     assert(type_==ModifyPartName);
     assert(part_);
     
@@ -2686,7 +2802,8 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_nam
 }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_name, const QString& new_name, bool noUndo)
-{
+: UndoOp()
+      {
   assert(type_==ModifyTrackName);
   assert(track_);
     
@@ -2698,7 +2815,8 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_n
 }
 
 UndoOp::UndoOp(UndoType type_, int ctrlID, unsigned int frame, const CtrlVal& cv, const Track* track_, bool noUndo)
-{
+: UndoOp()
+      {
   assert(type_== AddAudioCtrlValStruct);
   assert(track_);
 
@@ -2713,7 +2831,8 @@ UndoOp::UndoOp(UndoType type_, int ctrlID, unsigned int frame, const CtrlVal& cv
 UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int ctrlID_, CtrlList* eraseCtrlList, CtrlList* addCtrlList,
                CtrlList* recoverableEraseCtrlList, CtrlList* recoverableAddCtrlList, CtrlList* doNotEraseCtrlList,
                bool noEndAudioCtrlMoveMode, bool noUndo)
-{
+: UndoOp()
+      {
   assert(type_== ModifyAudioCtrlValList);
   assert(track_);
   assert(eraseCtrlList || addCtrlList || recoverableEraseCtrlList || recoverableAddCtrlList || doNotEraseCtrlList);
@@ -2732,7 +2851,8 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int ctrlID_, CtrlLis
 
 UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
   double c_, double d_, double e_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_ == ModifyTrackChannel || type_ == DeleteAudioCtrlVal ||
     type_ == SetTrackRecord || type_ == SetTrackMute || type_ == SetTrackSolo ||
     type_ == SetTrackRecMonitor || type_ == SetTrackOff || type_ == AddAudioCtrlVal || type_ == ModifyAudioCtrlVal ||
@@ -2786,7 +2906,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
 
 UndoOp::UndoOp(UndoType type_, const Track *track_, PluginConfiguration *pluginConfiguration_,
              int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== ChangeRackEffectPlugin);
   assert(track_);
   assert(pluginConfiguration_);
@@ -2803,7 +2924,8 @@ UndoOp::UndoOp(UndoType type_, const Track *track_, PluginConfiguration *pluginC
 
 UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &pluginConfiguration_,
              int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== ChangeRackEffectPlugin);
   assert(track_);
   type = type_;
@@ -2819,7 +2941,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &p
 
 UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_,
                int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== ChangeRackEffectPlugin);
   assert(track_);
   type = type_;
@@ -2835,7 +2958,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_,
 
 UndoOp::UndoOp(UndoType type_, const Track* srcTrack_, const Track* dstTrack_,
                int srcEffectRackPos_, int dstEffectRackPos_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== MoveRackEffectPlugin);
   assert(srcTrack_);
   assert(dstTrack_);
@@ -2851,7 +2975,8 @@ UndoOp::UndoOp(UndoType type_, const Track* srcTrack_, const Track* dstTrack_,
 }
 
 UndoOp::UndoOp(UndoType type_, CtrlList* ctrlList_, unsigned int frame_, bool oldSelected_, bool newSelected_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== SelectAudioCtrlVal);
   type = type_;
   _noUndo = noUndo_;
@@ -2862,7 +2987,8 @@ UndoOp::UndoOp(UndoType type_, CtrlList* ctrlList_, unsigned int frame_, bool ol
 }
 
 UndoOp::UndoOp(UndoType type_, CtrlList::PasteEraseOptions newOpts_, bool noUndo_)
-{
+: UndoOp()
+      {
   assert(type_== SetAudioCtrlPasteEraseMode);
   type = type_;
   _noUndo = noUndo_;
@@ -2871,7 +2997,8 @@ UndoOp::UndoOp(UndoType type_, CtrlList::PasteEraseOptions newOpts_, bool noUndo
 }
 
 UndoOp::UndoOp(UndoType type_, MidiPort* mp, MidiInstrument* instr, bool noUndo)
-{
+: UndoOp()
+      {
   assert(type_== SetInstrument);
   assert(mp);
   assert(instr);
@@ -2883,7 +3010,8 @@ UndoOp::UndoOp(UndoType type_, MidiPort* mp, MidiInstrument* instr, bool noUndo)
 }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, bool noUndo)
-{
+: UndoOp()
+      {
   assert(type_== EnableAllAudioControllers || type_ == BeginAudioCtrlMoveMode || type_ == EndAudioCtrlMoveMode);
   type = type_;
   _noUndo = noUndo;
@@ -2892,6 +3020,7 @@ UndoOp::UndoOp(UndoOp::UndoType type_, bool noUndo)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 UndoOp::UndoOp(UndoOp::UndoType type_, const Route& route_from_, const Route& route_to_, bool noUndo)
+      : UndoOp()
       {
       assert(type_ == AddRoute || type_ == DeleteRoute);
       _noUndo = noUndo;
@@ -5484,6 +5613,30 @@ void Song::executeOperationGroup1(Undo& operations)
 
 void Song::executeOperationGroup3(Undo& operations)
       {
+      // Close wave event sndfile file handles BEFORE executeNonRTStage() runs -
+      //  that call can actually delete Track/Part objects (e.g. deleting a SynthI
+      //  via a batched DeleteMidiDevice op also frees its Track sub-object, since
+      //  SynthI multiply-inherits MidiDevice). The DeleteTrack/DeletePart cases
+      //  below only get an index/pointer copied from *before* the delete, so by
+      //  the time this function reaches them the object may already be freed -
+      //  confirmed by ASan as a heap-use-after-free at editable_track->closeAllParts().
+      // It should not be the job of the pending operations list to do this.
+      // TODO Coordinate close/open with part mute and/or track off.
+      for (iUndoOp i = operations.begin(); i != operations.end(); ++i) {
+            if(i->type == UndoOp::DeleteTrack)
+            {
+              Track* const t = const_cast<Track*>(i->track);
+              if(t)
+                t->closeAllParts();
+            }
+            else if(i->type == UndoOp::DeletePart)
+            {
+              Part* const p = const_cast<Part*>(i->part);
+              if(p)
+                p->closeAllEvents();
+            }
+      }
+
       pendingOperations.executeNonRTStage();
 #ifdef _UNDO_DEBUG_
       fprintf(stderr, "Song::executeOperationGroup3 *** Calling pendingOperations.clear()\n");
@@ -5493,7 +5646,7 @@ void Song::executeOperationGroup3(Undo& operations)
       for (iUndoOp i = operations.begin(); i != operations.end(); ) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
-            Part* editable_part = const_cast<Part*>(i->part); // uncomment if needed
+// uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
                         // --------------------------------------------------------------------------------
@@ -5590,10 +5743,9 @@ void Song::executeOperationGroup3(Undo& operations)
                         showPendingPluginGuis(i->trackno, -1);
                         updateUiWindowTitles(i->trackno, -1);
 
-                        // Ensure that wave event sndfile file handles are closed.
-                        // It should not be the job of the pending operations list to do this.
-                        // TODO Coordinate close/open with part mute and/or track off.
-                        editable_track->closeAllParts();
+                        // closeAllParts() for this track was already done in the pre-pass
+                        //  above, before pendingOperations.executeNonRTStage() potentially
+                        //  freed it - editable_track may be a dangling pointer here now.
                         break;
                   case UndoOp::ModifyTrackName:
                         showPendingPluginGuis(editable_track);
@@ -5604,10 +5756,9 @@ void Song::executeOperationGroup3(Undo& operations)
                         updateUiWindowTitles(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
                         break;
                   case UndoOp::DeletePart:
-                        // Ensure that wave event sndfile file handles are closed.
-                        // It should not be the job of the pending operations list to do this.
-                        // TODO Coordinate close/open with part mute and/or track off.
-                        editable_part->closeAllEvents();
+                        // closeAllEvents() for this part was already done in the pre-pass
+                        //  above, before pendingOperations.executeNonRTStage() potentially
+                        //  freed it - editable_part may be a dangling pointer here now.
                         break;
                   case UndoOp::DeleteEvent: {
                           if(!i->nEvent.empty())

@@ -1,6 +1,12 @@
 #ifndef PLUGINDIALOG_H
 #define PLUGINDIALOG_H
 
+// Must precede any use of CLAP_SUPPORT below (the SelectedPluginTypes enum is
+// guarded by it). Including config.h here makes the header self-contained
+// instead of depending on the includer's order (globaldefs.h/globals.h do not
+// pull in config.h, so without this SEL_TYPE_CLAP would be silently dropped).
+#include "config.h"
+
 #include "ui_plugindialogbase.h"
 #include <QDialog>
 #include <QTreeWidgetItem>
@@ -31,7 +37,11 @@ class PluginItem : public QTreeWidgetItem {
 class PluginDialog : public QDialog {
       Q_OBJECT
       enum SelectedPluginPortTypes { SEL_PORT_SM, SEL_PORT_S, SEL_PORT_M, SEL_PORT_ALL };
-      enum SelectedPluginTypes { SEL_TYPE_DSSI, SEL_TYPE_LADSPA, SEL_TYPE_LV2, SEL_TYPE_VST, SEL_TYPE_WINE_VST, SEL_TYPE_ALL};
+      enum SelectedPluginTypes { SEL_TYPE_DSSI, SEL_TYPE_LADSPA, SEL_TYPE_LV2, SEL_TYPE_VST, SEL_TYPE_WINE_VST,
+#ifdef CLAP_SUPPORT
+            SEL_TYPE_CLAP,
+#endif
+            SEL_TYPE_ALL};
       enum { COL_NAME, COL_TYPE,
              COL_AUDIO_IN, COL_AUDIO_OUT, COL_CTRL_IN, COL_CTRL_OUT,
              COL_INPLACE, COL_FIXED_BLOCK, COL_POWER_2,

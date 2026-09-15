@@ -126,6 +126,7 @@ void SS_initPlugins(const QString& hostCachePath)
       case MusEPlugin::PluginTypeDSSIVST:
       case MusEPlugin::PluginTypeVST:
       case MusEPlugin::PluginTypeLV2:
+      case MusEPlugin::PluginTypeCLAP:
       case MusEPlugin::PluginTypeLinuxVST:
       case MusEPlugin::PluginTypeMESS:
       case MusEPlugin::PluginTypeMETRONOME:

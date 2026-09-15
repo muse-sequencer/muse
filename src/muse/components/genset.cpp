@@ -455,6 +455,12 @@ void GlobalSettingsConfig::updateSettings()
                   break;
                   }
             }
+      for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
+            if (divisions[i] == MusEGlobal::config.defaultDivision) {
+                  midiDivisionSelectDefault->setCurrentIndex(i);
+                  break;
+                  }
+            }
       for (unsigned i = 0; i < sizeof(selectableAudioBufSizes)/sizeof(*selectableAudioBufSizes); ++i) {
             if (selectableAudioBufSizes[i] == MusEGlobal::config.deviceAudioBufSize) {
                   deviceAudioSize->setCurrentIndex(i);
@@ -564,6 +570,11 @@ void GlobalSettingsConfig::updateSettings()
       pluginLv2PathList->clear();
       pluginLv2PathList->addItems(MusEGlobal::config.pluginLv2PathList);
 
+#ifdef CLAP_SUPPORT
+      pluginClapPathList->clear();
+      pluginClapPathList->addItems(MusEGlobal::config.pluginClapPathList);
+#endif
+
       pluginRescanButton->setChecked(MusEGlobal::config.pluginCacheTriggerRescan);
 
       cbTabPianoroll->setChecked(TopWin::_openTabbed[TopWin::PIANO_ROLL]);
@@ -641,6 +652,10 @@ void GlobalSettingsConfig::apply()
 
       int div            = midiDivisionSelect->currentIndex();
       const int new_div  = divisions[div];
+
+      const int def_div_idx = midiDivisionSelectDefault->currentIndex();
+      if(def_div_idx >= 0 && def_div_idx < (int)(sizeof(divisions)/sizeof(*divisions)))
+        MusEGlobal::config.defaultDivision = divisions[def_div_idx];
       
       MusEGlobal::config.autoSave = autoSaveCheckBox->isChecked();
       MusEGlobal::config.scrollableSubMenus = scrollableSubmenusCheckbox->isChecked();
@@ -704,6 +719,12 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.pluginLv2PathList.clear();
       for (int i = 0; i < pluginLv2PathList->count(); ++i)
             MusEGlobal::config.pluginLv2PathList << pluginLv2PathList->item(i)->text();
+
+#ifdef CLAP_SUPPORT
+      MusEGlobal::config.pluginClapPathList.clear();
+      for (int i = 0; i < pluginClapPathList->count(); ++i)
+            MusEGlobal::config.pluginClapPathList << pluginClapPathList->item(i)->text();
+#endif
       
       MusEGlobal::config.pluginCacheTriggerRescan = pluginRescanButton->isChecked();
       
@@ -804,7 +825,14 @@ void GlobalSettingsConfig::addPluginPath()
       if(pluginLv2PathList->currentItem())
         path = pluginLv2PathList->currentItem()->text();
     break;
-    
+
+#ifdef CLAP_SUPPORT
+    case ClapTab:
+      if(pluginClapPathList->currentItem())
+        path = pluginClapPathList->currentItem()->text();
+    break;
+#endif
+
     default:
     break;
   }
@@ -835,7 +863,13 @@ void GlobalSettingsConfig::addPluginPath()
     case Lv2Tab:
       pluginLv2PathList->addItem(new_path);
     break;
-    
+
+#ifdef CLAP_SUPPORT
+    case ClapTab:
+      pluginClapPathList->addItem(new_path);
+    break;
+#endif
+
     default:
     break;
   }
@@ -870,6 +904,13 @@ void GlobalSettingsConfig::editPluginPath()
       if(pluginLv2PathList->currentItem())
         path = pluginLv2PathList->currentItem()->text();
     break;
+
+#ifdef CLAP_SUPPORT
+    case ClapTab:
+      if(pluginClapPathList->currentItem())
+        path = pluginClapPathList->currentItem()->text();
+    break;
+#endif
     
     default:
     break;
@@ -906,7 +947,14 @@ void GlobalSettingsConfig::editPluginPath()
       if(pluginLv2PathList->currentItem())
         pluginLv2PathList->currentItem()->setText(new_path);
     break;
-    
+
+#ifdef CLAP_SUPPORT
+    case ClapTab:
+      if(pluginClapPathList->currentItem())
+        pluginClapPathList->currentItem()->setText(new_path);
+    break;
+#endif
+
     default:
     break;
   }
@@ -950,7 +998,14 @@ void GlobalSettingsConfig::removePluginPath()
       foreach(QListWidgetItem* item, pluginLv2PathList->selectedItems())
         delete item;
     break;
-    
+
+#ifdef CLAP_SUPPORT
+    case ClapTab:
+      foreach(QListWidgetItem* item, pluginClapPathList->selectedItems())
+        delete item;
+    break;
+#endif
+
     default:
     return;
   }
@@ -980,6 +1035,12 @@ void GlobalSettingsConfig::movePluginPathUp()
     case Lv2Tab:
       list = pluginLv2PathList;
     break;
+
+#ifdef CLAP_SUPPORT
+    case ClapTab:
+      list = pluginClapPathList;
+    break;
+#endif
     
     default:
     break;
@@ -1020,6 +1081,12 @@ void GlobalSettingsConfig::movePluginPathDown()
     case Lv2Tab:
       list = pluginLv2PathList;
     break;
+
+#ifdef CLAP_SUPPORT
+    case ClapTab:
+      list = pluginClapPathList;
+    break;
+#endif
     
     default:
     break;

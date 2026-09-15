@@ -60,6 +60,10 @@
 #include "undo.h"
 #include "operations.h"
 
+#ifdef CLAP_SUPPORT
+#include "clap_host_lib.h"
+#endif
+
 #ifdef _WIN32
 #define pipe(fds) _pipe(fds, 4096, _O_BINARY)
 #endif
@@ -707,6 +711,12 @@ void Audio::shutdown()
 void Audio::process(unsigned frames)
       {
       _curCycleFrames = frames;
+
+      // Capture the RT thread once (cheap store; the value is stable per backend).
+      const std::thread::id curId = std::this_thread::get_id();
+      if(_audioThreadId.load(std::memory_order_relaxed) != curId)
+        _audioThreadId.store(curId, std::memory_order_relaxed);
+        
       if (!MusEGlobal::checkAudioDevice()) return;
       if (msg) {
             processMsg(msg);
@@ -1479,12 +1489,18 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       //  is 'turned on', if there was a backlog of events while it was off, then they all happen at once.  Tim.
       for(TrackList::size_type it = 0; it < tl_sz; ++it) 
       {
-        atrack = static_cast<AudioTrack*>(tl[it]);
-        if(atrack->isMidiTrack())
+        if(tl[it]->isMidiTrack())
           continue;
+        atrack = static_cast<AudioTrack*>(tl[it]);
         if(!atrack->processed() && (atrack->type() != Track::AUDIO_OUTPUT))
         {
           channels = atrack->channels();
+          if(channels <= 0)
+          {
+            fprintf(stderr, "Audio::process(): no channels - dummy-buffer fallback, track:%s\n",
+                    atrack->name().toLocal8Bit().constData());
+            continue;
+          }
           // Just a dummy buffer.
           float* buffer[channels];
           float data[frames * channels];
@@ -1586,6 +1602,16 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_WAIT:
                   // Do nothing.
                   break;
+
+#ifdef CLAP_SUPPORT
+            case AUDIO_CLAP_STOP_PROCESSING:
+                  // Runs on the audio thread (processMsg is called at the top of
+                  // Audio::process(), so is_audio_thread() is satisfied and no
+                  // graph process() is concurrent). Diva/u-he require
+                  // stop_processing() exactly here.
+                  ClapInstanceCore::stopAllProcessingOnAudioThread();
+                  break;
+#endif
 
             default:
                   MusEGlobal::song->processMsg(msg);

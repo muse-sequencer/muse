@@ -78,6 +78,8 @@ class Xml;
 class CtrlList;
 class NoteNameList;
 
+// Thin forwarder - see enumerateJackMidiDevicesImpl() in jackmidi.h/jackmidi.cpp for the
+//  actual Jack-midi-only implementation.
 void enumerateJackMidiDevices();
 void populateMidiPorts();
 

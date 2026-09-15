@@ -1,7 +1,65 @@
+# ---------------------------------------------------------
+# CMake build artifacts
+# ---------------------------------------------------------
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/Makefile
+**/install_manifest.txt
+**/CTestTestfile.cmake
+**/CMakeDetermineCompilerABI_*.bin
+**/CMakeSystem.cmake
+**/CMakeDirectoryInformation.cmake
+**/CMakeRuleHashes.txt
+**/CMakeConfigureLog.yaml
+
+# Keep only hand-written .cmake modules
+# (CMakeLists.txt and src/cmake/*.cmake remain tracked)
+
+# ---------------------------------------------------------
+# Qt MOC / UIC / RCC generated files
+# ---------------------------------------------------------
+**/moc_*.cpp
+**/moc_*.cpp_parameters
+**/ui_*.h
+**/qrc_*.cpp
+
+# Keep *.qrc.depends (these are real project files)
+!**/*.qrc.depends
+
+# ---------------------------------------------------------
+# Build directories
+# ---------------------------------------------------------
+build/
+build-*/
+**/CMakeTmp/
+**/CMakeFiles/
+
+# ---------------------------------------------------------
+# Editor / IDE junk
+# ---------------------------------------------------------
 *~
-src/build*
-src/*.kdev4
-src/CMakeLists.txt.user
-build*
+*.swp
+*.kate-swp
+*.kdev4
 *.code-workspace
-src/*.code-workspace
+.vscode/
+.idea/
+
+# ---------------------------------------------------------
+# Compiled objects / libs
+# ---------------------------------------------------------
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.dylib
+
+# ---------------------------------------------------------
+# Misc
+# ---------------------------------------------------------
+*.log
+*.cache
+*.tmp
+

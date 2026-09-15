@@ -817,6 +817,23 @@ void Audio::msgAudioWait()
       sendMsg(&msg);
       }
 
+#ifdef CLAP_SUPPORT
+//---------------------------------------------------------
+//   msgClapStopProcessing
+//    Ask the audio thread to call stop_processing() on all live CLAP
+//    instances. sendMsg() blocks until processMsg() has run it on the audio
+//    thread (or, if the engine isn't running, runs it inline — callers must
+//    only use this while _running, see deactivateAllBeforeAudioShutdown()).
+//---------------------------------------------------------
+
+void Audio::msgClapStopProcessing()
+      {
+      AudioMsg msg;
+      msg.id     = AUDIO_CLAP_STOP_PROCESSING;
+      sendMsg(&msg);
+      }
+#endif
+
 //---------------------------------------------------------
 //   msgSetMidiDevice
 //    to avoid timeouts in the RT-thread, setMidiDevice

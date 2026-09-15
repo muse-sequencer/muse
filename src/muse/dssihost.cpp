@@ -77,6 +77,14 @@ void initDSSI()
     const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
     switch(info._type)
     {
+#ifdef CLAP_SUPPORT
+      case MusEPlugin::PluginTypeCLAP:
+        // CLAP is registered by initCLAP(), never here. Must NOT fall through
+        // into the DSSI case below, or CLAP entries get wrapped in a DssiSynth
+        // and DssiSynth::reference() then fails on the CLAP id.
+      break;
+#endif
+
       case MusEPlugin::PluginTypeDSSI:
       case MusEPlugin::PluginTypeDSSIVST:
       {
