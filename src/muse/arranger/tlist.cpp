@@ -218,7 +218,7 @@ bool TList::event(QEvent *event)
     if (event->type() == QEvent::ToolTip) {
         QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
         MusECore::TrackList* l = MusEGlobal::song->tracks();
-        int idx = 0;
+        int idx [[maybe_unused]] = 0;
         int yy  = -ypos;
         for (MusECore::iTrack i = l->begin(); i != l->end(); ++idx, yy += (*i)->height(), ++i) {
             MusECore::Track* track = *i;
@@ -317,7 +317,7 @@ void TList::paint(const QRect& r)
 
     MusECore::TrackList* l = MusEGlobal::song->tracks();
     const MusECore::Track* cur_sel_track = l->currentSelection();
-    int idx = 0;
+    int idx [[maybe_unused]] = 0;
     int yy  = -ypos;
     for (MusECore::iTrack i = l->begin(); i != l->end(); ++idx, yy += (*i)->height(), ++i) {
         MusECore::Track* track = *i;
@@ -654,7 +654,7 @@ void TList::paint(const QRect& r)
 void TList::maybeUpdateVolatileCustomColumns()
 {
     MusECore::TrackList* l = MusEGlobal::song->tracks();
-    int idx = 0;
+    int idx [[maybe_unused]] = 0;
     int yy  = -ypos;
     for (MusECore::iTrack i = l->begin(); i != l->end(); ++idx, yy += (*i)->height(), ++i)
     {

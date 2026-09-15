@@ -27,6 +27,7 @@
 
 #include <stdint.h>
 #include <atomic>
+#include <thread>
 
 #include "type_defs.h"
 #include "thread.h"
@@ -118,6 +119,14 @@ class Audio {
    public:
       enum State {STOP, START_PLAY, PLAY, LOOP1, LOOP2, SYNC, PRECOUNT};
       enum BounceState { BounceOff = 0, BounceStart, BounceOn };
+
+
+      // The thread id of the real audio/RT thread. Captured on first entry to
+      // process() because the RT thread is owned by the backend (JACK's client
+      // thread, or the dummy device's Thread), so there is no single creation
+      // site to grab it from. Used by the CLAP host clap.thread-check extension.
+      std::atomic<std::thread::id> _audioThreadId { std::thread::id() };
+      bool isAudioThread() const { return std::this_thread::get_id() == _audioThreadId.load(std::memory_order_relaxed); }
 
    private:
       bool _running;          // audio is active

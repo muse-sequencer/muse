@@ -677,6 +677,37 @@ QStringList pluginGetLv2Directories()
 }
 
 //---------------------------------------------------------
+//   pluginGetClapDirectories
+//---------------------------------------------------------
+
+#ifdef CLAP_SUPPORT
+QStringList pluginGetClapDirectories()
+{
+  QStringList sl;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+  QString clapPath = qEnvironmentVariable("CLAP_PATH");
+#else
+  QString clapPath = QString::fromLocal8Bit(qgetenv("CLAP_PATH"));
+#endif
+  if(clapPath.isEmpty())
+  {
+    QString homePath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+    if(!homePath.isEmpty())
+      homePath += QString("/.clap:");
+    clapPath = homePath + QString("/usr/local/lib/clap:/usr/lib/clap");
+  }
+  if(!clapPath.isEmpty())
+// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+#if QT_VERSION >= 0x050e00
+    sl.append(clapPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive));
+#else
+    sl.append(clapPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive));
+#endif
+  return sl;
+}
+#endif // CLAP_SUPPORT
+
+//---------------------------------------------------------
 //   pluginGetDirectories
 //---------------------------------------------------------
 
@@ -703,6 +734,10 @@ QStringList pluginGetDirectories(const QString& museGlobalLib, MusEPlugin::Plugi
 
     case MusEPlugin::PluginTypeLV2:
       return pluginGetLv2Directories();
+    break;
+
+    case MusEPlugin::PluginTypeCLAP:
+      return pluginGetClapDirectories();
     break;
 
     case MusEPlugin::PluginTypeVST:
@@ -748,6 +783,10 @@ const char* pluginCacheFilename(MusEPlugin::PluginType type)
     // Keep so we can delete old files.
     case MusEPlugin::PluginTypeLV2:
       return "lv2_plugins.scan";
+    break;
+
+    case MusEPlugin::PluginTypeCLAP:
+      return "clap_plugins.scan";
     break;
 
     case MusEPlugin::PluginTypeVST:
@@ -808,6 +847,11 @@ MusEPlugin::PluginTypes_t pluginCacheFilesExist(
 
   if(types & MusEPlugin::PluginTypeLV2)
     res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeLV2);
+
+#ifdef CLAP_SUPPORT
+  if(types & MusEPlugin::PluginTypeCLAP)
+    res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeCLAP);
+#endif
 
   if(types & MusEPlugin::PluginTypeVST)
     res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeVST);
@@ -914,6 +958,14 @@ bool readPluginCacheFiles(
     if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeVST))
       res = false;
   }
+
+#ifdef CLAP_SUPPORT
+  if(types & MusEPlugin::PluginTypeCLAP)
+  {
+    if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeCLAP))
+      res = false;
+  }
+#endif
 
   if(types & MusEPlugin::PluginTypeUnknown)
   {

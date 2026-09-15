@@ -115,6 +115,7 @@ extern bool loadMESS;
 extern bool loadVST;
 extern bool loadNativeVST;
 extern bool loadDSSI;
+extern bool loadCLAP;
 extern bool usePythonBridge;
 extern QString pythonBridgePyroNSHostname;
 extern QString pythonBridgePyroNSPort;

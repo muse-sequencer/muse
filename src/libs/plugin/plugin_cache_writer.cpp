@@ -1858,6 +1858,50 @@ void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*de
 }
 #endif // VST_NATIVE_SUPPORT
 
+//---------------------------------------------------------
+//   scanClapPlugins
+//---------------------------------------------------------
+
+#ifdef CLAP_SUPPORT
+static void scanClapPluginDir(
+  const QString& dirname,
+  PluginScanList* list,
+  bool scanPorts,
+  bool debugStdErr,
+  int recurseLevel = 0)
+{
+  const int max_levels = 10;
+  if(recurseLevel >= max_levels)
+  {
+    std::fprintf(stderr, "scanClapPluginDir: too deep (max:%d) at:%s\n",
+                 max_levels, dirname.toLocal8Bit().constData());
+    return;
+  }
+  QDir pluginDir(dirname, QString(), QDir::Name | QDir::IgnoreCase,
+                 QDir::Drives | QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
+  if(!pluginDir.exists())
+    return;
+  for(const QFileInfo& fi : pluginDir.entryInfoList())
+  {
+    if(fi.isDir())
+      scanClapPluginDir(fi.filePath(), list, scanPorts, debugStdErr, recurseLevel + 1);
+    else if(fi.suffix().toLower() == "clap")
+      pluginScan(fi.filePath(), MusEPlugin::PluginTypeCLAP, list, scanPorts, debugStdErr);
+  }
+}
+
+void scanClapPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
+{
+  const QStringList sl = pluginGetClapDirectories();
+  for(const QString& dir : sl)
+    scanClapPluginDir(dir, list, scanPorts, debugStdErr);
+}
+#else
+void scanClapPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugStdErr*/)
+{
+}
+#endif // CLAP_SUPPORT
+
 #ifdef LV2_USE_PLUGIN_CACHE
 #ifdef LV2_SUPPORT
 
@@ -2679,6 +2723,12 @@ void scanAllPlugins(
     // Now do LinuxVST plugins...
     scanLinuxVSTPlugins(list, scanPorts, debugStdErr);
 
+#ifdef CLAP_SUPPORT
+  if(types & MusEPlugin::PluginTypeCLAP)
+    // Now do CLAP plugins...
+    scanClapPlugins(list, scanPorts, debugStdErr);
+#endif
+
 // SPECIAL for LV2: No need for a cache file. Do not create one here. Read directly into the list later.
 //   if(types & (MusEPlugin::PluginTypeLV2))
 //     // Now do LV2 plugins...
@@ -2798,8 +2848,45 @@ static void findLinuxVSTPluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr
 }
 #endif // VST_NATIVE_SUPPORT
 
+//---------------------------------------------------------
+//   findClapPluginFiles
+//---------------------------------------------------------
 
-// SPECIAL for LV2: No need for a cache file.
+#ifdef CLAP_SUPPORT
+static void findClapPluginFilesDir(const QString& dirname, filepath_set& fplist,
+                                   bool debugStdErr, int recurseLevel = 0)
+{
+  const int max_levels = 10;
+  if(recurseLevel >= max_levels)
+  {
+    std::fprintf(stderr, "findClapPluginFilesDir: too deep (max:%d) at:%s\n",
+                 max_levels, dirname.toLocal8Bit().constData());
+    return;
+  }
+  QDir dir(dirname, QString(), QDir::Name | QDir::IgnoreCase,
+           QDir::Drives | QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
+  if(!dir.exists())
+    return;
+  for(const QFileInfo& fi : dir.entryInfoList())
+  {
+    if(fi.isDir())
+      findClapPluginFilesDir(fi.filePath(), fplist, debugStdErr, recurseLevel + 1);
+    else if(fi.suffix().toLower() == "clap")
+      fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toMSecsSinceEpoch()));
+  }
+}
+
+static void findClapPluginFiles(filepath_set& fplist, bool debugStdErr)
+{
+  const QStringList sl = pluginGetClapDirectories();
+  for(const QString& dir : sl)
+    findClapPluginFilesDir(dir, fplist, debugStdErr);
+}
+#else
+static void findClapPluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr*/)
+{
+}
+#endif // CLAP_SUPPORT
 // Do not find and compare LV2 library files here.
 // This caused problems with identically named plugins
 //  being excluded, and triggering rescans every time.
@@ -2952,6 +3039,12 @@ static void findPluginFiles(const QString& museGlobalLib,
     findLinuxVSTPluginFiles(fplist, debugStdErr);
   }
 
+  if(types & MusEPlugin::PluginTypeCLAP)
+  {
+    // Now do CLAP plugins...
+    findClapPluginFiles(fplist, debugStdErr);
+  }
+
   // SPECIAL for LV2: No need for a cache file.
   // Do not find and compare LV2 library files here.
   // This caused problems with identically named plugins
@@ -3087,6 +3180,12 @@ bool createPluginCacheFiles(
   if(types & MusEPlugin::PluginTypeVST)
     createPluginCacheFile(path, MusEPlugin::PluginTypeVST, list, writePorts,
       museGlobalLib, MusEPlugin::PluginTypeVST, debugStdErr);
+
+#ifdef CLAP_SUPPORT
+  if(types & MusEPlugin::PluginTypeCLAP)
+    createPluginCacheFile(path, MusEPlugin::PluginTypeCLAP, list, writePorts,
+      museGlobalLib, MusEPlugin::PluginTypeCLAP, debugStdErr);
+#endif
 
   if(types & MusEPlugin::PluginTypeUnknown)
     createPluginCacheFile(path, MusEPlugin::PluginTypeUnknown, list, writePorts,

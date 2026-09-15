@@ -25,6 +25,7 @@
 #ifndef __GENSET_H__
 #define __GENSET_H__
 
+#include "config.h"
 #include "ui_gensetbase.h"
 
 #include <QDialog>
@@ -48,7 +49,11 @@ namespace MusEGui {
 class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase {
       Q_OBJECT
 
-      enum PathTab { LadspaTab = 0, DssiTab, VstTab, LinuxVstTab, Lv2Tab };
+      enum PathTab { LadspaTab = 0, DssiTab, VstTab, LinuxVstTab, Lv2Tab,
+#ifdef CLAP_SUPPORT
+                     ClapTab,
+#endif
+                   };
       MusECore::NoteNameList _noteNamesBackup;
 
    private slots:

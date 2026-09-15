@@ -61,6 +61,9 @@ bool StripConfig::isNull() const { return _uuid.isNull(); }
 GlobalConfigValues config = {
       QStringList(),              // pluginLadspaPathList
       QStringList(),              // pluginDssiPathList
+#ifdef CLAP_SUPPORT
+      QStringList(),              // pluginClapPathList
+#endif
       QStringList(),              // pluginVstPathList
       QStringList(),              // pluginLinuxVstPathList
       QStringList(),              // pluginLv2PathList

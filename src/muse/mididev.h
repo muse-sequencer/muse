@@ -85,6 +85,8 @@ typedef LockFreeMPSCRingBuffer<MidiRecordEvent> MidiRecFifo;
 
 class MidiDevice {
    public:
+      friend class ClapSynthIF;
+
       // Types of MusE midi devices.
       enum MidiDeviceType { ALSA_MIDI=0, JACK_MIDI=1, SYNTH_MIDI=2 };
       

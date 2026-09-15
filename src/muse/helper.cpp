@@ -1141,7 +1141,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
         if(cur_list->isEmpty())
           continue;
         
-        int row = 0;
+        int row [[maybe_unused]] = 0; 
         int sz = cur_list->size();
         
         for (int i = 0; i < sz; ++i) 

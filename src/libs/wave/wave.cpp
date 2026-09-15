@@ -788,10 +788,10 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allow
                   if(overwrite)
                     s[ch].peak = 0;
 
-                  float rms = 0.0;
+                  // float rms = 0.0;  // UNUSED VARIABLE - TODO ?
                   for (int i = 0; i < mag; i++) {
                         float fd = data[ch][i];
-                        rms += fd;
+                        // rms += fd;  TODO ?? 
                         int idata = int(fd * 255.0);
                         if (idata < 0)
                               idata = -idata;
@@ -885,10 +885,10 @@ void SndFile::readConverted(SampleV* s, int mag, sf_count_t pos, sf_count_t offs
                   if(overwrite)
                     s[ch].peak = 0;
 
-                  float rms = 0.0;
+                  // float rms = 0.0;  // UNSUED VARIABLE TODO ? 
                   for (int i = 0; i < mag; i++) {
                         float fd = data[ch][i];
-                        rms += fd;
+                        // rms += fd;   // TODO ?? 
                         int idata = int(fd * 255.0);
                         if (idata < 0)
                               idata = -idata;

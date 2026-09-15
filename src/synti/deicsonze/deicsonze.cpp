@@ -2163,10 +2163,10 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
 	new unsigned char[1+MAXSTRLENGTHINITSETPATH];
       dataInitSetPath[0]=SYSEX_INITSETPATH;
       strncpy((char*)&dataInitSetPath[1], _initSetPath.toUtf8().constData(),
-	      MAXSTRLENGTHINITSETPATH);
+	      MAXSTRLENGTHINITSETPATH - 1);
       MusECore::MidiPlayEvent
 	evInitSetPath(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataInitSetPath,
-		      1+MAXSTRLENGTHINITSETPATH);
+		      1+MAXSTRLENGTHINITSETPATH -2);
       _gui->writeEvent(evInitSetPath);
     }
     //load background pix
@@ -2187,11 +2187,11 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       dataBackgroundPixPath[0]=SYSEX_BACKGROUNDPIXPATH;
       strncpy((char*)&dataBackgroundPixPath[1],
 	      _backgroundPixPath.toUtf8().constData(),
-	      MAXSTRLENGTHBACKGROUNDPIXPATH);
+	      MAXSTRLENGTHBACKGROUNDPIXPATH -1);
       MusECore::MidiPlayEvent
 	evBackgroundPixPath(0, 0, MusECore::ME_SYSEX,
 			    (const unsigned char*)dataBackgroundPixPath,
-			    1+MAXSTRLENGTHBACKGROUNDPIXPATH);
+			    1+MAXSTRLENGTHBACKGROUNDPIXPATH -2);
       _gui->writeEvent(evBackgroundPixPath);
     }
     qdn = qdn.nextSibling();
