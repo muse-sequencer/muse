@@ -356,9 +356,24 @@ static SynthI* createSynthInstance(
       SynthI* si = nullptr;
       if (s) {
             si = new SynthI();
+
             QString n;
             n.setNum(s->references());
-            QString instance_name = s->label() + "-" + n;
+            // NEW: 
+            // Use the human-friendly plugin name for the instance/device name.
+            // s->label() is the formal id (for CLAP a reverse-DNS string like
+            // "org.surge-synth-team.surge-xt"), which is fine for matching but
+            // ugly as a track/port name. Fall back to label() if name() is empty.
+            QString base = s->name().isEmpty() ? s->label() : s->name();
+            QString instance_name = base + "-" + n;
+
+            if(s->pluginType() == MusEPlugin::PluginTypeCLAP)
+                base += "-[CLAP]";  // add plugin suffix (?)
+            
+            // OLD, REMOVE LATER: 
+            //QString instance_name = s->label() + "-" + n;
+
+
             //Andrew Deryabin: check si->_sif for NULL as synth instance may not be created.
                if (si->initInstance(s, instance_name)) {
                   delete si;
@@ -998,11 +1013,11 @@ unsigned int SynthI::pbForwardShiftFrames() const
 
 int MessSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval)
       {
-      int i_ctrl;
-      int i_min;
-      int i_max;
-      int i_initval;
-      const char* s_name;
+      int i_ctrl = 0;
+      int i_min = 0;
+      int i_max = 0;
+      int i_initval = 0;
+      const char* s_name = nullptr;
       
       int ret = _mess->getControllerInfo(id, &s_name, &i_ctrl, &i_min, &i_max, &i_initval);
       
@@ -1015,7 +1030,7 @@ int MessSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, i
       if(initval)
         *initval = i_initval;
       if(name)
-        *name = QString(s_name);
+        *name = s_name ? QString(s_name) : QString();
       
       return ret;
       }
@@ -1121,11 +1136,12 @@ void initMidiSynth()
               uri,
               PLUGIN_GET_QSTRING(info._label)))
           {
-            fprintf(stderr, "Ignoring MESS synth name:%s uri:%s path:%s duplicate of path:%s\n",
-                    PLUGIN_GET_QSTRING(info._name).toLocal8Bit().constData(),
-                    uri.toLocal8Bit().constData(),
-                    PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
-                    sy->filePath().toLocal8Bit().constData());
+            if(MusEGlobal::debugMsg && !MusEGlobal::suppressPluginDuplicateWarnings)
+              fprintf(stderr, "Ignoring MESS synth name:%s uri:%s path:%s duplicate of path:%s\n",
+                      PLUGIN_GET_QSTRING(info._name).toLocal8Bit().constData(),
+                      uri.toLocal8Bit().constData(),
+                      PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+                      sy->filePath().toLocal8Bit().constData());
           }
           else
           {
@@ -1140,6 +1156,11 @@ void initMidiSynth()
       case MusEPlugin::PluginTypeDSSIVST:
       case MusEPlugin::PluginTypeVST:
       case MusEPlugin::PluginTypeLV2:
+      #ifdef CLAP_SUPPORT
+      case MusEPlugin::PluginTypeCLAP:
+          // Registered via initCLAP(), not here.
+          break;
+      #endif
       case MusEPlugin::PluginTypeLinuxVST:
       case MusEPlugin::PluginTypeMETRONOME:
       case MusEPlugin::PluginTypeUnknown:

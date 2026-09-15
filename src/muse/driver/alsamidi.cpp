@@ -23,6 +23,8 @@
 
 #include "alsamidi.h"
 
+#include <string>
+
 #ifdef ALSA_SUPPORT
 
 #include <stdio.h>
@@ -957,7 +959,13 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
     }
   }
   
-  MidiPlayEvent buf_ev;
+  // NOTE: buf_ev is intentionally NOT declared here unconditionally. This function runs
+  //  at the sequencer timer rate (2048x/sec by default) for every ALSA device, almost
+  //  always with nothing pending in any buffer. A MidiPlayEvent carries a virtual
+  //  destructor (see mpevent.h), so an unconditional local here means constructing and
+  //  destructing one on every single call regardless of whether it's ever used. Each
+  //  buf_ev below is scoped to only exist when its buffer's size check (already computed
+  //  either way, a cheap atomic load) says there's actually something to read.
 
   // If stopping or not 'running' just purge ALL playback FIFO and container events.
   // But do not clear the user ones. We need to hold on to them until active,
@@ -967,13 +975,17 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
     // Transfer the user lock-free buffer events to the user sorted multi-set.
     // To avoid too many events building up in the buffer while inactive, use the exclusive add.
     const unsigned int usr_buf_sz = eventBuffers(MidiDevice::UserBuffer)->getSize();
-    for(unsigned int i = 0; i < usr_buf_sz; ++i)
+    if(usr_buf_sz > 0)
     {
-      if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+      MidiPlayEvent buf_ev;
+      for(unsigned int i = 0; i < usr_buf_sz; ++i)
       {
-        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
-        if(!rpnReserved || !buf_ev.isNativeRPN())
-          _outUserEvents.addExclusive(buf_ev, rpnReserved);
+        if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+        {
+          // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+          if(!rpnReserved || !buf_ev.isNativeRPN())
+            _outUserEvents.addExclusive(buf_ev, rpnReserved);
+        }
       }
     }
 
@@ -986,25 +998,33 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
   {
     // Transfer the user lock-free buffer events to the user sorted multi-set.
     const unsigned int usr_buf_sz = eventBuffers(MidiDevice::UserBuffer)->getSize();
-    for(unsigned int i = 0; i < usr_buf_sz; ++i)
+    if(usr_buf_sz > 0)
     {
-      if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+      MidiPlayEvent buf_ev;
+      for(unsigned int i = 0; i < usr_buf_sz; ++i)
       {
-        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
-        if(!rpnReserved || !buf_ev.isNativeRPN())
-          _outUserEvents.insert(buf_ev);
+        if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+        {
+          // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+          if(!rpnReserved || !buf_ev.isNativeRPN())
+            _outUserEvents.insert(buf_ev);
+        }
       }
     }
 
     // Transfer the playback lock-free buffer events to the playback sorted multi-set.
     const unsigned int pb_buf_sz = eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
-    for(unsigned int i = 0; i < pb_buf_sz; ++i)
+    if(pb_buf_sz > 0)
     {
-      if(eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+      MidiPlayEvent buf_ev;
+      for(unsigned int i = 0; i < pb_buf_sz; ++i)
       {
-        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
-        if(!rpnReserved || !buf_ev.isNativeRPN())
-          _outPlaybackEvents.insert(buf_ev);
+        if(eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+        {
+          // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+          if(!rpnReserved || !buf_ev.isNativeRPN())
+            _outPlaybackEvents.insert(buf_ev);
+        }
       }
     }
   }
@@ -1123,9 +1143,27 @@ bool initMidiAlsa()
                snd_strerror(error));
             return true;
             }
+
+      // Raise the client's input AND output pools so bursts of events
+      // can't be silently dropped by the kernel sequencer.
+      //  (dense chords, fast CC/pitchbend sweeps, 
+      //     or our own thru/echo output) 
+      // Units are ALSA "cells", not bytes - one cell per ordinary event
+      //  (note on/off, CC, pitchbend etc.); sysex chains multiple cells.
+      // This is MusE's own client-side pool - it applies uniformly to
+      //  events from/to any connected external client, and requires no
+      //  cooperation from the sender/receiver on the other end.
+      if(snd_seq_set_client_pool_input(alsaSeq, 1000) < 0)
+            fprintf(stderr, "Could not set ALSA sequencer input pool size\n");
+      if(snd_seq_set_client_pool_output(alsaSeq, 1000) < 0)
+            fprintf(stderr, "Could not set ALSA sequencer output pool size\n");
             
-      const int inCap  = SND_SEQ_PORT_CAP_SUBS_READ;
-      const int outCap = SND_SEQ_PORT_CAP_SUBS_WRITE;
+      // Combine base and SUBS_ capability bits: some ports (observed e.g. ALSA
+      //  "<input>" client ports, capability 0x3) report plain SND_SEQ_PORT_CAP_READ/WRITE
+      //  but no SUBS_ bits. Checking SUBS_ only silently gave them rwFlags()==0,
+      //  making them disappear from BOTH the input and output routing menus.
+      const int readCap  = SND_SEQ_PORT_CAP_READ  | SND_SEQ_PORT_CAP_SUBS_READ;
+      const int writeCap = SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE;
       
       snd_seq_client_info_t *cinfo;
       snd_seq_client_info_alloca(&cinfo);
@@ -1148,7 +1186,7 @@ bool initMidiAlsa()
                   unsigned int capability = snd_seq_port_info_get_capability(pinfo);
                   if (capability & SND_SEQ_PORT_CAP_NO_EXPORT)  // Ignore ports like "qjackctl" or "port".    p4.0.41
                     continue;
-                  if ((capability & outCap) == 0) {
+                  if ((capability & writeCap) == 0) {
                           const char *name = snd_seq_port_info_get_name(pinfo);
                           if (strcmp("Timer", name) == 0 || 
                               strcmp("Announce", name) == 0 || 
@@ -1174,9 +1212,9 @@ bool initMidiAlsa()
                     dev = new MidiAlsaDevice(adr, QString(dev_name));
                   //MidiAlsaDevice* dev = new MidiAlsaDevice(adr, QString(snd_seq_port_info_get_name(pinfo)));
                   int flags = 0;
-                  if (capability & outCap)
+                  if (capability & writeCap)
                         flags |= 1;
-                  if (capability & inCap)
+                  if (capability & readCap)
                         flags |= 2;
                   dev->setrwFlags(flags);
                   if (MusEGlobal::debugMsg) 
@@ -1219,7 +1257,7 @@ bool initMidiAlsa()
                   unsigned int capability = snd_seq_port_info_get_capability(pinfo);
                   if (capability & SND_SEQ_PORT_CAP_NO_EXPORT)  // Ignore ports like "qjackctl" or "port".    p4.0.41
                     continue;
-                  if ((capability & outCap) == 0) {
+                  if ((capability & writeCap) == 0) {
                           const char *name = snd_seq_port_info_get_name(pinfo);
                           if (strcmp("Timer", name) == 0 || 
                               strcmp("Announce", name) == 0 || 
@@ -1244,9 +1282,9 @@ bool initMidiAlsa()
                     dev = new MidiAlsaDevice(adr, dev_name);
                   //MidiAlsaDevice* dev = new MidiAlsaDevice(adr, QString(snd_seq_port_info_get_name(pinfo)));
                   int flags = 0;
-                  if (capability & outCap)
+                  if (capability & writeCap)
                         flags |= 1;
-                  if (capability & inCap)
+                  if (capability & readCap)
                         flags |= 2;
                   dev->setrwFlags(flags);
                   if(is_thru)             // Don't auto-open Midi Through.
@@ -1296,7 +1334,7 @@ bool initMidiAlsa()
       alsaSeqFdi = pfdi[0].fd;
 
       int port  = snd_seq_create_simple_port(alsaSeq, "MusE Port 0",
-         inCap | outCap | SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_WRITE,
+         readCap | writeCap,
          SND_SEQ_PORT_TYPE_APPLICATION);
       if (port < 0) {
             perror("create port");
@@ -1418,14 +1456,19 @@ void setAlsaClientName(const char* name)
 
 struct AlsaPort {
       snd_seq_addr_t adr;
-      char* name;
+      std::string name;
       int flags;
-      AlsaPort(snd_seq_addr_t a, const char* s, int f) {
-            adr = a;
-            name = strdup(s);
-            flags = f;
-            }
-      //~AlsaPort() { if(name) free(name); }       
+      AlsaPort(snd_seq_addr_t a, const char* s, int f)
+        : adr(a), name(s ? s : ""), flags(f) { }
+      // No custom destructor/copy/move needed: std::string manages its own
+      // memory correctly through all of those. The previous char*+strdup()
+      // version had no copy constructor, so portList.push_back(AlsaPort(...))
+      // shallow-copied the raw pointer from the temporary into the list's
+      // stored copy; the temporary's (then-commented-out) destructor was
+      // supposed to free it, and when later re-enabled that caused a double
+      // free at portList's own destruction (both copies freeing the same
+      // pointer) — confirmed by the "double free or corruption" crash in
+      // ~AlsaPort() at program exit.
       };
 
 static std::list<AlsaPort> portList;
@@ -1487,8 +1530,9 @@ void alsaScanMidiPorts()
       }
       
       QString state;
-      const int inCap  = SND_SEQ_PORT_CAP_SUBS_READ;
-      const int outCap = SND_SEQ_PORT_CAP_SUBS_WRITE;
+      // Combine base and SUBS_ capability bits - see comment in initMidiAlsa().
+      const int readCap  = SND_SEQ_PORT_CAP_READ  | SND_SEQ_PORT_CAP_SUBS_READ;
+      const int writeCap = SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE;
 
       snd_seq_client_info_t* cinfo;
       snd_seq_client_info_alloca(&cinfo);
@@ -1503,8 +1547,8 @@ void alsaScanMidiPorts()
                   unsigned int capability = snd_seq_port_info_get_capability(pinfo);
                   if (capability & SND_SEQ_PORT_CAP_NO_EXPORT)  // Ignore ports like "qjackctl" or "port".    p4.0.41
                     continue;
-                  if (((capability & outCap) == 0)
-                     && ((capability & inCap) == 0))
+                  if (((capability & writeCap) == 0)
+                     && ((capability & readCap) == 0))
                         continue;
                   snd_seq_addr_t adr;
                   const char* name;
@@ -1513,9 +1557,9 @@ void alsaScanMidiPorts()
                   if (adr.client == musePort.client && adr.port == musePort.port)
                         continue;
                   int flags = 0;
-                  if (capability & outCap)
+                  if (capability & writeCap)
                         flags |= 1;
-                  if (capability & inCap)
+                  if (capability & readCap)
                         flags |= 2;
 // fprintf(stderr, "ALSA port add: <%s>, flags %d\n", name, flags);
                   portList.push_back(AlsaPort(adr, name, flags));
@@ -1540,7 +1584,7 @@ void alsaScanMidiPorts()
                         break;
                         }
                   // Search by name if either of the client or port are 0.
-                  if(strcmp(k->name, d->name().toUtf8().constData()) == 0 &&
+                  if(k->name == d->name().toUtf8().constData() &&
                      ((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) || 
                       (d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == k->adr.port) ||
                       (d->adr.port == SND_SEQ_ADDRESS_UNKNOWN && d->adr.client == k->adr.client)))
@@ -1582,20 +1626,20 @@ void alsaScanMidiPorts()
                   if (d == 0)
                         continue;
                   DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts add: checking port:%s client:%d port:%d device:%p %s client:%d port:%d\n", 
-                          k->name, k->adr.client, k->adr.port, d, d->name().toLocal8Bit().constData(), d->adr.client, d->adr.port);
+                          k->name.c_str(), k->adr.client, k->adr.port, d, d->name().toLocal8Bit().constData(), d->adr.client, d->adr.port);
                   if (k->adr.client == d->adr.client && k->adr.port == d->adr.port)
                         break;
                   
-                  if((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN || d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) && strcmp(k->name, d->name().toUtf8().constData()) == 0)
+                  if((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN || d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) && k->name == d->name().toUtf8().constData())
                   {
                     if(d->adr.client != SND_SEQ_ADDRESS_UNKNOWN && d->adr.client != k->adr.client)
                     {
-                      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts: k->name:%s d->adr.client:%u != k->adr.client:%u", k->name, d->adr.client, k->adr.client);
+                      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts: k->name:%s d->adr.client:%u != k->adr.client:%u", k->name.c_str(), d->adr.client, k->adr.client);
                       //continue;
                     }
                     if(d->adr.port != SND_SEQ_ADDRESS_UNKNOWN && d->adr.port != k->adr.port)
                     {
-                      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts: k->name:%s d->adr.port:%u != k->adr.port:%u", k->name, d->adr.port, k->adr.port);
+                      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts: k->name:%s d->adr.port:%u != k->adr.port:%u", k->name.c_str(), d->adr.port, k->adr.port);
                       //continue;
                     }
                     //if(d->adr.client == SND_SEQ_ADDRESS_UNKNOWN)
@@ -1639,7 +1683,7 @@ void alsaScanMidiPorts()
 
                   // add device
                   
-                  const QString dev_name(k->name);
+                  const QString dev_name(QString::fromUtf8(k->name.c_str()));
                   MidiDevice* dev = MusEGlobal::midiDevices.find(dev_name, MidiDevice::ALSA_MIDI);
                   const bool dev_found = dev;
                   if(dev_found)

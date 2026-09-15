@@ -39,7 +39,7 @@ PasteDialog::PasteDialog(QWidget* parent)
 	: QDialog(parent)
 {
 	setupUi(this);
-	button_group = new QButtonGroup;
+	button_group = new QButtonGroup(this);
 	button_group->addButton(merge_button,0);
 	button_group->addButton(move_all_button,1);
 	button_group->addButton(move_some_button,2);

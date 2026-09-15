@@ -54,8 +54,10 @@ TempoList::TempoList()
 
 TempoList::~TempoList()
       {
+      fprintf(stderr, "DEBUG ~TempoList() this:%p size:%zu\n", (void*)this, size());
       for (iTEvent i = begin(); i != end(); ++i)
             delete i->second;
+      fprintf(stderr, "DEBUG ~TempoList() this:%p done\n", (void*)this);
       }
 
 //---------------------------------------------------------
@@ -180,7 +182,9 @@ void TempoList::clear()
       for (iTEvent i = begin(); i != end(); ++i)
             delete i->second;
       TEMPOLIST::clear();
-      insert(std::pair<const unsigned, TEvent*> (MAX_TICK+1, new TEvent(500000, 0)));
+      TEvent* default_event = new TEvent(500000, 0);
+      fprintf(stderr, "DEBUG TempoList::clear() this:%p inserted TEvent:%p\n", (void*)this, (void*)default_event);
+      insert(std::pair<const unsigned, TEvent*> (MAX_TICK+1, default_event));
       ++_tempoSN;
       }
 
@@ -277,6 +281,7 @@ void TempoList::del(iTEvent e, bool do_normalize)
             }
       ne->second->tempo = e->second->tempo;
       ne->second->tick  = e->second->tick;
+      delete e->second;
       erase(e);
       if(do_normalize)
         normalize();
@@ -584,8 +589,10 @@ void TempoList::read(Xml& xml)
                               TEvent* t = new TEvent();
                               unsigned tick = t->read(xml);
                               iTEvent pos = find(tick);
-                              if (pos != end())
+                              if (pos != end()) {
+                                    delete pos->second;
                                     erase(pos);
+                                    }
                               insert(std::pair<const int, TEvent*> (tick, t));
                               }
                         else if (tag == "globalTempo")

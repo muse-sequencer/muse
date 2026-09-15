@@ -129,7 +129,7 @@ class Route {
       //--------------------------------------------------------
       // Temporary variables used during latency calculations:
       // Holds the output latency of this node, so that it can be compared with others.
-      float audioLatencyOut;
+      float audioLatencyOut = 0.0f;
       //--------------------------------------------------------
       
       Route(void* t, int ch=-1);

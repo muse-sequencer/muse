@@ -42,6 +42,9 @@ target_link_libraries(muse_plugin_scan
       ${QT_LIBRARIES}
       )
 
+
+
+
 ##
 ## Install location
 ##

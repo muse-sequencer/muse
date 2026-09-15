@@ -37,6 +37,10 @@ unsigned fifoLength =  128;       // 131072/segmentSize
                                   // 131072 - magic number that gives a sufficient buffer size
 int segmentCount = 2;
 
+
+bool suppressPluginDuplicateWarnings = false; // for less debug output, set false if output required
+
+
 //   NOTE: For now, this is TEMPORARILY set to the project sample rate during song loading,
 //          then at the END of song loading is immediately set to the real current rate.
 //         See comments in Song::read() at the "samplerate" tag section.
@@ -110,6 +114,7 @@ bool loadMESS = true;
 bool loadVST = true;
 bool loadNativeVST = true;
 bool loadDSSI = true;
+bool loadCLAP = true;
 bool loadLV2 = true;
 bool usePythonBridge = false;
 QString pythonBridgePyroNSHostname;

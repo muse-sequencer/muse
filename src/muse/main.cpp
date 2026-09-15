@@ -67,6 +67,7 @@
 #include "audiodev.h"
 #include "gconfig.h"
 #include "globals.h"
+#include "driver/jackaudio.h"
 #include "helper.h"
 #include "sync.h"
 #include "functions.h"
@@ -115,6 +116,8 @@ extern void initVST();
 extern void initVST_Native();
 //extern void initPlugins();
 extern void initDSSI();
+extern void initCLAP();  // clap synths
+extern void initCLAPEffects();   // clap effects 
 #ifdef LV2_SUPPORT
 extern void initLV2();
 extern void deinitLV2();
@@ -342,6 +345,9 @@ CommandLineParseResult parseCommandLine(
   parser.addOption(option_F);
   QCommandLineOption option_A("A", QCoreApplication::translate("main", "Force inclusion of ALSA midi even if using Jack"));
   parser.addOption(option_A);
+  QCommandLineOption option_B("B", QCoreApplication::translate("main",
+    "Use plain Jack midi connection labels (\"Device - N\") instead of the categorized \"sys -\"/\"blue -\" style"));
+  parser.addOption(option_B);
   QCommandLineOption option_P("P", QCoreApplication::translate("main",
     "Set audio driver real time priority to n (Dummy only, default 40. Else fixed by Jack.)"), "n");
   parser.addOption(option_P);
@@ -394,6 +400,9 @@ CommandLineParseResult parseCommandLine(
   QCommandLineOption option_D("D", QCoreApplication::translate("main",
     "Debug mode: enable some debug messages specify twice for lots of debug messages this may slow down MusE massively!"));
   parser.addOption(option_D);
+  QCommandLineOption option_noPluginDupWarn("no-plugin-duplicate-warnings", QCoreApplication::translate("main",
+    "Suppress LADSPA/DSSI/VST/CLAP/MESS 'Ignoring ... duplicate' scan warnings, even with -D debug messages on."));
+  parser.addOption(option_noPluginDupWarn);
   QCommandLineOption option_m("m", QCoreApplication::translate("main", "Debug mode: trace midi Input"));
   parser.addOption(option_m);
   QCommandLineOption option_M("M", QCoreApplication::translate("main", "Debug mode: trace midi Output"));
@@ -468,6 +477,9 @@ CommandLineParseResult parseCommandLine(
   if(parser.isSet(option_A))
     MusEGlobal::useAlsaWithJack = true;
 
+  if(parser.isSet(option_B))
+    MusEGlobal::useSimplePortLabels = true;
+
   if(parser.isSet(option_d))
   {
     MusEGlobal::debugMode = true;
@@ -476,11 +488,25 @@ CommandLineParseResult parseCommandLine(
 
   if(parser.isSet(option_D))
   {
-    if(!MusEGlobal::debugMsg)
-      MusEGlobal::debugMsg=true;
-    else
-      MusEGlobal::heavyDebugMsg=true;
+    // NOTE: parser.isSet(option_D) is a single boolean - it cannot tell "-D" was
+    //  given once vs. twice, so the old !debugMsg/else logic here could never
+    //  reach the heavyDebugMsg branch (debugMsg starts false, so the if-branch
+    //  always ran, and this whole block only runs once regardless of repeats).
+    //  Count actual occurrences of "-D" in the argument list instead, so
+    //  "specify twice for lots of debug messages" (see option_D's help text
+    //  above) actually works.
+    int dCount = 0;
+    for(const QString& arg : QCoreApplication::arguments())
+      if(arg == QLatin1String("-D"))
+        ++dCount;
+
+    MusEGlobal::debugMsg = true;
+    if(dCount >= 2)
+      MusEGlobal::heavyDebugMsg = true;
   }
+
+  if(parser.isSet(option_noPluginDupWarn))
+    MusEGlobal::suppressPluginDuplicateWarnings = true;
 
   if(parser.isSet(option_m))
     MusEGlobal::midiInputTrace = true;
@@ -526,6 +552,12 @@ CommandLineParseResult parseCommandLine(
   if(parser.isSet(option_I))
     MusEGlobal::loadDSSI = false;
 #endif
+
+#ifdef CLAP_SUPPORT
+  if(parser.isSet(option_I))
+    MusEGlobal::loadCLAP = false;
+#endif
+
 
 #ifdef HAVE_LASH
   if(parser.isSet(option_L))
@@ -904,6 +936,26 @@ int main(int argc, char* argv[])
         if(!found && qputenv("DSSI_PATH", MusEGlobal::config.pluginDssiPathList.join(list_separator).toLocal8Bit()) == 0)
           fprintf(stderr, "Error setting DSSI_PATH\n");
 
+
+
+
+#ifdef CLAP_SUPPORT
+        // found = false; reset not needed since CLAP_PATH always needs setting
+        if(MusEGlobal::config.pluginClapPathList.isEmpty())
+        {
+            MusEGlobal::config.pluginClapPathList
+              << QDir::homePath() + "/.clap"
+              << "/usr/lib/clap"
+              << "/usr/local/lib/clap";
+        }
+        const QString clap_path = qEnvironmentVariable("CLAP_PATH");
+        if(!clap_path.isEmpty())
+            MusEGlobal::config.pluginClapPathList = clap_path.split(list_separator, Qt::SkipEmptyParts);
+        if(qputenv("CLAP_PATH", MusEGlobal::config.pluginClapPathList.join(list_separator).toLocal8Bit()) == 0)
+          fprintf(stderr, "Error setting CLAP_PATH\n");
+#endif
+
+
         //=======================
         //  Win VST (*.dll) paths:
         //=======================
@@ -1255,9 +1307,6 @@ int main(int argc, char* argv[])
           qApp->processEvents();
         }
 
-        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
-                 << "Scan plugins...";
-
         bool do_rescan = false;
         if(force_plugin_rescan)
         {
@@ -1276,6 +1325,24 @@ int main(int argc, char* argv[])
           MusEGlobal::config.pluginCacheTriggerRescan = false;
         }
         
+        // NOTE: the plugin scanner's automatic "is the cache dirty?" check
+        //  (and the rescan it triggers) is disabled by default - it must be
+        //  explicitly requested, either via -R on the command line or via
+        //  MusEGlobal::config.pluginCacheTriggerRescan (e.g. a "rescan
+        //  plugins" UI action), both of which are already folded into
+        //  do_rescan above. Without an explicit request, we still read the
+        //  existing cache file(s) into pluginList (checkPluginCacheFiles()
+        //  does that unconditionally), we just never let it decide on its
+        //  own to rescan. -C (dont_plugin_rescan) still wins outright if
+        //  set, even together with an explicit rescan request.
+        const bool effective_dont_recreate = dont_plugin_rescan || !do_rescan;
+
+        // Reflect what's actually about to happen - previously this said
+        //  "Scan plugins..." unconditionally even when the scanner was
+        //  disabled and only the existing cache was being loaded.
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << (do_rescan ? "Scanning plugins..." : "Loading plugin cache...");
+
         if (MusEGlobal::debugMsg)
             qDebug() << "Cache path for plugin scan:" << new_plugin_cache_path;
 
@@ -1302,11 +1369,15 @@ int main(int argc, char* argv[])
                                         // List of plugins to scan into and write to cache files from.
                                         &MusEPlugin::pluginList,
                                         // Don't bother reading any port information that might exist in the cache.
+                                        // (LADSPA/VST/DSSI/LV2/etc get their real port layout cheaply and
+                                        //  directly from the live descriptor/AEffect struct once actually
+                                        //  loaded, so caching it here isn't worth a slower full-instantiation
+                                        //  scan. CLAP is the opposite case and is handled separately below.)
                                         false,
                                         // Whether to force recreation.
                                         do_rescan,
                                         // Whether to NOT recreate.
-                                        dont_plugin_rescan,
+                                        effective_dont_recreate,
                                         // When creating, where to find the application's own plugins.
                                         MusEGlobal::museGlobalLib,
                                         // Plugin types to check.
@@ -1314,9 +1385,67 @@ int main(int argc, char* argv[])
                                         // Debug messages.
                                         MusEGlobal::debugMsg);
 
+        #ifdef CLAP_SUPPORT
+        // CLAP port/param counts are ONLY knowable by instantiating the
+        //  plugin (see queryClapPortCounts() in plugin_cache_writer_clap.cpp),
+        //  so unlike the types above we DO want them read from / written to
+        //  the cache here — ClapPluginWrapper::ClapPluginWrapper()
+        //  (clap_host_effect.cpp) trusts these cached counts and only falls
+        //  back to a live probe if they come back all zero (stale/missing
+        //  cache entry), which is what was happening before this call
+        //  existed: writePorts was always false, so the cache never carried
+        //  real counts and every scanned CLAP plugin got probed live on
+        //  every startup regardless of project usage.
+        if(MusEGlobal::loadCLAP)
+        {
+          MusEPlugin::checkPluginCacheFiles(new_plugin_cache_path,
+                                          &MusEPlugin::pluginList,
+                                          // DO read/write port information for CLAP.
+                                          true,
+                                          do_rescan,
+                                          effective_dont_recreate,
+                                          MusEGlobal::museGlobalLib,
+                                          MusEPlugin::PluginTypeCLAP,
+                                          MusEGlobal::debugMsg);
+        }
+        #endif
+
         // Done with rescan trigger. Reset it now.
         if(do_rescan)
           MusEGlobal::config.pluginCacheTriggerRescan = false;
+
+        // DIAGNOSTIC: confirm what actually made it into pluginList after the
+        // cache read/scan above, broken down by type. Distinguishes "not
+        // scanned" (missing here too) vs "scanned but not read from cache"
+        // (file has data, count here is 0) vs "read but filtered downstream"
+        // (count here is >0, but still reported missing later e.g. in
+        // MusEGui::MissingPluginsDialog / initMidiSynth()).
+        // Unconditional (not gated behind MusEGlobal::debugMsg) while this
+        // is being actively debugged — remove the gate-removal once done.
+        {
+          int n_mess = 0, n_ladspa = 0, n_linuxvst = 0, n_vst = 0, n_dssi = 0, n_clap = 0, n_unknown = 0, n_other = 0;
+          for(MusEPlugin::ciPluginScanList it = MusEPlugin::pluginList.begin();
+              it != MusEPlugin::pluginList.end(); ++it)
+          {
+            switch((*it)->info()._type)
+            {
+              case MusEPlugin::PluginTypeMESS:     ++n_mess;     break;
+              case MusEPlugin::PluginTypeLADSPA:   ++n_ladspa;   break;
+              case MusEPlugin::PluginTypeLinuxVST: ++n_linuxvst; break;
+              case MusEPlugin::PluginTypeVST:      ++n_vst;      break;
+              case MusEPlugin::PluginTypeDSSI:
+              case MusEPlugin::PluginTypeDSSIVST:  ++n_dssi;     break;
+              #ifdef CLAP_SUPPORT
+              case MusEPlugin::PluginTypeCLAP:     ++n_clap;     break;
+              #endif
+              case MusEPlugin::PluginTypeUnknown:  ++n_unknown;  break;
+              default:                             ++n_other;    break;
+            }
+          }
+          fprintf(stderr,
+            "pluginList after scan (total:%zu): MESS:%d LADSPA:%d LinuxVST:%d VST:%d DSSI:%d CLAP:%d Unknown:%d Other:%d\n",
+            MusEPlugin::pluginList.size(), n_mess, n_ladspa, n_linuxvst, n_vst, n_dssi, n_clap, n_unknown, n_other);
+        }
 
         //-------------------------------------------------------
         //   END Plugin scanning
@@ -1559,6 +1688,17 @@ int main(int argc, char* argv[])
               MusECore::initLV2();
   #endif
 
+
+#ifdef CLAP_SUPPORT
+      qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+               << "Init CLAP plugins...";
+      if(MusEGlobal::loadCLAP)
+      {
+            MusECore::initCLAP();          // clap synths 
+            MusECore::initCLAPEffects();   // clap effects
+      }
+#endif
+
         // Now that all the plugins are done loading from the global plugin cache list,
         //  we are done with it. Clear it to free up memory.
         // TODO Future: Will need to keep it around if we ever switch to using the list all the time
@@ -1733,22 +1873,34 @@ int main(int argc, char* argv[])
         if(MusEGlobal::debugMsg)
           fprintf(stderr, "app.exec() returned:%d\nDeleting main MusE object\n", rv);
 
+        fprintf(stderr, "DEBUG main shutdown: reached (rv:%d)\n", rv);
+
         if (MusEGlobal::loadPlugins)
         {
           for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
               delete (*i);
           MusEGlobal::plugins.clear();
         }
+        fprintf(stderr, "DEBUG main shutdown: plugins deleted\n");
 
         MusECore::exitWavePreview();
+        fprintf(stderr, "DEBUG main shutdown: exitWavePreview done\n");
+
+        // Free the global list of loaded instrument templates (.idf files).
+        // initMidiInstruments() (called again on restart, above the loop)
+        // clears it defensively too, but on a final exit nothing else does.
+        MusECore::freeMidiInstrumentTemplates();
+        fprintf(stderr, "DEBUG main shutdown: freeMidiInstrumentTemplates done\n");
 
   #ifdef LV2_SUPPORT
         if(MusEGlobal::loadLV2)
               MusECore::deinitLV2();
   #endif
+        fprintf(stderr, "DEBUG main shutdown: deinitLV2 (if any) done\n");
 
         // In case the sequencer object is still alive, make sure to destroy it now.
         MusECore::exitMidiSequencer();
+        fprintf(stderr, "DEBUG main shutdown: exitMidiSequencer done\n");
 
         // Grab the restart flag before deleting muse.
         is_restarting = MusEGlobal::muse->restartingApp();
@@ -1781,8 +1933,10 @@ int main(int argc, char* argv[])
         }
 
         // Now delete the application.
+        fprintf(stderr, "DEBUG main shutdown: about to delete MusEGlobal::muse\n");
         delete MusEGlobal::muse;
         MusEGlobal::muse = nullptr;
+        fprintf(stderr, "DEBUG main shutdown: MusEGlobal::muse deleted\n");
 
         // These are owned by muse and deleted above. Reset to zero now.
         MusEGlobal::undoRedo = nullptr;
@@ -1846,6 +2000,7 @@ int main(int argc, char* argv[])
 #endif
 #endif
 
+      fprintf(stderr, "DEBUG main(): about to return rv:%d - if tempomap/sigmap DEBUG dtor lines never appear after this, main() itself never truly finished (crash/abort) rather than the destructors being skipped\n", rv);
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "Finished! Exiting main, return value:%d\n", rv);
       return rv;

@@ -180,6 +180,16 @@ void EventCanvas::updateItems()
   }
   curItem=nullptr;
 
+  // Abort any in-flight drag first. 'moving' holds raw CItem pointers into
+  // the very map items.clearDelete() is about to free below - if a drag was
+  // active (or the drag ended abnormally and 'moving' was never cleared),
+  // those pointers would otherwise dangle the instant the items are deleted
+  // and rebuilt. This isn't only reachable via user interaction with this
+  // editor: songChanged() (and so updateItems()) can fire from completely
+  // unrelated events - e.g. a MIDI device hot-plug triggering a background
+  // ALSA port rescan - while the user happens to be mid-drag.
+  cancelMouseOps();
+
   items.clearDelete();
   start_tick  = INT_MAX;
   end_tick    = 0;

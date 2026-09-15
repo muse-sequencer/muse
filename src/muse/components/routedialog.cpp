@@ -702,7 +702,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
           
           if(index.parent().isValid() && (index.parent().row() & 0x01))
             painter->fillRect(option.rect, option.palette.alternateBase());
-          int cur_chan = 0;
+          int cur_chan [[maybe_unused]] = 0;
           QPen pen;
 
           // Set a small five-pixel font size for the numbers inside the dots.

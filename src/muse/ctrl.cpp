@@ -796,7 +796,7 @@ double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp) 
     return val1;
   }
 
-  double rv;
+  double rv=0.0;
   switch(_valueType)
   {
     case VAL_LOG:
@@ -862,8 +862,8 @@ double CtrlList::value(unsigned int frame, bool cur_val_only, unsigned int* next
     return _curVal;
   }
 
-  double rv;
-  unsigned int nframe;
+  double rv=0.0;
+  unsigned int nframe=0;
 
   ciCtrl i = upper_bound(frame); // get the index after current frame
   // if we are past all items just return the last value
@@ -1551,11 +1551,11 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
 bool CtrlList::read(Xml& xml)
       {
       QLocale loc = QLocale::c();
-      bool ok;
+      bool ok=true;
       int id = -1;
-      bool idOk;
-      double min;
-      double max;
+      bool idOk = true;
+      double min=0;
+      double max=0;
       bool minOk = false;
       bool maxOk = false;
       int valType = VAL_LINEAR;
@@ -1578,9 +1578,18 @@ bool CtrlList::read(Xml& xml)
                         else if (tag == "cur")
                         {
                               // Accept either decimal or hex value strings.
-                              _curVal = MusELib::museStringToDouble(xml.s2(), &ok);
+                              // (Hex-floats like "0x1.aaaaaap-1" are parsed in the
+                              //  "C" locale by museStringToDouble(); see hex_float.cpp.)
+                              const QString cv = xml.s2();
+                              _curVal = MusELib::museStringToDouble(cv, &ok);
                               if(!ok)
-                                fprintf(stderr, "CtrlList::read failed reading _curVal string: %s\n", xml.s2().toLocal8Bit().constData());
+                                // On failure dump the raw bytes too: exposes stray
+                                // leading/trailing space(0x20)/newline(0x0a)/null(0x00).
+                                fprintf(stderr,
+                                  "CtrlList::read: failed parsing _curVal=[%s] (len=%lld bytes=%s)\n",
+                                  cv.toLocal8Bit().constData(),
+                                  static_cast<long long>(cv.size()),
+                                  cv.toLatin1().toHex(' ').constData());
                         }
                         else if (tag == "visible")
                         {

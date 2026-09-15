@@ -204,7 +204,10 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       menuView->addSeparator();
 
       // Add the number of visible effects menu.
-      menuAudEffRackVisibleItems = new QMenu(tr("Visible Audio Effects"));
+      // Parented to 'this': QMenu::addMenu() below does NOT take ownership of
+      // the submenu, so without a parent this QMenu (and its connect()ions)
+      // would leak for the lifetime of the mixer.
+      menuAudEffRackVisibleItems = new QMenu(tr("Visible Audio Effects"), this);
       audEffRackVisibleGroup = new QActionGroup(this);
       audEffRackVisibleGroup->setExclusive(true);
       for(int i = 0; i <= MusECore::PipelineDepth; ++i)
@@ -442,7 +445,10 @@ void AudioMixerApp::redrawMixer()
       QWidget* w = li->widget();
       if(!w)
         continue;
-      mixerLayout->takeAt(i);
+      // takeAt() hands ownership of the QLayoutItem to us (unlike removeWidget(),
+      // which deletes it internally). The widget itself is untouched either way -
+      // only the layout bookkeeping item must be freed here.
+      delete mixerLayout->takeAt(i);
     }
   }
   DEBUG_MIXER(stderr, "redrawMixer type %d, after emptying: mixerLayout count %d\n", cfg->displayOrder, mixerLayout->count());

@@ -39,8 +39,14 @@ enum AutomationType {
       AUTO_LATCH
       };
 
-// Record events ring buffer size
-#define MIDI_REC_FIFO_SIZE  256
+// Record events ring buffer size 
+// (per MIDI channel, per device).
+// Value is a slot/event count, _not bytes_ , _one MidiRecordEvent_ (64 bytes) per slot.
+// Raised from 256: generously estimating ~100-150 bytes per event
+// (it can carry sysex payload), 1024 slots is still well under 200 KB
+// per channel-FIFO - trivial, and gives real headroom against bursts
+// (dense chords, CC/pitchbend sweeps)
+#define MIDI_REC_FIFO_SIZE  1024
 
 // Absolute max number of plugins in mixer rack (if we ever want to increase PipelineDepth).
 // Used to determine the index where special blocks (dssi ladspa controls) appear in the list of controllers.

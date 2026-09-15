@@ -84,6 +84,8 @@
 #include <vector>
 #include <map>
 #include <QString>
+#include <QVector>
+#include <QByteArray>
 #include <QMutex>
 #include <QSemaphore>
 #include <QThread>
@@ -414,6 +416,11 @@ private:
     float *_pluginControlsMin;
     float *_pluginControlsMax;
     std::map<QString, LilvNode *> _presets;
+    // Port names, indexed by real (lilv) port index. Populated once while
+    // building the port tables; owns its storage so LV2PluginWrapper::portName()
+    // can return a stable const char* without re-querying lilv (and leaking
+    // a fresh LilvNode) on every call.
+    QVector<QByteArray> _portNames;
 
 public:
     LV2Synth (const MusEPlugin::PluginScanInfoStruct&, const LilvPlugin*);

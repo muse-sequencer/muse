@@ -696,13 +696,16 @@ int MidiController::genNum(MidiController::ControllerType t, int h, int l)
 //   MidiControllerList
 //---------------------------------------------------------
 
-MidiControllerList::MidiControllerList() 
+MidiControllerList::MidiControllerList(bool ownsElements)
 {
   _RPN_Ctrls_Reserved = false;
+  _ownsElements = ownsElements;
 }
 
 MidiControllerList::MidiControllerList(const MidiControllerList& mcl) : std::map<int, MidiController*>()
 {
+  // Deep copy: every element here is freshly new'd below, so this list owns them.
+  _ownsElements = true;
   for(ciMidiController i = mcl.begin(); i != mcl.end(); ++i)
   {
     MidiController* mc = i->second;
