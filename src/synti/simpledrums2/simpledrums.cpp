@@ -1644,8 +1644,7 @@ static void* loadSampleThread(void* p)
       ch->originalSample = new SS_Sample;
       SS_Sample* origSmp = ch->originalSample;
 
-      smp->channels = sfi.channels;
-      origSmp->channels = sfi.channels;
+      int channels = sfi.channels;
 
       // Read to original sample storage:
       float *origSample = new float[sfi.frames * sfi.channels];
@@ -1662,7 +1661,26 @@ static void* loadSampleThread(void* p)
          SS_TRACE_OUT
       }
 
-      origSmp->channels = sfi.channels;
+      // SimpleDrums only has playback paths for mono and stereo samples.
+      // For files with more channels keep the first two (front left/right
+      // by the WAVE_FORMAT_EXTENSIBLE channel order) as a stereo sample and
+      // drop the rest, otherwise the interleaved data is played back one
+      // sample at a time and sounds slowed and pitched down by the channel
+      // count (issue 1310).
+      if (channels > 2) {
+         float* stereo = new float[sfi.frames * 2];
+         for (sf_count_t i = 0; i < sfi.frames; ++i) {
+            stereo[i * 2]     = origSample[i * channels];
+            stereo[i * 2 + 1] = origSample[i * channels + 1];
+         }
+         delete[] origSample;
+         origSample = stereo;
+         fprintf(stderr, "SimpleDrums: sample %s has %d channels, using the first two as stereo\n", filename, channels);
+         channels = 2;
+      }
+
+      smp->channels = channels;
+      origSmp->channels = channels;
       origSmp->frames = sfi.frames;
       origSmp->samplerate = sfi.samplerate;
       origSmp->data = origSample;
