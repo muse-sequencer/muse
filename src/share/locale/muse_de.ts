@@ -19948,7 +19948,7 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2157"/>
+        <location line="+2171"/>
         <source>Adjust Wave Offset</source>
         <translation>Wave-Offset anpassen</translation>
     </message>

@@ -151,9 +151,7 @@ RubberBandAudioConverter::RubberBandAudioConverter(
   }
   
   _channels = channels;
-// REMOVE Tim. samplerate. Changed. 12/19 Removed. TESTING Reinstate.
-//   _latencyCompPending = true; // Set to compensate at the first process.
-  _latencyCompPending = false; // Set to compensate at the first process.
+  _latencyCompPending = true; // Set to compensate at the first process.
   
 #ifdef RUBBERBAND_SUPPORT
   _rbs = new RubberBand::RubberBandStretcher(_systemSampleRate, _channels, _options);
@@ -188,9 +186,7 @@ void RubberBandAudioConverter::reset()
   if(!_rbs)
     return;
   _rbs->reset();
-// REMOVE Tim. samplerate. Changed. 12/19 Removed. TESTING Reinstate.
-//   _latencyCompPending = true;
-  return;  
+  _latencyCompPending = true;
 #endif
 }
 
@@ -200,6 +196,7 @@ AudioConverterSettings::ModeType RubberBandAudioConverter::mode() const
 }
 
 #ifdef RUBBERBAND_SUPPORT
+
 int RubberBandAudioConverter::process(
   SNDFILE* sf_handle,
   const int sf_chans, const double sf_sr_ratio, const StretchList* sf_stretch_list,
@@ -208,36 +205,46 @@ int RubberBandAudioConverter::process(
 {
   if(!_rbs)
     return 0;
-  
+
   if(_systemSampleRate <= 0)
-  {  
+  {
     DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process Error: systemSampleRate <= 0!\n");
     //return _sfCurFrame;
     return 0;
-  }  
+  }
 
   const double d_pos = sf_sr_ratio * double(pos);
   const MuseFrame_t new_frame = sf_stretch_list->unSquish(d_pos);
-  
-  const double stretchVal    = sf_stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame);
-  const double samplerateVal = sf_stretch_list->ratioAt(StretchListItem::SamplerateEvent, new_frame);
-  
+
+  const double stretchVal    =
+    sf_stretch_list->ratioAt(StretchListItem::StretchEvent, new_frame) * sf_stretch_list->ratio(StretchListItem::StretchEvent);
+  const double samplerateVal =
+    sf_stretch_list->ratioAt(StretchListItem::SamplerateEvent, new_frame) *
+    sf_stretch_list->ratio(StretchListItem::SamplerateEvent);
+
   const double fin_samplerateRatio = sf_sr_ratio * samplerateVal;
-  
+
   if(fin_samplerateRatio < 0.0001)
-  {  
+  {
     DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process Error: fin_samplerateRatio ratio is near zero!\n");
     //return _sfCurFrame;
     return 0;
-  }  
-  
+  }
+
   const double inv_fin_samplerateRatio = 1.0 / fin_samplerateRatio;
   const double debug_min_pos = 256;
 
-  int old_lat = _rbs->getLatency();
   // For just sample rate conversion, apply complimentary ratio to time and pitch.
   _rbs->setTimeRatio(inv_fin_samplerateRatio * stretchVal);
   _rbs->setPitchScale(fin_samplerateRatio);
+
+#if (RUBBERBAND_API_MAJOR_VERSION >= 3) || (RUBBERBAND_API_MAJOR_VERSION == 2 && RUBBERBAND_API_MINOR_VERSION >= 7)
+  const int old_lat = _rbs->getStartDelay();
+  const unsigned int startpad = _rbs->getPreferredStartPad();
+#else
+  const int old_lat = _rbs->getLatency();
+  const unsigned int startpad = old_lat;
+#endif
 
   sf_count_t outFrames  = frames;
   if(_latencyCompPending)
@@ -247,26 +254,30 @@ int RubberBandAudioConverter::process(
   float rboutdata[outSize];
   for(int i = 0; i < sf_chans; ++i)
     rboutbuffer[i] = rboutdata + i * outFrames;
-      
+
   sf_count_t rn           = 0;
-  
+
   // Tested: Latency will change after the above setting of ratios. Also affected by converter options.
   //DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process latency:%lu\n", _rbs->getLatency());
 
-  if(_latencyCompPending && old_lat > 0)
+  if(_latencyCompPending && startpad > 0)
   {
-    size_t rbinSize = old_lat * sf_chans;
+    size_t rbinSize = startpad * sf_chans;
     float rbindata[rbinSize];
     memset(rbindata, 0, rbinSize * sizeof(float));
     // Must de-interleave data to feed to rubberband.
     float* rbinbuffer[sf_chans];
     for(int i = 0; i < sf_chans; ++i)
-      rbinbuffer[i] = rbindata + i * old_lat;
+      rbinbuffer[i] = rbindata + i * startpad;
     if(d_pos <= debug_min_pos)
     {
-      DEBUG_AUDIOCONVERT(stderr, "   Latency: old_lat:%d new_lat:%d\n", old_lat, (int)_rbs->getLatency());
+#if (RUBBERBAND_API_MAJOR_VERSION >= 3) || (RUBBERBAND_API_MAJOR_VERSION == 2 && RUBBERBAND_API_MINOR_VERSION >= 7)
+      DEBUG_AUDIOCONVERT(stderr, "   Latency: startpad:%d new startpad:%d\n", startpad, (int)_rbs->getPreferredStartPad());
+#else
+      DEBUG_AUDIOCONVERT(stderr, "   Latency: startpad:%d new_lat:%d\n", startpad, (int)_rbs->getLatency());
+#endif
     }
-    _rbs->process(rbinbuffer, old_lat, false);
+    _rbs->process(rbinbuffer, startpad, false);
   }
 
   while(_rbs->available() < outFrames)
@@ -274,7 +285,7 @@ int RubberBandAudioConverter::process(
     size_t sreq = _rbs->getSamplesRequired();
     if(sreq <= 0)
         break;
-    
+
     size_t rbinSize = sreq * sf_chans;
     float sfdata[rbinSize];
     rn = sf_readf_float(sf_handle,  sfdata, sreq);
@@ -285,18 +296,18 @@ int RubberBandAudioConverter::process(
       const size_t zero_start = rn * sf_chans;
       memset(&sfdata[zero_start], 0, zeros * sizeof(float));
     }
-    
+
     // Must de-interleave soundfile data to feed to rubberband.
-    // TODO: Optimizations! Would like fast in-place de-interleaving, but it's "harder than it looks". 
+    // TODO: Optimizations! Would like fast in-place de-interleaving, but it's "harder than it looks".
     //       There are even patents on this kind of thing!
-    //       If optimized, be sure to move it to our AL-DSP (assembly) library. With SSE etc, it's easier. 
+    //       If optimized, be sure to move it to our AL-DSP (assembly) library. With SSE etc, it's easier.
     //       Alas, for now use out-of-place memory since stack *should* be cheap here without much nesting.
     float rbindata[rbinSize];
     float* rbinbuffer[sf_chans];
     for(int i = 0; i < sf_chans; ++i)
       rbinbuffer[i] = rbindata + i * sreq;
     float* sfptr = sfdata;
-    for(size_t i = 0; i < sreq; ++i) 
+    for(size_t i = 0; i < sreq; ++i)
     {
       for(int ch = 0; ch < sf_chans; ++ch)
         *(rbinbuffer[ch] + i) = *sfptr++;
@@ -307,7 +318,7 @@ int RubberBandAudioConverter::process(
     }
     _rbs->process(rbinbuffer, sreq, false);
   }
-  
+
   int savail = _rbs->available();
   if(d_pos <= debug_min_pos)
   {
@@ -315,12 +326,12 @@ int RubberBandAudioConverter::process(
   }
   if(savail > outFrames)
     savail = outFrames;
-  
+
   if(_latencyCompPending && old_lat > 0)
   {
     size_t retrieved = _rbs->retrieve(rboutbuffer, old_lat);
     if((int)retrieved < old_lat)
-    { 
+    {
       DEBUG_AUDIOCONVERT(stderr,
       "RubberBandAudioConverter::process: Latency retrieved_count:%d is less than requested:%d\n",
       int(retrieved), old_lat);
@@ -337,7 +348,7 @@ int RubberBandAudioConverter::process(
                        int(retrieved), savail);
     savail = retrieved;
   }
-  
+
   if(savail < frames)
   {
     DEBUG_AUDIOCONVERT(stderr,
@@ -348,53 +359,53 @@ int RubberBandAudioConverter::process(
     for(int i = 0; i < sf_chans; ++i)
       memset(rboutbuffer[i] + savail, 0, zeros * sizeof(float));
   }
-  
+
   if(sf_chans == channels)
   {
     if(overwrite)
       for(int ch = 0; ch < channels; ++ch)
-        for(int i = 0; i < frames; ++i) 
+        for(int i = 0; i < frames; ++i)
           *(buffer[ch] + i) = *(rboutbuffer[ch] + i);
     else
       for(int ch = 0; ch < channels; ++ch)
-        for(int i = 0; i < frames; ++i) 
+        for(int i = 0; i < frames; ++i)
           *(buffer[ch] + i) += *(rboutbuffer[ch] + i);
   }
-  else if((sf_chans == 2) && (channels == 1)) 
+  else if((sf_chans == 2) && (channels == 1))
   {
     // stereo to mono
     if(overwrite)
       for(int i = 0; i < frames; ++i)
         *(buffer[0] + i) = *(rboutbuffer[0] + i) + *(rboutbuffer[1] + i);
-    else  
+    else
       for(int i = 0; i < frames; ++i)
         *(buffer[0] + i) += *(rboutbuffer[0] + i) + *(rboutbuffer[1] + i);
   }
-  else if((sf_chans == 1) && (channels == 2)) 
+  else if((sf_chans == 1) && (channels == 2))
   {
     // mono to stereo
     float data;
     if(overwrite)
-      for(int i = 0; i < frames; ++i) 
+      for(int i = 0; i < frames; ++i)
       {
         data = *(rboutbuffer[0] + i);
         *(buffer[0]+i) = data;
         *(buffer[1]+i) = data;
       }
-    else  
-      for(int i = 0; i < frames; ++i) 
+    else
+      for(int i = 0; i < frames; ++i)
       {
         data = *(rboutbuffer[0] + i);
         *(buffer[0]+i) += data;
         *(buffer[1]+i) += data;
       }
   }
-  else 
+  else
   {
     DEBUG_AUDIOCONVERT(stderr, "RubberBandAudioConverter::process Channel mismatch: source chans:%d -> dst chans:%d\n",
                        sf_chans, channels);
   }
-  
+
   return frames;
 }
 

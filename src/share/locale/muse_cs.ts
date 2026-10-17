@@ -19640,42 +19640,42 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2306"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2320"/>
         <source>Adjust Wave Offset</source>
         <translation>Upravit posun WAVE</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2307"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2321"/>
         <source>Wave offset (frames)</source>
         <translation>Posun WAVE (snímky)</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2647"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2661"/>
         <source>Part creation failed</source>
         <translation>Vytvoření části se nezdařilo</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2648"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2662"/>
         <source>Left and right position markers must be placed inside the current part.</source>
         <translation>Značky pro levou a pravou polohu musí být umístěny uvnitř nynější části.</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2673"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2687"/>
         <source>Part created</source>
         <translation>Část vytvořena</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2674"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2688"/>
         <source>The selected region has been copied to the clipboard and can be pasted in the arranger.</source>
         <translation>Vybraná oblast byla zkopírována do schránky a je možné ji vložit do aranžéru.</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3262"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3276"/>
         <source>MusE - external editor failed</source>
         <translation>MusE: Vnější editor selhal</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3263"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3277"/>
         <source>MusE was unable to launch the external editor
 check if the editor setting in:
 Global Settings-&gt;Audio:External Waveditor
@@ -19686,12 +19686,12 @@ nastavení-&gt;Zvuk: Vnější editor Wave nastaven
 na platný editor.</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3288"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3302"/>
         <source>MusE - file size changed</source>
         <translation>MusE: Velikost souboru změněna</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3289"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3303"/>
         <source>When editing in external editor - you should not change the filesize
 since it must fit the selected region.
 
@@ -19702,12 +19702,12 @@ velikost souboru, protože tato se musí vejít do vybrané oblasti.
 Chybějící data jsou ztlumena</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3493"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3507"/>
         <source>Wave event:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3496"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="3510"/>
         <source>Converter settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20851,12 +20851,12 @@ sometimes requires write access to the file.</source>
         <translation type="vanished">Vytvořit soubor s vrcholem hladiny pro</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2300"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2314"/>
         <source>No wave events selected.</source>
         <translation>Nevybrány žádné události vlny.</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2692"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2706"/>
         <source>No selection. Ignoring</source>
         <translation>Žádný výběr. Přehlíží se</translation>
     </message>

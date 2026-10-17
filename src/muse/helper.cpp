@@ -1141,7 +1141,6 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
         if(cur_list->isEmpty())
           continue;
         
-        int row = 0;
         int sz = cur_list->size();
         
         for (int i = 0; i < sz; ++i) 
@@ -1158,8 +1157,6 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
           act->setData(port);
           act->setCheckable(true);
           act->setChecked(port == checkPort);
-          
-          ++row;
         }  
       }
       

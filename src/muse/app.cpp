@@ -5824,7 +5824,6 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
           sf_count_t szBufInFrames = szBuf / sChannels;
           sf_count_t szFInFrames = f.samples();
           sf_count_t nFramesRead = 0;
-          sf_count_t nFramesWrote = 0;
           sd.end_of_input = 0;
           bool bEndOfInput = false;
           pDlg.setValue(0);
@@ -5859,7 +5858,6 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 
                 if(sd.output_frames_gen > 0)
                 {
-                    nFramesWrote += sd.output_frames_gen;
                     //detect maximum peek value;
                     for(unsigned ch = 0; ch < sChannels; ch++)
                     {

@@ -702,7 +702,6 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
           
           if(index.parent().isValid() && (index.parent().row() & 0x01))
             painter->fillRect(option.rect, option.palette.alternateBase());
-          int cur_chan = 0;
           QPen pen;
 
           // Set a small five-pixel font size for the numbers inside the dots.
@@ -787,7 +786,6 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
                   painter->drawLine(x_offset, line_y, line_x, line_y);
                 }
               }
-              ++cur_chan;
             }
           }
 

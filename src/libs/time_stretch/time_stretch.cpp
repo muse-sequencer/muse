@@ -292,7 +292,6 @@ void StretchList::normalizeListFrames()
       prevNewUnStretchFrame = se._stretchSquishedFrame;
 
 
-      
       factor = (_samplerateRatio * prevSamplerate);
       dtime = double(dframe) * factor;
       se._samplerateStretchedFrame = prevNewSamplerateFrame + dtime;
