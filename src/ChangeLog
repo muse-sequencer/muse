@@ -1,5 +1,12 @@
-06.09.2026
+18.10.2026
     *** MusE 4.3.0 ***
+16.10.2026
+    - Fix issue 1342: Project backup file never overwritten on save.
+    - Fix issue 1310: SimpleDrums samples with more than 2 channels broken.
+    - Fix issue 1102: Mangled wave file paths in .med when project dir is a symlink.
+      All three fixes by user brynnjocelyn. Thanks!  (Tim)
+    - A few compiler issues fixed. Unused variables etc.  (Tim)
+    - Improved (somewhat) audio stretching.
 05.09.2026
     - Fixed class PopupMenu not working properly with multiple monitors. (Tim)
       Menus were not being broken up due to usage of full virtual QDesktopWidget.

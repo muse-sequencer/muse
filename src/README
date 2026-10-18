@@ -114,7 +114,11 @@ details.
         
       - liblrdf >= 0.5.0   Library to manipulate RDF files describing LADSPA plugins
           https://librdf.org/
-          
+
+      - Rubberband library >= 1.8.1   Library for audio stretch, pitch,
+         and samplerate manipulation. (development files)
+          https://breakfastquay.com/rubberband/
+
       - LV2 (LADSPA Version 2) plugin support:
 
         lilv >= 0.24.0 (development files)
