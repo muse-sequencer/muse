@@ -49,7 +49,7 @@ int Rasterizer::columnCount() const
 
 void Rasterizer::updateColumn(Column col)
 {
-  int div, row, d;
+  int div = 3;
 
   const int col_num = col;
   const int col_offset = col_num * _rows;
@@ -58,25 +58,38 @@ void Rasterizer::updateColumn(Column col)
   // For the 'bar' row.
   _rasterArray[col_offset + _rows - 1] = 0;
 
-  if(col == TripletColumn) {
-    d = _division * 4 * 2;
-    // Can't use it if it has a remainder.
-    if(d % 3 != 0)
-      return;
-    div = d / 3;
+  switch(col)
+  {
+    case TripletColumn:
+    {
+      const int d = _division * 4 * 2;
+      // Can't use it if it has a remainder.
+      if(d % 3 != 0)
+        return;
+      div = d / 3;
     }
-  else if(col == NormalColumn)
-    div = _division * 4;
-  else if(col == DottedColumn) {
-    d = _division * 4 * 3;
-    // Can't use it if it has a remainder.
-    if(d % 2 != 0)
-      return;
-    div = d / 2;
+    break;
+
+    case NormalColumn:
+      div = _division * 4;
+    break;
+
+    case DottedColumn:
+    {
+      const int d = _division * 4 * 3;
+      // Can't use it if it has a remainder.
+      if(d % 2 != 0)
+        return;
+      div = d / 2;
     }
-    
+    break;
+
+    case InvalidColumn:
+      return;
+  };
+
   // Set all rows, except 'off' and 'bar' which are already done above.
-  for(row = _rows - 2; row >= 1; --row)
+  for(int row = _rows - 2; row >= 1; --row)
   {
     _rasterArray[col_offset + row] = div;
     // Can't use it if it has a remainder.

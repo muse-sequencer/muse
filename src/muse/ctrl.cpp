@@ -796,7 +796,7 @@ double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp) 
     return val1;
   }
 
-  double rv;
+  double rv = 0.0;
   switch(_valueType)
   {
     case VAL_LOG:
@@ -862,7 +862,7 @@ double CtrlList::value(unsigned int frame, bool cur_val_only, unsigned int* next
     return _curVal;
   }
 
-  double rv;
+  double rv = 0.0;
   unsigned int nframe;
 
   ciCtrl i = upper_bound(frame); // get the index after current frame
@@ -1554,8 +1554,8 @@ bool CtrlList::read(Xml& xml)
       bool ok;
       int id = -1;
       bool idOk;
-      double min;
-      double max;
+      double min = 0.0;
+      double max = 1.0;
       bool minOk = false;
       bool maxOk = false;
       int valType = VAL_LINEAR;

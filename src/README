@@ -280,7 +280,7 @@ details.
                 Debug, Release, RelWithDebInfo and MinSizeRel.
                Release is recommended, to get optimizations.
                If no CMAKE_BUILD_TYPE is given at all, cmake uses either the previous 
-                cached value, or else 'empty' (plain or default system optimizations).
+                cached value, or else 'RelWithDebInfo' (release with debug info).
 
             -DCMAKE_INSTALL_PREFIX=<prefix>
                The installation <prefix> where the program is installed.
