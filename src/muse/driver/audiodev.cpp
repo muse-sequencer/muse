@@ -104,7 +104,10 @@ bool AudioDevice::processTransport(unsigned int frames)
     }
     else
     {  
-      _syncTimeoutCounter += (float)frames / (float)MusEGlobal::sampleRate;
+      // std::atomic<float> has no operator+= until C++20 - this field is
+      // only ever written from this (the audio) thread, so a plain
+      // load+store is fine.
+      _syncTimeoutCounter = _syncTimeoutCounter.load() + (float)frames / (float)MusEGlobal::sampleRate;
       // Has the counter surpassed the timeout limit?
       if(_syncTimeoutCounter > _syncTimeout)
       {

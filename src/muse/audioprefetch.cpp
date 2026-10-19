@@ -21,8 +21,10 @@
 //
 //=========================================================
 
-#ifndef _WIN32
-#include <poll.h>
+#ifdef _WIN32
+#include "poll.h"
+#else
+#include <sys/poll.h>
 #endif
 #include <stdio.h>
 #include <unistd.h>
@@ -50,7 +52,14 @@ void initAudioPrefetch()
 }
 
 // Diagnostics.
-//#define AUDIOPREFETCH_DEBUG
+// TEMPORARY: enabled to diagnose a Windows-only report of "record never
+// actually records, transport hangs ~20-30s (the setSyncTimeout(30000000)
+// in main.cpp/song.cpp) then starts anyway" - this makes the existing,
+// already-well-placed fprintf(stderr, ...) diagnostics below actually
+// print, to see whether seekCount ever returns to 0 (AudioPrefetch::
+// seekDone(), which Audio::sync() waits on to declare the transport
+// ready). Ask before removing.
+#define AUDIOPREFETCH_DEBUG
 
 enum { PREFETCH_TICK, PREFETCH_SEEK
       };

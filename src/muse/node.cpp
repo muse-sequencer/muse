@@ -2298,7 +2298,7 @@ void AudioTrack::setTotalOutChannels(int num)
           {
             if(_dataBuffers[i])
             {
-              free(_dataBuffers[i]);
+              museAlignedFree(_dataBuffers[i]);
               _dataBuffers[i] = nullptr;
             }
           }
@@ -2321,7 +2321,7 @@ void AudioTrack::setTotalOutChannels(int num)
             {
               if(outBuffers[i])
               {
-                free(outBuffers[i]);
+                museAlignedFree(outBuffers[i]);
                 outBuffers[i] = nullptr;
               }
             }

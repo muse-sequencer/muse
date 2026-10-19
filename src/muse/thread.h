@@ -24,6 +24,7 @@
 #ifndef __THREAD_H__
 #define __THREAD_H__
 
+#include <atomic>
 #include <pthread.h>
 #include <list>
 
@@ -69,12 +70,16 @@ struct ThreadMsg {
 
 class Thread {
       const char* _name;
-      volatile bool _running;
+      std::atomic<bool> _running;
       int _pollWait;    // poll timeout in msec (-1 = infinite)
 
       pthread_t thread;
 
       int toThreadFdw;     // message to thread (app write)
+
+      int stopFdr;         // wake-up pipe used by stop() to break loop() out of poll() (seq read)
+      int stopFdw;         // wake-up pipe used by stop() to break loop() out of poll() (app write)
+      static void stopWakeHandler(void*, void*);
 
       PollList plist;
       void* userPtr;
@@ -100,7 +105,7 @@ class Thread {
       virtual void start(int priority, void* ptr=0);
       
       void stop(bool);
-      void clearPollFd() {    plist.clear(); npfd = 0; }
+      void clearPollFd();
       void addPollFd(int fd, int action, void (*handler)(void*,void*), void*, void*);
       void removePollFd(int fd, int action);
       void loop();

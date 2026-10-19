@@ -65,6 +65,8 @@ struct XmlWriteStatistics;
 typedef std::vector<double> AuxSendValueList;
 typedef std::vector<double>::iterator iAuxSendValue;
 
+// museAlignedFree() - see globaldefs.h (included above)
+
 //---------------------------------------------------------
 //   Track
 //---------------------------------------------------------

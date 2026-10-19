@@ -23,6 +23,26 @@
 
 project(muse)
 
+if (WIN32)
+      # On Linux, this codebase's internal static/shared "modules" link
+      # against each other with an incomplete dependency graph in
+      # places (some modules only declare what they need via a shared
+      # sibling in core's flat target_link_libraries() list, rather
+      # than directly on the module that provides it). ELF's lazy
+      # symbol resolution across .so boundaries tolerates that. GNU ld
+      # on Windows/MinGW does not: it resolves each static archive and
+      # import library in a single left-to-right pass, so a provider
+      # library listed earlier than its consumer produces "undefined
+      # reference" even though every needed archive is present on the
+      # link line. Wrapping the whole library list in
+      # --start-group/--end-group makes ld rescan the group until all
+      # symbols resolve, independent of declaration order. Verified
+      # against a minimal reproduction with the same wrong-order
+      # static-lib layout, cross-compiled with x86_64-w64-mingw32-g++.
+      set(CMAKE_CXX_LINK_EXECUTABLE
+            "<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> -Wl,--start-group <LINK_LIBRARIES> -Wl,--end-group")
+endif (WIN32)
+
 include(FindPkgConfig)
 include(CheckIncludeFile)
 include(CheckIncludeFileCXX)
