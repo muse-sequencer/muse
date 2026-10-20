@@ -78,7 +78,7 @@ namespace MusEGui {
 DEvent::DEvent(MusECore::Event e, MusECore::Part* p, int instr)
   : EItem(e, p)
       {
-      int y  = instr * TH + TH/2;
+      int y  = instr * TH + DrumCanvas::dcanvasYItemOffset();
       int tick = e.tick() + p->tick();
       setPos(QPoint(tick, y));
       setBBox(QRect(-CARET2, -CARET2, CARET, CARET));
@@ -761,10 +761,10 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect, c
       QPoint pt = map(item->mp());
       int x = pt.x();
       int y = pt.y();
-      pa.setPoint(0, x-CARET2,  y + TH/2);
-      pa.setPoint(1, x,         y + TH/2+CARET2);
-      pa.setPoint(2, x+CARET2,  y + TH/2);
-      pa.setPoint(3, x,         y + (TH-CARET)/2);
+      pa.setPoint(0, x-CARET2,  y);
+      pa.setPoint(1, x,         y + CARET2);
+      pa.setPoint(2, x+CARET2,  y);
+      pa.setPoint(3, x,         y - CARET2);
       QRect mr(pa.boundingRect());
       mr = mr.intersected(rect);
       if(!mr.isValid())
@@ -873,6 +873,28 @@ int DrumCanvas::pitch2y(int pitch) const
       {
       return pitch * TH;
       }
+
+// Static.
+int DrumCanvas::dcanvasY2height(int)
+{
+    return TH;
+}
+
+// Static.
+int DrumCanvas::dcanvasYItemOffset()
+{
+    return TH/2;
+}
+
+int DrumCanvas::y2height(int y) const
+{
+    return dcanvasY2height(y);
+}
+
+int DrumCanvas::yItemOffset() const
+{
+  return dcanvasYItemOffset();
+}
 
 //---------------------------------------------------------
 //   cmd
@@ -1320,15 +1342,29 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         break;
                   case NoteInfo::VAL_PITCH:
                         {
-                          int direction = -val;
-                          for (int i = 0; i < instrument_map.size(); ++i) {
-                              if (instrument_map.at(i).pitch == event.pitch()) {
-                                  int nextPos = i + direction;
-                                  if (nextPos > -1 && nextPos < instrument_map.size())
-                                    newEvent.setPitch(instrument_map.at(nextPos).pitch);
-                                  break;
-                              }
+                          if(delta_mode)
+                          {
+
+                            int direction = -val;
+                            for (int i = 0; i < instrument_map.size(); ++i) {
+                                if (instrument_map.at(i).pitch == event.pitch()) {
+                                    int nextPos = i + direction;
+                                    if (nextPos > -1 && nextPos < instrument_map.size())
+                                      newEvent.setPitch(instrument_map.at(nextPos).pitch);
+                                    break;
+                                }
+                            }
                           }
+                          else
+                          {
+                            int pitch = val;
+                            if (pitch > 127)
+                                  pitch = 127;
+                            else if (pitch < 0)
+                                  pitch = 0;
+                            newEvent.setPitch(pitch);
+                          }
+
                           if (_playEvents && _stuckNotes.empty())
                               startPlayEvent(newEvent.pitch(), newEvent.velo());
                         }

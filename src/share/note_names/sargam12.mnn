@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf8"?>
+<muse version="4.2">
+  <noteNameList name="Indian Sargam 12" startMidiNote="0" startMidiOctave="-1">
+    <noteName noteNum="0"  firstName="Sa"/>
+    <noteName noteNum="1"  firstName="Reb"/>
+    <noteName noteNum="2"  firstName="Re"    secondName="Re Gab"/>
+    <noteName noteNum="3"  firstName="Gab"/>
+    <noteName noteNum="4"  firstName="Ga"/>
+    <noteName noteNum="5"  firstName="Ma"/>
+    <noteName noteNum="6"  firstName="Ma#"/>
+    <noteName noteNum="7"  firstName="Pa"/>
+    <noteName noteNum="8"  firstName="Dhab"/>
+    <noteName noteNum="9"  firstName="Dha"   secondName="Dha Nib"/>
+    <noteName noteNum="10" firstName="Nib"/>
+    <noteName noteNum="11" firstName="Ni"/>
+  </noteNameList>
+</muse>
+

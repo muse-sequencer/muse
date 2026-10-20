@@ -21,9 +21,9 @@
 //=========================================================
 """
 
-import Pyro4.core
+import Pyro5.api as pyro
 
-muse=Pyro4.core.Proxy('PYRONAME:muse')
+muse=pyro.Proxy('PYRONAME:muse')
 
 #
 # Example on how to insert a new note, outcommented since I run the script several times and it inserts so many notes :-)

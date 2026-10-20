@@ -64,12 +64,25 @@ void PitchLabel::setPitchMode(bool val)
 
 QSize PitchLabel::sizeHint() const
       {
-      QFontMetrics fm(font());
+      const QString t = text();
+      const QFontMetrics fm(font());
+
+      // Enough space for a lower limit to fit for example "C#-2" plus extra space for good luck.
+      // Must display 14Bit controller values.
+      int minTextWidth = fm.horizontalAdvance("W#-2");
+      // Enough space for an upper limit of say 7 'W' characters.
+      int maxTextWidth = fm.horizontalAdvance("WWWWWWW");
+      int textWidth = fm.horizontalAdvance(t);
+      if(textWidth < minTextWidth)
+        textWidth = minTextWidth;
+      if(textWidth > maxTextWidth)
+        textWidth = maxTextWidth;
+
       //int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+
+      int w = textWidth + fw * 2;
       int h  = fm.height() + fw * 2;
-//      int w = 2 + fm.horizontalAdvance(QString("A#8")) +  fw * 4;
-      int w = fm.horizontalAdvance(QString("-9999")) + fw * 2;     // must display 14Bit controller values
       return QSize(w, h)/*.expandedTo(QApplication::globalStrut())*/;
       }
 

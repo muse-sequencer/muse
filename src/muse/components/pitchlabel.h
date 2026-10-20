@@ -39,7 +39,7 @@ class PitchLabel : public QLabel {
       
 
    protected:
-      QSize sizeHint() const;
+      QSize sizeHint() const override;
 
    public slots:
       void setValue(int);

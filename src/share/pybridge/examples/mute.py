@@ -21,10 +21,10 @@
 //=========================================================
 """
 
-import Pyro4.core
+import Pyro5.api as pyro
 import time
 
-muse=Pyro4.core.Proxy('PYRONAME:muse')
+muse=pyro.Proxy('PYRONAME:muse')
 for i in range(0,10):
       muse.setMute("Strings", False)
       muse.setMute("Lead1", True)

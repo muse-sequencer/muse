@@ -1390,6 +1390,25 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                             MusEGlobal::config.showNoteTooltips = xml.parseInt();
                         else if (tag == "showTimeScaleBeatNumbers")
                             MusEGlobal::config.showTimeScaleBeatNumbers = xml.parseInt();
+                        else if (tag == "noteNameList")
+                        {
+                            NoteNameList l;
+                            if(l.read(xml))
+                            {
+                              fprintf(stderr, "Error reading configuration NoteNameList\n");
+                            }
+                            else
+                            {
+                              MusEGlobal::config.noteNameList = l;
+                            }
+                        }
+                        else if (tag == "globalOctaveSuffixOffset")
+                            MusEGlobal::config.globalOctaveSuffixOffset = xml.parseInt();
+                        else if (tag == "globalShowPiano")
+                            MusEGlobal::config.globalShowPiano = xml.parseInt();
+                        else if (tag == "pianoShowNoteColors")
+                            MusEGlobal::config.pianoShowNoteColors = xml.parseInt();
+
                         else if (tag == "noPluginScaling")
                               MusEGlobal::config.noPluginScaling = xml.parseInt();
 //                        else if (tag == "openMDIWinMaximized")
@@ -1486,16 +1505,20 @@ bool readConfiguration(const char *configFile)
       }
 
       fprintf(stderr, "Config File <%s>\n", configFile);
-      FILE* f = fopen(configFile, "r");
-      if (f == nullptr) {
-            if (MusEGlobal::debugMsg || MusEGlobal::debugMode)
-                  fprintf(stderr, "NO Config File <%s> found\n", configFile);
 
-            if (MusEGlobal::config.userInstrumentsDir.isEmpty()) 
-                  MusEGlobal::config.userInstrumentsDir = MusEGlobal::configPath + "/instruments";
-            return true;
-            }
-      Xml xml(f);
+      QFile f(configFile);
+      if(!f.open(QIODevice::ReadOnly))
+      {
+        if (MusEGlobal::debugMsg || MusEGlobal::debugMode)
+              fprintf(stderr, "NO Config File <%s> found\n", configFile);
+
+        if (MusEGlobal::config.userInstrumentsDir.isEmpty())
+              MusEGlobal::config.userInstrumentsDir = MusEGlobal::configPath + "/instruments";
+        return true;
+      }
+
+
+      Xml xml(&f);
       bool skipmode = true;
       for (;;) {
             Xml::Token token = xml.parse();
@@ -1526,11 +1549,11 @@ bool readConfiguration(const char *configFile)
                         {
                           fprintf(stderr, "\n***WARNING***\nLoaded config file version is %d.%d\nCurrent version is %d.%d\n"
                                   "Conversions may be applied!\n\n",
-                                  xml.majorVersion(), xml.minorVersion(), 
+                                  xml.majorVersion(), xml.minorVersion(),
                                   xml.latestMajorVersion(), xml.latestMinorVersion());
                         }
                         if (!skipmode && tag == "muse") {
-                              fclose(f);
+                              f.close();
                               return false;
                               }
                   default:
@@ -1539,7 +1562,7 @@ bool readConfiguration(const char *configFile)
             }
 
 read_conf_end:
-      fclose(f);
+      f.close();
       return true;
       }
 
@@ -1892,18 +1915,19 @@ namespace MusEGui {
 
 void MusE::writeGlobalConfiguration() const
       {
-      FILE* f = fopen(MusEGlobal::configName.toLocal8Bit().constData(), "w");
-      if (f == nullptr) {
-            fprintf(stderr, "save configuration to <%s> failed: %s\n",
-               MusEGlobal::configName.toLocal8Bit().constData(), strerror(errno));
-            return;
-            }
-      MusECore::Xml xml(f);
+      QFile f(MusEGlobal::configName);
+      if(!f.open(QIODevice::WriteOnly))
+      {
+        fprintf(stderr, "save configuration to <%s> failed: %d:%s\n",
+           MusEGlobal::configName.toLocal8Bit().constData(), f.error(), f.errorString().toLocal8Bit().constData());
+        return;
+      }
+      MusECore::Xml xml(&f);
       xml.header();
       xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
       writeGlobalConfiguration(1, xml);
       xml.tag(1, "/muse");
-      fclose(f);
+      f.close();
       }
 
 bool MusE::loadConfigurationColors(QWidget* parent)
@@ -1954,24 +1978,25 @@ bool MusE::saveConfigurationColors(QWidget* parent)
 //      return false;
 //  }
 
-  FILE* f = fopen(file.toLocal8Bit().constData(), "w");
-  if (f == nullptr)
+  QFile f(file);
+  if(!f.open(QIODevice::WriteOnly))
   {
-    fprintf(stderr, "save configuration colors to <%s> failed: %s\n",
-        file.toLocal8Bit().constData(), strerror(errno));
+    fprintf(stderr, "save configuration colors to <%s> failed: %d:%s\n",
+        file.toLocal8Bit().constData(), f.error(), f.errorString().toLocal8Bit().constData());
     return false;
   }
-  MusECore::Xml xml(f);
+
+  MusECore::Xml xml(&f);
   xml.header();
   xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
   xml.tag(1, "configuration");
   MusECore::writeConfigurationColors(2, xml, false); // Don't save part colour names.
   xml.etag(1, "configuration");
   xml.tag(0, "/muse");
-  fclose(f);
+  f.close();
   return true;
 }
-      
+
 void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "configuration");
@@ -2106,6 +2131,11 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "showNoteNamesInPianoRoll", MusEGlobal::config.showNoteNamesInPianoRoll);
       xml.intTag(level, "showNoteTooltips", MusEGlobal::config.showNoteTooltips);
       xml.intTag(level, "showTimeScaleBeatNumbers", MusEGlobal::config.showTimeScaleBeatNumbers);
+      MusEGlobal::config.noteNameList.write(level, xml);
+      xml.intTag(level, "globalOctaveSuffixOffset", MusEGlobal::config.globalOctaveSuffixOffset);
+      xml.intTag(level, "globalShowPiano", MusEGlobal::config.globalShowPiano);
+      xml.intTag(level, "pianoShowNoteColors", MusEGlobal::config.pianoShowNoteColors);
+
       xml.intTag(level, "noPluginScaling", MusEGlobal::config.noPluginScaling);
 //      xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
       xml.intTag(level, "keepTransportWindowOnTop", MusEGlobal::config.keepTransportWindowOnTop);
@@ -2290,7 +2320,7 @@ void MusE::configMidiFile()
 //   configGlobalSettings
 //---------------------------------------------------------
 
-void MusE::configGlobalSettings()
+void MusE::configGlobalSettings(int startTab)
       {
       if (!globalSettingsConfig)
           // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
@@ -2302,8 +2332,9 @@ void MusE::configGlobalSettings()
           }
       else
           globalSettingsConfig->show();
+      if(startTab >= 0)
+        globalSettingsConfig->selectTab(startTab);
       }
-
 
 //---------------------------------------------------------
 //   MidiFileConfig

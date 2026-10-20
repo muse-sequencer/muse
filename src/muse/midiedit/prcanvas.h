@@ -96,8 +96,8 @@ class PianoCanvas : public EventCanvas {
 
       int y2pitch(int) const override;
       int pitch2y(int) const override;
-      inline int y2height(int) const  override { return KH/2; }
-      inline int yItemOffset() const  override { return KH/4; }
+      int y2height(int) const  override;
+      int yItemOffset() const  override;
       virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion()) override;
       virtual void itemPressed(const CItem*) override;
       virtual void itemReleased(const CItem*, const QPoint&) override;
@@ -144,6 +144,9 @@ class PianoCanvas : public EventCanvas {
       void cmd(int cmd);
       void setColorMode(MidiEventColorMode mode);
       virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true) override;
+
+      static int prcanvasY2height(int);
+      static int prcanvasYItemOffset();
       };
 
 } // namespace MusEGui

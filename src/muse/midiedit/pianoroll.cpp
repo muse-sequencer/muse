@@ -314,6 +314,13 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       eventColor->addActions(actgrp->actions());
       
+      pianoConfigMenu = new PopupMenu(tr("Note Names, Piano Settings"), this, true);
+      pianoConfigMenu->setIcon(*pianoConfigSVGIcon);
+      menuConfig->addMenu(pianoConfigMenu);
+      connect(pianoConfigMenu, &QMenu::aboutToShow, [this]() { pianoConfigMenuAboutToShow(); } );
+      connect(pianoConfigMenu, &QMenu::aboutToHide, [this]() { pianoConfigMenuAboutToHide(); } );
+      connect(pianoConfigMenu, &QMenu::triggered, [](QAction* act) { pianoConfigPopupTriggered(act); } );
+
 //      menuConfig->addSeparator();
       addControllerMenu = new PopupMenu(tr("Add Controller View"), this, true);
       addControllerMenu->setIcon(*midiControllerNewSVGIcon);
@@ -339,6 +346,13 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       tools = addToolBar(tr("Pianoroll tools"));
       tools->setObjectName("Pianoroll tools");
+
+      pianoConfigButton = new QToolButton();
+      pianoConfigButton->setToolTip(tr("Note names and piano settings"));
+      pianoConfigButton->setIcon(*pianoConfigSVGIcon);
+      pianoConfigButton->setFocusPolicy(Qt::NoFocus);
+      connect(pianoConfigButton, &QToolButton::pressed, [this]() { pianoConfigClicked(); } );
+      tools->addWidget(pianoConfigButton);
 
       addctrl = new QToolButton();
       addctrl->setToolTip(tr("Add controller view"));
@@ -472,6 +486,9 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       piano               = new Piano(split1, _viewState.yscale(), _pianoWidth, this);
       canvas              = new PianoCanvas(this, split1, _viewState.xscale(), _viewState.yscale());
       vscroll             = new MusEGui::ScrollScale(-2, 3, _viewState.yscale(), KH * 75, Qt::Vertical, split1);
+      // Update the vscroll range according to the current note name list.
+      updateVScrollRange();
+
       setCurDrumInstrument(piano->curSelectedPitch());
 
       canvas->setOrigin(_canvasXOrigin, 0);
@@ -487,11 +504,11 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       gridS1->setRowStretch(2, 100);
       gridS1->setColumnStretch(1, 100);     
 
-      gridS1->addWidget(time,                   0, 1, 1, 2);
-      gridS1->addWidget(MusECore::hLine(split1),          1, 0, 1, 3);
-      gridS1->addWidget(piano,                  2,    0);
-      gridS1->addWidget(canvas,                 2,    1);
-      gridS1->addWidget(vscroll,                2,    2);
+      gridS1->addWidget(time,                    0, 1, 1, 2);
+      gridS1->addWidget(MusECore::hLine(split1), 1, 0, 1, 3);
+      gridS1->addWidget(piano,                   2,    0);
+      gridS1->addWidget(canvas,                  2,    1);
+      gridS1->addWidget(vscroll,                 2,    2);
 
       piano->setFixedWidth(_pianoWidth);
 
@@ -612,7 +629,10 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
             ctrl_edit->setPerNoteVel(mcvs._perNoteVel);
         }
       }
-      
+
+      // Force LTR layout on the whole thing.
+      // RTL is NOT to be used for flows of time or information or connections.
+      setLayoutDirection(Qt::LeftToRight);
       }
 
 PianoRoll::~PianoRoll()
@@ -697,6 +717,14 @@ void PianoRoll::configChanged()
       toolbar->setGridOn(MusEGlobal::config.canvasShowGrid);
       initShortcuts();
 
+      // In case the note name list changed:
+      // Update the vscroll range.
+      updateVScrollRange();
+      // Must rebuild the item list.
+      canvas->updateItems();
+      // Redraw the piano.
+      piano->redraw();
+
       canvas->redraw();
       }
 
@@ -752,6 +780,50 @@ void PianoRoll::updateHScrollRange()
       hscroll->range(&s1, &e1);
       if(s != s1 || e != e1) 
         hscroll->setRange(s, e);
+}
+
+void PianoRoll::pianoConfigMenuAboutToShow()
+{
+  // Clear the menu and delete the contents.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+  pianoConfigMenu->clear();
+  populatePianoConfigMenu(pianoConfigMenu, &MusEGlobal::config);
+}
+
+void PianoRoll::pianoConfigMenuAboutToHide()
+{
+  // Clear the menu and delete the contents, since it's going to be cleared
+  //  and refilled anyway next time opened, so we can save memory.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+// FIXME: This crashes, of course...
+//   pianoConfigMenu->clear();
+}
+
+void PianoRoll::pianoConfigClicked()
+{
+  PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent.
+  connect(pup, &QMenu::triggered, [](QAction* act) { pianoConfigPopupTriggered(act); } );
+
+  populatePianoConfigMenu(pup, &MusEGlobal::config);
+
+  QPoint ep = pianoConfigButton->mapToGlobal(QPoint(0,0));
+
+  pup->exec(ep);
+  delete pup;
+
+  pianoConfigButton->setDown(false);
+}
+
+//---------------------------------------------------------
+//   updateVScrollRange
+//---------------------------------------------------------
+
+void PianoRoll::updateVScrollRange()
+{
+  if(piano)
+    vscroll->setRange(0, piano->pianoHeight());
 }
 
 //---------------------------------------------------------

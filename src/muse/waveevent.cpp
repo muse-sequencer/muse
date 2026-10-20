@@ -119,16 +119,17 @@ bool WaveEventBase::isSimilarTo(const EventBase& other_) const
 
 EventBase* WaveEventBase::mid(unsigned b, unsigned e) const
       {
-      WaveEventBase* ev = new WaveEventBase(*this);
+      // We want a duplicate with a new id always, not a clone here.
+      WaveEventBase* ev = new WaveEventBase(*this, true);
       unsigned fr = frame();
       unsigned start = fr - b;
       if(b > fr)
-      {  
+      {
         start = 0;
         ev->setSpos(spos() + b - fr);
       }
       unsigned end = endFrame();
-      
+
       if (e < end)
             end = e;
 

@@ -410,7 +410,7 @@ int main(int argc, char* argv[])
                   break;
 
                   default:
-                        printf("unkown error\n");
+                        printf("unknown error\n");
                         return -1;
             }
       }

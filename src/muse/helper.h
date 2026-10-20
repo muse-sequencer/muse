@@ -31,8 +31,36 @@
 #include <QLine>
 #include <QValidator>
 #include <QUuid>
+#include <QAction>
+// REMOVE Tim. qt6. Added.
+#include <QPoint>
+#include <QSize>
+#include <QWidget>
 
 #include "type_defs.h"
+
+namespace MusEGui {
+  enum PianoConfigMenuId
+  {
+    PIANO_CFG_SHOW_PIANO = 0,
+    PIANO_CFG_SHOW_NOTE_COLORS,
+    PIANO_CFG_CUR_NOTE_LIST_NAME,
+    PIANO_CFG_OPEN_SETTINGS,
+    PIANO_CFG_OCT_M4,
+    PIANO_CFG_OCT_M3,
+    PIANO_CFG_OCT_M2,
+    PIANO_CFG_OCT_M1,
+    PIANO_CFG_OCT_0,
+    PIANO_CFG_OCT_P1,
+    PIANO_CFG_OCT_P2,
+    PIANO_CFG_OCT_P3,
+    PIANO_CFG_OCT_P4
+  };
+}
+
+namespace MusEGlobal {
+struct GlobalConfigValues;
+}
 
 class QActionGroup;
 class QMenu;
@@ -52,13 +80,17 @@ class PartList;
 struct DrumMap;
 class Xml;
 class CtrlList;
+class NoteNameList;
 
 void enumerateJackMidiDevices();
 void populateMidiPorts();
 
 QString pitch2string(int v);
-int string2pitch(const QString &s);
+
+// String can be first or second note name. Example c#, d# or db, eb. Case insensitive.
+int string2pitch(QString s);
 QValidator::State validatePitch(const QString &s);
+
 void dumpMPEvent(const MEvent* ev);
 Part* partFromSerialNumber(const QUuid& serial);
 bool any_event_selected(const std::set<const Part*>&, bool in_range=false,
@@ -100,6 +132,8 @@ QString projectTitleFromFilename(QString filename);
 QString projectPathFromFilename(QString filename);
 QString projectExtensionFromFilename(QString filename);
 QString getUniqueUntitledName();
+int populatePianoConfigMenu(PopupMenu* menu, const MusEGlobal::GlobalConfigValues *);
+void pianoConfigPopupTriggered(QAction* act);
 int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECore::Part* cur_part, int curDrumPitch);
 QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect);
 // We need normalizeQRect() because Qt's own QRect normalize makes the rectangle larger,
@@ -113,9 +147,17 @@ void loadThemeColors(const QString&);
 //void updateThemeAndStyle();
 int countSelectedParts();
 
-// A replacement for obsolete Qt5's QDesktopWidget geometry.
-QRect getDesktopGeometry();
-} 
+// REMOVE Tim. qt6. Removed.
+// // A replacement for obsolete Qt5's QDesktopWidget geometry.
+// QRect getDesktopGeometry();
+// REMOVE Tim. qt6. Added.
+// Tries to return the geometry of the screen under the point, or else the primary screen,
+//  or if no screens, a dummy geometry.
+QSize getScreenGeometryFromPoint(const QPoint&);
+// Tries to return the geometry of the widget's screen, or else the primary screen,
+//  or if no screens, a dummy geometry.
+QSize getScreenGeometryFromWidget(const QWidget*);
+}
 
 #endif
 

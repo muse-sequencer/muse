@@ -229,8 +229,6 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       // Add the change track name action to the menu.
       menuView->addAction(changeTrackNameId);
 
-      menuView->addActions(MusEGlobal::undoRedo->actions());
-
       ///view = new QScrollArea();
       view = new ScrollArea();
       view->setFocusPolicy(Qt::NoFocus);
@@ -276,6 +274,10 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       central->installEventFilter(this);
       mixerLayout->installEventFilter(this);
       view ->installEventFilter(this);
+
+      // Force LTR layout on the whole thing.
+      // RTL is NOT to be used for flows of time or information or connections.
+      view->setLayoutDirection(Qt::LeftToRight);
 }
 
 AudioMixerApp::~AudioMixerApp()
@@ -779,6 +781,13 @@ void AudioMixerApp::stripUserWidthChanged(Strip* s, int w)
 
 void AudioMixerApp::menuViewAboutToShow()
 {
+  // Only if undoRedo is ready.
+  // It can be null on construction of AudioMixerApp if the mixers are docked,
+  //  since the main window which creates undoRedo hasn't been created yet.
+  // QMenu will refuse to add actions that it already has, so we don't need to check. Tested OK.
+  if(MusEGlobal::undoRedo)
+    menuView->addActions(MusEGlobal::undoRedo->actions());
+
 //   for(StripList::iterator isl = stripList.begin(); isl != stripList.end(); ++isl)
 //   {
 //     Strip* strip = *isl;

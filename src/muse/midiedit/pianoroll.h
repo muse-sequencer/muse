@@ -75,7 +75,7 @@ class PianoRoll : public MidiEditor {
     int _pianoWidth;
 
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuScripts;
-      PopupMenu* addControllerMenu;
+      PopupMenu* addControllerMenu, *pianoConfigMenu;
       
       QAction* editCutAction; 
       QAction* editCopyAction; 
@@ -136,6 +136,7 @@ class PianoRoll : public MidiEditor {
       QToolButton* midiin;
 
       Piano* piano;
+      QToolButton* pianoConfigButton;
       MusEGui::Toolbar1* toolbar;
       MusEGui::Splitter* splitter;
       MusEGui::Splitter* hsplitter;
@@ -203,6 +204,10 @@ class PianoRoll : public MidiEditor {
       void ctrlPopupTriggered(QAction* act);
       void ctrlMenuAboutToShow();
       void ctrlMenuAboutToHide();
+      void pianoConfigMenuAboutToShow();
+      void pianoConfigMenuAboutToHide();
+      void pianoConfigClicked();
+      void updateVScrollRange();
 
    signals:
       void isDeleting(MusEGui::TopWin*);

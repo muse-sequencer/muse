@@ -1,3 +1,55 @@
+22.07.2026
+    *** MusE 4.3.0 ***
+15.07.2026
+    * Upgraded: Pyro4 support removed and upgraded to full native Pyro5. (Tim)
+    - There was also a crash that has been fixed. We now get and release the GIL.
+    - Tested all *.py remote control examples OK.
+14.03.2026
+    - Add 'New' button to note name list feature in Settings. (Tim)
+09.03.2026
+    - FIX issue 1321: Segfault when enabling "Open mixers in docks" (Tim)
+      Broken at 13.05.2025. Can't add undoRedo to mixer menus in ctor since undoRedo
+       hasn't been created yet because the main window hasn't been created.
+      Add undoRedo in the menu's aboutToShow handler instead.
+17.02.2026
+    - Relating to issue 1308: Feat req "[Adjustable] Middle C (C3 or C4)". (Tim)
+    - FIXED: Broken pitch edit on toolbar on pianoroll and drum edit for at least 12 years.
+      Neither worked in Delta mode.
+      Delta Absolute mode didn't work in the drum editor.
+    * NEW: Note name lists.
+      Added full variable-sized note name lists, colours etc.
+      Starting octave display suffix for each note name list, and separate global octave offset.
+      Quick access to most of the settings via new button and item in toolbars and menus.
+      Loading, saving, user-editing. New: Note name list Global Settings tab.
+      Piano can now be swapped for a list instead.
+      List can be painted with note colours.
+      Six ready-made note name lists supplied: Western, Solfege, German, Sargam, Arabic, and Persian.
+      Rewrites and OLD BUG fixes of piano canvas, piano, etc. drawing to support all of it.
+    - IMPROVED support for Right-To-Left locales.
+      Several windows needed to be forced to left-to-right layout direction in RTL locales,
+       because much of MusE is TIME LINE based. RTL is NOT to be used for flows of time or
+       information or connections. Qt wanted to arrange everything right-to-left automatically,
+       which in the case of a time line based DAW is NOT correct.
+    - IMPROVED Advanced Routing dialog.
+      New: Connection lines can be selected. Supports multi-selection.
+      Layout re-arranged to be more symmetrical.
+      Improved RTL locale support.
+27.10.2025
+    - Fixed issue 1313 for rack plugins: Settings not saved or reloaded correctly. (Tim)
+      Regression from 13.05.2025.
+14.10.2025
+    - Fixed issue 1313: Settings of LV2 synths are not saved or reloaded correctly. (Tim)
+      Regression from 13.05.2025.
+01.09.2025
+    - Fixed issue 1302: Wave editor issues, split parts, external editor, sometimes crashes. (Tim)
+      When splitting wave or midi events we want a duplicate, not a clone.
+    - Fixed crashes with external editing. Rewrote and simplified WaveCanvas::getSelection().
+      Tested OK with split parts, hidden or partially hidden events, and functions menu.
+25.08.2025
+    - Fixed issue 1307: Utf8 names not stored correctly. (Tim)
+      Fixed Xml::strTag() not storing utf8 correctly.
+    - Eliminated Xml::Xml(FILE*) and all code using FILE*.
+      All xml calling code uses either QFile or QString or char* now.
 19.08.2025
     - Qt6 version: From forums: Fixed compile problems on Linux Mint 22.1 (Tim)
       For some reason Mint 22.1's Qt6.4 seems either more strict or incomplete.
@@ -14,7 +66,6 @@
       Tested OK so far loading songs.
       Only possible area to watch is some functions involving deprecated QDesktopWidget
        which is hard to replace.
-
 17.08.2025
     - Fixed issue 1299: Regression vst controls/presets. (Tim)
       Caused by fixes at 13.05.2025 and before.

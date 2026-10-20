@@ -227,7 +227,10 @@ bool PopupMenu::event(QEvent* event)
         QPoint globPos = e->globalPosition().toPoint();
         // We want the whole thing if multiple monitors.
         //int dw = QApplication::desktop()->width();
-        int dw = getDesktopGeometry().width();
+// REMOVE Tim. qt6. Changed.
+//        int dw = getDesktopGeometry().width();
+//        int dw = getScreenGeometryFromPoint(globPos).width();
+        int dw = getScreenGeometryFromWidget(this).width();
         if(x() < 0 && globPos.x() <= 0)   // If on the very first pixel (or beyond)
         {
           moveDelta = 32;
@@ -305,7 +308,9 @@ void PopupMenu::timerHandler()
 
    // We want the whole thing if multiple monitors.
    //int dw = QApplication::desktop()->width();
-   int dw = getDesktopGeometry().width();
+// REMOVE Tim. qt6. Changed.
+//   int dw = getDesktopGeometry().width();
+   int dw = getScreenGeometryFromWidget(this).width();
    int nx = x() + moveDelta;
    if(moveDelta < 0 && nx + width() < dw)
    {
@@ -333,7 +338,9 @@ void PopupMenu::popHovered(QAction* action)
    {
       // We want the whole thing if multiple monitors.
       //int dw = QApplication::desktop()->width();
-      int dw = getDesktopGeometry().width();
+// REMOVE Tim. qt6. Changed.
+//      int dw = getDesktopGeometry().width();
+      int dw = getScreenGeometryFromWidget(this).width();
       QRect r = actionGeometry(action);
       if(x() + r.x() < 0)
          move(-r.x(), y());
@@ -417,7 +424,9 @@ PopupMenu* PopupMenu::getMenu(const QString& parentText)
    // We want the whole thing if multiple monitors.
    // Reasonable to assume if X can show this desktop, it can show a menu with the same width?
    //int dh = QApplication::desktop()->height();
-   int dh = getDesktopGeometry().height();
+// REMOVE Tim. qt6. Changed.
+//   int dh = getDesktopGeometry().height();
+   int dh = getScreenGeometryFromWidget(this).height();
    // [danvd] Due to slow actionGeometry method in qt5 QMenu, only limit PopupMenu to 2 columns without width checking...
    // [Tim]  It seems that sizeHint() is only slightly more costly, use it instead.
    //int _act_height = _cur_menu->actionGeometry(_actions [0]).height();

@@ -395,6 +395,34 @@ GlobalConfigValues config = {
       true,                         // showNoteNamesInPianoRoll
       true,                         // showNoteTooltips
       true,                         // showTimeScaleBeatNumbers
+      {
+        // noteNameList: Index, note number, first name, second name
+        {
+          {0,  {0,  "C",  ""}},
+          {1,  {1,  "C#", "Db"}},
+          {2,  {2,  "D",  ""}},
+          {3,  {3,  "D#", "Eb"}},
+          {4,  {4,  "E",  ""}},
+          {5,  {5,  "F",  ""}},
+          {6,  {6,  "F#", "Gb"}},
+          {7,  {7,  "G",  ""}},
+          {8,  {8,  "G#", "Ab"}},
+          {9,  {9,  "A",  ""}},
+          {10, {10, "A#", "Bb"}},
+          {11, {11, "B",  ""}}
+        },
+        // displayName
+        "Western 12-TET",
+        // direction
+        //"auto",
+        // startMidiNote
+        0,
+        // startMidiOctave
+        -1
+      },
+      0,                            // globalOctaveSuffixOffset
+      true,                         // globalShowPiano Draw a piano if there are 12 notes in the note list.
+      false,                        // pianoShowNoteColors Whether to show note colours on the piano - only if a list is shown.
       false,                        // selectionsUndoable Whether selecting parts or events is undoable.
       true,                         // noPluginScaling
       true,                         // keepTransportWindowOnTop

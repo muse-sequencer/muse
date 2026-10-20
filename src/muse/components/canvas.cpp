@@ -694,6 +694,8 @@ void Canvas::startMoving(const QPoint& pos, int dir, DragType, bool rasterize)
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (i->second->isSelected()) {
                   i->second->setMoving(true);
+              //fprintf(stderr, "Canvas::startMoving: i->second->setMp x:%d y:%d\n", i->second->pos().x(), i->second->pos().y());
+
                   // Give the moving point an initial value.
                   i->second->setMp(i->second->pos());
                   moving.add(i->second);
@@ -720,7 +722,7 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
       QPoint cur_item_mp, mp, cur_item_old_mp, old_mp;
       CItem* item;
       int x, y, nx, ny;
-      
+
       // Inform the classes that an item is about to be moved.
       //
       // Simply for consistency with the code below, inform of the current item first.
@@ -734,7 +736,9 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
           cur_item_mp = raster(QPoint(nx, ny));
         else
           cur_item_mp = QPoint(nx, ny);
-        
+
+        cur_item_mp.setY(cur_item_mp.y() + yItemOffset());
+
         cur_item_old_mp = curItem->mp();
         if (cur_item_old_mp != cur_item_mp) {
               itemMoving(curItem, cur_item_mp);
@@ -753,7 +757,9 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
               mp = raster(QPoint(nx, ny));
             else
               mp = QPoint(nx, ny);
-            
+
+            mp.setY(mp.y() + yItemOffset());
+
             old_mp = i->second->mp();
             if (old_mp != mp) {
                   itemMoving(i->second, mp);
@@ -772,9 +778,12 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
           mp = raster(QPoint(nx, ny));
         else
           mp = QPoint(nx, ny);
-        
+
+        mp.setY(mp.y() + yItemOffset());
+
         old_mp = curItem->mp();
         if (old_mp != mp) {
+              //fprintf(stderr, "Canvas::moveItems: curItem y:%d setMp x:%d y:%d\n", y, mp.x(), mp.y());
               curItem->setMp(mp);
               itemMoved(curItem, old_mp);
               }
@@ -793,7 +802,9 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
               mp = raster(QPoint(nx, ny));
             else
               mp = QPoint(nx, ny);
-            
+
+            mp.setY(mp.y() + yItemOffset());
+
             old_mp = i->second->mp();
             if (old_mp != mp) {
                   i->second->setMp(mp);
@@ -1571,12 +1582,13 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                     if (last_dist.y()) {
                           const int x = newCItem->x();
                           const int y = ev_pos.y();
-                          const int ny = pitch2y(y2pitch(y)) - yItemOffset();
+                          const int ny = pitch2y(y2pitch(y)) + yItemOffset();
                           const QPoint pt = QPoint(x, ny);
                           const QPoint old_pt = newCItem->mp();
                           itemMoving(newCItem, pt);
                           newCItem->move(pt);
                           newCItem->setHeight(y2height(y));
+                          //fprintf(stderr, "newCItem->setMP() x:%d y:%d\n", newCItem->pos().x(), newCItem->pos().y());
                           // Even though we only move the primary position here,
                           //  set the mp as well so note sounding logic can work easier.
                           newCItem->setMp(newCItem->pos());

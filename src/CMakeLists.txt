@@ -193,14 +193,11 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
 SET(MusE_VERSION_MAJOR 4)
-# REMOVE Tim. qt6. Changed. Hm, why zero? Mistake?
-# SET(MusE_VERSION_MINOR 0)
-# SET(MusE_VERSION_PATCH 0)
-SET(MusE_VERSION_MINOR 2)
-SET(MusE_VERSION_PATCH 1)
-SET(MusE_VERSION       "4.2.1")
-SET(MusE_VERSION_FULL  "4.2.1")
-SET(MusE_INSTALL_NAME  "muse-4.2")
+SET(MusE_VERSION_MINOR 3)
+SET(MusE_VERSION_PATCH 0)
+SET(MusE_VERSION       "4.3.0")
+SET(MusE_VERSION_FULL  "4.3.0")
+SET(MusE_INSTALL_NAME  "muse-4.3")
 SET(MusE_EXEC_NAME     "muse4")
 
 # REMOVE Tim. qt6. Changed.
@@ -571,7 +568,7 @@ if (ENABLE_PYTHON)
                   set(PYTHON_SUPPORT ON)
             endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 3.5)
       endif (PYTHONLIBS_FOUND)
-#  TODO Check for Pyro4?
+#  TODO Check for Pyro5?
 endif (ENABLE_PYTHON)
 
 ##

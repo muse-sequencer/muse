@@ -369,7 +369,6 @@ private slots:
     void messagePollTimerSlot();
     void loadProject();
     bool save();
-    void configGlobalSettings();
     void quitDoc();
     void about();
     void aboutQt();
@@ -461,6 +460,7 @@ public slots:
     void showDidYouKnowDialog();
     void startEditInstrument(const QString& find_instrument = QString(), EditInstrumentTabType show_tab = EditInstrumentPatches);
     void configMidiPorts();
+    void configGlobalSettings(int startTab = -1);
 
     void startEditor(MusECore::PartList*, int);
     void startScoreQuickly();

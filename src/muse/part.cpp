@@ -718,7 +718,7 @@ void Part::splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const
             }
       else {
             for (ciEvent ie = _events.begin(); ie != _events.end(); ++ie) {
-                  Event event = ie->second.clone();
+                  Event event = ie->second.duplicate();
                   unsigned int t = event.tick();
                   if (t >= l1) {
                         event.move(-l1);

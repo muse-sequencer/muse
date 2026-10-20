@@ -1227,6 +1227,32 @@ double deltaNormalizedValueToRange(double in, double inDeltaNormalized, const Mu
   return outVal;
 }
 
+QColor noteColor(int note)
+{
+  const int sz = MusEGlobal::config.noteNameList.size();
+  const double factor = double(note % sz) / sz;
+  // Hue: evenly spaced.
+  const double hue = factor;
+
+  // Pastel but readable.
+  const double value = 0.90;              // bright
+  const double saturation = 0.8;         // tweak 0.5–0.65
+
+  return QColor::fromHsvF(hue, saturation, value);
+}
+
+QColor noteColorScrambled(int note)
+{
+    const int sz = MusEGlobal::config.noteNameList.size();
+    const double goldenRatio = 0.61803398875;
+
+    const double hue = std::fmod((note % sz) * goldenRatio, 1.0);
+
+    const double saturation = 0.8;
+    const double value = 0.90;
+
+    return QColor::fromHsvF(hue, saturation, value);
+}
 
 } // namespace MusECore
 
@@ -1659,6 +1685,23 @@ void printQPainterPath(const QPainterPath& p)
       break;
     }
     fprintf(stderr, "x:%d y:%d\n", x, y);
+  }
+}
+
+void setRTLPainting(const QWidget *w, QPainter &p, bool enable)
+{
+  if(w->layoutDirection() == Qt::RightToLeft)
+  {
+    if(enable)
+    {
+      p.translate(w->width(), 0);
+      p.scale(-1, 1);
+    }
+    else
+    {
+      p.scale(-1, 1);
+      p.translate(-w->width(), 0);
+    }
   }
 }
 

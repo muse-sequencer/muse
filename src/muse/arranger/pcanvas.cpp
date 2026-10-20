@@ -22,12 +22,6 @@
 //=========================================================
 
 #include <stdio.h>
-#include <sys/stat.h>
-#ifdef _WIN32
-#include "mman.h"
-#else
-#include <sys/mman.h>
-#endif
 #include <errno.h>
 #include <limits.h>
 #include <map>
@@ -47,6 +41,7 @@
 #include <QCursor>
 #include <QAction>
 #include <QActionGroup>
+#include <QFile>
 
 #include "muse_math.h"
 #include "fastlog.h"
@@ -3960,15 +3955,10 @@ void PartCanvas::cmd(int cmd)
 void PartCanvas::copy_in_range(MusECore::PartList* pl_)
 {
   //---------------------------------------------------
-  //    write parts as XML into tmp file
+  //    write parts as XML into tmp QString
   //---------------------------------------------------
 
-  FILE* tmp = tmpfile();
-  if (tmp == 0) {
-        fprintf(stderr, "PartCanvas::copy() fopen failed: %s\n",
-            strerror(errno));
-        return;
-        }
+  QString tmp;
 
   MusECore::PartList pl;
   unsigned int lpos = MusEGlobal::song->lpos();
@@ -3990,7 +3980,7 @@ void PartCanvas::copy_in_range(MusECore::PartList* pl_)
         pl.add(p->second);
   }
 
-  MusECore::Xml xml(tmp);
+  MusECore::Xml xml(&tmp);
 
   bool havePartData = false;
 
@@ -4061,11 +4051,10 @@ void PartCanvas::copy_in_range(MusECore::PartList* pl_)
   if(havePartData || haveACData)
   {
     QString mimeString = "text/x-muse-mixedpartlist";
-    QMimeData *mimeData =  MusECore::file_to_mimedata(tmp, mimeString );
+    QMimeData* mimeData = new QMimeData();
+    mimeData->setData(mimeString, tmp.toUtf8());
     QApplication::clipboard()->setMimeData(mimeData, QClipboard::Clipboard);
   }
-
-  fclose(tmp);
 }
 
 //---------------------------------------------------------
@@ -4075,16 +4064,11 @@ void PartCanvas::copy_in_range(MusECore::PartList* pl_)
 void PartCanvas::copy(MusECore::PartList* pl)
       {
       //---------------------------------------------------
-      //    write parts as XML into tmp file
+      //    write parts as XML into tmp QString
       //---------------------------------------------------
 
-      FILE* tmp = tmpfile();
-      if (tmp == 0) {
-            fprintf(stderr, "PartCanvas::copy() fopen failed: %s\n",
-               strerror(errno));
-            return;
-            }
-      MusECore::Xml xml(tmp);
+      QString tmp;
+      MusECore::Xml xml(&tmp);
 
       bool havePartData = false;
 
@@ -4123,10 +4107,10 @@ void PartCanvas::copy(MusECore::PartList* pl)
       if(havePartData || haveACData)
       {
         QString mimeString = "text/x-muse-mixedpartlist";
-        QMimeData *mimeData =  MusECore::file_to_mimedata(tmp, mimeString );
+        QMimeData* mimeData = new QMimeData();
+        mimeData->setData(mimeString, tmp.toUtf8());
         QApplication::clipboard()->setMimeData(mimeData, QClipboard::Clipboard);
       }
-      fclose(tmp);
       }
 
 //---------------------------------------------------------
@@ -4400,40 +4384,16 @@ void PartCanvas::startDrag(CItem* item, DragType t)
       MusECore::Part* part = p->part();
 
       //---------------------------------------------------
-      //    write part as XML into tmp file
+      //    write part as XML into tmp QString
       //---------------------------------------------------
 
-      FILE* tmp = tmpfile();
-      if (tmp == 0) {
-            fprintf(stderr, "PartCanvas::startDrag() fopen failed: %s\n",
-               strerror(errno));
-            return;
-            }
-      MusECore::Xml xml(tmp);
+      QString tmp;
+      MusECore::Xml xml(&tmp);
       int level = 0;
       part->write(level, xml);
 
-      //---------------------------------------------------
-      //    read tmp file into QTextDrag Object
-      //---------------------------------------------------
-
-      fflush(tmp);
-      struct stat f_stat;
-      if (fstat(fileno(tmp), &f_stat) == -1) {
-            fprintf(stderr, "PartCanvas::startDrag fstat failed:<%s>\n",
-               strerror(errno));
-            fclose(tmp);
-            return;
-            }
-      int n = f_stat.st_size + 1;
-      char* fbuf  = (char*)mmap(0, n, PROT_READ|PROT_WRITE,
-         MAP_PRIVATE, fileno(tmp), 0);
-      fbuf[n] = 0;
-
-      QByteArray data(fbuf);
       QMimeData* md = new QMimeData();
-
-      md->setData("text/x-muse-partlist", data);
+      md->setData("text/x-muse-partlist", tmp.toUtf8());
 
       // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object.
       //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can
@@ -4445,9 +4405,6 @@ void PartCanvas::startDrag(CItem* item, DragType t)
             drag->exec(Qt::CopyAction);
       else
             drag->exec(Qt::MoveAction);
-
-      munmap(fbuf, n);
-      fclose(tmp);
       }
 
 //---------------------------------------------------------

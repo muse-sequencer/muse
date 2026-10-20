@@ -97,7 +97,8 @@ EventBase* MidiEventBase::mid(unsigned b, unsigned e) const
       {
       if (tick() < b || tick() >= e)
             return 0;
-      return new MidiEventBase(*this);
+      // We want a duplicate with a new id always, not a clone here.
+      return new MidiEventBase(*this, true);
       }
 
 //---------------------------------------------------------

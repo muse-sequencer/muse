@@ -88,6 +88,7 @@ class EventBase : public PosLen {
       virtual void read(Xml&) = 0;
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const = 0;
       virtual void dump(int n = 0) const;
+      // Returns a new event based on a duplicate of the event with a new id.
       virtual EventBase* mid(unsigned, unsigned) const = 0;
       friend class Event;
 

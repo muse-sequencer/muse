@@ -1029,6 +1029,11 @@ MusE::MusE() : QMainWindow()
       addToolBar(Qt::BottomToolBarArea, songpos_tb);
 
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
+      // Force LTR layout on the transport toolbar.
+      // RTL is NOT to be used for flows of time or information or connections.
+      // Media buttons as well, including the punch in/out since they are time-related.
+      // (NOTE: TopWin constructor also has this. That's the one you see at startup, not this one.)
+      transportToolbar->setLayoutDirection(Qt::LeftToRight);
       transportToolbar->setObjectName("Transport tool");
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
       transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
@@ -4483,7 +4488,7 @@ bool MusE::clearSong(bool clear_all)
     // Are any of the windows marked as 'delete on close'?
     // Then we MUST wait until they delete, otherwise crashes will happen
     //  when the song is cleared due to still-active signal/slot connections
-    //  and attempts by the various top levels to access non-existant tracks etc.
+    //  and attempts by the various top levels to access non-existent tracks etc.
     // It turns out that close() will call deleteLater() - NOT delete!
     // Simply calling processEvents() several times did not let them delete.
     // From help on QCoreApplication::processEvents():
@@ -4650,7 +4655,7 @@ bool MusE::clearSong(bool clear_all)
     // Are any of the windows marked as 'delete on close'?
     // Then we MUST wait until they delete, otherwise crashes will happen
     //  when the song is cleared due to still-active signal/slot connections
-    //  and attempts by the various top levels to access non-existant tracks etc.
+    //  and attempts by the various top levels to access non-existent tracks etc.
     // It turns out that close() will call deleteLater() - NOT delete!
     // Simply calling processEvents() several times did not let them delete.
     // From help on QCoreApplication::processEvents():

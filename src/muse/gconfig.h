@@ -36,6 +36,7 @@
 #include <QUuid>
 
 #include "ctrl.h"
+#include "note_names.h"
 
 namespace MusECore {
 class Xml;
@@ -431,6 +432,14 @@ struct GlobalConfigValues {
       bool showNoteNamesInPianoRoll;
       bool showNoteTooltips;
       bool showTimeScaleBeatNumbers;
+      MusECore::NoteNameList noteNameList;
+      // The suffix offset of the note names in the pianoroll and drum editor (C3 C4 etc.).
+      // This is a user-adjustable +/- offset to the midi starting octave in the noteNameList. Default 0.
+      int globalOctaveSuffixOffset;
+      // Whether to draw a piano if there are 12 notes in the note name list. Otherwise draw a list.
+      bool globalShowPiano;
+      // Whether to show note colours on the piano - but only if a list is shown instead of the piano.
+      bool pianoShowNoteColors;
       // Whether selecting parts or events is undoable.
       // If set, it can be somewhat tedious for the user to step through all the undo/redo items.
       bool selectionsUndoable;

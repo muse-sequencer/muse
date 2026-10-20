@@ -50,6 +50,7 @@ class PartColorToolbar;
 class Arranger;
 class Xml;
 class AutomationModeToolBar;
+class PopupMenu;
 
 class ArrangerView : public TopWin
 {
@@ -118,6 +119,8 @@ private:
     MusECore::Scripts scripts;
     QMenu* menuScripts;
 
+    PopupMenu *pianoConfigMenu;
+
     QMetaObject::Connection _configChangedEditToolsMetaConn;
     QMetaObject::Connection _deliveredScriptReceivedMetaConn;
     QMetaObject::Connection _userScriptReceivedMetaConn;
@@ -140,6 +143,8 @@ private slots:
     void automationInterpolateModeChanged(int);
     void automationBoxModeChanged(int);
     void automationOptimizeChanged(bool);
+    void pianoConfigMenuAboutToShow();
+    void pianoConfigMenuAboutToHide();
 
 signals:
     void isDeleting(MusEGui::TopWin*);

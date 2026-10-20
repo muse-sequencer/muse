@@ -123,6 +123,7 @@ file (GLOB core_source_files
       mtc.cpp
       name_factory.cpp
       node.cpp
+      note_names.cpp
       operations.cpp
       osc.cpp
       part.cpp

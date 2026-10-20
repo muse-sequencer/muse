@@ -21,7 +21,7 @@
 //=========================================================
 """
 
-import Pyro4.core
+import Pyro5.api as pyro
 import sys
 import time
 
@@ -49,7 +49,7 @@ def advanceToNextSection(muse, newlpos, newrpos):
       muse.setLoop(True)
       return
 
-muse=Pyro4.core.Proxy('PYRONAME:muse')
+muse=pyro.Proxy('PYRONAME:muse')
 muse.stopPlay()
 parts = muse.getParts("Track 1")
 muse.setLPos(parts[0]['tick'])
