@@ -526,7 +526,7 @@ void PopupMenu::rebuildMenu(PopupMenu* menu)
         fnt.setBold(true);
         curmenu->menuAction()->setFont(fnt);
         ++menu_count;
-        insertMenu(act, curmenu);
+        menu->insertMenu(act, curmenu);
 
         // Move the given action from the original menu to the current menu.
         menu->removeAction(act);
