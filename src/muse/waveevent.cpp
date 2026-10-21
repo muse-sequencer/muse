@@ -37,6 +37,10 @@
 #include <iostream>
 #include "muse_math.h"
 
+#include <QDir>
+#include <QFileInfo>
+#include <QLatin1Char>
+
 // For debugging output: Uncomment the fprintf section.
 #define WAVEEVENT_DEBUG(dev, format, args...) // fprintf(dev, format, ##args)
 #define WAVEEVENT_DEBUG_PRC(dev, format, args...) // fprintf(dev, format, ##args)
@@ -205,6 +209,25 @@ void WaveEventBase::read(Xml& xml)
       }
 
 //---------------------------------------------------------
+//   isSameOrSubDir
+//    True if dir is base or a subdirectory of base. Both are
+//    expected to be clean absolute paths. Compares as path
+//    prefixes, not substrings.
+//---------------------------------------------------------
+
+static bool isSameOrSubDir(const QString& dir, const QString& base)
+      {
+      if (base.isEmpty())
+            return false;
+      if (dir == base)
+            return true;
+      // Avoid producing "//..." when base is the filesystem root.
+      if (base == QLatin1String("/"))
+            return dir.startsWith(base);
+      return dir.startsWith(base + QLatin1Char('/'));
+      }
+
+//---------------------------------------------------------
 //   write
 //---------------------------------------------------------
 
@@ -219,18 +242,26 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       xml.intTag(level, "frame", _spos);  // offset in wave file
 
       //
-      // waves in the project directory are stored
-      // with relative path name, others with absolute path
+      // Waves in the project directory (or a subdirectory of it) are stored
+      // with a relative path name, others with an absolute path.
+      // Compare as path prefixes, not substrings, and also compare the
+      // symlink-resolved forms, otherwise a project directory reached through
+      // a symlink produces mangled paths (issue 1102).
       //
-      QString path = f.dirPath();
+      QString fileName = f.path();
+      if (!forcePath) {
+            const QString projPath  = QDir::cleanPath(MusEGlobal::museProject);
+            const QString projCanon = QFileInfo(MusEGlobal::museProject).canonicalFilePath();
 
-      if (!forcePath && path.contains(MusEGlobal::museProject)) {
-            // extract MusEGlobal::museProject.
-            QString newName = f.path().remove(MusEGlobal::museProject+"/");
-            xml.strTag(level, "file", newName);
+            const QString absDir   = QDir::cleanPath(f.dirPath());
+            const QString canonDir = f.canonicalDirPath();
+
+            if (isSameOrSubDir(absDir, projPath))
+                  fileName = QDir(projPath).relativeFilePath(f.path());
+            else if (!projCanon.isEmpty() && !canonDir.isEmpty() && isSameOrSubDir(canonDir, projCanon))
+                  fileName = QDir(projCanon).relativeFilePath(f.canonicalPath());
             }
-      else
-            xml.strTag(level, "file", f.path());
+      xml.strTag(level, "file", fileName);
       
       if(f.stretchList())
         f.stretchList()->write(level, xml);

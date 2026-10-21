@@ -358,8 +358,7 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
 //             else
 //               fprintf(stderr, "...item found\n");
             
-            int ii = 0;
-            for(iCItem i = items.begin(); i != to; ++i, ++ii)
+            for(iCItem i = items.begin(); i != to; ++i)
             { 
               CItem* ci = i->second;
               // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().

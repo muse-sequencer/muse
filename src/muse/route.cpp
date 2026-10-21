@@ -1455,7 +1455,7 @@ bool routesCompatible(const Route& src, const Route& dst, bool check_types_only)
               return false;
                         
             // If one route node exists and one is missing, it's OK to reconnect, addRoute will take care of it.
-              return true;
+            return true;
       }
       else if(dst.type == Route::MIDI_PORT_ROUTE)  
       {

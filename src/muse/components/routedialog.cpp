@@ -702,7 +702,6 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
           
           if(index.parent().isValid() && (index.parent().row() & 0x01))
             painter->fillRect(option.rect, option.palette.alternateBase());
-          int cur_chan = 0;
           QPen pen;
 
           // Set a small five-pixel font size for the numbers inside the dots.
@@ -787,7 +786,6 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
                   painter->drawLine(x_offset, line_y, line_x, line_y);
                 }
               }
-              ++cur_chan;
             }
           }
 
@@ -855,7 +853,12 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
             const int txtrectw = text_rect_adj.width();
             const QString txt = rtw->wordWrap() ? option.text : option.fontMetrics.elidedText(
                            option.text, rtw->textElideMode(), txtrectw);
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
             const int txtsz = option.fontMetrics.horizontalAdvance(txt);
+#else
+            const int txtsz = option.fontMetrics.width(txt);
+#endif
             // Take the smaller width.
             const int tw = txtrectw < txtsz ? txtrectw : txtsz;
 

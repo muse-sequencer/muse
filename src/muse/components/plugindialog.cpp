@@ -463,7 +463,7 @@ void PluginDialog::fillPlugs()
             break;
          }
          if (found && addFlag) {
-            int plugInstanceType;
+            int plugInstanceType = 0;
             const MusEPlugin::PluginType ptype = (*i)->pluginType();
             const MusEPlugin::PluginClass_t pclass = (*i)->pluginClass();
 

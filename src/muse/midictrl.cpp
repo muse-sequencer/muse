@@ -797,7 +797,7 @@ void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
       // Does the working controller list, and instrument, allow RPN/NRPN?
       // (If EITHER the working controller list or instrument defines ANY of these
       //  8 controllers as plain 7-bit, then we cannot accept this data as RPN/NRPN.)
-      const bool rpn_reserved = mcvll->RPN_Ctrls_Reserved() | mcl->RPN_Ctrls_Reserved();
+      const bool rpn_reserved = mcvll->RPN_Ctrls_Reserved() || mcl->RPN_Ctrls_Reserved();
       if(!rpn_reserved)
       {
         switch(num)

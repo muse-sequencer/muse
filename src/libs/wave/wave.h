@@ -86,6 +86,7 @@ class SndFile {
       AudioConverterPluginI* _dynamicAudioConverterUI;
       AudioConverterSettingsGroup* _audioConverterSettings;
       StretchList* _stretchList;
+
       // Whether the converter is in offline mode.
       // Always use isOffline() to check instead of reading this directly.
       bool _isOffline;
@@ -243,7 +244,7 @@ class SndFile {
       AudioConverterSettingsGroup* audioConverterSettings() const;
       void setAudioConverterSettings(AudioConverterSettingsGroup* settings);
       StretchList* stretchList() const;
-      
+
       sf_count_t seek(sf_count_t frames, int whence);
       sf_count_t seekUI(sf_count_t frames, int whence);
       sf_count_t seekUIConverted(sf_count_t frames, int whence, sf_count_t offset);

@@ -2714,20 +2714,21 @@ bool MusE::save()
 
 bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
       {
-//       QString backupCommand;
-
-      QFile currentName(name);
-      if (QFile::exists(name)) {
-            currentName.copy(name+".backup");
-            //backupCommand.sprintf("cp \"%s\" \"%s.backup\"", name.toLocal8Bit().constData(), name.toLocal8Bit().constData());
+      // Keep a copy of the previous version of the project file.
+      // QFile::copy() will not overwrite an existing file, so remove any
+      // existing backup first, otherwise the backup is never updated (issue 1342).
+      QString backupSrc;
+      if (QFile::exists(name))
+            backupSrc = name;
+      else if (QFile::exists(name + QString(".med")))
+            backupSrc = name + QString(".med");
+      if (!backupSrc.isEmpty()) {
+            const QString backupName = backupSrc + QString(".backup");
+            if (QFile::exists(backupName) && !QFile::remove(backupName))
+                  fprintf(stderr, "MusE::save: could not remove old backup file %s\n", backupName.toLocal8Bit().constData());
+            if (!QFile::copy(backupSrc, backupName))
+                  fprintf(stderr, "MusE::save: could not create backup file %s\n", backupName.toLocal8Bit().constData());
             }
-      else if (QFile::exists(name + QString(".med"))) {
-            QString currentName2(name+".med");
-            currentName.copy(name+".med.backup");
-            //backupCommand.sprintf("cp \"%s.med\" \"%s.med.backup\"", name.toLocal8Bit().constData(), name.toLocal8Bit().constData());
-            }
-//      if (!backupCommand.isEmpty())
-//            system(backupCommand.toLocal8Bit().constData());
 
       MusEFile::File f(name, QString(".med"), this);
       MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, overwriteWarn);
@@ -5830,7 +5831,6 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
           sf_count_t szBufInFrames = szBuf / sChannels;
           sf_count_t szFInFrames = f.samples();
           sf_count_t nFramesRead = 0;
-          sf_count_t nFramesWrote = 0;
           sd.end_of_input = 0;
           bool bEndOfInput = false;
           pDlg.setValue(0);
@@ -5865,7 +5865,6 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 
                 if(sd.output_frames_gen > 0)
                 {
-                    nFramesWrote += sd.output_frames_gen;
                     //detect maximum peek value;
                     for(unsigned ch = 0; ch < sChannels; ch++)
                     {

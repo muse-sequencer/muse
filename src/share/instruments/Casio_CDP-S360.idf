@@ -258,7 +258,7 @@
     <Patch name="235 ORCHESTRA HIT 1" lbank="0" hbank="4" prog="55" />
     <Patch name="236 ORCHESTRA HIT 2" lbank="0" hbank="32" prog="55" />
     <Patch name="237 ORCHESTRA HIT 3" lbank="0" hbank="33" prog="55" />
-    <Patch name="238 BRASS & STRINGS" lbank="0" hbank="36" prog="48" />
+    <Patch name="238 BRASS &amp; STRINGS" lbank="0" hbank="36" prog="48" />
     <Patch name="239 SOLO VIOLIN" lbank="0" hbank="32" prog="40" />
     <Patch name="240 VIOLIN" lbank="0" hbank="33" prog="40" />
     <Patch name="241 SLOW VIOLIN" lbank="0" hbank="34" prog="40" />
@@ -270,7 +270,7 @@
     <Patch name="247 HARP 2" lbank="0" hbank="34" prog="46" />
     <Patch name="248 VIOLIN SECTION" lbank="0" hbank="6" prog="48" />
     <Patch name="249 STRING QUARTET" lbank="0" hbank="37" prog="48" />
-    <Patch name="250 HARP & STRINGS" lbank="0" hbank="3" prog="49" />
+    <Patch name="250 HARP &amp; STRINGS" lbank="0" hbank="3" prog="49" />
 </PatchGroup>
 
 <PatchGroup name="BRASS (CATEGORY : 8)">
@@ -308,7 +308,7 @@
     <Patch name="282 FRENCH HORN" lbank="0" hbank="32" prog="60" />
     <Patch name="283 FRENCH HORN SECTION" lbank="0" hbank="1" prog="60" />
     <Patch name="284 TUBA" lbank="0" hbank="32" prog="58" />
-    <Patch name="285 TRUMPET & TROMBONE & SAX" lbank="0" hbank="39" prog="61" />
+    <Patch name="285 TRUMPET &amp; TROMBONE &amp; SAX" lbank="0" hbank="39" prog="61" />
     <Patch name="286 VERSATILE BRASS 1" lbank="0" hbank="8" prog="61" />
     <Patch name="287 VERSATILE BRASS 2" lbank="0" hbank="9" prog="61" />
 </PatchGroup>
@@ -354,7 +354,7 @@
     <Patch name="322 OCARINA" lbank="0" hbank="32" prog="79" />
     <Patch name="323 SHAKUHACHI" lbank="0" hbank="32" prog="77" />
     <Patch name="324 PIPE SECTION" lbank="0" hbank="33" prog="72" />
-    <Patch name="325 FLUTE & OBOE" lbank="0" hbank="38" prog="73" />
+    <Patch name="325 FLUTE &amp; OBOE" lbank="0" hbank="38" prog="73" />
 </PatchGroup>
 
 <PatchGroup name="SYNTH 1 (CATEGORY : 11)">
@@ -385,7 +385,7 @@
     <Patch name="350 VA SYNTH SEQ-BASS 3" lbank="0" hbank="12" prog="81" />
     <Patch name="351 VA SYNTH SEQUENCE 1" lbank="0" hbank="13" prog="81" />
     <Patch name="352 VA SYNTH SEQUENCE 2" lbank="0" hbank="14" prog="81" />
-    <Patch name="353 EDM KICK & BASS" lbank="0" hbank="8" prog="96" />
+    <Patch name="353 EDM KICK &amp; BASS" lbank="0" hbank="8" prog="96" />
     <Patch name="354 EDM LEAD SYNTH" lbank="0" hbank="36" prog="96" />
     <Patch name="355 EDM PER SYNTH" lbank="0" hbank="10" prog="97" />
     <Patch name="356 EDM LAZER 1" lbank="0" hbank="9" prog="96" />

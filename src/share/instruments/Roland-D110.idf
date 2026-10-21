@@ -1,0 +1,241 @@
+<?xml version="1.0"?>
+<muse version="2.1">
+    <!-- Roland D-110 instrument definition for MusE sequencer.
+
+         Mesured from the emulated firmware, grouped in the instrument's own 8-entry groups.
+
+         Roland's own internal terminology on the D-110:
+         What Program Change actually selects (these 128 entries, 
+         organised as Bank A 1-64 / Bank B 1-64, shown on the D-110's own display
+         is what the instrument's firmware calls "Timbre Memory" - a single preset sound.
+         
+         The last bank (I, for Internal) is for custom tones for the user 
+         but it's not reachable by program change.
+    -->
+
+    <MidiInstrument name="Roland D-110">
+        <!-- Bank A -->
+        <PatchGroup name="A1: Piano">
+            <Patch name="AcouPiano1" hbank="0" lbank="0" prog="0"/>
+            <Patch name="AcouPiano2" hbank="0" lbank="0" prog="1"/>
+            <Patch name="AcouPiano3" hbank="0" lbank="0" prog="2"/>
+            <Patch name="Honky-Tonk" hbank="0" lbank="0" prog="3"/>
+            <Patch name="ElecPiano1" hbank="0" lbank="0" prog="4"/>
+            <Patch name="ElecPiano2" hbank="0" lbank="0" prog="5"/>
+            <Patch name="ElecPiano3" hbank="0" lbank="0" prog="6"/>
+            <Patch name="ElecPiano4" hbank="0" lbank="0" prog="7"/>
+        </PatchGroup>
+
+        <PatchGroup name="A2: Organ">
+            <Patch name="ElecOrgan1" hbank="0" lbank="0" prog="8"/>
+            <Patch name="ElecOrgan2" hbank="0" lbank="0" prog="9"/>
+            <Patch name="ElecOrgan3" hbank="0" lbank="0" prog="10"/>
+            <Patch name="ElecOrgan4" hbank="0" lbank="0" prog="11"/>
+            <Patch name="PipeOrgan1" hbank="0" lbank="0" prog="12"/>
+            <Patch name="PipeOrgan2" hbank="0" lbank="0" prog="13"/>
+            <Patch name="PipeOrgan3" hbank="0" lbank="0" prog="14"/>
+            <Patch name="Accordion" hbank="0" lbank="0" prog="15"/>
+        </PatchGroup>
+
+        <PatchGroup name="A3: Keyboard">
+            <Patch name="Harpsi 1" hbank="0" lbank="0" prog="16"/>
+            <Patch name="Harpsi 2" hbank="0" lbank="0" prog="17"/>
+            <Patch name="Harpsi 3" hbank="0" lbank="0" prog="18"/>
+            <Patch name="Clav 1" hbank="0" lbank="0" prog="19"/>
+            <Patch name="Clav 2" hbank="0" lbank="0" prog="20"/>
+            <Patch name="Clav 3" hbank="0" lbank="0" prog="21"/>
+            <Patch name="Celesta 1" hbank="0" lbank="0" prog="22"/>
+            <Patch name="Celesta 2" hbank="0" lbank="0" prog="23"/>
+        </PatchGroup>
+
+        <PatchGroup name="A4: Bowed/Plucked Strings">
+            <Patch name="Violin 1" hbank="0" lbank="0" prog="24"/>
+            <Patch name="Violin 2" hbank="0" lbank="0" prog="25"/>
+            <Patch name="Cello 1" hbank="0" lbank="0" prog="26"/>
+            <Patch name="Cello 2" hbank="0" lbank="0" prog="27"/>
+            <Patch name="Contrabass" hbank="0" lbank="0" prog="28"/>
+            <Patch name="Pizzicato" hbank="0" lbank="0" prog="29"/>
+            <Patch name="Harp 1" hbank="0" lbank="0" prog="30"/>
+            <Patch name="Harp 2" hbank="0" lbank="0" prog="31"/>
+        </PatchGroup>
+
+        <PatchGroup name="A5: Strings/Brass Section">
+            <Patch name="Strings 1" hbank="0" lbank="0" prog="32"/>
+            <Patch name="Strings 2" hbank="0" lbank="0" prog="33"/>
+            <Patch name="Strings 3" hbank="0" lbank="0" prog="34"/>
+            <Patch name="Strings 4" hbank="0" lbank="0" prog="35"/>
+            <Patch name="Brass 1" hbank="0" lbank="0" prog="36"/>
+            <Patch name="Brass 2" hbank="0" lbank="0" prog="37"/>
+            <Patch name="Brass 3" hbank="0" lbank="0" prog="38"/>
+            <Patch name="Brass 4" hbank="0" lbank="0" prog="39"/>
+        </PatchGroup>
+
+        <PatchGroup name="A6: Brass">
+            <Patch name="Trumpet 1" hbank="0" lbank="0" prog="40"/>
+            <Patch name="Trumpet 2" hbank="0" lbank="0" prog="41"/>
+            <Patch name="Trombone 1" hbank="0" lbank="0" prog="42"/>
+            <Patch name="Trombone 2" hbank="0" lbank="0" prog="43"/>
+            <Patch name="Horn" hbank="0" lbank="0" prog="44"/>
+            <Patch name="Fr Horn" hbank="0" lbank="0" prog="45"/>
+            <Patch name="Engl Horn" hbank="0" lbank="0" prog="46"/>
+            <Patch name="Tuba" hbank="0" lbank="0" prog="47"/>
+        </PatchGroup>
+
+        <PatchGroup name="A7: Wind">
+            <Patch name="Flute 1" hbank="0" lbank="0" prog="48"/>
+            <Patch name="Flute 2" hbank="0" lbank="0" prog="49"/>
+            <Patch name="Piccolo" hbank="0" lbank="0" prog="50"/>
+            <Patch name="Recorder" hbank="0" lbank="0" prog="51"/>
+            <Patch name="Pan Pipes" hbank="0" lbank="0" prog="52"/>
+            <Patch name="Bottleblow" hbank="0" lbank="0" prog="53"/>
+            <Patch name="Breathpipe" hbank="0" lbank="0" prog="54"/>
+            <Patch name="Whistle" hbank="0" lbank="0" prog="55"/>
+        </PatchGroup>
+
+        <PatchGroup name="A8: Reed">
+            <Patch name="Sax 1" hbank="0" lbank="0" prog="56"/>
+            <Patch name="Sax 2" hbank="0" lbank="0" prog="57"/>
+            <Patch name="Sax 3" hbank="0" lbank="0" prog="58"/>
+            <Patch name="Clarinet 1" hbank="0" lbank="0" prog="59"/>
+            <Patch name="Clarinet 2" hbank="0" lbank="0" prog="60"/>
+            <Patch name="Oboe" hbank="0" lbank="0" prog="61"/>
+            <Patch name="Bassoon" hbank="0" lbank="0" prog="62"/>
+            <Patch name="Harmonica" hbank="0" lbank="0" prog="63"/>
+        </PatchGroup>
+
+        <!-- Bank B -->
+        <PatchGroup name="B1: Synthesizer">
+            <Patch name="Fantasy" hbank="0" lbank="0" prog="64"/>
+            <Patch name="Harmo Pan" hbank="0" lbank="0" prog="65"/>
+            <Patch name="Chorale" hbank="0" lbank="0" prog="66"/>
+            <Patch name="Glasses" hbank="0" lbank="0" prog="67"/>
+            <Patch name="Soundtrack" hbank="0" lbank="0" prog="68"/>
+            <Patch name="Atmosphere" hbank="0" lbank="0" prog="69"/>
+            <Patch name="Warm Bell" hbank="0" lbank="0" prog="70"/>
+            <Patch name="Space Horn" hbank="0" lbank="0" prog="71"/>
+        </PatchGroup>
+
+        <PatchGroup name="B2: Synth FX">
+            <Patch name="Echo Bell" hbank="0" lbank="0" prog="72"/>
+            <Patch name="Ice Rains" hbank="0" lbank="0" prog="73"/>
+            <Patch name="Oboe 2002" hbank="0" lbank="0" prog="74"/>
+            <Patch name="Echo Pan" hbank="0" lbank="0" prog="75"/>
+            <Patch name="Bell Swing" hbank="0" lbank="0" prog="76"/>
+            <Patch name="Reso Synth" hbank="0" lbank="0" prog="77"/>
+            <Patch name="Steam Pad" hbank="0" lbank="0" prog="78"/>
+            <Patch name="VibeString" hbank="0" lbank="0" prog="79"/>
+        </PatchGroup>
+
+        <PatchGroup name="B3: Synth Lead/Bass">
+            <Patch name="Syn Lead 1" hbank="0" lbank="0" prog="80"/>
+            <Patch name="Syn Lead 2" hbank="0" lbank="0" prog="81"/>
+            <Patch name="Syn Lead 3" hbank="0" lbank="0" prog="82"/>
+            <Patch name="Syn Lead 4" hbank="0" lbank="0" prog="83"/>
+            <Patch name="Syn Bass 1" hbank="0" lbank="0" prog="84"/>
+            <Patch name="Syn Bass 2" hbank="0" lbank="0" prog="85"/>
+            <Patch name="Syn Bass 3" hbank="0" lbank="0" prog="86"/>
+            <Patch name="Syn Bass 4" hbank="0" lbank="0" prog="87"/>
+        </PatchGroup>
+
+        <PatchGroup name="B4: Bass">
+            <Patch name="AcouBass 1" hbank="0" lbank="0" prog="88"/>
+            <Patch name="AcouBass 2" hbank="0" lbank="0" prog="89"/>
+            <Patch name="ElecBass 1" hbank="0" lbank="0" prog="90"/>
+            <Patch name="ElecBass 2" hbank="0" lbank="0" prog="91"/>
+            <Patch name="SlapBass 1" hbank="0" lbank="0" prog="92"/>
+            <Patch name="SlapBass 2" hbank="0" lbank="0" prog="93"/>
+            <Patch name="Fretless 1" hbank="0" lbank="0" prog="94"/>
+            <Patch name="Fretless 2" hbank="0" lbank="0" prog="95"/>
+        </PatchGroup>
+
+        <PatchGroup name="B5: Mallet/Guitar">
+            <Patch name="Vibe" hbank="0" lbank="0" prog="96"/>
+            <Patch name="Glock" hbank="0" lbank="0" prog="97"/>
+            <Patch name="Marimba" hbank="0" lbank="0" prog="98"/>
+            <Patch name="Xylophone" hbank="0" lbank="0" prog="99"/>
+            <Patch name="Guitar 1" hbank="0" lbank="0" prog="100"/>
+            <Patch name="Guitar 2" hbank="0" lbank="0" prog="101"/>
+            <Patch name="Elec Gtr 1" hbank="0" lbank="0" prog="102"/>
+            <Patch name="Elec Gtr 2" hbank="0" lbank="0" prog="103"/>
+        </PatchGroup>
+
+        <PatchGroup name="B6: Ethnic">
+            <Patch name="Koto" hbank="0" lbank="0" prog="104"/>
+            <Patch name="Shamisen" hbank="0" lbank="0" prog="105"/>
+            <Patch name="Jamisen" hbank="0" lbank="0" prog="106"/>
+            <Patch name="Sho" hbank="0" lbank="0" prog="107"/>
+            <Patch name="Shakuhachi" hbank="0" lbank="0" prog="108"/>
+            <Patch name="WadaikoSet" hbank="0" lbank="0" prog="109"/>
+            <Patch name="Sitar" hbank="0" lbank="0" prog="110"/>
+            <Patch name="Steel Drum" hbank="0" lbank="0" prog="111"/>
+        </PatchGroup>
+
+        <PatchGroup name="B7: Percussion">
+            <Patch name="Tech Snare" hbank="0" lbank="0" prog="112"/>
+            <Patch name="Elec Tom" hbank="0" lbank="0" prog="113"/>
+            <Patch name="Revrse Cym" hbank="0" lbank="0" prog="114"/>
+            <Patch name="Ethno Hit" hbank="0" lbank="0" prog="115"/>
+            <Patch name="Timpani" hbank="0" lbank="0" prog="116"/>
+            <Patch name="Triangle" hbank="0" lbank="0" prog="117"/>
+            <Patch name="Wind Bell" hbank="0" lbank="0" prog="118"/>
+            <Patch name="Tube Bell" hbank="0" lbank="0" prog="119"/>
+        </PatchGroup>
+
+        <PatchGroup name="B8: Effects">
+            <Patch name="Orche Hit" hbank="0" lbank="0" prog="120"/>
+            <Patch name="Bird Tweet" hbank="0" lbank="0" prog="121"/>
+            <Patch name="OneNoteJam" hbank="0" lbank="0" prog="122"/>
+            <Patch name="Telephone" hbank="0" lbank="0" prog="123"/>
+            <Patch name="Typewriter" hbank="0" lbank="0" prog="124"/>
+            <Patch name="Insect" hbank="0" lbank="0" prog="125"/>
+            <Patch name="WaterBells" hbank="0" lbank="0" prog="126"/>
+            <Patch name="JungleTune" hbank="0" lbank="0" prog="127"/>
+        </PatchGroup>
+
+        <!-- Rhythm: channel 10 on the D-110, same as MT-32/GM -->
+        <PatchGroup name="Rhythm">
+            <Patch name="Rhythm Set" hbank="0" lbank="0" prog="0" drum="1"/>
+        </PatchGroup>
+
+        <!-- Controllers -->
+        <Controller name="Pitch Bend" type="Pitch"/>
+        <Controller name="Program Change" type="Program"/>
+
+        <Controller name="Modulation" l="1"/>
+        <Controller name="Main Volume" l="7" init="100"/>
+        <Controller name="Panpot" l="10" min="-64" max="63" init="0"/>
+        <Controller name="Expression" l="11"/>
+        <Controller name="Sustain" l="64"/>
+        <Controller name="Reset All Controllers" l="121"/>
+
+        <!-- SysEx - Roland "Data Set 1"/"Request Data 1" headers (F0 41 <unit> 16 <cmd> ...),
+             addresses and region sizes from this project's own measured
+             docs/sysex_address_map.md (not copied from the MT-32 file - the two instruments'
+             memory maps only partly overlap). Byte 3 is the device/unit number, left as 00
+             the same way the MT-32 file leaves it, for MusE to fill in. Checksums computed
+             with the same algorithm this project's own firmware bridge uses to WRITE SysEx
+             (plugin/Source/native/D110CoreNative.cpp's buildDt1Message: each byte from the
+             address on is summed mod 128, checksum = 128 - that, mod 128) - the System Area
+             one below reproduces the MT-32 file's own example byte for byte, since the D-110
+             genuinely shares the MT-32's System Area layout (23 bytes at 10 00 00); the other
+             two are this project's own D-110-specific addresses, same algorithm, not
+             separately round-tripped against a real unit. -->
+        <SysEx name="System Area Dump Request">
+            <comment>Byte 3 = Unit Number. 23 bytes at System Area (10 00 00).</comment>
+            <data>F0 41 00 16 11 10 00 00 00 00 17 59 F7</data>
+        </SysEx>
+
+        <SysEx name="Patch Memory Dump Request">
+            <comment>Byte 3 = Unit Number. D-110's own 64-slot multi-part "Patch" memory
+                (06 00 00), 64 x 128 bytes - NOT the 128 Program-Change Patches above, which
+                are Timbre Memory (see the Sysex block below).</comment>
+            <data>F0 41 00 16 11 06 00 00 00 40 00 3A F7</data>
+        </SysEx>
+
+        <SysEx name="Timbre Memory Dump Request">
+            <comment>Byte 3 = Unit Number. The 128 Program-Change Patches above (05 00 00),
+                128 x 8 bytes.</comment>
+            <data>F0 41 00 16 11 05 00 00 00 08 00 73 F7</data>
+        </SysEx>
+    </MidiInstrument>
+</muse>
