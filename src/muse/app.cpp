@@ -40,11 +40,7 @@
 #include <QIODevice>
 #include <QProcess>
 #include <QStatusBar>
-#if QT_VERSION >= 0x050b00
 #include <QScreen>
-#else
-#include <QDesktopWidget>
-#endif
 
 #include <samplerate.h>
 
@@ -1376,12 +1372,7 @@ void MusE::centerAndResize() {
 
     // set sensible initial sizes/positions for mainwin/transport (kybos)
 
-// Class QDesktopWidget deprecated as of Qt 5.11
-#if QT_VERSION >= 0x050b00
     const QRect screenRect = qApp->primaryScreen()->availableGeometry();
-#else
-    const QRect screenRect = qApp->desktop()->availableGeometry();
-#endif
     const QSize screenSize = screenRect.size();
     int width = screenSize.width();
     int height = screenSize.height();

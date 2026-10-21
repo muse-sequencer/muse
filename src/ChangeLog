@@ -1,6 +1,8 @@
 20.10.2026
     - Fix large popup menus not splitting up correctly. (Tim)
       I broke it recently with a popup menu rewrite.
+    - Removed unnecessary class PopupMenu's side-scrolling feature. (Tim)
+      Should not be needed since menu auto-breakup was added long ago.
 18.10.2026
     *** MusE 4.3.0 ***
 16.10.2026

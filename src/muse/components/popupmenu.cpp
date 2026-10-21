@@ -33,11 +33,8 @@
 #include <QStyleOptionMenuItem>
 #include <QWidgetAction>
 #include <QScreen>
-#if QT_VERSION >= 0x050a00
+#include <QTimer>
 #include <QGuiApplication>
-#else
-#include <QDesktopWidget>
-#endif
 #include "menutitleitem.h"
 
 #include "popupmenu.h"
@@ -91,7 +88,6 @@ void PopupMenu::init()
    _cur_menu_count = 1;
    _max_items_in_breakup = 0;
    moveDelta = 0;
-   timer = 0;
 
    connect(this, SIGNAL(hovered(QAction*)), SLOT(popHovered(QAction*)));
 
@@ -100,13 +96,6 @@ void PopupMenu::init()
       setStyleSheet("QMenu { menu-scrollable: 1; }");
       return;
    }
-   
-#ifndef POPUP_MENU_DISABLE_AUTO_SCROLL
-   timer = new QTimer(this);
-   timer->setInterval(100);
-   timer->setSingleShot(false);
-   connect(timer, SIGNAL(timeout()), SLOT(timerHandler()));
-#endif   // POPUP_MENU_DISABLE_AUTO_SCROLL
 }
 
 PopupMenu::~PopupMenu()
@@ -227,44 +216,6 @@ bool PopupMenu::event(QEvent* event)
    break;
 #endif   // POPUP_MENU_DISABLE_STAY_OPEN
 
-#ifndef POPUP_MENU_DISABLE_AUTO_SCROLL
-   case QEvent::MouseMove:
-   {
-      if(!MusEGlobal::config.scrollableSubMenus)
-      {
-        QMouseEvent* e = static_cast<QMouseEvent*>(event);
-        QPoint globPos = e->globalPosition().toPoint();
-        // We want the whole thing if multiple monitors.
-        //int dw = QApplication::desktop()->width();
-// REMOVE Tim. qt6. Changed.
-//        int dw = getDesktopGeometry().width();
-//        int dw = getScreenGeometryFromPoint(globPos).width();
-        int dw = getScreenGeometryFromWidget(this).width();
-        if(x() < 0 && globPos.x() <= 0)   // If on the very first pixel (or beyond)
-        {
-          moveDelta = 32;
-          if(!timer->isActive())
-              timer->start();
-          event->accept();
-          return true;
-        }
-        else
-          if(x() + width() >= dw && globPos.x() >= (dw -1))   // If on the very last pixel (or beyond)
-          {
-              moveDelta = -32;
-              if(!timer->isActive())
-                timer->start();
-              event->accept();
-              return true;
-          }
-
-        if(timer->isActive())
-          timer->stop();
-      }
-   }
-   break;
-#endif  // POPUP_MENU_DISABLE_AUTO_SCROLL
-
    default:
       break;
    }
@@ -310,58 +261,11 @@ PopupMenu* PopupMenu::cloneMenu(const QString& title, QWidget* parent, bool stay
   return m;
 }
 
-#ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
-void PopupMenu::timerHandler()
-{
-   if(!isVisible())
-   {
-      timer->stop();
-      return;
-   }
-
-   // We want the whole thing if multiple monitors.
-   //int dw = QApplication::desktop()->width();
-// REMOVE Tim. qt6. Changed.
-//   int dw = getDesktopGeometry().width();
-   int dw = getScreenGeometryFromWidget(this).width();
-   int nx = x() + moveDelta;
-   if(moveDelta < 0 && nx + width() < dw)
-   {
-      timer->stop();
-      nx = dw - width();
-   }
-   else
-      if(moveDelta > 0 && nx > 0)
-      {
-         timer->stop();
-         nx = 0;
-      }
-
-   move(nx, y());
-}
-#endif    // POPUP_MENU_DISABLE_AUTO_SCROLL
-
 void PopupMenu::popHovered(QAction* action)
 {  
   DEBUG_PRST_ROUTES(stderr, "PopupMenu::popHovered action text:%s\n", action->text().toLocal8Bit().constData());
    _lastHoveredAction = action;
    hideContextMenu();  
-#ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
-   if(action && !MusEGlobal::config.scrollableSubMenus)
-   {
-      // We want the whole thing if multiple monitors.
-      //int dw = QApplication::desktop()->width();
-// REMOVE Tim. qt6. Changed.
-//      int dw = getDesktopGeometry().width();
-      int dw = getScreenGeometryFromWidget(this).width();
-      QRect r = actionGeometry(action);
-      if(x() + r.x() < 0)
-         move(-r.x(), y());
-      else
-         if(r.x() + r.width() + x() > dw)
-            move(dw - r.x() - r.width(), y());
-   }
-#endif    // POPUP_MENU_DISABLE_AUTO_SCROLL
 }
 
 void PopupMenu::mousePressEvent(QMouseEvent* e)
@@ -607,16 +511,9 @@ QAction *PopupMenu::exec(const QPoint &p, QAction *action)
 {
   _screenSize = QSize(200, 200);
 
-  // Version 5.10 and above use QGuiApplication::screenAt().
-#if QT_VERSION >= 0x050a00
   const QScreen *scr = QGuiApplication::screenAt(p);
   if(scr)
     _screenSize = scr->availableSize();
-#else
-  const QDesktopWidget *dw = QApplication::desktop();
-  if(dw)
-    _screenSize = dw->availableGeometry(p).size();
-#endif
 
   emit aboutToPopup();
 
@@ -629,16 +526,9 @@ void PopupMenu::popup(const QPoint &p, QAction *atAction)
 {
   _screenSize = QSize(200, 200);
 
-  // Version 5.10 and above use QGuiApplication::screenAt().
-#if QT_VERSION >= 0x050a00
   const QScreen *scr = QGuiApplication::screenAt(p);
   if(scr)
     _screenSize = scr->availableSize();
-#else
-  const QDesktopWidget *dw = QApplication::desktop();
-  if(dw)
-    _screenSize = dw->availableGeometry(p).size();
-#endif
 
   emit aboutToPopup();
 

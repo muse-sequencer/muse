@@ -29,12 +29,8 @@
 
 // Just in case Qt ever adds these features natively, we would need to turn our features off!
 //#define POPUP_MENU_DISABLE_STAY_OPEN    
-//#define POPUP_MENU_DISABLE_AUTO_SCROLL
 
 #include <QMenu>
-#ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
-  #include <QTimer>
-#endif
 
 #include <QVariant>
 #include <QPointer>
@@ -57,9 +53,6 @@ class PopupMenu : public QMenu
 Q_OBJECT
   
     bool _stayOpen;
-    #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
-    QTimer* timer;
-    #endif
     int moveDelta;
     PopupMenu* _cur_menu; // For auto-breakup.
     int _cur_menu_count;
@@ -77,10 +70,6 @@ Q_OBJECT
   private slots:
     void popHovered(QAction*);
 
-    #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
-    void timerHandler();
-    #endif
-  
   protected:
     virtual void mouseReleaseEvent(QMouseEvent*);
     virtual void mousePressEvent(QMouseEvent*);

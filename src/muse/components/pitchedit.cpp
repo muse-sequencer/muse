@@ -64,18 +64,10 @@ PitchEdit::PitchEdit(QWidget* parent)
 //
 //       // Enough space for a lower limit to fit for example "C#-2" plus extra space for good luck.
 //       // Must display 14Bit controller values.
-// // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-// #if QT_VERSION >= 0x050b00
-//       int minTextWidth = fm.horizontalAdvance("W#-2");
-//       // Enough space for an upper limit of say 7 'W' characters.
-//       int maxTextWidth = fm.horizontalAdvance("WWWWWWW");
-//       int textWidth = fm.horizontalAdvance(t);
-// #else
 //       int minTextWidth = fm.width("W#-2");
 //       // Enough space for an upper limit of say 7 'W' characters.
 //       int maxTextWidth = fm.width("WWWWWWW");
 //       int textWidth = fm.width(t);
-// #endif
 //       if(textWidth < minTextWidth)
 //         textWidth = minTextWidth;
 //       if(textWidth > maxTextWidth)
@@ -118,20 +110,11 @@ void PitchEdit::updateWidth()
 
     const QString t = lineEdit()->text();
     const QFontMetrics fm(font());
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
     // Enough space for a lower limit to fit for example "C#-2" plus extra space for good luck.
     int minTextWidth = fm.horizontalAdvance("W#-2");
     // Enough space for an upper limit of say 7 'W' characters.
     int maxTextWidth = fm.horizontalAdvance("WWWWWWW");
     int textWidth = fm.horizontalAdvance(t);
-#else
-    // Enough space for a lower limit to fit for example "C#-2" plus extra space for good luck.
-    int minTextWidth = fm.width("W#-2");
-    // Enough space for an upper limit of say 7 'W' characters.
-    int maxTextWidth = fm.width("WWWWWWW");
-    int textWidth = fm.width(t);
-#endif
     if(textWidth < minTextWidth)
       textWidth = minTextWidth;
     if(textWidth > maxTextWidth)

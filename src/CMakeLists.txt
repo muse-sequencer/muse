@@ -21,7 +21,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-# REMOVE Tim. qt6. Added. Moved from below as warned by cmake configuring.
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
 if (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -38,8 +37,6 @@ include(CheckIncludeFiles)
 include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
 include(CheckCXXSymbolExists)
-
-# REMOVE Tim. qt6. Added.
 include(GNUInstallDirs)
 
 
@@ -75,18 +72,10 @@ if (CheckAtomic_Result STREQUAL "NOTFOUND")
   include(cmake/CheckAtomic.cmake)
 endif (CheckAtomic_Result STREQUAL "NOTFOUND")
 
-# REMOVE Tim. qt6. Moved above as warned by cmake configuring.
-# CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
-# if (COMMAND cmake_policy)
-#     cmake_policy(SET CMP0003 NEW)
-#     cmake_policy (SET CMP0007 NEW)
-# endif(COMMAND cmake_policy)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# REMOVE Tim. qt6. Removed.
 if (NOT DEFINED LIB_SUFFIX)
         SET(LIB_SUFFIX "" CACHE STRING "Suffix for installed library path. Ex. 64 for lib64")
 endif (NOT DEFINED LIB_SUFFIX)
@@ -134,18 +123,6 @@ message(" vst header path: " ${VST_HEADER_PATH} )
 include_directories(${VST_HEADER_PATH})
 
 # set libdir if not use -DLIB_INSTALL_DIR
-# REMOVE Tim. qt6. Changed.
-# if (NOT LIB_INSTALL_DIR)
-#         if(CMAKE_INSTALL_LIBDIR)
-#                 SET(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
-#         else(CMAKE_INSTALL_LIBDIR)
-#                 SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
-#         endif(CMAKE_INSTALL_LIBDIR)
-# endif (NOT LIB_INSTALL_DIR)
-#
-# if (LIB_SUFFIX)
-#         message(" Install libraries to: " ${LIB_INSTALL_DIR} )
-# endif (LIB_SUFFIX)
 
 if (NOT LIB_INSTALL_DIR)
         if(CMAKE_INSTALL_FULL_LIBDIR)
@@ -156,29 +133,12 @@ if (NOT LIB_INSTALL_DIR)
 endif (NOT LIB_INSTALL_DIR)
 
 
-# REMOVE Tim. qt6. Changed.
-# IF(NOT DEFINED SHARE_INSTALL_PREFIX)
-#         SET(SHARE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/share")
-# ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
-
 IF(NOT DEFINED SHARE_INSTALL_PREFIX)
         SET(SHARE_INSTALL_PREFIX ${CMAKE_INSTALL_FULL_DATAROOTDIR})
 ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 
 
-#set(CMAKE_BUILD_TYPE debug)
-#set(CMAKE_BUILD_TYPE release)
-
-# If no CMAKE_BUILD_TYPE is given on the command line,
-#  cmake either uses the cached value, or 'empty' (plain un-opt build).
-# And yet the only way a user can reset a cached CMAKE_BUILD_TYPE
-#  is with "-DCMAKE_BUILD_TYPE=". So we cannot interfere with this.
-# We should probably not attempt to do this at all.
-# Installation instructions now updated to be more specific, give options.
-#endif (NOT DEFINED CMAKE_BUILD_TYPE)
-
-#UPDATE: most of users even don't know what CMAKE_BUILD_TYPE is.
-#So it will be better to set unspecified build type to RelWithDebInfo
+# Better to set unspecified build type to RelWithDebInfo
 if (NOT CMAKE_BUILD_TYPE)
     message("No CMAKE_BUILD_TYPE specified. Setting to RelWithDebInfo.")
      set(CMAKE_BUILD_TYPE RelWithDebInfo)
@@ -200,34 +160,7 @@ SET(MusE_VERSION_FULL  "4.3.0")
 SET(MusE_INSTALL_NAME  "muse-4.3")
 SET(MusE_EXEC_NAME     "muse4")
 
-# REMOVE Tim. qt6. Changed.
-# SET(MusE_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 SET(MusE_BIN_DIR ${CMAKE_INSTALL_FULL_BINDIR})
-
-# REMOVE Tim. qt6. Changed.
-
-# ## The directory where we will install the shared components:
-# SET(MusE_MODULES_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/modules)
-#
-# ## Synthesizers directory
-# SET(MusE_SYNTHI_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/synthi)
-#
-# ## Plugins directory
-# SET(MusE_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/plugins)
-#
-# ## Audio converter plugins directory
-# SET(MusE_AUDIO_CONVERTER_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/converters)
-#
-# ## Top documentation dir
-# IF(NOT DEFINED MusE_DOC_DIR)
-#       SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${MusE_INSTALL_NAME}/)
-# ENDIF(NOT DEFINED MusE_DOC_DIR)
-#
-# ## Data directory
-# SET(MusE_SHARE_DIR ${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME})
-#
-# ## Lib directory
-# SET(MusE_LIB_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME})
 
 ## The directory where we will install the shared components:
 SET(MusE_MODULES_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/modules)
@@ -242,15 +175,9 @@ SET(MusE_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/plugins)
 SET(MusE_AUDIO_CONVERTER_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/converters)
 
 ## Top documentation dir
-# REMOVE Tim. qt6. Changed.
 IF(NOT DEFINED MusE_DOC_DIR)
       SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${MusE_INSTALL_NAME}/)
 ENDIF(NOT DEFINED MusE_DOC_DIR)
-
-# IF(NOT DEFINED MusE_DOC_DIR)
-#       SET(MusE_DOC_DIR ${CMAKE_INSTALL_DOCDIR}/)
-# ENDIF(NOT DEFINED MusE_DOC_DIR)
-
 
 ## Data directory
 SET(MusE_SHARE_DIR ${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME})
@@ -342,7 +269,6 @@ else ( MODULES_BUILD_STATIC )
 #       SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
 endif ( MODULES_BUILD_STATIC )
 
-#  REMOVE Tim. qt6. Removed.
 # We need these always, for a few of the shared modules in the muse/core build,
 #  even when building muse/core as static. Otherwise it can't find them on run. Tim.
 SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
@@ -372,36 +298,9 @@ find_package(Threads REQUIRED)
 ##  look for Qt6
 ##
 
-# REMOVE Tim. qt6. Added.
 find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets UiTools LinguistTools Svg Xml)
 
 qt_standard_project_setup()
-
-
-# REMOVE Tim. qt6. Removed.
-
-# set(QT_MIN_VERSION "6.4.0")
-# set(QT_USE_QTXML TRUE)
-# set(QT_USE_QTDESIGNER TRUE)
-# set(QT_USE_QTSVG TRUE)
-#
-# find_package(Qt6Widgets)
-#
-# if (NOT Qt6Widgets_FOUND)
-#       message(FATAL_ERROR "Fatal error: QT (version >= 6.4.0) required.\n"
-#       "Cmake tries to detect QT6 by searching for 'Qt6Widgets' package\n"
-#       "If you have QT6 installed, make sure 'Qt6Widgets' package is in PKG_CONFIG_PATH."
-#       )
-# endif (NOT Qt6Widgets_FOUND)
-
-# find_package(Qt6Core REQUIRED)
-# find_package(Qt6UiTools REQUIRED)
-# find_package(Qt6LinguistTools REQUIRED)
-# find_package(Qt6Xml REQUIRED)
-# find_package(Qt6Svg REQUIRED)
-
-# # Needed for plugins factory:
-# SET(QT_USE_QTUITOOLS TRUE)
 
 include_directories (${Qt6Widgets_INCLUDE_DIRS})
 include_directories (${Qt6Core_INCLUDE_DIRS})
