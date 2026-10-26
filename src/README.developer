@@ -15,6 +15,32 @@ library, do check if Qt can provide the necessary functionality. Many times it c
 
 * DEVELOPMENT *
 
+* TRANSLATIONS *
+Previously MusE had a cmake flag UPDATE_TRANSLATIONS to update translation files.
+As of MusE for Qt6, this procedure changed.
+
+A new, more powerful and less error prone procedure is to build the
+ update_translations target using cmake.
+Typically done from the separate 'build' directory, it might look like this:
+
+    cmake --build ../ --target update_translations
+
+FYI:
+The options found in the locale directory's cmake file control how update_translations works.
+For example it is possible to strip line numbers, as they're not really required and cause
+ merging problems.
+
+When to manually run update_translations:
+You do not need to run update_translations every time you build or change code.
+You only need to run it during specific milestone events:
+
+1: Just before a Release, to pull all newly added code strings into the .ts files so they
+    can be sent to external translators.
+2: After a large Git Merge	To safely clean up any layout conflicts, reconnect loose strings,
+    and make sure your local .ts files match the merged code.
+3: Before starting a translation sweep, if you plan to sit down and update a language,
+    running this gives you a completely up-to-date baseline of what needs translating.
+
 
 * RELEASE PROCEDURE *
 When making a release there are some steps that should always be done to make the

@@ -32,7 +32,6 @@
 #include <QValidator>
 #include <QUuid>
 #include <QAction>
-// REMOVE Tim. qt6. Added.
 #include <QPoint>
 #include <QSize>
 #include <QWidget>
@@ -147,10 +146,6 @@ void loadThemeColors(const QString&);
 //void updateThemeAndStyle();
 int countSelectedParts();
 
-// REMOVE Tim. qt6. Removed.
-// // A replacement for obsolete Qt5's QDesktopWidget geometry.
-// QRect getDesktopGeometry();
-// REMOVE Tim. qt6. Added.
 // Tries to return the geometry of the screen under the point, or else the primary screen,
 //  or if no screens, a dummy geometry.
 QSize getScreenGeometryFromPoint(const QPoint&);

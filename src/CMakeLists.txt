@@ -21,10 +21,14 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.12.0)
+
 if (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
     cmake_policy (SET CMP0007 NEW)
+    # New behaviour is to normalize install() DESTINATION paths,
+    #  which might affect us. Don't allow for now. FIXME Fix the problem?
+    cmake_policy (SET CMP0177 OLD)
 endif(COMMAND cmake_policy)
 
 # project(muse)
@@ -185,27 +189,76 @@ SET(MusE_SHARE_DIR ${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME})
 ## Lib directory
 SET(MusE_LIB_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME})
 
+# REMOVE Tim Qt6. Changed.
+# include(FindGit)
+# if (GIT_FOUND)
+#       EXEC_PROGRAM( ${GIT_EXECUTABLE}
+#             ARGS "status"
+#             OUTPUT_VARIABLE GIT_RET_NOTUSED
+#             RETURN_VALUE IS_GIT_REPO )
+#     if(IS_GIT_REPO EQUAL 0)
+#         EXEC_PROGRAM( ${GIT_EXECUTABLE}
+#             ARGS "log -1 --format='%ci'"
+#             OUTPUT_VARIABLE MusE_GITDATE )
+#         EXEC_PROGRAM( ${GIT_EXECUTABLE}
+#             ARGS "rev-parse --abbrev-ref HEAD"
+#             OUTPUT_VARIABLE MusE_GITBRANCH )
+#         EXEC_PROGRAM( ${GIT_EXECUTABLE}
+#             ARGS "describe --dirty --always"
+#             OUTPUT_VARIABLE MusE_GITDESCRIBE )
+#         SET(MusE_GITSTRING "${MusE_GITBRANCH} | ${MusE_GITDESCRIBE} | ${MusE_GITDATE}")
+#     else (IS_GIT_REPO EQUAL 0)
+#         SET(MusE_GITSTRING "")
+#     endif (IS_GIT_REPO EQUAL 0)
+# else (GIT_FOUND)
+#       SET(MusE_GITSTRING "")
+# endif (GIT_FOUND)
+
 include(FindGit)
 if (GIT_FOUND)
-      EXEC_PROGRAM( ${GIT_EXECUTABLE}
-            ARGS "status"
-            OUTPUT_VARIABLE GIT_RET_NOTUSED
-            RETURN_VALUE IS_GIT_REPO )
-    if(IS_GIT_REPO EQUAL 0)
-        EXEC_PROGRAM( ${GIT_EXECUTABLE}
-            ARGS "log -1 --format='%ci'"
-            OUTPUT_VARIABLE MusE_GITDATE )
-        EXEC_PROGRAM( ${GIT_EXECUTABLE}
-            ARGS "rev-parse --abbrev-ref HEAD"
-            OUTPUT_VARIABLE MusE_GITBRANCH )
-        EXEC_PROGRAM( ${GIT_EXECUTABLE}
-            ARGS "describe --dirty --always"
-            OUTPUT_VARIABLE MusE_GITDESCRIBE )
+    execute_process(
+        COMMAND "${GIT_EXECUTABLE}" rev-parse --is-inside-work-tree
+        RESULT_VARIABLE IS_NOT_GIT_REPO
+        OUTPUT_QUIET
+        ERROR_QUIET
+    )
+
+    if(IS_NOT_GIT_REPO EQUAL 0)
+        # 1. Get the last commit date
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" log -1 --format=%ci
+            OUTPUT_VARIABLE MusE_GITDATE
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        # 2. Get the current branch name
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
+            OUTPUT_VARIABLE MusE_GITBRANCH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        # 3. Get the description (tag/hash/dirty status)
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" describe --dirty --always
+            OUTPUT_VARIABLE MusE_GITDESCRIBE
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
         SET(MusE_GITSTRING "${MusE_GITBRANCH} | ${MusE_GITDESCRIBE} | ${MusE_GITDATE}")
-    else (IS_GIT_REPO EQUAL 0)
-        SET(MusE_GITSTRING "")
-    endif (IS_GIT_REPO EQUAL 0)
+    else (IS_NOT_GIT_REPO EQUAL 0)
+        # Fallback for tarball/non-git builds
+        set(MusE_GITDATE "")
+        set(MusE_GITBRANCH "")
+        set(MusE_GITDESCRIBE "")
+        set(MusE_GITSTRING "")
+    endif (IS_NOT_GIT_REPO EQUAL 0)
 else (GIT_FOUND)
+      set(MusE_GITDATE "")
+      set(MusE_GITBRANCH "")
+      set(MusE_GITDESCRIBE "")
       SET(MusE_GITSTRING "")
 endif (GIT_FOUND)
 
@@ -251,7 +304,6 @@ option ( ENABLE_INSTPATCH    "Enable Instrument Patch Library support (enhances 
 #  even attempt to connect to a server. If Python is not found, no big deal.
 option ( ENABLE_PYTHON       "Enable python control support."         ON)
 
-option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files (WARNING: This will modify the .ts files in the source tree!!)" OFF)
 option ( MODULES_BUILD_STATIC "Build type of internal modules"                                   OFF)
 
 
@@ -461,12 +513,13 @@ endif (ENABLE_RTAUDIO)
 ##
 
 if (ENABLE_PYTHON)
-      include(FindPythonLibs)
-      if (PYTHONLIBS_FOUND)
-            if (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 3.5)
+      # CMake 3.12 required for 'Python'.
+      find_package(Python COMPONENTS Development)
+      if (Python_FOUND)
+            if (NOT Python_VERSION VERSION_LESS 3.5)
                   set(PYTHON_SUPPORT ON)
-            endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 3.5)
-      endif (PYTHONLIBS_FOUND)
+            endif (NOT Python_VERSION VERSION_LESS 3.5)
+      endif (Python_FOUND)
 #  TODO Check for Pyro5?
 endif (ENABLE_PYTHON)
 

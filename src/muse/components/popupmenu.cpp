@@ -509,11 +509,7 @@ QAction *PopupMenu::exec()
 
 QAction *PopupMenu::exec(const QPoint &p, QAction *action)
 {
-  _screenSize = QSize(200, 200);
-
-  const QScreen *scr = QGuiApplication::screenAt(p);
-  if(scr)
-    _screenSize = scr->availableSize();
+  _screenSize = getScreenGeometryFromPoint(p);
 
   emit aboutToPopup();
 
@@ -524,11 +520,7 @@ QAction *PopupMenu::exec(const QPoint &p, QAction *action)
 
 void PopupMenu::popup(const QPoint &p, QAction *atAction)
 {
-  _screenSize = QSize(200, 200);
-
-  const QScreen *scr = QGuiApplication::screenAt(p);
-  if(scr)
-    _screenSize = scr->availableSize();
+  _screenSize = getScreenGeometryFromPoint(p);
 
   emit aboutToPopup();
 

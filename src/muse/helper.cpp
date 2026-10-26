@@ -77,7 +77,6 @@
 #include <QCollator>
 #include <QList>
 #include <QIntValidator>
-// REMOVE Tim. qt6. Added.
 #include <QGuiApplication>
 #include <QScreen>
 
@@ -2423,16 +2422,6 @@ int countSelectedParts()
     return cnt;
 }
 
-// REMOVE Tim. qt6. Removed.
-// QRect getDesktopGeometry()
-// {
-//   QRect r;
-//   for(const auto& it : QGuiApplication::screens())
-//     r = r.united(it->geometry());
-//   return r;
-// }
-
-// REMOVE Tim. qt6. Added.
 QSize getScreenGeometryFromPoint(const QPoint& globalP)
 {
   QScreen *sc = QGuiApplication::screenAt(globalP);
@@ -2443,7 +2432,6 @@ QSize getScreenGeometryFromPoint(const QPoint& globalP)
   return QSize(300, 300);
 }
 
-// REMOVE Tim. qt6. Added.
 QSize getScreenGeometryFromWidget(const QWidget* widget)
 {
   if(widget && widget->isVisible())
@@ -2452,12 +2440,8 @@ QSize getScreenGeometryFromWidget(const QWidget* widget)
     if(!sc)
       sc = QGuiApplication::primaryScreen();
     if(sc)
-    {
-      fprintf(stderr, "getScreenGeometryFromWidget(): w:%d h:%d\n", sc->availableSize().width(), sc->availableSize().height());
       return sc->availableSize();
-    }
   }
-  fprintf(stderr, "getScreenGeometryFromWidget(): No screens! Returning dummy size.\n");
   return QSize(300, 300);
 }
 
