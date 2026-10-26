@@ -80,31 +80,6 @@ if(Qt6_VERSION VERSION_GREATER_EQUAL "6.7.0")
         QM_FILES_OUTPUT_VARIABLE QM_FILES
         # Tell Qt to look for strings inside all sub-modules.
         SOURCE_TARGETS ${SRC_TARGETS}
-            # muse
-            # arranger
-            # cliplist
-            # ctrl
-            # driver
-            # instruments
-            # liste
-            # marker
-            # master
-            # midiedit
-            # mixer
-            # mplugins
-            # remote
-            # waveedit
-            # widgets
-            # awl
-            # deicsonze
-            # fluid_synth
-            # synti
-            # organ
-            # simpledrums
-            # vam
-            # components
-            # plugin_scan_module
-            # grepmidi
 
         # Additional source files.
         SOURCES  ${FILES_TO_TRANSLATE}
