@@ -56,13 +56,13 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( remote
-      PROPERTIES COMPILE_FLAGS "-I${PYTHON_INCLUDE_DIRS}"
+      PROPERTIES COMPILE_FLAGS "-I${Python_INCLUDE_DIRS}"
       OUTPUT_NAME muse_remote
       )
 
 target_link_libraries(remote
       widgets # through app.h
-      ${PYTHON_LIBRARIES}
+      ${Python_LIBRARIES}
       )
 
 ##
