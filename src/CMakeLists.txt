@@ -189,35 +189,11 @@ SET(MusE_SHARE_DIR ${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME})
 ## Lib directory
 SET(MusE_LIB_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME})
 
-# REMOVE Tim Qt6. Changed.
-# include(FindGit)
-# if (GIT_FOUND)
-#       EXEC_PROGRAM( ${GIT_EXECUTABLE}
-#             ARGS "status"
-#             OUTPUT_VARIABLE GIT_RET_NOTUSED
-#             RETURN_VALUE IS_GIT_REPO )
-#     if(IS_GIT_REPO EQUAL 0)
-#         EXEC_PROGRAM( ${GIT_EXECUTABLE}
-#             ARGS "log -1 --format='%ci'"
-#             OUTPUT_VARIABLE MusE_GITDATE )
-#         EXEC_PROGRAM( ${GIT_EXECUTABLE}
-#             ARGS "rev-parse --abbrev-ref HEAD"
-#             OUTPUT_VARIABLE MusE_GITBRANCH )
-#         EXEC_PROGRAM( ${GIT_EXECUTABLE}
-#             ARGS "describe --dirty --always"
-#             OUTPUT_VARIABLE MusE_GITDESCRIBE )
-#         SET(MusE_GITSTRING "${MusE_GITBRANCH} | ${MusE_GITDESCRIBE} | ${MusE_GITDATE}")
-#     else (IS_GIT_REPO EQUAL 0)
-#         SET(MusE_GITSTRING "")
-#     endif (IS_GIT_REPO EQUAL 0)
-# else (GIT_FOUND)
-#       SET(MusE_GITSTRING "")
-# endif (GIT_FOUND)
-
 include(FindGit)
-if (GIT_FOUND)
+if (Git_FOUND)
     execute_process(
         COMMAND "${GIT_EXECUTABLE}" rev-parse --is-inside-work-tree
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         RESULT_VARIABLE IS_NOT_GIT_REPO
         OUTPUT_QUIET
         ERROR_QUIET
@@ -227,6 +203,7 @@ if (GIT_FOUND)
         # 1. Get the last commit date
         execute_process(
             COMMAND "${GIT_EXECUTABLE}" log -1 --format=%ci
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             OUTPUT_VARIABLE MusE_GITDATE
             OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_QUIET
@@ -235,6 +212,7 @@ if (GIT_FOUND)
         # 2. Get the current branch name
         execute_process(
             COMMAND "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             OUTPUT_VARIABLE MusE_GITBRANCH
             OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_QUIET
@@ -243,24 +221,25 @@ if (GIT_FOUND)
         # 3. Get the description (tag/hash/dirty status)
         execute_process(
             COMMAND "${GIT_EXECUTABLE}" describe --dirty --always
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             OUTPUT_VARIABLE MusE_GITDESCRIBE
             OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_QUIET
         )
         SET(MusE_GITSTRING "${MusE_GITBRANCH} | ${MusE_GITDESCRIBE} | ${MusE_GITDATE}")
-    else (IS_NOT_GIT_REPO EQUAL 0)
+    else ()
         # Fallback for tarball/non-git builds
         set(MusE_GITDATE "")
         set(MusE_GITBRANCH "")
         set(MusE_GITDESCRIBE "")
         set(MusE_GITSTRING "")
-    endif (IS_NOT_GIT_REPO EQUAL 0)
-else (GIT_FOUND)
+    endif ()
+else ()
       set(MusE_GITDATE "")
       set(MusE_GITBRANCH "")
       set(MusE_GITDESCRIBE "")
       SET(MusE_GITSTRING "")
-endif (GIT_FOUND)
+endif ()
 
 
 option ( ENABLE_RTAUDIO      "Multi platform rtaudio audio compatibility fallback" ON)
