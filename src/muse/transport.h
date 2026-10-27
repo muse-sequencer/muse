@@ -93,8 +93,10 @@ class TempoSig : public QWidget {
 
 class Handle : public QWidget {
       QWidget* rootWin;
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
       int dx, dy;
       void mouseMoveEvent(QMouseEvent* ev);
+#endif
       void mousePressEvent(QMouseEvent* ev);
    public:
       Handle(QWidget* r, QWidget* parent=0);
