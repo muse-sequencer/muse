@@ -31,6 +31,14 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     p.setBrush(MusEGlobal::config.rangeMarkerColor);
     p.setPen(MusEGlobal::config.rangeMarkerColor);
 
+    // Clear the pixmap through the active QPainter. Calling QPixmap::fill()
+    // here would start a second QPainter on the same pixmap and crash.
+    const auto clearPixmap = [&]() {
+        p.setCompositionMode(QPainter::CompositionMode_Clear);
+        p.fillRect(QRect(QPoint(0, 0), pix.size()), Qt::transparent);
+        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    };
+
     qreal pixc = iconSize / 2;
     qreal off = 0;
     //    qreal off = iconSize / 10;
@@ -52,7 +60,7 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
 
 
     pixlab = new QLabel(this);
-    pix.fill( Qt::transparent );
+    clearPixmap();
 
     p.drawPolygon( QVector<QPointF>{ { pixc - rad, off },
                                      { pixc + rad, off },
@@ -78,7 +86,7 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     p.setPen(Qt::NoPen);
 
     pixlab = new QLabel(this);
-    pix.fill( Qt::transparent );
+    clearPixmap();
 
     p.drawPolygon( QVector<QPointF>{ { pixc - 2 * rad, off },
                                      { pixc + 2 * rad, off },

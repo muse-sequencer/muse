@@ -31,8 +31,7 @@ if (COMMAND cmake_policy)
     cmake_policy (SET CMP0177 OLD)
 endif(COMMAND cmake_policy)
 
-# project(muse)
-project(muse LANGUAGES CXX C)
+project(muse)
 
 include(FindPkgConfig)
 include(CheckIncludeFile)

@@ -52,7 +52,7 @@ set (SRC_TARGETS
 
 if (PYTHON_SUPPORT)
       set ( SRC_TARGETS ${SRC_TARGETS} remote )
-endif (PYTHON_SUPPORT)
+endif ()
 
 if(Qt6_VERSION VERSION_GREATER_EQUAL "6.7.0")
 
@@ -85,7 +85,7 @@ if(Qt6_VERSION VERSION_GREATER_EQUAL "6.7.0")
         SOURCES  ${FILES_TO_TRANSLATE}
     )
 
-else(Qt6_VERSION VERSION_GREATER_EQUAL "6.7.0")
+else()
 
     # SINCE Qt 6.2 (Deprecated)
     # 1. Handle lupdate (The code scanner)
@@ -105,8 +105,7 @@ else(Qt6_VERSION VERSION_GREATER_EQUAL "6.7.0")
         QM_FILES_OUTPUT_VARIABLE QM_FILES
     )
 
-endif(Qt6_VERSION VERSION_GREATER_EQUAL "6.7.0")
-
+endif ()
 
 install(FILES ${QM_FILES}
       DESTINATION ${MusE_SHARE_DIR}/locale
