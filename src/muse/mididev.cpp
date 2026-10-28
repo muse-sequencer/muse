@@ -68,6 +68,7 @@ extern void initMidiSerial();
 #endif
 extern bool initMidiAlsa();
 extern bool initMidiJack();
+extern bool initMidiWinMM();
 
 extern void processMidiInputTransformPlugins(MEvent&);
 
@@ -91,14 +92,31 @@ void initMidiDevices()
       {
         if(initMidiAlsa())
           {
-          QMessageBox::critical(nullptr, "MusE fatal error.", "MusE failed to initialize the\n" 
+          QMessageBox::critical(nullptr, "MusE fatal error.", "MusE failed to initialize the\n"
                                                           "Alsa midi subsystem, check\n"
                                                           "your configuration.");
           exit(-1);
           }
       }
 #endif
-      
+
+      // Windows has no ALSA to fall back on, and no native MIDI path at
+      // all before this - enable it under the same condition ALSA uses
+      // above (JACK not running), so a MIDI keyboard works whether or
+      // not the user has JACK installed/running for audio.
+#ifdef _WIN32
+      if(MusEGlobal::audioDevice->deviceType() != AudioDevice::JACK_AUDIO)
+      {
+        if(initMidiWinMM())
+          {
+          QMessageBox::critical(nullptr, "MusE fatal error.", "MusE failed to initialize the\n"
+                                                          "Windows midi subsystem, check\n"
+                                                          "your configuration.");
+          exit(-1);
+          }
+      }
+#endif
+
       if(initMidiJack())
           {
           QMessageBox::critical(nullptr, "MusE fatal error.", "MusE failed to initialize the\n" 
@@ -184,6 +202,8 @@ QString MidiDevice::deviceTypeString() const
         return "ALSA";
     case JACK_MIDI:
         return "JACK";
+    case WINMM_MIDI:
+        return "WinMM";
     case SYNTH_MIDI:
     {
       const SynthI* s = dynamic_cast<const SynthI*>(this);

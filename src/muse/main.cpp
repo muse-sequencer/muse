@@ -21,6 +21,13 @@
 //
 //=========================================================
 
+#ifdef _WIN32
+// Must be included before any header that may drag in <windows.h>
+// (e.g. via Qt), otherwise windows.h pulls in the legacy winsock.h
+// and conflicts with winsock2.h.
+#include <winsock2.h>
+#endif
+
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
@@ -563,12 +570,54 @@ CommandLineParseResult parseCommandLine(
 }
 
 
+#ifdef _WIN32
+//---------------------------------------------------------
+//   museMessageHandler
+//    On Windows, a GUI-subsystem executable with no attached console
+//    has nowhere obvious for Qt to send qDebug()/qWarning()/etc.
+//    output - by default Qt routes it to the debugger (OutputDebugString)
+//    instead of stderr, so none of it appears in a redirected stderr
+//    log (unlike plain fprintf(stderr, ...), which is unaffected).
+//    Force it to stderr so command-line/CI runs behave like Linux.
+//---------------------------------------------------------
+
+static void museMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& msg)
+      {
+      const char* prefix = "";
+      switch (type) {
+            case QtDebugMsg:    prefix = "Debug: ";    break;
+            case QtInfoMsg:     prefix = "Info: ";     break;
+            case QtWarningMsg:  prefix = "Warning: ";  break;
+            case QtCriticalMsg: prefix = "Critical: "; break;
+            case QtFatalMsg:    prefix = "Fatal: ";    break;
+            }
+      fprintf(stderr, "%s%s\n", prefix, msg.toLocal8Bit().constData());
+      fflush(stderr);
+      if (type == QtFatalMsg)
+            abort();
+      }
+#endif
+
 //---------------------------------------------------------
 //   main
 //---------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
+#ifdef _WIN32
+      qInstallMessageHandler(museMessageHandler);
+
+      // Winsock must be explicitly initialized before any socket call.
+      // We use raw Winsock sockets (not just Qt's) for the internal
+      // GUI <-> audio/sequencer thread messaging, see platform_pipe.h
+      // and poll_win.c.
+      WSADATA wsaData;
+      if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+            fprintf(stderr, "FATAL: WSAStartup failed, cannot continue\n");
+            return -1;
+            }
+#endif
+
       // Get the separator used for file paths.
       const QChar list_separator = QDir::listSeparator();
 
@@ -699,6 +748,25 @@ int main(int argc, char* argv[])
         MusEGlobal::museUser        = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
         MusEGlobal::museGlobalLib   = QString(LIBDIR);
         MusEGlobal::museGlobalShare = QString(SHAREDIR);
+
+#ifdef _WIN32
+        // The compiled-in LIBDIR/SHAREDIR default to an absolute install
+        // prefix (e.g. "C:/Program Files (x86)/muse/...") that only
+        // exists after a real `cmake --install` - this Windows port is
+        // currently packaged as a portable, xcopy-deployable folder (see
+        // windows_build.yml) with no such install step, so those paths
+        // never exist as shipped. Resolve them relative to the running
+        // executable instead: every module/converter/synth .dll already
+        // ships flat next to muse4.exe, and a share/muse-4.3/ folder
+        // ships alongside it too (instruments, templates, metronome,
+        // themes, etc.) - mirroring the APPDIR (AppImage) override just
+        // below, which does the same thing for Linux.
+        {
+          const QString exeDir = QCoreApplication::applicationDirPath();
+          MusEGlobal::museGlobalLib   = exeDir;
+          MusEGlobal::museGlobalShare = exeDir + "/share/muse-4.3";
+        }
+#endif
 
         const QByteArray appDir = qgetenv("APPDIR"); // running in AppImage
         if (!appDir.isEmpty()) {
@@ -1482,7 +1550,9 @@ int main(int argc, char* argv[])
           }
         }
 
+        fprintf(stderr, "DIAG: before isRealtime()\n"); fflush(stderr);
         MusEGlobal::realTimeScheduling = MusEGlobal::audioDevice->isRealtime();
+        fprintf(stderr, "DIAG: after isRealtime(), realTimeScheduling=%d\n", MusEGlobal::realTimeScheduling); fflush(stderr);
 
         // ??? With Jack2 this reports true even if it is not running realtime.
         // Jack says: "Cannot use real-time scheduling (RR/10)(1: Operation not permitted)". The kernel is non-RT.
@@ -1490,22 +1560,27 @@ int main(int argc, char* argv[])
 
         // setup the prefetch fifo length now that the segmentSize is known
         MusEGlobal::fifoLength = 131072 / MusEGlobal::segmentSize;
+        fprintf(stderr, "DIAG: before initAudioPrefetch()\n"); fflush(stderr);
         MusECore::initAudioPrefetch();
+        fprintf(stderr, "DIAG: after initAudioPrefetch()\n"); fflush(stderr);
 
         // Set up the wave module now that sampleRate and segmentSize are known.
+        fprintf(stderr, "DIAG: before initWaveModule()\n"); fflush(stderr);
         MusECore::SndFile::initWaveModule(
           &MusEGlobal::sndFiles,
           &MusEGlobal::audioConverterPluginList,
           &MusEGlobal::defaultAudioConverterSettings,
           MusEGlobal::sampleRate,
           MusEGlobal::segmentSize);
-        
+        fprintf(stderr, "DIAG: after initWaveModule()\n"); fflush(stderr);
+
         if(muse_splash)
         {
           muse_splash->showMessage(splash_prefix + QString(" Initializing midi devices..."),
                                    Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
           qApp->processEvents();
         }
+        fprintf(stderr, "DIAG: after splash message\n"); fflush(stderr);
 
         qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
                  << "Init MIDI...";
@@ -1569,13 +1644,19 @@ int main(int argc, char* argv[])
                  << "Init OSC / metronome...";
 
   #ifdef OSC_SUPPORT
+        fprintf(stderr, "DIAG: before initOSC()\n"); fflush(stderr);
         MusECore::initOSC();
+        fprintf(stderr, "DIAG: after initOSC()\n"); fflush(stderr);
   #endif
 
+        fprintf(stderr, "DIAG: before initMetronome()\n"); fflush(stderr);
         MusECore::initMetronome();
+        fprintf(stderr, "DIAG: after initMetronome()\n"); fflush(stderr);
 
         const QString metro_presets = MusEGlobal::museGlobalShare + QString("/metronome");
+        fprintf(stderr, "DIAG: before initMetronomePresets()\n"); fflush(stderr);
         MusECore::initMetronomePresets(metro_presets, &MusEGlobal::metroAccentPresets, MusEGlobal::debugMsg);
+        fprintf(stderr, "DIAG: after initMetronomePresets()\n"); fflush(stderr);
         // If the global metronome accent settings are empty, it is unlikely the user did that, or wants that.
         // More likely it indicates this is a first-time init of the global settings.
         // In any case, if empty fill the global metronome accent settings with factory presets.
@@ -1588,9 +1669,13 @@ int main(int argc, char* argv[])
             MusECore::MetroAccentsStruct::FactoryPreset);
         }
 
+        fprintf(stderr, "DIAG: before initWavePreview()\n"); fflush(stderr);
         MusECore::initWavePreview(MusEGlobal::segmentSize);
+        fprintf(stderr, "DIAG: after initWavePreview()\n"); fflush(stderr);
 
+        fprintf(stderr, "DIAG: before enumerateJackMidiDevices()\n"); fflush(stderr);
         MusECore::enumerateJackMidiDevices();
+        fprintf(stderr, "DIAG: after enumerateJackMidiDevices()\n"); fflush(stderr);
 
   #ifdef HAVE_LASH
         if (MusEGlobal::useLASH) // if false, then it was disabled by command line switch
@@ -1848,6 +1933,11 @@ int main(int argc, char* argv[])
 
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "Finished! Exiting main, return value:%d\n", rv);
+
+#ifdef _WIN32
+      WSACleanup();
+#endif
+
       return rv;
       
       }

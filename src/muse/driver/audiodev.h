@@ -26,6 +26,7 @@
 
 #include <QString>
 
+#include <atomic>
 #include <list>
 #ifdef _WIN32
 #include <stdlib.h>
@@ -53,12 +54,19 @@ class AudioDevice {
       //
      
       // The amount of time to wait before sync times out, in seconds.
-      float _syncTimeout;
-      float _syncTimeoutCounter; // In seconds.
-      int _dummyState;
-      unsigned int _dummyPos;
-      volatile int _dummyStatePending;
-      volatile unsigned int _dummyPosPending;
+      // These are shared between the main thread (which requests
+      // transport changes) and the audio thread (which polls and
+      // applies them in processTransport()) with no other
+      // synchronization - std::atomic gives each individual read/write
+      // well-defined behavior, matching the original lock-free
+      // pending-value handoff design (confirmed racy, and genuinely
+      // fixed by this, via ThreadSanitizer).
+      std::atomic<float> _syncTimeout;
+      std::atomic<float> _syncTimeoutCounter; // In seconds.
+      std::atomic<int> _dummyState;
+      std::atomic<unsigned int> _dummyPos;
+      std::atomic<int> _dummyStatePending;
+      std::atomic<unsigned int> _dummyPosPending;
   
    public:
       enum { DUMMY_AUDIO=0, JACK_AUDIO=1, RTAUDIO_AUDIO=2 };

@@ -124,7 +124,10 @@ class Audio {
       bool recording;         // recording is active
       bool idle;              // do nothing in idle mode
       bool _freewheel;
-      BounceState _bounceState;
+      // Written from both the main thread (seqmsg.cpp) and the audio
+      // thread (audio.cpp's process code) with no other synchronization
+      // - confirmed racy via ThreadSanitizer.
+      std::atomic<BounceState> _bounceState;
       unsigned _loopFrame;     // Startframe of loop if in LOOP mode. Not quite the same as left marker !
       int _loopCount;         // Number of times we have looped so far
 
