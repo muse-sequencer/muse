@@ -663,6 +663,9 @@ int main(int argc, char* argv[])
         app.setOrganizationDomain(ORGANIZATION_DOMAIN);
         app.setApplicationName(PACKAGE_NAME);
         app.setApplicationDisplayName(APP_DISPLAY_NAME);
+        // This must perfectly match the name of the .desktop file
+        // (excluding the ".desktop" extension).
+        app.setDesktopFileName("io.github.muse_sequencer.Muse");
 
         // NOTE: 'GenericConfigLocation' returned config dir (ie. ~./config).
         //       'ConfigLocation' also returned config dir (ie. ~./config).
