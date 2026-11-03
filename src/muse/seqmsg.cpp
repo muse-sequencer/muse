@@ -22,6 +22,7 @@
 //=========================================================
 
 #include <stdio.h>
+#include "platform_pipe.h"
 
 #include "song.h"
 #include "midiseq.h"
@@ -65,7 +66,7 @@ void Audio::sendMsg(AudioMsg* m)
             msg = m;
             // wait for next audio "process" call to finish operation
             int no = -1;
-            int rv = read(fromThreadFdr, &no, sizeof(int));
+            int rv = muse_pipe_read(fromThreadFdr, &no, sizeof(int));
             if (rv != sizeof(int))
                   perror("Audio: read pipe failed");
             else if (no != (sno-1)) {
@@ -838,6 +839,23 @@ void Audio::msgSetMidiDevice(MidiPort* port, MidiDevice* device, MidiInstrument*
   msg.a  = false;
   //MusEGlobal::midiSeq->sendMsg(&msg);
   sendMsg(&msg); // Idle both audio and midi.
+
+  // A device newly assigned to a port needs its selectRfd() (if any)
+  // added to MidiSeq's poll() set to actually be read from - unlike
+  // ALSA (one always-registered fd for all devices, see
+  // MidiSeq::addAlsaPollFd()) and Jack midi (input collected directly
+  // by the audio thread's collectMidiEvents(), no poll() involvement
+  // at all), WinMM devices rely entirely on MidiSeq's generic
+  // per-device polling (MidiSeq::updatePollFd(), gated on
+  // dev->midiPort() != -1) - which was previously only refreshed at
+  // MidiSeq startup or via the ALSA enable/disable checkbox
+  // (addAlsaDeviceClicked()), never on a plain port assignment. That
+  // silently left a freshly-assigned WinMM input device's self-pipe
+  // never polled: the device would show correctly configured and
+  // "Open", but no incoming MIDI would ever be read (confirmed: same
+  // hardware works immediately in another application).
+  if(MusEGlobal::midiSeq)
+    MusEGlobal::midiSeq->msgUpdatePollFd();
 }
 
 } // namespace MusECore

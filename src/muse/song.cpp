@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include "platform_pipe.h"
 //#include <iostream>
 
 #include <QDir>
@@ -3020,6 +3021,12 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
       else
             e = events.end();
 
+      // WINMM_RECORD_DEBUG: temporary tracing for the "recorded part
+      // vanishes on stop" investigation. Ask before removing.
+      if(MusEGlobal::debugMsg)
+        fprintf(stderr, "WINMM_RECORD_DEBUG: cmdAddRecordedEvents track <%s> startTick=%u endTick=%u loopCount=%d punchin=%d punchout=%d lpos=%u rpos=%u\n",
+                mt->name().toLocal8Bit().constData(), startTick, endTick,
+                MusEGlobal::audio->loopCount(), punchin(), punchout(), lpos(), rpos());
       if (startTick > endTick) {
             if (MusEGlobal::debugMsg)
                   fprintf(stderr, "no events in record area\n");
@@ -4971,7 +4978,7 @@ void Song::seqSignal(int fd)
       const int buf_size = 256;  
       char buffer[buf_size]; 
 
-      int n = ::read(fd, buffer, buf_size);
+      int n = muse_pipe_read(fd, buffer, buf_size);
       if (n < 0) {
             fprintf(stderr, "Song: seqSignal(): READ PIPE failed: %s\n",
                strerror(errno));
@@ -6514,6 +6521,15 @@ void Song::stopRolling(Undo* operations)
 
       if(!operations)
         MusEGlobal::song->applyOperationGroup(ops);
+
+      // WINMM_RECORD_DEBUG: temporary tracing for the "recorded part
+      // vanishes on stop" investigation. Ask before removing.
+      if(MusEGlobal::debugMsg)
+      {
+        for(ciMidiTrack it = _midis.begin(); it != _midis.end(); ++it)
+          fprintf(stderr, "WINMM_RECORD_DEBUG: stopRolling after applyOperationGroup track <%s> parts()->size()=%zu\n",
+                  (*it)->name().toLocal8Bit().constData(), (*it)->parts()->size());
+      }
 }
 
 //---------------------------------------------------------

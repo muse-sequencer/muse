@@ -370,7 +370,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
   bool is_first_pass = true;
   QActionGroup* act_group = nullptr;
   // Order the entire listing by device type.
-  for(int dtype = 0; dtype <= MusECore::MidiDevice::SYNTH_MIDI; ++dtype)
+  for(int dtype = 0; dtype <= MusECore::MidiDevice::WINMM_MIDI; ++dtype)
   {
   // Currently only midi port output to midi track input supports 'Omni' routes.
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -441,6 +441,10 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
 
             case MusECore::MidiDevice::SYNTH_MIDI:
               wa->array()->headerSetTitle(tr("Synth devices"));
+            break;
+
+            case MusECore::MidiDevice::WINMM_MIDI:
+              wa->array()->headerSetTitle(tr("WinMM devices"));
             break;
           }
           wa->array()->setArrayTitle(tr("Channels"));
@@ -548,6 +552,10 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
             case MusECore::MidiDevice::SYNTH_MIDI:
               wa->array()->headerSetTitle(tr("Synth devices"));
             break;
+
+            case MusECore::MidiDevice::WINMM_MIDI:
+              wa->array()->headerSetTitle(tr("WinMM devices"));
+            break;
           }
           wa->array()->setArrayTitle(tr("Channels"));
           wa->array()->headerSetVisible(true);
@@ -626,7 +634,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
 
 #else // _USE_CUSTOM_WIDGET_ACTIONS_
         
-  for(int dtype = 0; dtype <= MusECore::MidiDevice::SYNTH_MIDI; ++dtype)
+  for(int dtype = 0; dtype <= MusECore::MidiDevice::WINMM_MIDI; ++dtype)
   {
     pup->addAction(new MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), pup));
     for(int i = 0; i < MusECore::MIDI_PORTS; ++i)

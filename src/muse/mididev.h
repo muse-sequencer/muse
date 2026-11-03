@@ -86,7 +86,7 @@ typedef LockFreeMPSCRingBuffer<MidiRecordEvent> MidiRecFifo;
 class MidiDevice {
    public:
       // Types of MusE midi devices.
-      enum MidiDeviceType { ALSA_MIDI=0, JACK_MIDI=1, SYNTH_MIDI=2 };
+      enum MidiDeviceType { ALSA_MIDI=0, JACK_MIDI=1, SYNTH_MIDI=2, WINMM_MIDI=3 };
       
       // IDs for the various IPC FIFOs that are used.
       enum EventFifoIds

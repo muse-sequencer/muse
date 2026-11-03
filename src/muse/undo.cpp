@@ -4673,9 +4673,16 @@ void Song::executeOperationGroup1(Undo& operations)
                           //  that's an SC_EVENT_INSERTED anyway, so should be no harm.
                           if(!editable_part->events().empty())
                             updateFlags |= SC_EVENT_INSERTED;
+                          // WINMM_RECORD_DEBUG: temporary tracing for the
+                          // "recorded part vanishes on stop" investigation.
+                          // Ask before removing.
+                          if(MusEGlobal::debugMsg)
+                            fprintf(stderr, "WINMM_RECORD_DEBUG: executeOperationGroup1:AddPart track <%s> tick=%u len=%u events=%zu\n",
+                                    editable_part->track()->name().toLocal8Bit().constData(),
+                                    editable_part->tick(), editable_part->lenTick(), editable_part->events().size());
                         }
                         break;
-                    
+
                   case UndoOp::DeletePart:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:deletePart ** calling parts->delOperation\n");

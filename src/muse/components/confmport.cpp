@@ -621,11 +621,13 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     asmap mapALSA;
                     asmap mapJACK;
                     asmap mapSYNTH;
-                    
+                    asmap mapWinMM;
+
                     int aix = 0x10000000;
                     int jix = 0x20000000;
                     int six = 0x30000000;
-                    for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
+                    int wix = 0x40000000;
+                    for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
                     {
                       if((*i)->deviceType() == MusECore::MidiDevice::ALSA_MIDI)
                       {
@@ -634,7 +636,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       }
                       else
                       if((*i)->deviceType() == MusECore::MidiDevice::JACK_MIDI)
-                      {  
+                      {
                         mapJACK.insert( std::pair<std::string, int> ((*i)->name().toStdString(), jix) );
                         ++jix;
                       }
@@ -642,7 +644,13 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       if((*i)->deviceType() == MusECore::MidiDevice::SYNTH_MIDI)
                       {
                         mapSYNTH.insert( std::pair<std::string, int> ((*i)->name().toStdString(), six) );
-                        ++six;  
+                        ++six;
+                      }
+                      else
+                      if((*i)->deviceType() == MusECore::MidiDevice::WINMM_MIDI)
+                      {
+                        mapWinMM.insert( std::pair<std::string, int> ((*i)->name().toStdString(), wix) );
+                        ++wix;
                       }
                       else
                         fprintf(stderr, "MPConfig::rbClicked unknown midi device: %s\n",
@@ -698,25 +706,48 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     {
                       pup->addSeparator();
                       pup->addAction(new MusEGui::MenuTitleItem("SYNTH:", pup));
-                      
-                      for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
+
+                      for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i)
                       {
                         int idx = i->second;
                         const QString s = QString::fromStdString(i->first);
                         MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::SYNTH_MIDI);
                         if(md)
                         {
-                          if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)  
+                          if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
                             continue;
-                            
+
                           act = pup->addAction(md->name());
                           act->setData(idx);
                           act->setCheckable(true);
                           act->setChecked(md == dev);
-                        }  
+                        }
                       }
-                    }  
-                    
+                    }
+
+                    if(!mapWinMM.empty())
+                    {
+                      pup->addSeparator();
+                      pup->addAction(new MusEGui::MenuTitleItem("WinMM:", pup));
+
+                      for(imap i = mapWinMM.begin(); i != mapWinMM.end(); ++i)
+                      {
+                        int idx = i->second;
+                        const QString s = QString::fromStdString(i->first);
+                        MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::WINMM_MIDI);
+                        if(md)
+                        {
+                          if(md->deviceType() != MusECore::MidiDevice::WINMM_MIDI)
+                            continue;
+
+                          act = pup->addAction(md->name());
+                          act->setData(idx);
+                          act->setCheckable(true);
+                          act->setChecked(md == dev);
+                        }
+                      }
+                    }
+
                     act = pup->exec(ppt);
                     if(!act)
                     {      
@@ -756,9 +787,12 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       else
                       if(n < 0x30000000)
                         typ = MusECore::MidiDevice::JACK_MIDI;
-                      else //if(n < 0x40000000)
+                      else
+                      if(n < 0x40000000)
                         typ = MusECore::MidiDevice::SYNTH_MIDI;
-                      
+                      else //if(n < 0x50000000)
+                        typ = MusECore::MidiDevice::WINMM_MIDI;
+
                       sdev = MusEGlobal::midiDevices.find(acttxt, typ);
                       // Is it the current device? Reset it to <none>.
                       if(sdev == dev)
@@ -1209,6 +1243,10 @@ void MPConfig::deviceSelectionChanged()
       case MusECore::MidiDevice::SYNTH_MIDI:
         can_remove = true;
       break;
+
+      case MusECore::MidiDevice::WINMM_MIDI:
+        can_remove = true;
+      break;
     }
 
     // Optimize: No need to check further.
@@ -1545,6 +1583,7 @@ void MPConfig::removeInstanceClicked()
           break;
       // Fall through.
       case MusECore::MidiDevice::JACK_MIDI:
+      case MusECore::MidiDevice::WINMM_MIDI:
         if(!isIdle)
         {
           MusEGlobal::audio->msgIdle(true); // Make it safe to edit structures
@@ -1585,6 +1624,7 @@ void MPConfig::removeInstanceClicked()
     {
       case MusECore::MidiDevice::ALSA_MIDI:
       case MusECore::MidiDevice::JACK_MIDI:
+      case MusECore::MidiDevice::WINMM_MIDI:
       break;
 
       case MusECore::MidiDevice::SYNTH_MIDI:

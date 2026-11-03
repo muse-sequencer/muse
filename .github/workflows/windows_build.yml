@@ -1,0 +1,504 @@
+name: Windows build (MSYS2/MinGW) [experimental]
+
+# Manual trigger only: this is an experimental build used to validate the
+# Windows porting groundwork (see src/README.win32 and the windows_port
+# branch). It is not wired to run on every push, since it is not expected
+# to succeed unattended yet.
+on:
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: RelWithDebInfo
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Package list follows src/README.win32, updated for what MSYS2
+      # ships as prebuilt mingw-w64 packages today (2026) instead of the
+      # makepkg-mingw source builds that file describes for liblo/serd/
+      # sord/lv2/sratom/lilv/jack2 - those are all prebuilt now.
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            base-devel
+            git
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-extra-cmake-modules
+            mingw-w64-x86_64-pkg-config
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-qt5-base
+            mingw-w64-x86_64-qt5-svg
+            mingw-w64-x86_64-qt5-tools
+            mingw-w64-x86_64-qt5-translations
+            mingw-w64-x86_64-ladspa-sdk
+            mingw-w64-x86_64-libsndfile
+            mingw-w64-x86_64-libsamplerate
+            mingw-w64-x86_64-fluidsynth
+            mingw-w64-x86_64-liblo
+            mingw-w64-x86_64-lv2
+            mingw-w64-x86_64-serd
+            mingw-w64-x86_64-sord
+            mingw-w64-x86_64-sratom
+            mingw-w64-x86_64-lilv
+            mingw-w64-x86_64-rtaudio
+            mingw-w64-x86_64-jack2
+            mingw-w64-x86_64-dlfcn
+            mingw-w64-x86_64-gdb
+
+      # MODULES_BUILD_STATIC=ON: on Linux the internal "modules" (widgets,
+      # master, driver, etc.) are built as .so libraries, which works because
+      # ELF exports symbols by default. Windows DLLs don't - every symbol
+      # crossing a DLL boundary needs an explicit dllexport/dllimport, which
+      # this codebase doesn't have. Building everything statically into
+      # muse4.exe sidesteps that entirely instead of annotating every class.
+      #
+      # ENABLE_LV2=OFF: lilv_world_new()/lilv_world_load_all() (lv2host.cpp)
+      # crashes muse4.exe on startup under MinGW (exit code 127) - a lilv/
+      # serd/sord issue, unrelated to the pipe/socket IPC this branch is
+      # about. LV2 is a cross-platform standard, not Linux-specific, but its
+      # plugin ecosystem is overwhelmingly Linux/BSD in practice; VST
+      # (ENABLE_VST_NATIVE, already on) is what Windows users actually use.
+      # Disabling it here sidesteps the crash without losing anything that
+      # matters for a first working Windows build. Worth revisiting later
+      # if someone wants LV2 support specifically on Windows.
+      #
+      # ENABLE_OSC=OFF: same pattern as LV2. With qDebug() finally routed to
+      # stderr (see main.cpp's museMessageHandler), the startup log showed
+      # muse4.exe getting all the way to "Init OSC / metronome..." and then
+      # dying (exit 127) with no error message from initOSC()'s own
+      # handling - i.e. a hard crash inside liblo's lo_server_thread_new(),
+      # not a graceful failure. liblo spawns its own internal thread for
+      # the OSC server unconditionally at startup, regardless of whether
+      # the user has any OSC control surface. RTAUDIO/VST_NATIVE (the
+      # backend and plugin format Windows users actually rely on) don't do
+      # anything comparable at startup, and FLUID (the built-in SoundFont
+      # synth) only starts its own thread when a synth track is actually
+      # created, not before - so neither is a similar suspect right now.
+      - name: Configure (CMake)
+        run: |
+          mkdir build
+          cd build
+          cmake ../src \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DENABLE_RTAUDIO=ON \
+            -DENABLE_ALSA=OFF \
+            -DENABLE_LASH=OFF \
+            -DENABLE_LRDF=OFF \
+            -DENABLE_OSC=OFF \
+            -DENABLE_DSSI=OFF \
+            -DENABLE_VST_NATIVE=ON \
+            -DENABLE_VST_VESTIGE=ON \
+            -DENABLE_LV2=OFF \
+            -DENABLE_LV2_GTK2=OFF \
+            -DENABLE_FLUID=ON \
+            -DENABLE_RUBBERBAND=OFF \
+            -DENABLE_MIDNAM=ON \
+            -DENABLE_INSTPATCH=OFF \
+            -DENABLE_PYTHON=OFF \
+            -DMODULES_BUILD_STATIC=ON
+
+      - name: Build
+        run: |
+          cd build
+          ninja -k0 2>&1 | tee build.log
+        continue-on-error: true
+
+      - name: Summarize build result
+        id: summary
+        run: |
+          cd build
+          if [ -f muse/muse4.exe ]; then
+            echo "built=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "built=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "---- last 200 lines of build.log ----"
+          tail -n 200 build.log || true
+          echo "---- FAILED lines ----"
+          grep -E "FAILED|error:" build.log || echo "(none found)"
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-log
+          path: build/build.log
+
+      # Smoke test: launch the dummy audio driver briefly and confirm the
+      # process does not crash/hang during Audio/Thread pipe setup and
+      # MIDI init - this is the specific code path touched by the
+      # windows_port branch (see src/muse/platform_pipe.h). It is not a
+      # real UI test, and GitHub's Windows runner has no interactive
+      # desktop, so a full GUI smoke test is not attempted here.
+      # `windeployqt.exe` silently did nothing on every run so far -
+      # "command not found", swallowed by `|| true` below. It isn't on
+      # PATH under this name in the mingw64 shell, so this step was a
+      # no-op the whole time. The smoke test still passed because it
+      # runs inside this same MSYS2 shell, which has /mingw64/bin on
+      # PATH - muse4.exe was finding all its DLLs (Qt included) there,
+      # not next to itself. Fine for the CI smoke test, but it means the
+      # uploaded muse-windows-x86_64 artifact was never actually
+      # runnable outside this environment (a plain download-and-run on a
+      # real Windows machine fails with STATUS_DLL_NOT_FOUND). Find the
+      # real binary explicitly instead of relying on PATH.
+      - name: Package runtime deps (windeployqt)
+        if: steps.summary.outputs.built == 'true'
+        continue-on-error: true
+        run: |
+          cd build/muse
+          WINDEPLOYQT=$(find /mingw64 -iname "windeployqt*.exe" 2>/dev/null | head -1)
+          echo "Using windeployqt at: $WINDEPLOYQT"
+          if [ -n "$WINDEPLOYQT" ]; then
+            # --no-angle/--no-opengl-sw: this mingw64 Qt5 package wasn't
+            # built with ANGLE (GLES-over-D3D) or the software OpenGL
+            # fallback, so windeployqt errors out trying to copy DLLs
+            # that don't exist (libGLESv2.dll) - MusE only needs desktop
+            # OpenGL, which Qt5Gui.dll already covers directly.
+            "$WINDEPLOYQT" --no-angle --no-opengl-sw muse4.exe
+          else
+            echo "windeployqt not found under /mingw64 - Qt's platform plugin (platforms/qwindows.dll, required to even create a QApplication) won't be packaged. Investigate the mingw-w64-x86_64-qt5-tools package layout if the artifact fails to start standalone."
+          fi
+
+      # windeployqt only handles Qt's own DLLs. MusE's internal "modules"
+      # (xml_module, evdata_module, plugin_scan_module, etc. - see
+      # libs/*/CMakeLists.txt and their install(DESTINATION
+      # ${MusE_MODULES_DIR})) end up as separate .dll files scattered
+      # across the build tree rather than next to muse4.exe. On Linux
+      # this doesn't matter (rpath/install layout handles it); on
+      # Windows, the exe's own directory is the first place the loader
+      # looks, so gather every built .dll there for this smoke test.
+      - name: Collect module DLLs next to the executable
+        if: steps.summary.outputs.built == 'true'
+        run: |
+          find build -name "*.dll" -not -path "build/muse/*" -exec cp -n {} build/muse/ \;
+
+      # Same root cause as windeployqt above, for everything else
+      # muse4.exe links against from the mingw64 toolchain (libstdc++,
+      # libwinpthread, libgcc_s, JACK, liblo, lilv/serd/sord/sratom,
+      # libsndfile, libsamplerate, fluidsynth, dlfcn, ...) - it all only
+      # resolved via /mingw64/bin on PATH, invisible outside this shell.
+      # `ldd` walks the exe's actual import table, so it can't miss a
+      # real dependency the linker pulled in (unlike guessing package
+      # names) - copy every mingw64 DLL it resolves next to the exe so
+      # the uploaded artifact is finally self-contained and runnable on
+      # a plain Windows machine with no MSYS2/mingw64 installed.
+      - name: Collect mingw64 runtime DLLs (ldd-based, for a standalone artifact)
+        if: steps.summary.outputs.built == 'true'
+        run: |
+          cd build/muse
+          for dll in $(ldd muse4.exe | awk '{print $3}' | grep -i '^/mingw64/'); do
+            cp -n "$dll" . 2>/dev/null || true
+          done
+          echo "---- build/muse after DLL collection ----"
+          ls -la
+
+      # NOTE: this deliberately stays in the msys2 {0} shell (the job
+      # default), not pwsh. The first attempt used pwsh/Start-Process and
+      # the exe exited immediately with code -1073741515 (0xC0000135 =
+      # STATUS_DLL_NOT_FOUND): PowerShell's PATH doesn't include
+      # /mingw64/bin, where muse4.exe's runtime DLLs (libstdc++,
+      # libwinpthread, Qt5*.dll not covered by windeployqt, libjack64,
+      # liblo, lilv-0, sord-0, serd-0, sndfile, samplerate, ...) live.
+      # The msys2 mingw64 shell already has the right PATH.
+      # -D enables MusE's own verbose debug logging (more visibility into
+      # exactly where startup gets to). -d ("no threads, no RT") is
+      # deliberately NOT used - that would bypass the Audio/Thread pipe
+      # code path this whole branch exists to exercise.
+      #
+      # Uses coreutils `timeout` instead of manual background+wait+kill:
+      # a previous version of this step used `pid=$!; ...; wait "$pid"`
+      # and got a bare `exit code 127` with no crash info, which is
+      # ambiguous under MSYS's POSIX layer wrapping a native Windows
+      # process. `timeout`'s own exit code (124 = still running when the
+      # deadline hit, i.e. success for this test) is unambiguous.
+      - name: Smoke test (launch with dummy audio driver, 20s)
+        if: steps.summary.outputs.built == 'true'
+        continue-on-error: true
+        run: |
+          set +e
+          cd build/muse
+          timeout 20 ./muse4.exe -a -F -C -D > smoke_stdout.log 2> smoke_stderr.log
+          code=$?
+          if [ "$code" -eq 124 ]; then
+            echo "Process was still running when the 20s timeout hit (did not crash) - success."
+            echo "still_running=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Process exited on its own with exit code $code - see logs."
+            echo "still_running=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "---- stdout ----"
+          cat smoke_stdout.log
+          echo "---- stderr ----"
+          cat smoke_stderr.log
+          cp smoke_stdout.log smoke_stderr.log ../../
+          exit 0
+
+      - name: Upload smoke test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-smoke-test-logs
+          path: |
+            smoke_stdout.log
+            smoke_stderr.log
+          if-no-files-found: ignore
+
+      # Run the same smoke test again, this time under gdb in batch mode,
+      # specifically to get a real call stack for the SIGSEGV the plain
+      # smoke test above has been hitting (see the "Init MIDI..." crash
+      # investigation on windows_port). In gdb batch mode, "run" executes
+      # the inferior and control returns to gdb (running the subsequent
+      # -ex commands) as soon as it stops - whether that's a crash signal
+      # or, if it doesn't crash, only when the outer `timeout` kills gdb
+      # itself (in which case there's nothing to report, matching the
+      # plain smoke test's "still running = success" case).
+      - name: Smoke test under gdb (batch-mode backtrace on crash)
+        if: steps.summary.outputs.built == 'true'
+        continue-on-error: true
+        run: |
+          set +e
+          cd build/muse
+          timeout 40 gdb -batch \
+            -ex "set pagination off" \
+            -ex "run" \
+            -ex "echo \n---- bt full ----\n" \
+            -ex "bt full" \
+            -ex "echo \n---- info registers ----\n" \
+            -ex "info registers" \
+            -ex "echo \n---- thread apply all bt ----\n" \
+            -ex "thread apply all bt" \
+            -ex "quit" \
+            --args ./muse4.exe -a -F -C -D \
+            > gdb_stdout.log 2> gdb_stderr.log
+          code=$?
+          echo "gdb wrapper exit code: $code"
+          echo "---- gdb stdout ----"
+          cat gdb_stdout.log
+          echo "---- gdb stderr ----"
+          cat gdb_stderr.log
+          exit 0
+
+      - name: Upload gdb backtrace logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-gdb-logs
+          path: |
+            build/muse/gdb_stdout.log
+            build/muse/gdb_stderr.log
+          if-no-files-found: ignore
+
+      # gdb's backtrace (see above) showed the crash lands inside
+      # operator new/malloc itself - i.e. Windows' heap validator only
+      # *detected* pre-existing corruption there, it didn't happen there.
+      # Reproducing under Linux + AddressSanitizer (same code path, same
+      # CMake flags) came back completely clean, which points at something
+      # Windows/MinGW-specific rather than a portable out-of-bounds write.
+      #
+      # Dr. Memory (a Valgrind-like checker for MinGW binaries) was tried
+      # here to catch the actual bad write, but after fixing two CI-side
+      # bugs (binary search path, missing -logdir) it failed for a third,
+      # unfixable reason: "Unable to load client library: ucrtbase.dll:
+      # library initializer failed" - Dr. Memory's client-injection
+      # mechanism is incompatible with the current windows-latest runner
+      # image (last Dr. Memory release: 2.6.0/2023, not tracking recent
+      # Windows/UCRT builds). Abandoned in favor of a native alternative
+      # below that needs no third-party injection at all.
+      #
+      # Windows page heap (the mechanism behind gflags.exe/Application
+      # Verifier's "full page heap"): setting the GlobalFlag
+      # FLG_HEAP_PAGE_ALLOCS (0x02000000) via the standard Image File
+      # Execution Options registry key makes every heap allocation for
+      # this one executable land on its own dedicated page, immediately
+      # followed by an inaccessible guard page. A write that overruns its
+      # allocation now faults *at the moment it happens* (a plain
+      # SIGSEGV/access violation) instead of merely being noticed later by
+      # the heap validator - so the existing gdb batch-mode step, re-run
+      # with this enabled, should finally backtrace to the real culprit.
+      # No extra tool install needed; this is a documented, built-in OS
+      # debugging feature (see gflags.exe /p /enable, same GlobalFlag
+      # value) applied directly via the registry.
+      # MSYS2_ARG_CONV_EXCL=* is required here: MSYS2's bash rewrites any
+      # argument that looks like a POSIX path (i.e. starts with /) into a
+      # Windows path before handing it to a native, non-MSYS executable
+      # like reg.exe - silently mangling /v, /t, /d, /f into garbage and
+      # producing reg.exe's generic "ERROR: Invalid syntax." with no hint
+      # of the real cause. Disabling that conversion for this one command
+      # is the standard workaround.
+      - name: Enable Windows page heap for muse4.exe
+        if: steps.summary.outputs.built == 'true'
+        continue-on-error: true
+        env:
+          MSYS2_ARG_CONV_EXCL: "*"
+        run: |
+          reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\muse4.exe" /v GlobalFlag /t REG_SZ /d 0x02000000 /f
+
+      - name: Smoke test under gdb with page heap enabled (real crash-site backtrace)
+        if: steps.summary.outputs.built == 'true'
+        continue-on-error: true
+        run: |
+          set +e
+          cd build/muse
+          timeout 60 gdb -batch \
+            -ex "set pagination off" \
+            -ex "run" \
+            -ex "echo \n---- bt full ----\n" \
+            -ex "bt full" \
+            -ex "echo \n---- info registers ----\n" \
+            -ex "info registers" \
+            -ex "echo \n---- thread apply all bt ----\n" \
+            -ex "thread apply all bt" \
+            -ex "quit" \
+            --args ./muse4.exe -a -F -C -D \
+            > gdb_pageheap_stdout.log 2> gdb_pageheap_stderr.log
+          code=$?
+          echo "gdb (page heap) wrapper exit code: $code"
+          echo "---- gdb stdout ----"
+          cat gdb_pageheap_stdout.log
+          echo "---- gdb stderr ----"
+          cat gdb_pageheap_stderr.log
+          exit 0
+
+      - name: Upload gdb page-heap backtrace logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-gdb-pageheap-logs
+          path: |
+            build/muse/gdb_pageheap_stdout.log
+            build/muse/gdb_pageheap_stderr.log
+          if-no-files-found: ignore
+
+      # Page heap (above) narrowed the remaining STATUS_HEAP_CORRUPTION to a
+      # genuine heap buffer overflow ("corrupted suffix pattern", not the
+      # alloc/free mismatch fixed earlier): a 512-float (2048-byte) buffer
+      # allocated in AudioTrack::initBuffers() for the Metronome SynthI's
+      # _dataBuffers[0], freed moments later in setTotalOutChannels() during
+      # initMetronome(), has its guard bytes right after the buffer's end
+      # stomped sometime in between. Page heap's own backtrace only shows
+      # the *free* site (where the validator finally checks), not the
+      # write - the offending write happens in the narrow window between
+      # AudioTrack's constructor (ticksynth.cpp:847, "metronome = new
+      # MetronomeSynthI()") and the very next line's initInstance() call
+      # (ticksynth.cpp:849, which immediately frees these same buffers).
+      # A hardware watchpoint set on the exact byte right after the
+      # buffer's logical end - computed at runtime from the real pointer,
+      # since heap addresses move every run (ASLR) - will stop execution
+      # at the actual instruction doing the overflowing write, wherever it
+      # is, instead of only at the later free() that merely notices it.
+      #
+      # Deliberately kept running WITH page heap still enabled (from the
+      # step above - it's process-wide via the IFEO registry key, not
+      # scoped to one step). The plain (non-page-heap) gdb run crashes
+      # earlier, during initAudioPrefetch() - a separate, generic
+      # STATUS_HEAP_CORRUPTION detected on an unrelated allocation, the
+      # same uninformative "detected late" symptom this whole watchpoint
+      # detour exists to get past - so it never even reaches this
+      # breakpoint. Page heap's dedicated run above proved the process
+      # gets past this cleanly under page heap (that's how the Metronome
+      # finding was made in the first place), and the watchpoint itself
+      # is a completely independent mechanism (a hardware trap on the
+      # write, not page heap's own lazy pattern check at free time) that
+      # should fire first regardless, since the write happens before the
+      # later free().
+      - name: Smoke test under gdb watchpoint (pinpoint the overflow write into Metronome's buffer)
+        if: steps.summary.outputs.built == 'true'
+        continue-on-error: true
+        run: |
+          set +e
+          cd build/muse
+          timeout 60 gdb -batch \
+            -ex "set pagination off" \
+            -ex "break ticksynth.cpp:849" \
+            -ex "run" \
+            -ex "echo \n---- metronome pointer and its _dataBuffers[0] ----\n" \
+            -ex "print metronome" \
+            -ex "print metronome->_dataBuffers[0]" \
+            -ex "watch *(char*)((char*)metronome->_dataBuffers[0] + 2048)" \
+            -ex "continue" \
+            -ex "echo \n---- bt full at watchpoint hit (or process exit if it never triggered) ----\n" \
+            -ex "bt full" \
+            -ex "quit" \
+            --args ./muse4.exe -a -F -C -D \
+            > gdb_watch_stdout.log 2> gdb_watch_stderr.log
+          code=$?
+          echo "gdb watchpoint wrapper exit code: $code"
+          echo "---- gdb stdout ----"
+          cat gdb_watch_stdout.log
+          echo "---- gdb stderr ----"
+          cat gdb_watch_stderr.log
+          exit 0
+
+      - name: Upload gdb watchpoint logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-gdb-watchpoint-logs
+          path: |
+            build/muse/gdb_watch_stdout.log
+            build/muse/gdb_watch_stderr.log
+          if-no-files-found: ignore
+
+      # Clean up the page heap GlobalFlag now that every diagnostic step
+      # that needs it has run - it's a per-executable-name IFEO registry
+      # entry, not scoped to a step, so it would otherwise stay applied to
+      # the muse4.exe shipped in the artifact below too.
+      - name: Disable Windows page heap for muse4.exe
+        if: steps.summary.outputs.built == 'true'
+        continue-on-error: true
+        env:
+          MSYS2_ARG_CONV_EXCL: "*"
+        run: |
+          reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\muse4.exe" /f
+
+      # main.cpp resolves museGlobalShare (instruments, templates,
+      # metronome sounds, themes, etc. - everything under src/share/ in
+      # the source tree, normally installed to a fixed prefix by `cmake
+      # --install`, which this portable/xcopy packaging never runs) as
+      # "<exe's own directory>/share/muse-4.3" on Windows - ship that
+      # data here so a plain extracted .zip/.7z actually has instrument
+      # definitions (GM/XG/etc.), the default template, and everything
+      # else share/ provides, instead of silently missing them.
+      - name: Package share/ data (instruments, templates, metronome, themes, etc.)
+        if: steps.summary.outputs.built == 'true'
+        run: |
+          mkdir -p build/muse/share/muse-4.3
+          cp -r src/share/* build/muse/share/muse-4.3/
+
+      # A standalone package for testing outside CI: the exe, every DLL
+      # collected by the three steps above (Qt's own via windeployqt,
+      # MusE's internal modules, and the rest of the mingw64 runtime via
+      # ldd), and the Qt plugin subdirectories windeployqt creates
+      # (platforms/qwindows.dll is required just to start a QApplication;
+      # imageformats/iconengines/styles are needed for icons/theming to
+      # render correctly). if-no-files-found: ignore per pattern so a
+      # subdirectory windeployqt didn't create (e.g. if it wasn't found
+      # above) doesn't fail the whole upload.
+      - name: Upload built executable
+        if: always() && steps.summary.outputs.built == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: muse-windows-x86_64
+          path: |
+            build/muse/*.exe
+            build/muse/*.dll
+            build/muse/platforms
+            build/muse/imageformats
+            build/muse/iconengines
+            build/muse/styles
+            build/muse/translations
+            build/muse/share
+          if-no-files-found: ignore

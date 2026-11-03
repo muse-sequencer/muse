@@ -27,6 +27,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include "platform_pipe.h"
+
 #include <QThread>
 
 #include "app.h"
@@ -84,7 +86,10 @@
 // For debugging metronome and precount output: Uncomment the fprintf section.
 #define DEBUG_MIDI_METRONOME(dev, format, args...) // fprintf(dev, format, ##args);
 // For debugging midi timing: Uncomment the fprintf section.
-#define DEBUG_TRANSPORT_SYNC(dev, format, args...) // fprintf(dev, format, ##args);
+// TEMPORARY: enabled alongside AUDIOPREFETCH_DEBUG (audioprefetch.cpp) to
+// diagnose a Windows-only report of record/transport hanging ~20-30s
+// then starting without actually recording. Ask before removing.
+#define DEBUG_TRANSPORT_SYNC(dev, format, args...) fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
 MusECore::Audio* audio = nullptr;
@@ -193,18 +198,17 @@ Audio::Audio()
       //---------------------------------------------------
 
       int filedes[2];         // 0 - reading   1 - writing
-      if (pipe(filedes) == -1) {
+      if (muse_pipe(filedes) == -1) {
             perror("creating pipe0");
             exit(-1);
             }
       fromThreadFdw = filedes[1];
       fromThreadFdr = filedes[0];
-#ifndef _WIN32
-      int rv = fcntl(fromThreadFdw, F_SETFL, O_NONBLOCK);
-      if (rv == -1)
-            perror("set pipe O_NONBLOCK");
-#endif
-      if (pipe(filedes) == -1) {
+      // Needed on all platforms: this end is written to from the
+      // realtime audio callback (Audio::process()), which must never
+      // block waiting for the GUI thread to drain the pipe/socket.
+      muse_pipe_set_nonblock(fromThreadFdw);
+      if (muse_pipe(filedes) == -1) {
             perror("creating pipe1");
             exit(-1);
             }
@@ -695,7 +699,7 @@ void Audio::shutdown()
       {
       _running = false;
       fprintf(stderr, "Audio::shutdown()\n");
-      write(sigFd, "S", 1);
+      muse_pipe_write(sigFd, "S", 1);
       }
 
 //---------------------------------------------------------
@@ -712,7 +716,7 @@ void Audio::process(unsigned frames)
             processMsg(msg);
             int sn = msg->serialNo;
             msg    = 0;    // don't process again
-            int rv = write(fromThreadFdw, &sn, sizeof(int));
+            int rv = muse_pipe_write(fromThreadFdw, &sn, sizeof(int));
             if (rv != sizeof(int)) {
                   fprintf(stderr, "audio: write(%d) pipe failed: %s\n",
                      fromThreadFdw, strerror(errno));
@@ -747,7 +751,7 @@ void Audio::process(unsigned frames)
 // It will be a cycle or two before it even takes effect.
 // So we do this in MusE::bounceToFile() and MusE::bounceToTrack(), BEFORE the transport is started.
 //             if (_bounce)
-//                   write(sigFd, "f", 1);
+//                   muse_pipe_write(sigFd, "f", 1);
             }
       else if (state == LOOP2 && jackState == PLAY) {
             ++_loopCount;                  // Number of times we have looped so far
@@ -1667,11 +1671,11 @@ void Audio::seek(const Pos& p)
         // Reset this 'one-shot' flag.
         _ignoreNextEnableAllControllers = false;
 
-        write(sigFd, "G", 1);   // signal seek to gui
+        muse_pipe_write(sigFd, "G", 1);   // signal seek to gui
 
         // Signal clear all track automation record lists to gui.
         if(!alreadyThere)
-          write(sigFd, "N", 1);
+          muse_pipe_write(sigFd, "N", 1);
 
       }
       }
@@ -1744,7 +1748,7 @@ void Audio::startRolling()
       
       if(_bounceState != BounceOn)
       {      
-        write(sigFd, "1", 1);   // Play
+        muse_pipe_write(sigFd, "1", 1);   // Play
 
         // Don't send if external sync is on. The master, and our sync routing system will take care of that.
         if(!MusEGlobal::extSyncFlag)
@@ -1829,6 +1833,7 @@ void Audio::abortRolling()
 
           case MidiDevice::JACK_MIDI:
           case MidiDevice::SYNTH_MIDI:
+          case MidiDevice::WINMM_MIDI:
             md->handleStop();
           break;
         }
@@ -1845,12 +1850,12 @@ void Audio::abortRolling()
       recording    = false;
       if(_bounceState == BounceOff)
       {
-        write(sigFd, "3", 1);   // abort rolling
+        muse_pipe_write(sigFd, "3", 1);   // abort rolling
       }
       else
       {
         _bounceState = BounceOff;
-        write(sigFd, "A", 1);   // abort rolling + Special stop bounce (offline) mode
+        muse_pipe_write(sigFd, "A", 1);   // abort rolling + Special stop bounce (offline) mode
       }
       }
 
@@ -1889,6 +1894,7 @@ void Audio::stopRolling()
 
           case MidiDevice::JACK_MIDI:
           case MidiDevice::SYNTH_MIDI:
+          case MidiDevice::WINMM_MIDI:
             md->handleStop();
           break;
         }
@@ -1907,12 +1913,12 @@ void Audio::stopRolling()
       endExternalRecTick = curTickPos;
       if(_bounceState == BounceOff)
       {
-        write(sigFd, "0", 1);   // STOP
+        muse_pipe_write(sigFd, "0", 1);   // STOP
       }
       else
       {
         _bounceState = BounceOff;
-        write(sigFd, "B", 1);   // STOP + Special stop bounce (offline) mode
+        muse_pipe_write(sigFd, "B", 1);   // STOP + Special stop bounce (offline) mode
       }
       }
 
@@ -1950,9 +1956,17 @@ void Audio::recordStop(bool restart, Undo* ops)
             //    resolve NoteOff events, Controller etc.
             //---------------------------------------------------
 
+            // WINMM_RECORD_DEBUG: temporary tracing for the "notes vanish
+            // on record-stop" investigation. Ask before removing.
+            if(MusEGlobal::debugMsg)
+              fprintf(stderr, "WINMM_RECORD_DEBUG: recordStop track <%s> mpevents.size()=%zu before buildMidiEventList\n",
+                      mt->name().toLocal8Bit().constData(), mt->mpevents.size());
             // Do SysexMeta. Do loops.
             buildMidiEventList(&mt->events, mt->mpevents, mt, MusEGlobal::config.division, true, true);
-            MusEGlobal::song->cmdAddRecordedEvents(mt, mt->events, 
+            if(MusEGlobal::debugMsg)
+              fprintf(stderr, "WINMM_RECORD_DEBUG: recordStop track <%s> events.size()=%zu after buildMidiEventList\n",
+                      mt->name().toLocal8Bit().constData(), mt->events.size());
+            MusEGlobal::song->cmdAddRecordedEvents(mt, mt->events,
                  MusEGlobal::extSyncFlag ? startExternalRecTick : startRecordPos.tick(),
                  operations);
             mt->events.clear();    // ** Driver should not be touching this right now.
@@ -2072,7 +2086,7 @@ void Audio::updateMidiClick()
 
 void Audio::sendMsgToGui(char c)
       {
-      write(sigFd, &c, 1);
+      muse_pipe_write(sigFd, &c, 1);
       }
 
 } // namespace MusECore

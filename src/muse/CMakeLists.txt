@@ -322,6 +322,18 @@ target_link_libraries(core
       dl
       )
 
+if (WIN32)
+      # core uses raw Winsock APIs directly (platform_pipe.h, poll_win.c,
+      # WSAStartup/WSACleanup in main.cpp), independent of any optional
+      # component. This used to link only incidentally, via liblo's own
+      # pkg-config Libs: metadata when OSC was enabled - it silently
+      # disappeared, and every one of core's own Winsock calls became an
+      # undefined reference, as soon as OSC was turned off. Link it
+      # explicitly so core doesn't depend on some other library happening
+      # to pull it in.
+      target_link_libraries(core ws2_32 iphlpapi)
+endif (WIN32)
+
 if(NOT LV2_USE_PLUGIN_CACHE)
       target_link_libraries(core plugin_cache_reader_module)
 endif(NOT LV2_USE_PLUGIN_CACHE)
