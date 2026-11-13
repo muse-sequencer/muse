@@ -1506,6 +1506,18 @@ bool PartCanvas::mousePress(QMouseEvent* event)
             case PencilTool:
                   if (!ctrlkey && item && button == Qt::LeftButton)
                       emit trackChanged(item->part()->track());
+                  // Automation points may still be selected from when the automation tool was used.
+                  // Clear them, since they can't be seen or handled in this tool mode.
+                  if (_tool == PointerTool && !ctrlkey && button == Qt::LeftButton)
+                  {
+                      unselectAllAutomation(operations);
+                      if(!operations.empty())
+                      {
+                          MusEGlobal::song->applyOperationGroup(operations);
+                          operations.clear();
+                          redraw();
+                      }
+                  }
                   break;
             case CutTool:
                   if (!ctrlkey && item && button == Qt::LeftButton) splitItem(item, ev_pos );
