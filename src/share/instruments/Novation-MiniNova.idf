@@ -1,0 +1,398 @@
+<?xml version='1.0' encoding='utf-8'?>
+<muse version="1.0">
+  <MidiInstrument name="Novation MiniNova">
+    <PatchGroup name="Bank A">
+      <Patch name="A000 - Bass Is Wet DC" hbank="0" lbank="1" prog="0" />
+      <Patch name="A001 - WoblyDub PM" hbank="0" lbank="1" prog="1" />
+      <Patch name="A002 - Oxy Strings DF" hbank="0" lbank="1" prog="2" />
+      <Patch name="A003 - Modular Clocks" hbank="0" lbank="1" prog="3" />
+      <Patch name="A004 - Mod Wheel Sync PM" hbank="0" lbank="1" prog="4" />
+      <Patch name="A005 - TB Maniac PM" hbank="0" lbank="1" prog="5" />
+      <Patch name="A006 - Surfin Da Vortex PM" hbank="0" lbank="1" prog="6" />
+      <Patch name="A007 - Wobble Vocoder " hbank="0" lbank="1" prog="7" />
+      <Patch name="A008 - Drippy Bass DF" hbank="0" lbank="1" prog="8" />
+      <Patch name="A009 - Shufflin DF" hbank="0" lbank="1" prog="9" />
+      <Patch name="A010 - Sonar Ping DF" hbank="0" lbank="1" prog="10" />
+      <Patch name="A011 - Mr. E. Pad DF" hbank="0" lbank="1" prog="11" />
+      <Patch name="A012 - Nauseum DF" hbank="0" lbank="1" prog="12" />
+      <Patch name="A013 - Chubby Bass DF" hbank="0" lbank="1" prog="13" />
+      <Patch name="A014 - Cry 4 Moon DF" hbank="0" lbank="1" prog="14" />
+      <Patch name="A015 - Snarky Lead DF" hbank="0" lbank="1" prog="15" />
+      <Patch name="A016 - Huge Manna PS [Konflikt s.u.]" hbank="0" lbank="1" prog="16" />
+      <Patch name="A017 - SygnWave DF" hbank="0" lbank="1" prog="17" />
+      <Patch name="A018 - Cubed Bass DF" hbank="0" lbank="1" prog="18" />
+      <Patch name="A019 - Furry Bass DF" hbank="0" lbank="1" prog="19" />
+      <Patch name="A020 - Gallop String DF" hbank="0" lbank="1" prog="20" />
+      <Patch name="A021 - Tinklers DF" hbank="0" lbank="1" prog="21" />
+      <Patch name="A022 - Clusters DF" hbank="0" lbank="1" prog="22" />
+      <Patch name="A023 - Majestic DF" hbank="0" lbank="1" prog="23" />
+      <Patch name="A024 - Antsy Bass DF" hbank="0" lbank="1" prog="24" />
+      <Patch name="A025 - Wowsie DF" hbank="0" lbank="1" prog="25" />
+      <Patch name="A026 - Fat Bstrd DF" hbank="0" lbank="1" prog="26" />
+      <Patch name="A027 - 4th City DF" hbank="0" lbank="1" prog="27" />
+      <Patch name="A028 - Flanja DF" hbank="0" lbank="1" prog="28" />
+      <Patch name="A029 - Acidic Bass DF" hbank="0" lbank="1" prog="29" />
+      <Patch name="A030 - Shape Shift DF" hbank="0" lbank="1" prog="30" />
+      <Patch name="A031 - 80's Sequencer" hbank="0" lbank="1" prog="31" />
+      <Patch name="A032 - To Be Over" hbank="0" lbank="1" prog="32" />
+      <Patch name="A033 - Punchy Bass" hbank="0" lbank="1" prog="33" />
+      <Patch name="A034 - Mogue Lead Mw S&amp;H" hbank="0" lbank="1" prog="34" />
+      <Patch name="A035 - Up the Mwhl" hbank="0" lbank="1" prog="35" />
+      <Patch name="A036 - Mwhl Feedbacker" hbank="0" lbank="1" prog="36" />
+      <Patch name="A037 - Rosin Bow" hbank="0" lbank="1" prog="37" />
+      <Patch name="A038 - Viola" hbank="0" lbank="1" prog="38" />
+      <Patch name="A039 - Arp Strings" hbank="0" lbank="1" prog="39" />
+      <Patch name="A040 - Euro Zone" hbank="0" lbank="1" prog="40" />
+      <Patch name="A041 - Mwhl Sweeper" hbank="0" lbank="1" prog="41" />
+      <Patch name="A042 - Modular Resobass" hbank="0" lbank="1" prog="42" />
+      <Patch name="A043 - Synth Fretless" hbank="0" lbank="1" prog="43" />
+      <Patch name="A044 - Wave 2 Sequence" hbank="0" lbank="1" prog="44" />
+      <Patch name="A045 - Hop 1 Lead" hbank="0" lbank="1" prog="45" />
+      <Patch name="A046 - Hop 2 Lead" hbank="0" lbank="1" prog="46" />
+      <Patch name="A047 - Octaves Lead" hbank="0" lbank="1" prog="47" />
+      <Patch name="A048 - Pianistic" hbank="0" lbank="1" prog="48" />
+      <Patch name="A049 - Softee Piano" hbank="0" lbank="1" prog="49" />
+      <Patch name="A050 - Clav 1" hbank="0" lbank="1" prog="50" />
+      <Patch name="A051 - Clav 2" hbank="0" lbank="1" prog="51" />
+      <Patch name="A052 - Balladeer" hbank="0" lbank="1" prog="52" />
+      <Patch name="A053 - Vel Evo Pad" hbank="0" lbank="1" prog="53" />
+      <Patch name="A054 - Harmonic Pad" hbank="0" lbank="1" prog="54" />
+      <Patch name="A055 - Wurlygig" hbank="0" lbank="1" prog="55" />
+      <Patch name="A056 - Hybrid E Bass" hbank="0" lbank="1" prog="56" />
+      <Patch name="A057 - Vibes" hbank="0" lbank="1" prog="57" />
+      <Patch name="A058 - Stellar Pad" hbank="0" lbank="1" prog="58" />
+      <Patch name="A059 - Classic Horn" hbank="0" lbank="1" prog="59" />
+      <Patch name="A060 - Psudo Organ" hbank="0" lbank="1" prog="60" />
+      <Patch name="A061 - Cathedral Organ" hbank="0" lbank="1" prog="61" />
+      <Patch name="A062 - Ancient Bells" hbank="0" lbank="1" prog="62" />
+      <Patch name="A063 - Arp Pro Soloist" hbank="0" lbank="1" prog="63" />
+      <Patch name="A064 - Boogie On Bass" hbank="0" lbank="1" prog="64" />
+      <Patch name="A065 - In the Hopper" hbank="0" lbank="1" prog="65" />
+      <Patch name="A066 - Nova Chord" hbank="0" lbank="1" prog="66" />
+      <Patch name="A067 - Old School R&amp;B" hbank="0" lbank="1" prog="67" />
+      <Patch name="A068 - Tine E Piano" hbank="0" lbank="1" prog="68" />
+      <Patch name="A069 - Alaska Split Loc" hbank="0" lbank="1" prog="69" />
+      <Patch name="A070 - Taurus Bass" hbank="0" lbank="1" prog="70" />
+      <Patch name="A071 - Log Drum Bass" hbank="0" lbank="1" prog="71" />
+      <Patch name="A072 - Marimbish" hbank="0" lbank="1" prog="72" />
+      <Patch name="A073 - Kick&Bass" hbank="0" lbank="1" prog="73" />
+      <Patch name="A074 - Tuned Noise" hbank="0" lbank="1" prog="74" />
+      <Patch name="A075 - Please Don't Stop" hbank="0" lbank="1" prog="75" />
+      <Patch name="A076 - Poser Bass" hbank="0" lbank="1" prog="76" />
+      <Patch name="A077 - Eastern Stringer" hbank="0" lbank="1" prog="77" />
+      <Patch name="A078 - Mwl Dreamy Pad" hbank="0" lbank="1" prog="78" />
+      <Patch name="A079 - Percomatic" hbank="0" lbank="1" prog="79" />
+      <Patch name="A080 - Geiger Count DF" hbank="0" lbank="1" prog="80" />
+      <Patch name="A081 - Airhead" hbank="0" lbank="1" prog="81" />
+      <Patch name="A082 - Sweeper" hbank="0" lbank="1" prog="82" />
+      <Patch name="A083 - Metal lo 2 PS" hbank="0" lbank="1" prog="83" />
+      <Patch name="A084 - Stabolicious PS" hbank="0" lbank="1" prog="84" />
+      <Patch name="A085 - Bottom Feeder PS" hbank="0" lbank="1" prog="85" />
+      <Patch name="A086 - Death Wobble PS" hbank="0" lbank="1" prog="86" />
+      <Patch name="A087 - Log Drum Bass PS" hbank="0" lbank="1" prog="87" />
+      <Patch name="A088 - Nevr No1 PS" hbank="0" lbank="1" prog="88" />
+      <Patch name="A089 - Soun Trax PS" hbank="0" lbank="1" prog="89" />
+      <Patch name="A090 - Black3Mailbox PS" hbank="0" lbank="1" prog="90" />
+      <Patch name="A091 - Lectro Lux 1 PS" hbank="0" lbank="1" prog="91" />
+      <Patch name="A092 - Grand Finale 1 PS" hbank="0" lbank="1" prog="92" />
+      <Patch name="A093 - Octave Wranglers" hbank="0" lbank="1" prog="93" />
+      <Patch name="A094 - Not Just 1 PS" hbank="0" lbank="1" prog="94" />
+      <Patch name="A095 - Wrench Kiss PS" hbank="0" lbank="1" prog="95" />
+      <Patch name="A096 - Psi Clopian PS" hbank="0" lbank="1" prog="96" />
+      <Patch name="A097 - Shaver Lead PS" hbank="0" lbank="1" prog="97" />
+      <Patch name="A098 - Sparky PS" hbank="0" lbank="1" prog="98" />
+      <Patch name="A099 - Rosin 8r2 PS" hbank="0" lbank="1" prog="99" />
+      <Patch name="A100 - Series Tubes PS" hbank="0" lbank="1" prog="100" />
+      <Patch name="A101 - Torched PS" hbank="0" lbank="1" prog="101" />
+      <Patch name="A102 - Swell Pad N PS" hbank="0" lbank="1" prog="102" />
+      <Patch name="A103 - Synchromatic 1 PS" hbank="0" lbank="1" prog="103" />
+      <Patch name="A104 - Spray Bells PS" hbank="0" lbank="1" prog="104" />
+      <Patch name="A105 - Worm Lead PS" hbank="0" lbank="1" prog="105" />
+      <Patch name="A106 - HugeManna PS" hbank="0" lbank="1" prog="106" />
+      <Patch name="A107 - Mechano 1 PS" hbank="0" lbank="1" prog="107" />
+      <Patch name="A108 - Col Batguano PS" hbank="0" lbank="1" prog="108" />
+      <Patch name="A109 - Space Oboes PS" hbank="0" lbank="1" prog="109" />
+      <Patch name="A110 - Tha Skinny PS" hbank="0" lbank="1" prog="110" />
+      <Patch name="A111 - Cylle Strings PS" hbank="0" lbank="1" prog="111" />
+      <Patch name="A112 - Yuyuyu PS" hbank="0" lbank="1" prog="112" />
+      <Patch name="A113 - Mudflaps PS" hbank="0" lbank="1" prog="113" />
+      <Patch name="A114 - Churn PS" hbank="0" lbank="1" prog="114" />
+      <Patch name="A115 - Voice Of Grey PS" hbank="0" lbank="1" prog="115" />
+      <Patch name="A116 - Twin Peaks PS" hbank="0" lbank="1" prog="116" />
+      <Patch name="A117 - Gojira Breath PS" hbank="0" lbank="1" prog="117" />
+      <Patch name="A118 - Free Climber PS" hbank="0" lbank="1" prog="118" />
+      <Patch name="A119 - Cow Frog PS" hbank="0" lbank="1" prog="119" />
+      <Patch name="A120 - Toto Mundi PS" hbank="0" lbank="1" prog="120" />
+      <Patch name="A121 - Motor Oyl PS" hbank="0" lbank="1" prog="121" />
+      <Patch name="A122 - String Theory PS" hbank="0" lbank="1" prog="122" />
+      <Patch name="A123 - Bass Hoovr PS" hbank="0" lbank="1" prog="123" />
+      <Patch name="A124 - Dub Monica PS" hbank="0" lbank="1" prog="124" />
+      <Patch name="A125 - Black Z Mailbox PS" hbank="0" lbank="1" prog="125" />
+      <Patch name="A126 - Spelunkatron PS" hbank="0" lbank="1" prog="126" />
+      <Patch name="A127 - Jet Pad PS" hbank="0" lbank="1" prog="127" />
+    </PatchGroup>
+    <PatchGroup name="Bank B">
+      <Patch name="B000 - DiveBomb PS" hbank="0" lbank="2" prog="0" />
+      <Patch name="B001 - FlyBy PS" hbank="0" lbank="2" prog="1" />
+      <Patch name="B002 - Fritz Tropolis PS" hbank="0" lbank="2" prog="2" />
+      <Patch name="B003 - Metal Motion PS" hbank="0" lbank="2" prog="3" />
+      <Patch name="B004 - LectroPerx PS" hbank="0" lbank="2" prog="4" />
+      <Patch name="B005 - Proggy Brk Dwn PS" hbank="0" lbank="2" prog="5" />
+      <Patch name="B006 - Sleet PS" hbank="0" lbank="2" prog="6" />
+      <Patch name="B007 - Oh Yeah? PM" hbank="0" lbank="2" prog="7" />
+      <Patch name="B008 - Breakdown Arp PM" hbank="0" lbank="2" prog="8" />
+      <Patch name="B009 - Oow Hop Stab PM" hbank="0" lbank="2" prog="9" />
+      <Patch name="B010 - Hard Dub Bass PM" hbank="0" lbank="2" prog="10" />
+      <Patch name="B011 - Hard Knocks PM" hbank="0" lbank="2" prog="11" />
+      <Patch name="B012 - Speak in Mod W Bass PM" hbank="0" lbank="2" prog="12" />
+      <Patch name="B013 - Dub Bass 1 PM" hbank="0" lbank="2" prog="13" />
+      <Patch name="B014 - Space Bleep PM" hbank="0" lbank="2" prog="14" />
+      <Patch name="B015 - HipHopStab1 PS" hbank="0" lbank="2" prog="15" />
+      <Patch name="B016 - PinPrick PM" hbank="0" lbank="2" prog="16" />
+      <Patch name="B017 - FloatinNutella PM" hbank="0" lbank="2" prog="17" />
+      <Patch name="B018 - Pizz-a-cake PM" hbank="0" lbank="2" prog="18" />
+      <Patch name="B019 - WildStabba PM" hbank="0" lbank="2" prog="19" />
+      <Patch name="B020 - R&amp;B Bass PM" hbank="0" lbank="2" prog="20" />
+      <Patch name="B021 - Grow Lie Dub PM" hbank="0" lbank="2" prog="21" />
+      <Patch name="B022 - PitcHie Dub PM" hbank="0" lbank="2" prog="22" />
+      <Patch name="B023 - Talkie Dub PM" hbank="0" lbank="2" prog="23" />
+      <Patch name="B024 - FarTie Dub PM" hbank="0" lbank="2" prog="24" />
+      <Patch name="B025 - Pitch Pad PM" hbank="0" lbank="2" prog="25" />
+      <Patch name="B026 - SQ Pot Lid PM" hbank="0" lbank="2" prog="26" />
+      <Patch name="B027 - Padulushious PM" hbank="0" lbank="2" prog="27" />
+      <Patch name="B028 - Luxury Pad DF" hbank="0" lbank="2" prog="28" />
+      <Patch name="B029 - Trance Attack PM" hbank="0" lbank="2" prog="29" />
+      <Patch name="B030 - 1 Hi 1 Lo DF" hbank="0" lbank="2" prog="30" />
+      <Patch name="B031 - Throaty Dub PM" hbank="0" lbank="2" prog="31" />
+      <Patch name="B032 - Angry Dub PM" hbank="0" lbank="2" prog="32" />
+      <Patch name="B033 - Percussive Dub PM" hbank="0" lbank="2" prog="33" />
+      <Patch name="B034 - Slidey Dub PM" hbank="0" lbank="2" prog="34" />
+      <Patch name="B035 - Big Foot DF" hbank="0" lbank="2" prog="35" />
+      <Patch name="B036 - Wobbly Scratch PM" hbank="0" lbank="2" prog="36" />
+      <Patch name="B037 - PitchieStabba PM" hbank="0" lbank="2" prog="37" />
+      <Patch name="B038 - NoiseyPicker PM" hbank="0" lbank="2" prog="38" />
+      <Patch name="B039 - Hyper Square PM" hbank="0" lbank="2" prog="39" />
+      <Patch name="B040 - HypaMeltDown2 PM" hbank="0" lbank="2" prog="40" />
+      <Patch name="B041 - Talk in Nonsence PM" hbank="0" lbank="2" prog="41" />
+      <Patch name="B042 - Wave Sequence PM" hbank="0" lbank="2" prog="42" />
+      <Patch name="B043 - Call in London PM" hbank="0" lbank="2" prog="43" />
+      <Patch name="B044 - FM Sync Lead Mw PM" hbank="0" lbank="2" prog="44" />
+      <Patch name="B045 - Chatter Arp PM" hbank="0" lbank="2" prog="45" />
+      <Patch name="B046 - StabbaNaught PM" hbank="0" lbank="2" prog="46" />
+      <Patch name="B047 - Breakdown Pad PM" hbank="0" lbank="2" prog="47" />
+      <Patch name="B048 - Niagra DF" hbank="0" lbank="2" prog="48" />
+      <Patch name="B049 - On Your Back Bass PM" hbank="0" lbank="2" prog="49" />
+      <Patch name="B050 - Essex Synth PM" hbank="0" lbank="2" prog="50" />
+      <Patch name="B051 - IndaCrypt PM" hbank="0" lbank="2" prog="51" />
+      <Patch name="B052 - Dirt Stab Split PM" hbank="0" lbank="2" prog="52" />
+      <Patch name="B053 - Finga Picka PM" hbank="0" lbank="2" prog="53" />
+      <Patch name="B054 - BangaDrumBass PM" hbank="0" lbank="2" prog="54" />
+      <Patch name="B055 - Powa Chord PM" hbank="0" lbank="2" prog="55" />
+      <Patch name="B056 - OhhWhoarG PM" hbank="0" lbank="2" prog="56" />
+      <Patch name="B057 - Electric Dyno PM" hbank="0" lbank="2" prog="57" />
+      <Patch name="B058 - Breathy Vocoder" hbank="0" lbank="2" prog="58" />
+      <Patch name="B059 - Lead Vocoder" hbank="0" lbank="2" prog="59" />
+      <Patch name="B060 - Pad 1 Vocoder" hbank="0" lbank="2" prog="60" />
+      <Patch name="B061 - Pad 2 Vocoder" hbank="0" lbank="2" prog="61" />
+      <Patch name="B062 - Pad 3 Vocoder" hbank="0" lbank="2" prog="62" />
+      <Patch name="B063 - Pad 4 Vocoder" hbank="0" lbank="2" prog="63" />
+      <Patch name="B064 - Robot Vocoder" hbank="0" lbank="2" prog="64" />
+      <Patch name="B065 - Kwerky Vocoder" hbank="0" lbank="2" prog="65" />
+      <Patch name="B066 - Sky Blue Vocoder" hbank="0" lbank="2" prog="66" />
+      <Patch name="B067 - Climbing Vocoder" hbank="0" lbank="2" prog="67" />
+      <Patch name="B068 - Twisted Vocoder" hbank="0" lbank="2" prog="68" />
+      <Patch name="B069 - Morphing Vocoder" hbank="0" lbank="2" prog="69" />
+      <Patch name="B070 - Eins Zwie Vocoder" hbank="0" lbank="2" prog="70" />
+      <Patch name="B071 - Breaker Vocoder" hbank="0" lbank="2" prog="71" />
+      <Patch name="B072 - LookNo FX DF" hbank="0" lbank="2" prog="72" />
+      <Patch name="B073 - Aaah 1" hbank="0" lbank="2" prog="73" />
+      <Patch name="B074 - Aaah 2" hbank="0" lbank="2" prog="74" />
+      <Patch name="B075 - Lvl up Voc Tune" hbank="0" lbank="2" prog="75" />
+      <Patch name="B076 - Lvl Down Voc Tune" hbank="0" lbank="2" prog="76" />
+      <Patch name="B077 - Norm Voc Tune" hbank="0" lbank="2" prog="77" />
+      <Patch name="B078 - Play Keys Voc Tune" hbank="0" lbank="2" prog="78" />
+      <Patch name="B079 - Up Always Voc Tune" hbank="0" lbank="2" prog="79" />
+      <Patch name="B080 - Sci Fi Vocoder" hbank="0" lbank="2" prog="80" />
+      <Patch name="B081 - Vocod Synth Keyz" hbank="0" lbank="2" prog="81" />
+      <Patch name="B082 - Play Scale Voc Tune" hbank="0" lbank="2" prog="82" />
+      <Patch name="B083 - Stop Tape Voc Tune" hbank="0" lbank="2" prog="83" />
+      <Patch name="B084 - Filtered Voc Tune" hbank="0" lbank="2" prog="84" />
+      <Patch name="B085 - Solo Pitch Voc Tune" hbank="0" lbank="2" prog="85" />
+      <Patch name="B086 - Ringmod Voc Tune" hbank="0" lbank="2" prog="86" />
+      <Patch name="B087 - Vocod &amp; Tune" hbank="0" lbank="2" prog="87" />
+      <Patch name="B088 - Lush Vocoder" hbank="0" lbank="2" prog="88" />
+      <Patch name="B089 - Dist Voc Tune" hbank="0" lbank="2" prog="89" />
+      <Patch name="B090 - Machine Men Bass" hbank="0" lbank="2" prog="90" />
+      <Patch name="B091 - Simple Riff" hbank="0" lbank="2" prog="91" />
+      <Patch name="B092 - League Bass" hbank="0" lbank="2" prog="92" />
+      <Patch name="B093 - Digi Mallot BC" hbank="0" lbank="2" prog="93" />
+      <Patch name="B094 - Lead Dub Mw" hbank="0" lbank="2" prog="94" />
+      <Patch name="B095 - Clean Dutch AL" hbank="0" lbank="2" prog="95" />
+      <Patch name="B096 - Getta Bass AL" hbank="0" lbank="2" prog="96" />
+      <Patch name="B097 - Lil Pop Da World AL" hbank="0" lbank="2" prog="97" />
+      <Patch name="B098 - Wib Wob AL" hbank="0" lbank="2" prog="98" />
+      <Patch name="B099 - Organic DC" hbank="0" lbank="2" prog="99" />
+      <Patch name="B100 - Heart Throb DC" hbank="0" lbank="2" prog="100" />
+      <Patch name="B101 - Squelcher DC" hbank="0" lbank="2" prog="101" />
+      <Patch name="B102 - Faery Cave DC" hbank="0" lbank="2" prog="102" />
+      <Patch name="B103 - Hate Strings DC" hbank="0" lbank="2" prog="103" />
+      <Patch name="B104 - Quartet Faris DC" hbank="0" lbank="2" prog="104" />
+      <Patch name="B105 - Poppy Ren DC" hbank="0" lbank="2" prog="105" />
+      <Patch name="B106 - One Ugly DC" hbank="0" lbank="2" prog="106" />
+      <Patch name="B107 - WobbaDrop DC" hbank="0" lbank="2" prog="107" />
+      <Patch name="B108 - Jah Jah Jah DC" hbank="0" lbank="2" prog="108" />
+      <Patch name="B109 - Jelly Lead DC" hbank="0" lbank="2" prog="109" />
+      <Patch name="B110 - BitXBowl DC" hbank="0" lbank="2" prog="110" />
+      <Patch name="B111 - 42 Deep DF" hbank="0" lbank="2" prog="111" />
+      <Patch name="B112 - Tears In Rain DC" hbank="0" lbank="2" prog="112" />
+      <Patch name="B113 - Creepy Drone DP" hbank="0" lbank="2" prog="113" />
+      <Patch name="B114 - JonnaBells" hbank="0" lbank="2" prog="114" />
+      <Patch name="B115 - Ark EP" hbank="0" lbank="2" prog="115" />
+      <Patch name="B116 - Solid Kick OB" hbank="0" lbank="2" prog="116" />
+      <Patch name="B117 - Jump It!" hbank="0" lbank="2" prog="117" />
+      <Patch name="B118 - Fairly Lite" hbank="0" lbank="2" prog="118" />
+      <Patch name="B119 - Space Voyage TC3" hbank="0" lbank="2" prog="119" />
+      <Patch name="B120 - Swell Saw" hbank="0" lbank="2" prog="120" />
+      <Patch name="B121 - AmazonNativPS" hbank="0" lbank="2" prog="121" />
+      <Patch name="B122 - PotsAndPants" hbank="0" lbank="2" prog="122" />
+      <Patch name="B123 - RandomRapSnares" hbank="0" lbank="2" prog="123" />
+      <Patch name="B124 - Karlos Whey" hbank="0" lbank="2" prog="124" />
+      <Patch name="B125 - Synth Pop Piano" hbank="0" lbank="2" prog="125" />
+      <Patch name="B126 - Pin Code" hbank="0" lbank="2" prog="126" />
+      <Patch name="B127 - Coat Hanger JF" hbank="0" lbank="2" prog="127" />
+    </PatchGroup>
+    <PatchGroup name="Bank C (User)">
+      <Patch name="C000 - User 000" hbank="0" lbank="3" prog="0" />
+      <Patch name="C001 - User 001" hbank="0" lbank="3" prog="1" />
+      <Patch name="C002 - User 002" hbank="0" lbank="3" prog="2" />
+      <Patch name="C003 - User 003" hbank="0" lbank="3" prog="3" />
+      <Patch name="C004 - User 004" hbank="0" lbank="3" prog="4" />
+      <Patch name="C005 - User 005" hbank="0" lbank="3" prog="5" />
+      <Patch name="C006 - User 006" hbank="0" lbank="3" prog="6" />
+      <Patch name="C007 - User 007" hbank="0" lbank="3" prog="7" />
+      <Patch name="C008 - User 008" hbank="0" lbank="3" prog="8" />
+      <Patch name="C009 - User 009" hbank="0" lbank="3" prog="9" />
+      <Patch name="C010 - User 010" hbank="0" lbank="3" prog="10" />
+      <Patch name="C011 - User 011" hbank="0" lbank="3" prog="11" />
+      <Patch name="C012 - User 012" hbank="0" lbank="3" prog="12" />
+      <Patch name="C013 - User 013" hbank="0" lbank="3" prog="13" />
+      <Patch name="C014 - User 014" hbank="0" lbank="3" prog="14" />
+      <Patch name="C015 - User 015" hbank="0" lbank="3" prog="15" />
+      <Patch name="C016 - User 016" hbank="0" lbank="3" prog="16" />
+      <Patch name="C017 - User 017" hbank="0" lbank="3" prog="17" />
+      <Patch name="C018 - User 018" hbank="0" lbank="3" prog="18" />
+      <Patch name="C019 - User 019" hbank="0" lbank="3" prog="19" />
+      <Patch name="C020 - User 020" hbank="0" lbank="3" prog="20" />
+      <Patch name="C021 - User 021" hbank="0" lbank="3" prog="21" />
+      <Patch name="C022 - User 022" hbank="0" lbank="3" prog="22" />
+      <Patch name="C023 - User 023" hbank="0" lbank="3" prog="23" />
+      <Patch name="C024 - User 024" hbank="0" lbank="3" prog="24" />
+      <Patch name="C025 - User 025" hbank="0" lbank="3" prog="25" />
+      <Patch name="C026 - User 026" hbank="0" lbank="3" prog="26" />
+      <Patch name="C027 - User 027" hbank="0" lbank="3" prog="27" />
+      <Patch name="C028 - User 028" hbank="0" lbank="3" prog="28" />
+      <Patch name="C029 - User 029" hbank="0" lbank="3" prog="29" />
+      <Patch name="C030 - User 030" hbank="0" lbank="3" prog="30" />
+      <Patch name="C031 - User 031" hbank="0" lbank="3" prog="31" />
+      <Patch name="C032 - User 032" hbank="0" lbank="3" prog="32" />
+      <Patch name="C033 - User 033" hbank="0" lbank="3" prog="33" />
+      <Patch name="C034 - User 034" hbank="0" lbank="3" prog="34" />
+      <Patch name="C035 - User 035" hbank="0" lbank="3" prog="35" />
+      <Patch name="C036 - User 036" hbank="0" lbank="3" prog="36" />
+      <Patch name="C037 - User 037" hbank="0" lbank="3" prog="37" />
+      <Patch name="C038 - User 038" hbank="0" lbank="3" prog="38" />
+      <Patch name="C039 - User 039" hbank="0" lbank="3" prog="39" />
+      <Patch name="C040 - User 040" hbank="0" lbank="3" prog="40" />
+      <Patch name="C041 - User 041" hbank="0" lbank="3" prog="41" />
+      <Patch name="C042 - User 042" hbank="0" lbank="3" prog="42" />
+      <Patch name="C043 - User 043" hbank="0" lbank="3" prog="43" />
+      <Patch name="C044 - User 044" hbank="0" lbank="3" prog="44" />
+      <Patch name="C045 - User 045" hbank="0" lbank="3" prog="45" />
+      <Patch name="C046 - User 046" hbank="0" lbank="3" prog="46" />
+      <Patch name="C047 - User 047" hbank="0" lbank="3" prog="47" />
+      <Patch name="C048 - User 048" hbank="0" lbank="3" prog="48" />
+      <Patch name="C049 - User 049" hbank="0" lbank="3" prog="49" />
+      <Patch name="C050 - User 050" hbank="0" lbank="3" prog="50" />
+      <Patch name="C051 - User 051" hbank="0" lbank="3" prog="51" />
+      <Patch name="C052 - User 052" hbank="0" lbank="3" prog="52" />
+      <Patch name="C053 - User 053" hbank="0" lbank="3" prog="53" />
+      <Patch name="C054 - User 054" hbank="0" lbank="3" prog="54" />
+      <Patch name="C055 - User 055" hbank="0" lbank="3" prog="55" />
+      <Patch name="C056 - User 056" hbank="0" lbank="3" prog="56" />
+      <Patch name="C057 - User 057" hbank="0" lbank="3" prog="57" />
+      <Patch name="C058 - User 058" hbank="0" lbank="3" prog="58" />
+      <Patch name="C059 - User 059" hbank="0" lbank="3" prog="59" />
+      <Patch name="C060 - User 060" hbank="0" lbank="3" prog="60" />
+      <Patch name="C061 - User 061" hbank="0" lbank="3" prog="61" />
+      <Patch name="C062 - User 062" hbank="0" lbank="3" prog="62" />
+      <Patch name="C063 - User 063" hbank="0" lbank="3" prog="63" />
+      <Patch name="C064 - User 064" hbank="0" lbank="3" prog="64" />
+      <Patch name="C065 - User 065" hbank="0" lbank="3" prog="65" />
+      <Patch name="C066 - User 066" hbank="0" lbank="3" prog="66" />
+      <Patch name="C067 - User 067" hbank="0" lbank="3" prog="67" />
+      <Patch name="C068 - User 068" hbank="0" lbank="3" prog="68" />
+      <Patch name="C069 - User 069" hbank="0" lbank="3" prog="69" />
+      <Patch name="C070 - User 070" hbank="0" lbank="3" prog="70" />
+      <Patch name="C071 - User 071" hbank="0" lbank="3" prog="71" />
+      <Patch name="C072 - User 072" hbank="0" lbank="3" prog="72" />
+      <Patch name="C073 - User 073" hbank="0" lbank="3" prog="73" />
+      <Patch name="C074 - User 074" hbank="0" lbank="3" prog="74" />
+      <Patch name="C075 - User 075" hbank="0" lbank="3" prog="75" />
+      <Patch name="C076 - User 076" hbank="0" lbank="3" prog="76" />
+      <Patch name="C077 - User 077" hbank="0" lbank="3" prog="77" />
+      <Patch name="C078 - User 078" hbank="0" lbank="3" prog="78" />
+      <Patch name="C079 - User 079" hbank="0" lbank="3" prog="79" />
+      <Patch name="C080 - User 080" hbank="0" lbank="3" prog="80" />
+      <Patch name="C081 - User 081" hbank="0" lbank="3" prog="81" />
+      <Patch name="C082 - User 082" hbank="0" lbank="3" prog="82" />
+      <Patch name="C083 - User 083" hbank="0" lbank="3" prog="83" />
+      <Patch name="C084 - User 084" hbank="0" lbank="3" prog="84" />
+      <Patch name="C085 - User 085" hbank="0" lbank="3" prog="85" />
+      <Patch name="C086 - User 086" hbank="0" lbank="3" prog="86" />
+      <Patch name="C087 - User 087" hbank="0" lbank="3" prog="87" />
+      <Patch name="C088 - User 088" hbank="0" lbank="3" prog="88" />
+      <Patch name="C089 - User 089" hbank="0" lbank="3" prog="89" />
+      <Patch name="C090 - User 090" hbank="0" lbank="3" prog="90" />
+      <Patch name="C091 - User 091" hbank="0" lbank="3" prog="91" />
+      <Patch name="C092 - User 092" hbank="0" lbank="3" prog="92" />
+      <Patch name="C093 - User 093" hbank="0" lbank="3" prog="93" />
+      <Patch name="C094 - User 094" hbank="0" lbank="3" prog="94" />
+      <Patch name="C095 - User 095" hbank="0" lbank="3" prog="95" />
+      <Patch name="C096 - User 096" hbank="0" lbank="3" prog="96" />
+      <Patch name="C097 - User 097" hbank="0" lbank="3" prog="97" />
+      <Patch name="C098 - User 098" hbank="0" lbank="3" prog="98" />
+      <Patch name="C099 - User 099" hbank="0" lbank="3" prog="99" />
+      <Patch name="C100 - User 100" hbank="0" lbank="3" prog="100" />
+      <Patch name="C101 - User 101" hbank="0" lbank="3" prog="101" />
+      <Patch name="C102 - User 102" hbank="0" lbank="3" prog="102" />
+      <Patch name="C103 - User 103" hbank="0" lbank="3" prog="103" />
+      <Patch name="C104 - User 104" hbank="0" lbank="3" prog="104" />
+      <Patch name="C105 - User 105" hbank="0" lbank="3" prog="105" />
+      <Patch name="C106 - User 106" hbank="0" lbank="3" prog="106" />
+      <Patch name="C107 - User 107" hbank="0" lbank="3" prog="107" />
+      <Patch name="C108 - User 108" hbank="0" lbank="3" prog="108" />
+      <Patch name="C109 - User 109" hbank="0" lbank="3" prog="109" />
+      <Patch name="C110 - User 110" hbank="0" lbank="3" prog="110" />
+      <Patch name="C111 - User 111" hbank="0" lbank="3" prog="111" />
+      <Patch name="C112 - User 112" hbank="0" lbank="3" prog="112" />
+      <Patch name="C113 - User 113" hbank="0" lbank="3" prog="113" />
+      <Patch name="C114 - User 114" hbank="0" lbank="3" prog="114" />
+      <Patch name="C115 - User 115" hbank="0" lbank="3" prog="115" />
+      <Patch name="C116 - User 116" hbank="0" lbank="3" prog="116" />
+      <Patch name="C117 - User 117" hbank="0" lbank="3" prog="117" />
+      <Patch name="C118 - User 118" hbank="0" lbank="3" prog="118" />
+      <Patch name="C119 - User 119" hbank="0" lbank="3" prog="119" />
+      <Patch name="C120 - User 120" hbank="0" lbank="3" prog="120" />
+      <Patch name="C121 - User 121" hbank="0" lbank="3" prog="121" />
+      <Patch name="C122 - User 122" hbank="0" lbank="3" prog="122" />
+      <Patch name="C123 - User 123" hbank="0" lbank="3" prog="123" />
+      <Patch name="C124 - User 124" hbank="0" lbank="3" prog="124" />
+      <Patch name="C125 - User 125" hbank="0" lbank="3" prog="125" />
+      <Patch name="C126 - User 126" hbank="0" lbank="3" prog="126" />
+      <Patch name="C127 - User 127" hbank="0" lbank="3" prog="127" />
+    </PatchGroup>
+    <Controller name="Volume" l="7" min="0" max="127" />
+    <Controller name="Expression" l="11" min="0" max="127" />
+    <Controller name="Program" type="Program" />
+  </MidiInstrument>
+</muse>
