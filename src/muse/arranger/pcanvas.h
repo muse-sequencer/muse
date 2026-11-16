@@ -272,6 +272,7 @@ class PartCanvas : public Canvas {
         const MusECore::CtrlList*, unsigned int frame, double* value, unsigned int* minPrevFrame,
         unsigned int* maxNextFrame, bool* maxNextFrameValid) const;
       void unselectAllAutomation(MusECore::Undo& undo) const;
+      void selectAutomationInSelectedParts();
       void deleteSelectedAutomation(MusECore::Undo& undo) const;
       void alignSelectedAutomation(MusECore::Undo& undo) const;
       void setSelectedAutomationMode(MusECore::Undo& undo, MusECore::CtrlList::Mode) const;

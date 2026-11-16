@@ -35,6 +35,10 @@ but it is also possible to click and drag parts to duplicate.<br>
 ctrl+click+drag to duplicate parts<br>
 ctrl+alt+click+drag to create clones
 
+To move automation points together with parts in the arranger, hold<br>
+shift+alt while dragging the parts. All automation inside the moved<br>
+parts follows along.
+
 If it's hard to be precise while moving automation points with the mouse,<br>
 trying holding the SHIFT key, the movement will be slower.
 
