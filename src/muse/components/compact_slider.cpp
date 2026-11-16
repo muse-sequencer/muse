@@ -583,7 +583,7 @@ void CompactSlider::getScrollMode( QPoint &p, const Qt::MouseButton &button, con
           p.setY(mp);
           cp = mapToGlobal( QPoint(p.x(), mp) );
         }  
-        cursor().setPos(cp.x(), cp.y());
+        QCursor::setPos(cp.x(), cp.y());
         return;
       }
     }
@@ -597,24 +597,24 @@ void CompactSlider::getScrollMode( QPoint &p, const Qt::MouseButton &button, con
 
       if(d_sliderRect.contains(p))
       {
-  //         if ((currentPos > d_valuePixel - d_thumbHalf)  
-  //             && (currentPos < d_valuePixel + d_thumbHalf))
-        if (!detectThumb() || 
-            ((currentPos >= d_valuePixel - d_thumbHitLength / 2)  
-             && (currentPos <= d_valuePixel + d_thumbHitLength / 2)))
-        {
-          scrollMode = ScrMouse;
-          direction = 0;
-          return;
-        }
-        else if(pagingButtons().testFlag(button))
+        if((pagingButtons().testFlag(button)) &&
+           ((currentPos <= d_valuePixel - d_thumbHalf) ||
+            (currentPos > d_valuePixel + d_thumbHalf)))
         {
           scrollMode = ScrPage;
-          if(((currentPos > d_valuePixel) && (d_orient == Qt::Horizontal))
+          if (((currentPos > d_valuePixel) && (d_orient == Qt::Horizontal))
               || ((currentPos <= d_valuePixel) && (d_orient != Qt::Horizontal)))
             direction = 1;
           else
             direction = -1;
+          return;
+        }
+        else if (!detectThumb() ||
+            ((currentPos >= d_valuePixel - d_thumbHitLength / 2)
+             && (currentPos <= d_valuePixel + d_thumbHitLength / 2)))
+        {
+          scrollMode = ScrMouse;
+          direction = 0;
           return;
         }
       }

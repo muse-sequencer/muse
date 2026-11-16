@@ -32,6 +32,7 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QGuiApplication>
 
 #include "app.h"
 #include "midi_consts.h"
@@ -54,6 +55,7 @@
 #include "pixmap_button.h"
 #include "popupmenu.h"
 #include "routepopup.h"
+#include "config.h"
 
 #include "minstrument.h"
 #include "midievent.h"
@@ -1563,6 +1565,11 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       slider->setId(MusECore::CTRL_VOLUME);
       slider->setFocusPolicy(Qt::NoFocus);
       slider->setContentsMargins(0, 0, 0, 0);
+#ifndef WAYLAND_SUPPORT
+      // No cursor move support on Wayland or xcb via xwayland.
+      if(QGuiApplication::platformName() != QLatin1String("wayland") &&
+         QGuiApplication::platformName() != QLatin1String("xcb"))
+#endif
       slider->setCursorHoming(true);
       slider->setSpecialText(tr("off"));
       slider->setScaleBackBone(props.sliderBackbone());

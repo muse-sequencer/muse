@@ -39,6 +39,7 @@
 #include <QAction>
 #include <QGridLayout>
 #include <QPushButton>
+#include <QGuiApplication>
 
 #include "app.h"
 #include "globals.h"
@@ -60,6 +61,7 @@
 #include "utils.h"
 #include "muse_math.h"
 #include "operations.h"
+#include "config.h"
 
 // Forwards from header:
 #include <QHBoxLayout>
@@ -1621,6 +1623,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       slider->setId(MusECore::AC_VOLUME);
       slider->setFocusPolicy(Qt::NoFocus);
       slider->setContentsMargins(0, 0, 0, 0);
+#ifndef WAYLAND_SUPPORT
+      // No cursor move support on Wayland or xcb via xwayland.
+      if(QGuiApplication::platformName() != QLatin1String("wayland") &&
+         QGuiApplication::platformName() != QLatin1String("xcb"))
+#endif
       slider->setCursorHoming(true);
       DEBUG_AUDIO_STRIP(stderr, "AudioStrip::AudioStrip new slider: step:%.20f\n", volSliderStep);
 

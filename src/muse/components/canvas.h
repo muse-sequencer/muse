@@ -105,6 +105,8 @@ class Canvas : public View {
       bool canScrollRight;
       bool canScrollUp;
       bool canScrollDown;
+      // Whether borderless mouse can be used.
+      bool canBorderlessMouse;
 
       CItemMap items;
       CItemMap moving;

@@ -26,6 +26,7 @@
 
 #include "canvas.h"
 
+#include <QGuiApplication>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QCursor>
@@ -45,6 +46,7 @@
 #include "helper.h"
 #include "globals.h"
 #include "app.h"
+#include "config.h"
 
 // Forwards from header:
 #include <QPainter>
@@ -78,6 +80,12 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       canScrollRight = true;
       canScrollUp = true;
       canScrollDown = true;
+      canBorderlessMouse = true;
+#ifndef WAYLAND_SUPPORT
+      // No cursor move support under Qt5 (yet) on Wayland or xcb via xwayland.
+      canBorderlessMouse = QGuiApplication::platformName() != QLatin1String("wayland") &&
+         QGuiApplication::platformName() != QLatin1String("xcb");
+#endif
       hscrollDir = HSCROLL_NONE;
       vscrollDir = VSCROLL_NONE;
       scrollTimer=nullptr;
@@ -1054,7 +1062,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         {
                           drag = DRAG_PAN;
                           setCursor();
-                          if(MusEGlobal::config.borderlessMouse)
+                          if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
                           {
                             //  "It is almost never necessary to grab the mouse when using Qt, as Qt grabs 
                             //   and releases it sensibly. In particular, Qt grabs the mouse when a mouse 
@@ -1082,7 +1090,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         {
                           drag = DRAG_ZOOM;
                           setCursor();
-                          if(MusEGlobal::config.borderlessMouse)
+                          if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
                           {
                             setMouseGrab(true); // CAUTION
                             
@@ -1369,7 +1377,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       QRect  screen_rect    = QApplication::primaryScreen()->geometry();
       QPoint screen_center  = QPoint(screen_rect.width()/2, screen_rect.height()/2);
       QPoint glob_dist      = event->globalPos() - ev_global_pos;
-      QPoint glob_zoom_dist = MusEGlobal::config.borderlessMouse ? (event->globalPos() - screen_center) : glob_dist;
+      QPoint glob_zoom_dist = (canBorderlessMouse && MusEGlobal::config.borderlessMouse) ?
+                              (event->globalPos() - screen_center) : glob_dist;
       QPoint last_dist      = event->pos() - ev_pos;
       
       ev_pos     = event->pos();
@@ -1386,7 +1395,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 
       // set scrolling variables: doScroll, scrollRight
       // No auto scroll in zoom mode or normal pan mode.
-      if (drag != DRAG_OFF && drag != DRAG_ZOOM && (drag != DRAG_PAN || !MusEGlobal::config.borderlessMouse)) {  
+      if (drag != DRAG_OFF && drag != DRAG_ZOOM &&
+          (drag != DRAG_PAN || !(canBorderlessMouse && MusEGlobal::config.borderlessMouse))) {
             int ex = rmapx(event->x())+mapx(0);
             if(ex < 15 && (canScrollLeft || drag == DRAG_PAN))
               hscrollDir = (drag == DRAG_PAN ? HSCROLL_RIGHT : HSCROLL_LEFT);
@@ -1638,7 +1648,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                       emit verticalScroll(ypos - glob_zoom_dist.y());
                       changed = true;
                     }
-                    if(MusEGlobal::config.borderlessMouse && changed)
+                    if(canBorderlessMouse && MusEGlobal::config.borderlessMouse && changed)
                     {
                       ignore_mouse_move = true;      // Avoid recursion.
                       QCursor::setPos(screen_center);
@@ -1652,7 +1662,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                       emit horizontalZoom(glob_zoom_dist.x(), global_start);
                   //if(glob_zoom_dist.y() != 0)
                   //    emit verticalZoom(glob_zoom_dist.y(), global_start);  // TODO
-                  if(MusEGlobal::config.borderlessMouse && (glob_zoom_dist.x() != 0 || glob_zoom_dist.y() != 0))
+                  if(canBorderlessMouse && MusEGlobal::config.borderlessMouse &&
+                     (glob_zoom_dist.x() != 0 || glob_zoom_dist.y() != 0))
                   {
                     ignore_mouse_move = true;      // Avoid recursion.
                     QCursor::setPos(screen_center);
@@ -1679,7 +1690,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 
       ev_global_pos = event->globalPos();
 
-      if(drag != DRAG_ZOOM && (drag != DRAG_PAN || !MusEGlobal::config.borderlessMouse))
+      if(drag != DRAG_ZOOM && (drag != DRAG_PAN || !(canBorderlessMouse && MusEGlobal::config.borderlessMouse)))
         mouseMove(event);
       }
 
@@ -1815,7 +1826,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                       break;
 
                 case DRAG_PAN:
-                      if(MusEGlobal::config.borderlessMouse)
+                      if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
                       {
                         pos = global_start;
                         ignore_mouse_move = true;      // Avoid recursion.
@@ -1826,7 +1837,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                       break;
 
                 case DRAG_ZOOM:
-                      if(MusEGlobal::config.borderlessMouse)
+                      if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
                       {
                         pos = global_start;
                         ignore_mouse_move = true;      // Avoid recursion.
@@ -2069,14 +2080,14 @@ void Canvas::setCursor()
         break;
 
     case DRAG_PAN:
-        if(MusEGlobal::config.borderlessMouse)
+        if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
             showCursor(false); // CAUTION
         else
             QWidget::setCursor(*closedHandCursor);
         break;
 
     case DRAG_ZOOM:
-        if(MusEGlobal::config.borderlessMouse)
+        if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
             showCursor(false); // CAUTION
         break;
 
