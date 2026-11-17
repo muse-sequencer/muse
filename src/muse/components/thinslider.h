@@ -50,6 +50,8 @@ class ThinSlider : public SliderBase, public ScaleIf
 
   QRect d_sliderRect;
 
+  bool _detectThumb;
+
   int d_thumbLength;
   int d_thumbHalf;
   int d_thumbWidth;
@@ -97,6 +99,11 @@ class ThinSlider : public SliderBase, public ScaleIf
   ~ThinSlider();
   void setThumbLength(int l);
   void setThumbWidth(int w);
+
+  // Whether the user must click on the thumb or else anywhere in the control to move the value.
+  bool detectThumb() const { return _detectThumb; }
+  // Set whether the user must click on the thumb or else anywhere in the control to move the value.
+  void setDetectThumb(bool v) { _detectThumb = v; update(); }
 
   void setOrientation(Qt::Orientation o);
   Qt::Orientation orientation() const;

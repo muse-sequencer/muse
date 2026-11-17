@@ -1434,7 +1434,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                        (gpos - screen_center) : glob_dist;
 
       QPoint last_dist      = event->pos() - ev_pos;
-      
+
       ev_pos     = event->pos();
       QPoint dist  = ev_pos - start;
       int ax       = ABS(rmapx(dist.x()));

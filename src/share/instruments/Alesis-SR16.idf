@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<InstrumentDefinition name="Alesis SR-16">
+  <!-- Bank-Definitionen (Presets und User-Kits) -->
+  <Group name="Drumkits">
+    <Bank name="Preset Kits">
+      <Program id="0" name="00: Rock 1"/>
+      <Program id="1" name="01: Rock 2"/>
+      <Program id="2" name="02: Rock 3"/>
+      <Program id="3" name="03: Rock 4"/>
+      <Program id="4" name="04: Rock 5"/>
+      <Program id="5" name="05: Rock 6"/>
+      <Program id="6" name="06: Rock 7"/>
+      <Program id="7" name="07: Hard Rock 1"/>
+      <Program id="8" name="08: Hard Rock 2"/>
+      <Program id="9" name="09: Hard Rock 3"/>
+      <Program id="10" name="10: R&amp;B 1"/>
+      <Program id="11" name="11: R&amp;B 2"/>
+      <Program id="12" name="12: Funk 1"/>
+      <Program id="13" name="13: Funk 2"/>
+      <Program id="14" name="14: Blues 1"/>
+      <Program id="15" name="15: Blues 2"/>
+      <Program id="16" name="16: Rap 1"/>
+      <Program id="17" name="17: Rap 2"/>
+      <Program id="18" name="18: Techno 1"/>
+      <Program id="19" name="19: Techno 2"/>
+      <Program id="20" name="20: Reggae 2"/>
+      <Program id="21" name="21: Ballad 2"/>
+      <Program id="22" name="22: Ballad 4"/>
+      <Program id="23" name="23: Big Band 2"/>
+      <Program id="24" name="24: Brush 2"/>
+      <Program id="25" name="25: Jazz Rock 1"/>
+      <Program id="26" name="26: Jazz Rock 2"/>
+      <Program id="27" name="27: Fusion 1"/>
+      <Program id="28" name="28: Fusion 2"/>
+      <Program id="29" name="29: New Age 1"/>
+      <Program id="30" name="30: New Age 2"/>
+      <Program id="31" name="31: Country 1"/>
+      <Program id="32" name="32: Country 2"/>
+      <Program id="33" name="33: Country 3"/>
+      <Program id="34" name="34: Country Rock"/>
+      <Program id="35" name="35: Rockabilly"/>
+      <Program id="36" name="36: Jazz 1"/>
+      <Program id="37" name="37: Jazz 2"/>
+      <Program id="38" name="38: Dixie"/>
+      <Program id="39" name="39: Waltz"/>
+      <Program id="40" name="40: Shuffle"/>
+      <Program id="41" name="41: Latin 1"/>
+      <Program id="42" name="42: Latin 2"/>
+      <Program id="43" name="43: Latin 3"/>
+      <Program id="44" name="44: Reggae 1"/>
+      <Program id="45" name="45: Ballad 1"/>
+      <Program id="46" name="46: Ballad 3"/>
+      <Program id="47" name="47: Big Band 1"/>
+      <Program id="48" name="48: Brush 1"/>
+      <Program id="49" name="49: Studio Kit"/>
+    </Bank>
+    
+    <Bank name="User Kits">
+      <!-- Program-IDs 50-99 triggern die User-Kits 00-49 auf der Hardware -->
+      <Program id="50" name="User Kit 00"/>
+      <Program id="51" name="User Kit 01"/>
+      <Program id="52" name="User Kit 02"/>
+      <Program id="53" name="User Kit 03"/>
+      <Program id="54" name="User Kit 04"/>
+      <Program id="55" name="User Kit 05"/>
+      <Program id="56" name="User Kit 06"/>
+      <Program id="57" name="User Kit 07"/>
+      <Program id="58" name="User Kit 08"/>
+      <Program id="59" name="User Kit 09"/>
+      <Program id="60" name="User Kit 10"/>
+      <Program id="61" name="User Kit 11"/>
+      <Program id="62" name="User Kit 12"/>
+      <Program id="63" name="User Kit 13"/>
+      <Program id="64" name="User Kit 14"/>
+      <Program id="65" name="User Kit 15"/>
+      <Program id="66" name="User Kit 16"/>
+      <Program id="67" name="User Kit 17"/>
+      <Program id="68" name="User Kit 18"/>
+      <Program id="69" name="User Kit 19"/>
+      <Program id="70" name="User Kit 20"/>
+      <Program id="71" name="User Kit 21"/>
+      <Program id="72" name="User Kit 22"/>
+      <Program id="73" name="User Kit 23"/>
+      <Program id="74" name="User Kit 24"/>
+      <Program id="75" name="User Kit 25"/>
+      <Program id="76" name="User Kit 26"/>
+      <Program id="77" name="User Kit 27"/>
+      <Program id="78" name="User Kit 28"/>
+      <Program id="79" name="User Kit 29"/>
+      <Program id="80" name="User Kit 30"/>
+      <Program id="81" name="User Kit 31"/>
+      <Program id="82" name="User Kit 32"/>
+      <Program id="83" name="User Kit 33"/>
+      <Program id="84" name="User Kit 34"/>
+      <Program id="85" name="User Kit 35"/>
+      <Program id="86" name="User Kit 36"/>
+      <Program id="87" name="User Kit 37"/>
+      <Program id="88" name="User Kit 38"/>
+      <Program id="89" name="User Kit 39"/>
+      <Program id="90" name="User Kit 40"/>
+      <Program id="91" name="User Kit 41"/>
+      <Program id="92" name="User Kit 42"/>
+      <Program id="93" name="User Kit 43"/>
+      <Program id="94" name="User Kit 44"/>
+      <Program id="95" name="User Kit 45"/>
+      <Program id="96" name="User Kit 46"/>
+      <Program id="97" name="User Kit 47"/>
+      <Program id="98" name="User Kit 48"/>
+      <Program id="99" name="User Kit 49"/>
+    </Bank>
+  </Group>
+
+  <!-- Standard Drum Map Zuweisung für die 12 Hardware Pads -->
+  <DrumMap name="SR-16 Standard Pads">
+    <Key id="36" name="Pad 1: Kick"/>
+    <Key id="38" name="Pad 2: Snare"/>
+    <Key id="42" name="Pad 3: Closed Hat"/>
+    <Key id="46" name="Pad 4: Open Hat"/>
+    <Key id="48" name="Pad 5: High Tom"/>
+    <Key id="45" name="Pad 6: Mid Tom"/>
+    <Key id="41" name="Pad 7: Low Tom"/>
+    <Key id="51" name="Pad 8: Ride Cymbal"/>
+    <Key id="49" name="Pad 9: Crash Cymbal"/>
+    <Key id="54" name="Pad 10: Percussion 1"/>
+    <Key id="56" name="Pad 11: Percussion 2"/>
+    <Key id="39" name="Pad 12: Handclap"/>
+  </DrumMap>
+</InstrumentDefinition>
+
+<?xml version="1.0"?>
+<muse version="1.0">
+  <MidiInstrument name="Alesis SR-16">
+    <!--
+      Alesis SR-16 MusE instrument definition.
+
+      Program Change mapping from the official SR-16 Reference Manual:
+        PC 00-49  -> User Drum Sets 00-49
+        PC 50-99  -> Preset Drum Sets 00-49
+        PC 100-127 -> User Drum Sets 00-27 (aliases, intentionally omitted)
+
+      On the SR-16 set MIDI SETUP / PRG CHNG = ON.
+
+      This first version deliberately does NOT include a fixed drum map:
+      in NORMAL mode the SR-16 note assignments are stored per Drum Set and
+      can be changed by the user. A fixed map would therefore risk displaying
+      incorrect drum names. It can be added once the desired SR-16 note map
+      (or a factory/default mapping table) is confirmed.
+    -->
+
+    <PatchGroup name="User Drum Sets">
+      <Patch name="User Drum Set 00" drum="1" prog="0"/>
+      <Patch name="User Drum Set 01" drum="1" prog="1"/>
+      <Patch name="User Drum Set 02" drum="1" prog="2"/>
+      <Patch name="User Drum Set 03" drum="1" prog="3"/>
+      <Patch name="User Drum Set 04" drum="1" prog="4"/>
+      <Patch name="User Drum Set 05" drum="1" prog="5"/>
+      <Patch name="User Drum Set 06" drum="1" prog="6"/>
+      <Patch name="User Drum Set 07" drum="1" prog="7"/>
+      <Patch name="User Drum Set 08" drum="1" prog="8"/>
+      <Patch name="User Drum Set 09" drum="1" prog="9"/>
+      <Patch name="User Drum Set 10" drum="1" prog="10"/>
+      <Patch name="User Drum Set 11" drum="1" prog="11"/>
+      <Patch name="User Drum Set 12" drum="1" prog="12"/>
+      <Patch name="User Drum Set 13" drum="1" prog="13"/>
+      <Patch name="User Drum Set 14" drum="1" prog="14"/>
+      <Patch name="User Drum Set 15" drum="1" prog="15"/>
+      <Patch name="User Drum Set 16" drum="1" prog="16"/>
+      <Patch name="User Drum Set 17" drum="1" prog="17"/>
+      <Patch name="User Drum Set 18" drum="1" prog="18"/>
+      <Patch name="User Drum Set 19" drum="1" prog="19"/>
+      <Patch name="User Drum Set 20" drum="1" prog="20"/>
+      <Patch name="User Drum Set 21" drum="1" prog="21"/>
+      <Patch name="User Drum Set 22" drum="1" prog="22"/>
+      <Patch name="User Drum Set 23" drum="1" prog="23"/>
+      <Patch name="User Drum Set 24" drum="1" prog="24"/>
+      <Patch name="User Drum Set 25" drum="1" prog="25"/>
+      <Patch name="User Drum Set 26" drum="1" prog="26"/>
+      <Patch name="User Drum Set 27" drum="1" prog="27"/>
+      <Patch name="User Drum Set 28" drum="1" prog="28"/>
+      <Patch name="User Drum Set 29" drum="1" prog="29"/>
+      <Patch name="User Drum Set 30" drum="1" prog="30"/>
+      <Patch name="User Drum Set 31" drum="1" prog="31"/>
+      <Patch name="User Drum Set 32" drum="1" prog="32"/>
+      <Patch name="User Drum Set 33" drum="1" prog="33"/>
+      <Patch name="User Drum Set 34" drum="1" prog="34"/>
+      <Patch name="User Drum Set 35" drum="1" prog="35"/>
+      <Patch name="User Drum Set 36" drum="1" prog="36"/>
+      <Patch name="User Drum Set 37" drum="1" prog="37"/>
+      <Patch name="User Drum Set 38" drum="1" prog="38"/>
+      <Patch name="User Drum Set 39" drum="1" prog="39"/>
+      <Patch name="User Drum Set 40" drum="1" prog="40"/>
+      <Patch name="User Drum Set 41" drum="1" prog="41"/>
+      <Patch name="User Drum Set 42" drum="1" prog="42"/>
+      <Patch name="User Drum Set 43" drum="1" prog="43"/>
+      <Patch name="User Drum Set 44" drum="1" prog="44"/>
+      <Patch name="User Drum Set 45" drum="1" prog="45"/>
+      <Patch name="User Drum Set 46" drum="1" prog="46"/>
+      <Patch name="User Drum Set 47" drum="1" prog="47"/>
+      <Patch name="User Drum Set 48" drum="1" prog="48"/>
+      <Patch name="User Drum Set 49" drum="1" prog="49"/>
+    </PatchGroup>
+
+    <PatchGroup name="Preset Drum Sets">
+      <Patch name="Preset 00: Rock 1" drum="1" prog="50"/>
+      <Patch name="Preset 01: Rock 2" drum="1" prog="51"/>
+      <Patch name="Preset 02: Rock 3" drum="1" prog="52"/>
+      <Patch name="Preset 03: Rock 4" drum="1" prog="53"/>
+      <Patch name="Preset 04: Rock 5" drum="1" prog="54"/>
+      <Patch name="Preset 05: Rock 6" drum="1" prog="55"/>
+      <Patch name="Preset 06: Rock 7" drum="1" prog="56"/>
+      <Patch name="Preset 07: Hard Rock 1" drum="1" prog="57"/>
+      <Patch name="Preset 08: Hard Rock 2" drum="1" prog="58"/>
+      <Patch name="Preset 09: Hard Rock 3" drum="1" prog="59"/>
+      <Patch name="Preset 10: R&amp;B 1" drum="1" prog="60"/>
+      <Patch name="Preset 11: R&amp;B 2" drum="1" prog="61"/>
+      <Patch name="Preset 12: Funk 1" drum="1" prog="62"/>
+      <Patch name="Preset 13: Funk 2" drum="1" prog="63"/>
+      <Patch name="Preset 14: Blues 1" drum="1" prog="64"/>
+      <Patch name="Preset 15: Blues 2" drum="1" prog="65"/>
+      <Patch name="Preset 16: Rap 1" drum="1" prog="66"/>
+      <Patch name="Preset 17: Rap 2" drum="1" prog="67"/>
+      <Patch name="Preset 18: Techno 1" drum="1" prog="68"/>
+      <Patch name="Preset 19: Techno 2" drum="1" prog="69"/>
+      <Patch name="Preset 20: Reggae 2" drum="1" prog="70"/>
+      <Patch name="Preset 21: Ballad 2" drum="1" prog="71"/>
+      <Patch name="Preset 22: Ballad 4" drum="1" prog="72"/>
+      <Patch name="Preset 23: Big Band 2" drum="1" prog="73"/>
+      <Patch name="Preset 24: Brush 2" drum="1" prog="74"/>
+      <Patch name="Preset 25: Jazz Rock 1" drum="1" prog="75"/>
+      <Patch name="Preset 26: Jazz Rock 2" drum="1" prog="76"/>
+      <Patch name="Preset 27: Fusion 1" drum="1" prog="77"/>
+      <Patch name="Preset 28: Fusion 2" drum="1" prog="78"/>
+      <Patch name="Preset 29: New Age 1" drum="1" prog="79"/>
+      <Patch name="Preset 30: New Age 2" drum="1" prog="80"/>
+      <Patch name="Preset 31: Country 1" drum="1" prog="81"/>
+      <Patch name="Preset 32: Country 2" drum="1" prog="82"/>
+      <Patch name="Preset 33: Country 3" drum="1" prog="83"/>
+      <Patch name="Preset 34: Country Rock" drum="1" prog="84"/>
+      <Patch name="Preset 35: Rockabilly" drum="1" prog="85"/>
+      <Patch name="Preset 36: Jazz 1" drum="1" prog="86"/>
+      <Patch name="Preset 37: Jazz 2" drum="1" prog="87"/>
+      <Patch name="Preset 38: Dixie" drum="1" prog="88"/>
+      <Patch name="Preset 39: Waltz" drum="1" prog="89"/>
+      <Patch name="Preset 40: Shuffle" drum="1" prog="90"/>
+      <Patch name="Preset 41: Latin 1" drum="1" prog="91"/>
+      <Patch name="Preset 42: Latin 2" drum="1" prog="92"/>
+      <Patch name="Preset 43: Latin 3" drum="1" prog="93"/>
+      <Patch name="Preset 44: Reggae 1" drum="1" prog="94"/>
+      <Patch name="Preset 45: Ballad 1" drum="1" prog="95"/>
+      <Patch name="Preset 46: Ballad 3" drum="1" prog="96"/>
+      <Patch name="Preset 47: Big Band 1" drum="1" prog="97"/>
+      <Patch name="Preset 48: Brush 1" drum="1" prog="98"/>
+      <Patch name="Preset 49: Studio Kit" drum="1" prog="99"/>
+    </PatchGroup>
+  </MidiInstrument>
+</muse>
+

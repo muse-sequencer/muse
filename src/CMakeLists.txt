@@ -240,7 +240,7 @@ else ()
       SET(MusE_GITSTRING "")
 endif ()
 
-
+option ( ENABLE_WAYLAND      "Enable Wayland support (NOT RECOMMENDED) (default=no)" OFF)
 option ( ENABLE_RTAUDIO      "Multi platform rtaudio audio compatibility fallback" ON)
 option ( ENABLE_ALSA         "Enable Advanced Linux Sound Architecture (ALSA)" ON)
 option ( ENABLE_LASH         "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
@@ -350,6 +350,10 @@ SET(QT_LIBRARIES ${Qt6Widgets_LIBRARIES} ${Qt6UiTools_LIBRARIES} ${Qt6Xml_LIBRAR
 #~ set(CMAKE_AUTOUIC ON)
 
 ##include(${QT_USE_FILE})
+
+if (ENABLE_WAYLAND)
+      set(WAYLAND_SUPPORT ON)
+endif ()
 
 ##
 ##   Begin MANDATORY packages...
@@ -864,6 +868,10 @@ endif (NOT JACK_FOUND)
 
 ## Optional:
 ## =============
+
+if (WAYLAND_SUPPORT)
+        message("** WARNING: Wayland support was enabled, but this is not currently recommended. ")
+endif ()
 
 if (ENABLE_RTAUDIO AND (NOT RTAUDIO_FOUND))
         message("** WARNING: rtaudio (>= 5.0) was enabled, but development files were not found. ")

@@ -119,6 +119,7 @@ SliderBase::SliderBase(QWidget *parent, const char *name)
 // //                          BOTTOM val:1.00000000000000000000 d_prevValue:1.00000000000000000000 d_value:1.00000000000000000000
       
 
+      // Wayland only supports using the window centre, not the screen centre.
       _borderlessMouseUseScreen = QGuiApplication::platformName() != QLatin1String("wayland");
       _ignoreMouseMove = false;
       _mouseGrabbed = false;

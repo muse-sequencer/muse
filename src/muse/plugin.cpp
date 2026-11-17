@@ -37,6 +37,8 @@
 #include <QComboBox>
 #include <QGroupBox>
 #include <QStringLiteral>
+#include <QGuiApplication>
+#include <QLatin1String>
 
 #include "app.h"
 #include "globals.h"
@@ -57,6 +59,7 @@
 #include "switch.h"
 #include "hex_float.h"
 #include "libs/file/file.h"
+#include "config.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -5648,6 +5651,11 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
                 gw[nobj].type = GuiWidgets::SLIDER;
                 Slider* s = static_cast<Slider*>(obj);
                 s->setId(nobj);
+#ifndef WAYLAND_SUPPORT
+                // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
+                if(QGuiApplication::platformName() != QLatin1String("wayland") &&
+                   QGuiApplication::platformName() != QLatin1String("xcb"))
+#endif
                 s->setCursorHoming(true);
 
                 // TODO
@@ -5904,7 +5912,13 @@ void PluginGui::constructGUIFromPluginMetadata() {
             s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
 
             s->setScaleBackBone(false);
+#ifndef WAYLAND_SUPPORT
+            // No cursor move support on Wayland or xcb via xwayland.
+            if(QGuiApplication::platformName() != QLatin1String("wayland") &&
+               QGuiApplication::platformName() != QLatin1String("xcb"))
+#endif
             s->setCursorHoming(true);
+
             s->setId(i);
             s->setSizeHint(150, 8);
 
