@@ -40,6 +40,7 @@
 #include <QGridLayout>
 #include <QPushButton>
 #include <QGuiApplication>
+#include <QLatin1String>
 
 #include "app.h"
 #include "globals.h"

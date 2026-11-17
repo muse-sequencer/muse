@@ -30,6 +30,7 @@
 #include <QMouseEvent>
 #include <QAction>
 #include <QToolTip>
+#include <QLatin1String>
 
 #include "config.h"
 #include "ctrlcanvas.h"
@@ -282,7 +283,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       //button = Qt::NoButton;
       canBorderlessMouse = true;
 #ifndef WAYLAND_SUPPORT
-      // No cursor move support under Qt5 (yet) on Wayland or xcb via xwayland.
+      // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
       canBorderlessMouse = QGuiApplication::platformName() != QLatin1String("wayland") &&
          QGuiApplication::platformName() != QLatin1String("xcb");
 #endif

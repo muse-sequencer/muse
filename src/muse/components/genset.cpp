@@ -33,6 +33,7 @@
 #include <QCollator>
 #include <QMessageBox>
 #include <QGuiApplication>
+#include <QLatin1String>
 
 #include "genset.h"
 #include "app.h"
@@ -541,7 +542,7 @@ void GlobalSettingsConfig::updateSettings()
 //      rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
       smartFocusCheckBox->setChecked(MusEGlobal::config.smartFocus);
 #ifndef WAYLAND_SUPPORT
-      // No cursor move support under Qt5 (yet) on Wayland or xcb via xwayland.
+      // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
       if(QGuiApplication::platformName() != QLatin1String("wayland") &&
          QGuiApplication::platformName() != QLatin1String("xcb"))
 #endif
@@ -679,7 +680,7 @@ void GlobalSettingsConfig::apply()
 //      MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
       MusEGlobal::config.smartFocus = smartFocusCheckBox->isChecked();
 #ifndef WAYLAND_SUPPORT
-      // No cursor move support under Qt5 (yet) on Wayland or xcb via xwayland.
+      // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
       if(QGuiApplication::platformName() != QLatin1String("wayland") &&
          QGuiApplication::platformName() != QLatin1String("xcb"))
 #endif

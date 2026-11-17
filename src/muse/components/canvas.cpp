@@ -28,9 +28,8 @@
 
 #include <QGuiApplication>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QCursor>
-#include <QScreen>
+#include <QLatin1String>
 
 #include <vector>
 
@@ -82,10 +81,12 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       canScrollDown = true;
       canBorderlessMouse = true;
 #ifndef WAYLAND_SUPPORT
-      // No cursor move support under Qt5 (yet) on Wayland or xcb via xwayland.
+      // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
       canBorderlessMouse = QGuiApplication::platformName() != QLatin1String("wayland") &&
          QGuiApplication::platformName() != QLatin1String("xcb");
 #endif
+      // Wayland only supports using the window centre, not the screen centre.
+      _borderlessMouseUseScreen = QGuiApplication::platformName() != QLatin1String("wayland");
       hscrollDir = HSCROLL_NONE;
       vscrollDir = VSCROLL_NONE;
       scrollTimer=nullptr;
@@ -1078,9 +1079,28 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                             //  button while the mouse has been dragged outside causes it to bypass us !
                             setMouseGrab(true); // CAUTION
                             
-                            QRect r = QApplication::primaryScreen()->geometry();
+                            QPoint newpt;
+                            if(_borderlessMouseUseScreen)
+                            {
+                              const QSize sz = getScreenGeometryFromPoint(ev_global_pos);
+                              newpt = QPoint(sz.width() / 2, sz.height() / 2);
+                            }
+                            else
+                            {
+                              const QWidget *wn = window();
+                              if(wn)
+                              {
+                                const QSize sz = wn->size();
+                                newpt = wn->mapToGlobal(QPoint(sz.width() / 2, sz.height() / 2));
+                              }
+                              else
+                              {
+                                newpt = mapToGlobal(QPoint(300 / 2, 300 / 2));
+                              }
+                            }
+
                             ignore_mouse_move = true;      // Avoid recursion.
-                            QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
+                            QCursor::setPos(newpt.x(), newpt.y());
                             //ignore_mouse_move = false;
                           }
                         }
@@ -1094,10 +1114,28 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                           {
                             setMouseGrab(true); // CAUTION
                             
-// screenGeometry() is obsolete. Qt >= 5.6 ? use primaryScreen().
-                            QRect r = QApplication::primaryScreen()->geometry();
+                            QPoint newpt;
+                            if(_borderlessMouseUseScreen)
+                            {
+                              const QSize sz = getScreenGeometryFromPoint(ev_global_pos);
+                              newpt = QPoint(sz.width() / 2, sz.height() / 2);
+                            }
+                            else
+                            {
+                              const QWidget *wn = window();
+                              if(wn)
+                              {
+                                const QSize sz = wn->size();
+                                newpt = wn->mapToGlobal(QPoint(sz.width() / 2, sz.height() / 2));
+                              }
+                              else
+                              {
+                                newpt = mapToGlobal(QPoint(300 / 2, 300 / 2));
+                              }
+                            }
+
                             ignore_mouse_move = true;      // Avoid recursion.
-                            QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
+                            QCursor::setPos(newpt.x(), newpt.y());
                             //ignore_mouse_move = false;
                           }
                           // Update the small zoom drawing area
@@ -1374,13 +1412,33 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
         cancelMouseOps();
       }
       
-      QRect  screen_rect    = QApplication::primaryScreen()->geometry();
-      QPoint screen_center  = QPoint(screen_rect.width()/2, screen_rect.height()/2);
-      QPoint glob_dist      = event->globalPos() - ev_global_pos;
-      QPoint glob_zoom_dist = (canBorderlessMouse && MusEGlobal::config.borderlessMouse) ?
-                              (event->globalPos() - screen_center) : glob_dist;
+      const QPoint gpos = event->globalPos();
+      QPoint screen_center;
+      QPoint glob_zoom_dist;
+      if(_borderlessMouseUseScreen)
+      {
+        const QSize sz = getScreenGeometryFromPoint(gpos);
+        screen_center  = QPoint(sz.width() / 2, sz.height()/2);
+      }
+      else
+      {
+        const QWidget *wn = window();
+        if(wn)
+        {
+          const QSize sz = wn->size();
+          screen_center  = wn->mapToGlobal(QPoint(sz.width() / 2, sz.height() / 2));
+        }
+        else
+        {
+          screen_center = mapToGlobal(QPoint(300 / 2, 300 / 2));
+        }
+      }
+      QPoint glob_dist      = gpos - ev_global_pos;
+      glob_zoom_dist = (canBorderlessMouse && MusEGlobal::config.borderlessMouse) ?
+                       (gpos - screen_center) : glob_dist;
+
       QPoint last_dist      = event->pos() - ev_pos;
-      
+
       ev_pos     = event->pos();
       QPoint dist  = ev_pos - start;
       int ax       = ABS(rmapx(dist.x()));
@@ -1687,8 +1745,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   break;
             }
 
-
-      ev_global_pos = event->globalPos();
+      ev_global_pos = gpos;
 
       if(drag != DRAG_ZOOM && (drag != DRAG_PAN || !(canBorderlessMouse && MusEGlobal::config.borderlessMouse)))
         mouseMove(event);

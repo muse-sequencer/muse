@@ -107,6 +107,8 @@ class Canvas : public View {
       bool canScrollDown;
       // Whether borderless mouse can be used.
       bool canBorderlessMouse;
+      // Whether borderless mouse should use the screen centre or the window centre.
+      bool _borderlessMouseUseScreen;
 
       CItemMap items;
       CItemMap moving;

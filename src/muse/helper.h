@@ -142,7 +142,14 @@ void loadThemeColors(const QString&);
 // Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
 //void updateThemeAndStyle();
 int countSelectedParts();
-} 
+
+// Tries to return the geometry of the screen under the point, or else the primary screen,
+//  or if no screens, a dummy geometry.
+QSize getScreenGeometryFromPoint(const QPoint&);
+// Tries to return the geometry of the widget's screen, or else the primary screen,
+//  or if no screens, a dummy geometry.
+QSize getScreenGeometryFromWidget(const QWidget*);
+}
 
 #endif
 

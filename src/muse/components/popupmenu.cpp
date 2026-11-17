@@ -32,18 +32,13 @@
 #include <QFont>
 #include <QStyleOptionMenuItem>
 #include <QWidgetAction>
-#include <QScreen>
 #include <QTimer>
-#if QT_VERSION >= 0x050a00
-#include <QGuiApplication>
-#else
-#include <QDesktopWidget>
-#endif
 #include "menutitleitem.h"
 
 #include "popupmenu.h"
 #include "gconfig.h"
 #include "route.h"
+#include "helper.h"
 
 // Forwards from header:
 #include <QWidget>
@@ -512,18 +507,7 @@ QAction *PopupMenu::exec()
 
 QAction *PopupMenu::exec(const QPoint &p, QAction *action)
 {
-  _screenSize = QSize(200, 200);
-
-  // Version 5.10 and above use QGuiApplication::screenAt().
-#if QT_VERSION >= 0x050a00
-  const QScreen *scr = QGuiApplication::screenAt(p);
-  if(scr)
-    _screenSize = scr->availableSize();
-#else
-  const QDesktopWidget *dw = QApplication::desktop();
-  if(dw)
-    _screenSize = dw->availableGeometry(p).size();
-#endif
+  _screenSize = getScreenGeometryFromPoint(p);
 
   emit aboutToPopup();
 
@@ -534,18 +518,7 @@ QAction *PopupMenu::exec(const QPoint &p, QAction *action)
 
 void PopupMenu::popup(const QPoint &p, QAction *atAction)
 {
-  _screenSize = QSize(200, 200);
-
-  // Version 5.10 and above use QGuiApplication::screenAt().
-#if QT_VERSION >= 0x050a00
-  const QScreen *scr = QGuiApplication::screenAt(p);
-  if(scr)
-    _screenSize = scr->availableSize();
-#else
-  const QDesktopWidget *dw = QApplication::desktop();
-  if(dw)
-    _screenSize = dw->availableGeometry(p).size();
-#endif
+  _screenSize = getScreenGeometryFromPoint(p);
 
   emit aboutToPopup();
 

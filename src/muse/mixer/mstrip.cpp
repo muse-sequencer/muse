@@ -33,6 +33,7 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QGuiApplication>
+#include <QLatin1String>
 
 #include "app.h"
 #include "midi_consts.h"

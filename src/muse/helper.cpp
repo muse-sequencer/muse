@@ -77,6 +77,8 @@
 #include <QCollator>
 #include <QList>
 #include <QIntValidator>
+#include <QGuiApplication>
+#include <QScreen>
 
 // Forwards from header.
 #include "gconfig.h"
@@ -2479,6 +2481,34 @@ int countSelectedParts()
     return cnt;
 }
 
+QSize getScreenGeometryFromPoint(const QPoint& globalP)
+{
+  QScreen *sc = QGuiApplication::screenAt(globalP);
+  if(!sc)
+    sc = QGuiApplication::primaryScreen();
+  if(sc)
+    return sc->availableSize();
+  return QSize(300, 300);
+}
+
+QSize getScreenGeometryFromWidget(const QWidget* widget)
+{
+  if(widget && widget->isVisible())
+  {
+    QScreen *sc = nullptr;
+#if QT_VERSION >= 0x050e00
+    sc = widget->screen();
+#else
+    // Qt 5.10
+    sc = QGuiApplication::screenAt(widget->mapToGlobal(widget->rect().center()));
+#endif
+    if(!sc)
+      sc = QGuiApplication::primaryScreen();
+    if(sc)
+      return sc->availableSize();
+  }
+  return QSize(300, 300);
+}
 
 } // namespace MusEGui
 

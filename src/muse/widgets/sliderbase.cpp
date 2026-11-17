@@ -26,13 +26,11 @@
 #include "sliderbase.h"
 #include "mmath.h"
 #include <QWheelEvent>
-//#include <QMouseEvent>
 #include <QTimerEvent>
 #include <QFocusEvent>
 #include <QApplication>
-#include <QDesktopWidget>
-#include <QCursor>
-//#include <QToolTip>
+#include <QGuiApplication>
+#include <QLatin1String>
 #include <QScreen>
 // Needed for a warning
 #include <stdio.h>
@@ -119,7 +117,9 @@ SliderBase::SliderBase(QWidget *parent, const char *name)
 // // DoubleRange::setNewValue TOP val:1.00000000000000000000 d_prevValue:0.04000000000000003553 d_value:1.00000000000000000000
 // //                          BOTTOM val:1.00000000000000000000 d_prevValue:1.00000000000000000000 d_value:1.00000000000000000000
       
-      
+
+      // Wayland only supports using the window centre, not the screen centre.
+      _borderlessMouseUseScreen = QGuiApplication::platformName() != QLatin1String("wayland");
       _ignoreMouseMove = false;
       _mouseGrabbed = false;
       _pressed = false;
@@ -700,8 +700,33 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
     d_trackingTempDisable = meta; // Generate automation graph recording straight lines if modifier held.
     if(borderlessMouse())
     {
-      const QRect r = QApplication::primaryScreen()->geometry();
-      const QPoint scrn_cntr(r.width()/2, r.height()/2);
+                            QPoint scrn_cntr;
+                            if(_borderlessMouseUseScreen)
+                            {
+                              QSize sz;
+                              QScreen *sc = QGuiApplication::screenAt(e->globalPos());
+                              if(!sc)
+                                sc = QGuiApplication::primaryScreen();
+                              if(sc)
+                                sz = sc->availableSize();
+                              else
+                                sz = QSize(300, 300);
+                              scrn_cntr = QPoint(sz.width() / 2, sz.height() / 2);
+                            }
+                            else
+                            {
+                              const QWidget *wn = window();
+                              if(wn)
+                              {
+                                const QSize sz = wn->size();
+                                scrn_cntr = wn->mapToGlobal(QPoint(sz.width() / 2, sz.height() / 2));
+                              }
+                              else
+                              {
+                                scrn_cntr = mapToGlobal(QPoint(300 / 2, 300 / 2));
+                              }
+                            }
+
       QPoint delta;
       if(_firstMouseMoveAfterPress)
       {

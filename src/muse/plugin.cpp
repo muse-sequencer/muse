@@ -38,6 +38,7 @@
 #include <QGroupBox>
 #include <QStringLiteral>
 #include <QGuiApplication>
+#include <QLatin1String>
 
 #include "app.h"
 #include "globals.h"
@@ -5647,7 +5648,7 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
                 Slider* s = static_cast<Slider*>(obj);
                 s->setId(nobj);
 #ifndef WAYLAND_SUPPORT
-                // No cursor move support under Qt5 (yet) on Wayland or xcb via xwayland.
+                // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
                 if(QGuiApplication::platformName() != QLatin1String("wayland") &&
                    QGuiApplication::platformName() != QLatin1String("xcb"))
 #endif
