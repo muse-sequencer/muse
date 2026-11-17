@@ -681,7 +681,7 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
           p.setY(mp);
           cp = mapToGlobal( QPoint(p.x(), mp) );
         }
-        cursor().setPos(cp.x(), cp.y());
+        QCursor::setPos(cp.x(), cp.y());
         return;
       }
     }

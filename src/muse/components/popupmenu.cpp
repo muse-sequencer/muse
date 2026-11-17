@@ -32,9 +32,7 @@
 #include <QFont>
 #include <QStyleOptionMenuItem>
 #include <QWidgetAction>
-#include <QScreen>
 #include <QTimer>
-#include <QGuiApplication>
 #include "menutitleitem.h"
 
 #include "popupmenu.h"
