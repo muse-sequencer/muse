@@ -59,7 +59,7 @@ class TLLayout : public QLayout
       ~TLLayout() { clear(); }
 
       void addItem(QLayoutItem*) { }   // Do nothing, it's a custom layout.
-      virtual Qt::Orientations expandingDirections() const { return 0; }
+      virtual Qt::Orientations expandingDirections() const { return Qt::Orientations(); }
       virtual bool hasHeightForWidth() const { return false; }
       virtual int count() const { return numItems; }
       void clear();

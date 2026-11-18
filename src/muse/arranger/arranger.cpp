@@ -567,6 +567,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       
       // Take care of some tabbies!
       setTabOrder(list, canvas);
+
+      // Force LTR layout on the whole thing.
+      // RTL is NOT to be used for flows of time or information or connections.
+      setLayoutDirection(Qt::LeftToRight);
       }
 
 //---------------------------------------------------------
@@ -946,7 +950,7 @@ void Arranger::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arranger");
       writeCustomColumns(level, xml);
-      xml.strTag(level, "tlist_header", header->saveState().toHex().constData());
+      xml.strTag(level, "tlist_header", header->saveState().toHex());
       xml.etag(--level, "arranger");
       }
 

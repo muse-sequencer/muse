@@ -26,10 +26,10 @@
 
 #include "canvas.h"
 
+#include <QGuiApplication>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QCursor>
-#include <QScreen>
+#include <QLatin1String>
 
 #include <vector>
 
@@ -46,6 +46,7 @@
 #include "helper.h"
 #include "globals.h"
 #include "app.h"
+#include "config.h"
 
 // Forwards from header:
 #include <QPainter>
@@ -81,6 +82,14 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       canScrollRight = true;
       canScrollUp = true;
       canScrollDown = true;
+      canBorderlessMouse = true;
+#ifndef WAYLAND_SUPPORT
+      // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
+      canBorderlessMouse = QGuiApplication::platformName() != QLatin1String("wayland") &&
+         QGuiApplication::platformName() != QLatin1String("xcb");
+#endif
+      // Wayland only supports using the window centre, not the screen centre.
+      _borderlessMouseUseScreen = QGuiApplication::platformName() != QLatin1String("wayland");
       hscrollDir = HSCROLL_NONE;
       vscrollDir = VSCROLL_NONE;
       scrollTimer=nullptr;
@@ -362,8 +371,7 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
 //             else
 //               fprintf(stderr, "...item found\n");
             
-            int ii = 0;
-            for(iCItem i = items.begin(); i != to; ++i, ++ii)
+            for(iCItem i = items.begin(); i != to; ++i)
             { 
               CItem* ci = i->second;
               // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
@@ -702,6 +710,8 @@ void Canvas::startMoving(const QPoint& pos, int dir, DragType, bool rasterize)
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (i->second->isSelected()) {
                   i->second->setMoving(true);
+              //fprintf(stderr, "Canvas::startMoving: i->second->setMp x:%d y:%d\n", i->second->pos().x(), i->second->pos().y());
+
                   // Give the moving point an initial value.
                   i->second->setMp(i->second->pos());
                   moving.add(i->second);
@@ -728,7 +738,7 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
       QPoint cur_item_mp, mp, cur_item_old_mp, old_mp;
       CItem* item;
       int x, y, nx, ny;
-      
+
       // Inform the classes that an item is about to be moved.
       //
       // Simply for consistency with the code below, inform of the current item first.
@@ -742,7 +752,9 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
           cur_item_mp = raster(QPoint(nx, ny));
         else
           cur_item_mp = QPoint(nx, ny);
-        
+
+        cur_item_mp.setY(cur_item_mp.y() + yItemOffset());
+
         cur_item_old_mp = curItem->mp();
         if (cur_item_old_mp != cur_item_mp) {
               itemMoving(curItem, cur_item_mp);
@@ -761,7 +773,9 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
               mp = raster(QPoint(nx, ny));
             else
               mp = QPoint(nx, ny);
-            
+
+            mp.setY(mp.y() + yItemOffset());
+
             old_mp = i->second->mp();
             if (old_mp != mp) {
                   itemMoving(i->second, mp);
@@ -780,9 +794,12 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
           mp = raster(QPoint(nx, ny));
         else
           mp = QPoint(nx, ny);
-        
+
+        mp.setY(mp.y() + yItemOffset());
+
         old_mp = curItem->mp();
         if (old_mp != mp) {
+              //fprintf(stderr, "Canvas::moveItems: curItem y:%d setMp x:%d y:%d\n", y, mp.x(), mp.y());
               curItem->setMp(mp);
               itemMoved(curItem, old_mp);
               }
@@ -801,7 +818,9 @@ void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
               mp = raster(QPoint(nx, ny));
             else
               mp = QPoint(nx, ny);
-            
+
+            mp.setY(mp.y() + yItemOffset());
+
             old_mp = i->second->mp();
             if (old_mp != mp) {
                   i->second->setMp(mp);
@@ -1121,7 +1140,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         {
                           drag = DRAG_PAN;
                           setCursor();
-                          if(MusEGlobal::config.borderlessMouse)
+                          if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
                           {
                             //  "It is almost never necessary to grab the mouse when using Qt, as Qt grabs 
                             //   and releases it sensibly. In particular, Qt grabs the mouse when a mouse 
@@ -1137,9 +1156,28 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                             //  button while the mouse has been dragged outside causes it to bypass us !
                             setMouseGrab(true); // CAUTION
                             
-                            QRect r = QApplication::primaryScreen()->geometry();
+                            QPoint newpt;
+                            if(_borderlessMouseUseScreen)
+                            {
+                              const QSize sz = getScreenGeometryFromPoint(ev_global_pos);
+                              newpt = QPoint(sz.width() / 2, sz.height() / 2);
+                            }
+                            else
+                            {
+                              const QWidget *wn = window();
+                              if(wn)
+                              {
+                                const QSize sz = wn->size();
+                                newpt = wn->mapToGlobal(QPoint(sz.width() / 2, sz.height() / 2));
+                              }
+                              else
+                              {
+                                newpt = mapToGlobal(QPoint(300 / 2, 300 / 2));
+                              }
+                            }
+
                             ignore_mouse_move = true;      // Avoid recursion.
-                            QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
+                            QCursor::setPos(newpt.x(), newpt.y());
                             //ignore_mouse_move = false;
                           }
                         }
@@ -1149,14 +1187,32 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         {
                           drag = DRAG_ZOOM;
                           setCursor();
-                          if(MusEGlobal::config.borderlessMouse)
+                          if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
                           {
                             setMouseGrab(true); // CAUTION
                             
-// screenGeometry() is obsolete. Qt >= 5.6 ? use primaryScreen().
-                            QRect r = QApplication::primaryScreen()->geometry();
+                            QPoint newpt;
+                            if(_borderlessMouseUseScreen)
+                            {
+                              const QSize sz = getScreenGeometryFromPoint(ev_global_pos);
+                              newpt = QPoint(sz.width() / 2, sz.height() / 2);
+                            }
+                            else
+                            {
+                              const QWidget *wn = window();
+                              if(wn)
+                              {
+                                const QSize sz = wn->size();
+                                newpt = wn->mapToGlobal(QPoint(sz.width() / 2, sz.height() / 2));
+                              }
+                              else
+                              {
+                                newpt = mapToGlobal(QPoint(300 / 2, 300 / 2));
+                              }
+                            }
+
                             ignore_mouse_move = true;      // Avoid recursion.
-                            QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
+                            QCursor::setPos(newpt.x(), newpt.y());
                             //ignore_mouse_move = false;
                           }
                           // Update the small zoom drawing area
@@ -1450,12 +1506,33 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
         cancelMouseOps();
       }
       
-      QRect  screen_rect    = QApplication::primaryScreen()->geometry();
-      QPoint screen_center  = QPoint(screen_rect.width()/2, screen_rect.height()/2);
-      QPoint glob_dist      = event->globalPos() - ev_global_pos;
-      QPoint glob_zoom_dist = MusEGlobal::config.borderlessMouse ? (event->globalPos() - screen_center) : glob_dist;
+      const QPoint gpos = event->globalPos();
+      QPoint screen_center;
+      QPoint glob_zoom_dist;
+      if(_borderlessMouseUseScreen)
+      {
+        const QSize sz = getScreenGeometryFromPoint(gpos);
+        screen_center  = QPoint(sz.width() / 2, sz.height()/2);
+      }
+      else
+      {
+        const QWidget *wn = window();
+        if(wn)
+        {
+          const QSize sz = wn->size();
+          screen_center  = wn->mapToGlobal(QPoint(sz.width() / 2, sz.height() / 2));
+        }
+        else
+        {
+          screen_center = mapToGlobal(QPoint(300 / 2, 300 / 2));
+        }
+      }
+      QPoint glob_dist      = gpos - ev_global_pos;
+      glob_zoom_dist = (canBorderlessMouse && MusEGlobal::config.borderlessMouse) ?
+                       (gpos - screen_center) : glob_dist;
+
       QPoint last_dist      = event->pos() - ev_pos;
-      
+
       ev_pos     = event->pos();
       QPoint dist  = ev_pos - start;
       int ax       = ABS(rmapx(dist.x()));
@@ -1477,7 +1554,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 
       // set scrolling variables: doScroll, scrollRight
       // No auto scroll in zoom mode or normal pan mode.
-      if (drag != DRAG_OFF && drag != DRAG_ZOOM && (drag != DRAG_PAN || !MusEGlobal::config.borderlessMouse)) {  
+      if (drag != DRAG_OFF && drag != DRAG_ZOOM &&
+          (drag != DRAG_PAN || !(canBorderlessMouse && MusEGlobal::config.borderlessMouse))) {
             int ex = rmapx(event->x())+mapx(0);
             if(ex < 15 && (canScrollLeft || drag == DRAG_PAN))
               hscrollDir = (drag == DRAG_PAN ? HSCROLL_RIGHT : HSCROLL_LEFT);
@@ -1677,12 +1755,13 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                     if (last_dist.y()) {
                           const int x = newCItem->x();
                           const int y = ev_pos.y();
-                          const int ny = pitch2y(y2pitch(y)) - yItemOffset();
+                          const int ny = pitch2y(y2pitch(y)) + yItemOffset();
                           const QPoint pt = QPoint(x, ny);
                           const QPoint old_pt = newCItem->mp();
                           itemMoving(newCItem, pt);
                           newCItem->move(pt);
                           newCItem->setHeight(y2height(y));
+                          //fprintf(stderr, "newCItem->setMP() x:%d y:%d\n", newCItem->pos().x(), newCItem->pos().y());
                           // Even though we only move the primary position here,
                           //  set the mp as well so note sounding logic can work easier.
                           newCItem->setMp(newCItem->pos());
@@ -1752,7 +1831,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                       emit verticalScroll(ypos - glob_zoom_dist.y());
                       changed = true;
                     }
-                    if(MusEGlobal::config.borderlessMouse && changed)
+                    if(canBorderlessMouse && MusEGlobal::config.borderlessMouse && changed)
                     {
                       ignore_mouse_move = true;      // Avoid recursion.
                       QCursor::setPos(screen_center);
@@ -1766,7 +1845,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                       emit horizontalZoom(glob_zoom_dist.x(), global_start);
                   //if(glob_zoom_dist.y() != 0)
                   //    emit verticalZoom(glob_zoom_dist.y(), global_start);  // TODO
-                  if(MusEGlobal::config.borderlessMouse && (glob_zoom_dist.x() != 0 || glob_zoom_dist.y() != 0))
+                  if(canBorderlessMouse && MusEGlobal::config.borderlessMouse &&
+                     (glob_zoom_dist.x() != 0 || glob_zoom_dist.y() != 0))
                   {
                     ignore_mouse_move = true;      // Avoid recursion.
                     QCursor::setPos(screen_center);
@@ -1790,10 +1870,9 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   break;
             }
 
+      ev_global_pos = gpos;
 
-      ev_global_pos = event->globalPos();
-
-      if(drag != DRAG_ZOOM && (drag != DRAG_PAN || !MusEGlobal::config.borderlessMouse))
+      if(drag != DRAG_ZOOM && (drag != DRAG_PAN || !(canBorderlessMouse && MusEGlobal::config.borderlessMouse)))
         mouseMove(event);
       }
 
@@ -1857,119 +1936,119 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                         itemsReleased();
                       }
                   break;
-            case DRAG_COPY:
-                  endMoveItems(pos, MOVE_COPY, 0, !shift);
-                  break;
-            case DRAGX_COPY:
-                  endMoveItems(pos, MOVE_COPY, 1, !shift);
-                  break;
-            case DRAGY_COPY:
-                  endMoveItems(pos, MOVE_COPY, 2, !shift);
-                  break;
-            case DRAG_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 0, !shift);
-                  break;
-            case DRAGX_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 1, !shift);
-                  break;
-            case DRAGY_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 2, !shift);
-                  break;
-            case DRAG_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 0, !shift);
-                  break;
-            case DRAGX_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 1, !shift);
-                  break;
-            case DRAGY_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 2, !shift);
-                  break;
-            case DRAG_OFF:
-                  break;
-            case DRAG_RESIZE:
-                  if (curItem) {
-// REMOVE Tim. wave. Changed.
-//                       if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
-//                           if (!supportsMultipleResize) {
-//                               QPoint rpos = QPoint(!shift ? raster(pos).x() : pos.x(), curItem->y());
-// // REMOVE Tim. wave. Changed.
-// //                               resizeToTheLeft(rpos);
-//                               //curItem->horizResize(rpos.x(), true);
-//                               adjustItemSize(curItem, rpos.x(), true, true, ctrl);
-//                           }
-//                       }
+                case DRAG_COPY:
+                      endMoveItems(pos, MOVE_COPY, 0, !shift);
+                      break;
+                case DRAGX_COPY:
+                      endMoveItems(pos, MOVE_COPY, 1, !shift);
+                      break;
+                case DRAGY_COPY:
+                      endMoveItems(pos, MOVE_COPY, 2, !shift);
+                      break;
+                case DRAG_MOVE:
+                      endMoveItems(pos, MOVE_MOVE, 0, !shift);
+                      break;
+                case DRAGX_MOVE:
+                      endMoveItems(pos, MOVE_MOVE, 1, !shift);
+                      break;
+                case DRAGY_MOVE:
+                      endMoveItems(pos, MOVE_MOVE, 2, !shift);
+                      break;
+                case DRAG_CLONE:
+                      endMoveItems(pos, MOVE_CLONE, 0, !shift);
+                      break;
+                case DRAGX_CLONE:
+                      endMoveItems(pos, MOVE_CLONE, 1, !shift);
+                      break;
+                case DRAGY_CLONE:
+                      endMoveItems(pos, MOVE_CLONE, 2, !shift);
+                      break;
+                case DRAG_OFF:
+                      break;
+                case DRAG_RESIZE:
+                      if (curItem) {
+    // REMOVE Tim. wave. Changed.
+    //                       if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+    //                           if (!supportsMultipleResize) {
+    //                               QPoint rpos = QPoint(!shift ? raster(pos).x() : pos.x(), curItem->y());
+    // // REMOVE Tim. wave. Changed.
+    // //                               resizeToTheLeft(rpos);
+    //                               //curItem->horizResize(rpos.x(), true);
+    //                               adjustItemSize(curItem, rpos.x(), true, true, ctrl);
+    //                           }
+    //                       }
 
-//                       // Do one final adjustment with snap enabled, to make it snap.
-//                       // TODO: Currently while resizing there is no snap. If we decide to snap while resizing,
-//                       //        simply REMOVE the following block afterwards. (The snapped values would be already there.)
-//                       if (!supportsMultipleResize)
-//                       {
-//                           //const int newx = shift ? pos.x() : raster(pos).x();
-//                           if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
-//                             //adjustItemSize(curItem, newx, true, shift, ctrl);
-//                             adjustItemSize(curItem, pos.x(), true, shift, ctrl, alt);
-//                           else if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
-//                             //adjustItemSize(curItem, newx, false, shift, ctrl);
-//                             adjustItemSize(curItem, pos.x(), false, shift, ctrl, alt);
-//                       }
+    //                       // Do one final adjustment with snap enabled, to make it snap.
+    //                       // TODO: Currently while resizing there is no snap. If we decide to snap while resizing,
+    //                       //        simply REMOVE the following block afterwards. (The snapped values would be already there.)
+    //                       if (!supportsMultipleResize)
+    //                       {
+    //                           //const int newx = shift ? pos.x() : raster(pos).x();
+    //                           if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+    //                             //adjustItemSize(curItem, newx, true, shift, ctrl);
+    //                             adjustItemSize(curItem, pos.x(), true, shift, ctrl, alt);
+    //                           else if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+    //                             //adjustItemSize(curItem, newx, false, shift, ctrl);
+    //                             adjustItemSize(curItem, pos.x(), false, shift, ctrl, alt);
+    //                       }
 
 
 
-                      resizeItem(curItem, shift, ctrl);
-                      itemSelectionsChanged();
-                      redraw();
-                      resizeDirection = MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
-                  }
-                  break;
-            case DRAG_NEW:
-                  if(newCItem)
-                  {
-                    items.add(newCItem);
-                    curItem = newCItem;
-                    newCItem = nullptr;
-                    itemReleased(curItem, curItem->pos());
-                    itemsReleased();
-                    newItem(curItem, shift);
-                    redrawFlag = true;
-                  }
-                  break;
-            case DRAG_LASSO_START:
-                  // Set the new lasso rectangle and compute the new lasso region.
-                  setLasso(QRect(start.x(), start.y(), rmapxDev(1), rmapyDev(1)));
-                  //fallthrough
-            case DRAG_LASSO:
-                  if (!ctrl)
-                        deselectAll(&undo);
-                  // Set the new lasso rectangle and compute the new lasso region.
-                  selectLasso(ctrl, &undo);
-                  itemSelectionsChanged(&undo, !ctrl);
-                  redrawFlag = true;
-                  break;
+                          resizeItem(curItem, shift, ctrl);
+                          itemSelectionsChanged();
+                          redraw();
+                          resizeDirection = MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
+                      }
+                      break;
+                case DRAG_NEW:
+                      if(newCItem)
+                      {
+                        items.add(newCItem);
+                        curItem = newCItem;
+                        newCItem = nullptr;
+                        itemReleased(curItem, curItem->pos());
+                        itemsReleased();
+                        newItem(curItem, shift);
+                        redrawFlag = true;
+                      }
+                      break;
+                case DRAG_LASSO_START:
+                      // Set the new lasso rectangle and compute the new lasso region.
+                      setLasso(QRect(start.x(), start.y(), rmapxDev(1), rmapyDev(1)));
+                      //fallthrough
+                case DRAG_LASSO:
+                      if (!ctrl)
+                            deselectAll(&undo);
+                      // Set the new lasso rectangle and compute the new lasso region.
+                      selectLasso(ctrl, &undo);
+                      itemSelectionsChanged(&undo, !ctrl);
+                      redrawFlag = true;
+                      break;
 
-            case DRAG_DELETE:
-                  break;
+                case DRAG_DELETE:
+                      break;
 
-            case DRAG_PAN:
-                  if(MusEGlobal::config.borderlessMouse)
-                  {
-                    pos = global_start;
-                    ignore_mouse_move = true;      // Avoid recursion.
-                    QCursor::setPos(global_start);
-                    //ignore_mouse_move = false;
-                  } else
-                      QWidget::setCursor(*handCursor);
-                  break;
+                case DRAG_PAN:
+                      if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
+                      {
+                        pos = global_start;
+                        ignore_mouse_move = true;      // Avoid recursion.
+                        QCursor::setPos(global_start);
+                        //ignore_mouse_move = false;
+                      } else
+                          QWidget::setCursor(*handCursor);
+                      break;
 
-            case DRAG_ZOOM:
-                  if(MusEGlobal::config.borderlessMouse)
-                  {
-                    pos = global_start;
-                    ignore_mouse_move = true;      // Avoid recursion.
-                    QCursor::setPos(global_start);
-                    //ignore_mouse_move = false;
-                  }
-                  break;
-            }
+                case DRAG_ZOOM:
+                      if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
+                      {
+                        pos = global_start;
+                        ignore_mouse_move = true;      // Avoid recursion.
+                        QCursor::setPos(global_start);
+                        //ignore_mouse_move = false;
+                      }
+                      break;
+                }
           //printf("Canvas::viewMouseReleaseEvent setting drag to DRAG_OFF\n");
 
           MusEGlobal::song->applyOperationGroup(undo);
@@ -2244,14 +2323,14 @@ void Canvas::setCursor()
         break;
 
     case DRAG_PAN:
-        if(MusEGlobal::config.borderlessMouse)
+        if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
             showCursor(false); // CAUTION
         else
             QWidget::setCursor(*closedHandCursor);
         break;
 
     case DRAG_ZOOM:
-        if(MusEGlobal::config.borderlessMouse)
+        if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
             showCursor(false); // CAUTION
         break;
 

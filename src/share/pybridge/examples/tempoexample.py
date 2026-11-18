@@ -21,9 +21,9 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-import Pyro4.core
+import Pyro5.api as pyro
 
-muse=Pyro4.core.Proxy('PYRONAME:muse')
+muse=pyro.Proxy('PYRONAME:muse')
 
 print ("Tempo: " + str(muse.getTempo(0)))
 

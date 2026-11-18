@@ -1609,6 +1609,14 @@ void DList::pitchEdited()
         return;
       }
 
+      // Nov 2 2025: Added.
+      // On value() calls, the PitchEdit spin boxes kept returning the old value, though valueFromText()
+      //  was called and the correct value returned from it. This seems to solve it. IIRC it used to work!?
+      // We don't want any further signals emitted if the value changed, so block.
+      pitch_editor->blockSignals(true);
+      pitch_editor->interpretText();
+      pitch_editor->blockSignals(false);
+
       const int val=pitch_editor->value();
       const int instrument=(editEntry-ourDrumMap);
 

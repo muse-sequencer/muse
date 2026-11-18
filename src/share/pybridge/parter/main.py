@@ -26,11 +26,11 @@ from PyQt5.QtWidgets import QApplication
 
 from parter import ParterMainwidget
 import sys, os
-import Pyro4.core
+import Pyro5.api as pyro
 
 #import musemock
 #muse = musemock.MusEMock()
-muse=Pyro4.core.Proxy('PYRONAME:muse')
+muse=pyro.Proxy('PYRONAME:muse')
 """
 strack = muse.getSelectedTrack()
 cpos = muse.getCPos()

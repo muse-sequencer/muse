@@ -37,6 +37,8 @@
 #include <QComboBox>
 #include <QGroupBox>
 #include <QStringLiteral>
+#include <QGuiApplication>
+#include <QLatin1String>
 
 #include "app.h"
 #include "globals.h"
@@ -57,6 +59,7 @@
 #include "switch.h"
 #include "hex_float.h"
 #include "libs/file/file.h"
+#include "config.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -4144,7 +4147,32 @@ void PluginI::configure(const PluginConfiguration& config, ConfigureOptions_t op
   // Otherwise a problem might be that the plugin thinks that the controls
   //  were manually altered, and flags its current patch as 'modified'.
   // See getCustomConfiguration() for more info.
-  if(!hasCustomData && (opts & ConfigParams))
+  bool canLoadControls = !hasCustomData;
+  if(_plugin)
+  {
+    switch(_plugin->_pluginType)
+    {
+      case MusEPlugin::PluginTypeNone:
+      case MusEPlugin::PluginTypeUnknown:
+      case MusEPlugin::PluginTypeLADSPA:
+      case MusEPlugin::PluginTypeVST:
+      case MusEPlugin::PluginTypeDSSI:
+      case MusEPlugin::PluginTypeDSSIVST:
+      case MusEPlugin::PluginTypeLinuxVST:
+      case MusEPlugin::PluginTypeMESS:
+      case MusEPlugin::PluginTypeMETRONOME:
+      break;
+
+      // Special for LV2: We never stored the port values with the state data like we do with the synths.
+      // We relied only on these external stored control port values.
+      // So we must always allow the port values to be used. They take effect on first run.
+      case MusEPlugin::PluginTypeLV2:
+        canLoadControls = true;
+      break;
+    }
+  }
+
+  if(canLoadControls && (opts & ConfigParams))
   {
     unsigned long controlPorts = parameters();
 
@@ -5619,6 +5647,11 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
                 gw[nobj].type = GuiWidgets::SLIDER;
                 Slider* s = static_cast<Slider*>(obj);
                 s->setId(nobj);
+#ifndef WAYLAND_SUPPORT
+                // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
+                if(QGuiApplication::platformName() != QLatin1String("wayland") &&
+                   QGuiApplication::platformName() != QLatin1String("xcb"))
+#endif
                 s->setCursorHoming(true);
 
                 // TODO
@@ -5875,7 +5908,13 @@ void PluginGui::constructGUIFromPluginMetadata() {
             s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
 
             s->setScaleBackBone(false);
+#ifndef WAYLAND_SUPPORT
+            // No cursor move support on Wayland or xcb via xwayland.
+            if(QGuiApplication::platformName() != QLatin1String("wayland") &&
+               QGuiApplication::platformName() != QLatin1String("xcb"))
+#endif
             s->setCursorHoming(true);
+
             s->setId(i);
             s->setSizeHint(150, 8);
 
@@ -6495,7 +6534,7 @@ void PluginGui::load()
             switch (token) {
                   case MusECore::Xml::Error:
                   case MusECore::Xml::End:
-                        return;
+                        goto ende;
                   case MusECore::Xml::TagStart:
                         if (mode == 0 && tag == "muse")
                               mode = 1;

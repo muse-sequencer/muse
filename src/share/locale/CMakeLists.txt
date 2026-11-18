@@ -24,17 +24,17 @@
 file (GLOB TRANSLATIONS_FILES *.ts)
 
 if (UPDATE_TRANSLATIONS)
-      qt5_create_translation(QM_FILES ${FILES_TO_TRANSLATE} ${TRANSLATIONS_FILES})
-else (UPDATE_TRANSLATIONS)
+      qt5_create_translation(QM_FILES
+          ${FILES_TO_TRANSLATE}
+          ${TRANSLATIONS_FILES}
+          OPTIONS -locations none -no-sort)
+else ()
       QT5_ADD_TRANSLATION(QM_FILES ${TRANSLATIONS_FILES})
-endif (UPDATE_TRANSLATIONS)
+endif ()
 
 add_custom_target (translations ALL DEPENDS ${QM_FILES})
 
-# If we are updating the translations, make sure that these targets
-# are scanned first
-if (UPDATE_TRANSLATIONS)
-      add_dependencies(translations
+set (SRC_TARGETS
             muse
             arranger
             cliplist
@@ -47,23 +47,30 @@ if (UPDATE_TRANSLATIONS)
             midiedit
             mixer
             mplugins
-            remote
             waveedit
             widgets
             awl
             deicsonze
-            #fluid
             fluid_synth
             synti
             organ
-            #s1
             simpledrums
             vam
             components
             plugin_scan_module
             grepmidi
-            )
-endif (UPDATE_TRANSLATIONS)
+)
+
+if (PYTHON_SUPPORT)
+      set ( SRC_TARGETS ${SRC_TARGETS} remote )
+endif ()
+
+
+# If we are updating the translations, make sure that these targets
+# are scanned first
+if (UPDATE_TRANSLATIONS)
+      add_dependencies(translations ${SRC_TARGETS})
+endif ()
 
 install(FILES ${QM_FILES}
       DESTINATION ${MusE_SHARE_DIR}/locale

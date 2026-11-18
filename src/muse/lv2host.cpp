@@ -319,7 +319,6 @@ LV2OperationMessage::LV2OperationMessage() : _type(ProgramChanged), _index(-1) {
 LV2OperationMessage::LV2OperationMessage(Type type, int index) : _type(type), _index(index) { }
 
 
-
 //=================================================================
 
 LV2_URID Synth_Urid_Map(LV2_URID_Unmap_Handle _host_data, const char *uri)
@@ -1926,22 +1925,22 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
 
 // Static.
 LV2UI_Request_Value_Status  LV2Synth::lv2ui_Request_Value (
-  LV2UI_Feature_Handle /*handle*/, LV2_URID /*key*/, LV2_URID /*type*/, const LV2_Feature *const */*features*/ )
+  LV2UI_Feature_Handle handle, LV2_URID key, LV2_URID /*type*/, const LV2_Feature *const */*features*/ )
 {
 // TODO FIXME Finish this...
-//     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-//     LV2Synth *synth = state->synth;
-//     const char *uriKey = synth->unmapUrid(key);
-//     const char *uriType = synth->unmapUrid(type);
-//
-//     //fprintf(stderr, "uriKey:%s uriType:%s\n", uriKey, uriType);
-//
-//     LilvNode* keyNode = lilv_new_uri(lilvWorld, uriKey);
-//     if(keyNode)
-//     {
-//
-//       lilv_free(keyNode);
-//     }
+    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+    LV2Synth *synth = state->synth;
+    const char *uriKey = synth->unmapUrid(key);
+    //const char *uriType = synth->unmapUrid(type);
+
+    //fprintf(stderr, "uriKey:%s uriType:%s\n", uriKey, uriType);
+
+    LilvNode* keyNode = lilv_new_uri(lilvWorld, uriKey);
+    if(keyNode)
+    {
+
+      lilv_free(keyNode);
+    }
 
     return LV2UI_REQUEST_VALUE_ERR_UNKNOWN;
 }
@@ -2345,7 +2344,6 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
     LV2Synth *synth = state->synth;
     const char *cKey = synth->unmapUrid(key);
-    bool hasPluginState = false;
 
     assert(cKey != nullptr); //should'n happen
 
@@ -2400,11 +2398,6 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
                     valArr [len] = 0;
                 }
             }
-            else
-            // It's not a path. Assume it's actual state data.
-            {
-              hasPluginState = true;
-            }
             size_t i;
             size_t numValues = state->numStateValues;
             for(i = 0; i < numValues; ++i)
@@ -2421,10 +2414,6 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
                 memset(state->tmpValues [i], 0, sz);
                 memcpy(state->tmpValues [i], valArr.constData(), sz);
                 *size = sz;
-                // If the data is actual plugin state, inform the caller
-                //  that it was successfully returned to the plugin.
-                if(hasPluginState)
-                  state->tmpHasPluginState = true;
                 return state->tmpValues [i];
             }
         }
@@ -2523,6 +2512,14 @@ QString LV2Synth::lv2conf_getCustomData(LV2PluginWrapper_State *state)
                             state, LV2_STATE_IS_POD, state->_ppifeatures);
     }
 
+    if(state->sif != nullptr) // write control ports values only for synths
+    {
+        for(size_t c = 0; c < state->sif->_inportsControl; c++)
+        {
+            state->iStateValues.insert(QString(state->sif->_controlInPorts [c].cName), QPair<QString, QVariant>(QString(""), QVariant((double)state->sif->_controls[c].val)));
+        }
+    }
+
     if(state->uiCurrent != nullptr)
     {
         const char *cUiUri = lilv_node_as_uri(lilv_ui_get_uri(state->uiCurrent));
@@ -2568,7 +2565,6 @@ bool LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
         break; //one customData tag includes all data in base64
     }
 
-    state->tmpHasPluginState = false;
     size_t numValues = state->iStateValues.size();
     state->numStateValues = numValues;
     if(state->iState != nullptr && numValues > 0)
@@ -2584,7 +2580,7 @@ bool LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
         //  which is used to decide whether to manually set all controls if there was no plugin data
         //  that would have contained that info already.
         /*const LV2_State_Status res =*/ state->iState->restore(lilv_instance_get_handle(state->handle),
-                               LV2Synth::lv2state_stateRetreive, state, 0, state->_ppifeatures);
+                              LV2Synth::lv2state_stateRetreive, state, 0, state->_ppifeatures);
         //fprintf(stderr, "lv2conf_set: restore result:%d\n", res);
         for(size_t i = 0; i < numValues; ++i)
         {
@@ -2620,34 +2616,34 @@ bool LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
             }
             else
             {
-                //-----------------------------------------------
-                // Obsolete. Keep for pre-4.0 songfile versions.
-                //-----------------------------------------------
-                if(state->sif != nullptr) //setting control value only for synths
+                bool ok = false;
+                float val = (float)qVal.toDouble(&ok);
+                if(ok)
                 {
-                    // We only manually set controls if there was NO state data for that.
-                    // Otherwise a problem might be that the plugin thinks that the controls
-                    //  were manually altered, and flags its current patch as 'modified'.
-                    if(state->tmpHasPluginState)
+                    const auto& iter = state->controlsNameMap.find(name.toLower());
+                    if(iter != state->controlsNameMap.end())
                     {
-                      bool ok = false;
-                      float val = (float)qVal.toDouble(&ok);
-                      if(ok)
-                      {
-                          const auto& iter = state->controlsNameMap.find(name.toLower());
-                          if(iter != state->controlsNameMap.end())
-                          {
-                              size_t ctrlNum = iter->second;
-                              state->sif->_controls [ctrlNum].val = val;
-                          }
-                      }
+                        size_t ctrlNum = iter->second;
+// Changed.
+//                             state->sif->_controls [ctrlNum].val = val;
+// TODO: See if this part helps.
+// TESTED: Unable to test. The tested plugins did not support UI port_event().
+// So these were not even used in function lv2ui_SendChangedControls().
+//                             state->sif->_controls [ctrlNum].val = state->lastControls [ctrlNum] = val;
+//                             // Reset this in case it was set. Prevent sending to the ui. This new value takes priority.
+//                             state->controlsMask [ctrlNum] = false;
+
+                        if(state->sif)
+                          state->sif->_controls [ctrlNum].val = val;
+
+                        if(state->inst && state->plugInst)
+                          state->plugInst->controls [ctrlNum].val = val;
                     }
                 }
             }
         }
     }
-  // Return true to prevent manually setting the controls later (for songfile version >= 4).
-  return state->tmpHasPluginState;
+  return true;
 }
 
 unsigned LV2Synth::lv2ui_IsSupported(const char *, const char *ui_type_uri)
@@ -7212,8 +7208,8 @@ LADSPA_PortRangeHint LV2PluginWrapper::range(unsigned long i) const
     hint.LowerBound = _synth->_pluginControlsMin [i];
     hint.UpperBound = _synth->_pluginControlsMax [i];
 
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = nullptr;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7262,8 +7258,8 @@ LADSPA_PortRangeHint LV2PluginWrapper::range(unsigned long i) const
 }
 void LV2PluginWrapper::range(unsigned long i, float *min, float *max) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = nullptr;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7328,8 +7324,8 @@ const char *LV2PluginWrapper::portName(unsigned long i) const
 
 const CtrlVal::CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = nullptr;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7361,8 +7357,8 @@ CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 {
     CtrlValueType vt = VAL_LINEAR;
 
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = nullptr;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7402,8 +7398,8 @@ CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 }
 CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = nullptr;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7434,8 +7430,8 @@ CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
 
 QString LV2PluginWrapper::unitSymbol(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = nullptr;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())
@@ -7464,8 +7460,8 @@ QString LV2PluginWrapper::unitSymbol(unsigned long i) const
 
 int LV2PluginWrapper::valueUnit(unsigned long i) const
 {
-    unsigned long j;
-    LV2_CONTROL_PORTS *cPorts;
+    unsigned long j = 0;
+    LV2_CONTROL_PORTS *cPorts = nullptr;
     {
       const auto& it = _synth->_idxToControlMap.find(i);
       if(it != _synth->_idxToControlMap.end())

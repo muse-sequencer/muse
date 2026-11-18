@@ -688,7 +688,7 @@ void AudioTrack::setupPlugin(PluginI* plugin, int idx)
       }
     }
     else
-    // Plugin is missing. Grab the information from the plugin's persistent properies.
+    // Plugin is missing. Grab the information from the plugin's persistent properties.
     {
       const PluginConfiguration &pc = plugin->initialConfiguration();
       for(ciPluginControlList ipcl = pc._initParams.cbegin(); ipcl != pc._initParams.cend(); ++ipcl)
@@ -1909,7 +1909,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
 void AudioTrack::readAuxSend(Xml& xml)
       {
       unsigned idx = 0;
-      double val;
+      double val = 0.0;
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();

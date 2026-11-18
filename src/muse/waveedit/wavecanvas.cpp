@@ -126,7 +126,7 @@ WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : EItem(
       unsigned len = e.lenFrame();
       if(e.frame() + e.lenFrame() >= p->lenFrame())
         len = p->lenFrame() - e.frame();
-      setBBox(QRect(frame, 0, len, height));    
+      setBBox(QRect(frame, 0, len, height));
       // Give the moving point an initial value.
       setMp(pos());
 // REMOVE Tim. wave. Added.
@@ -296,7 +296,7 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
             }
             
       if (flags & SC_AUDIO_STRETCH) {
-        for(iStretchSelectedItem is = _stretchAutomation._stretchSelectedList.begin(); 
+        for(iStretchSelectedItem is = _stretchAutomation._stretchSelectedList.begin();
             is != _stretchAutomation._stretchSelectedList.end(); )
         {
           MusECore::MuseFrame_t frame   = is->first;
@@ -304,7 +304,7 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
           MusECore::StretchList* sl = ssi._sndFile.stretchList();
           if(!sl)
             continue;
-          
+
           MusEGui::ciCItem i;
           for(i = items.begin(); i != items.end(); ++i)
           {
@@ -316,7 +316,7 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
                 break;
             }
           }
-          
+
           if(i == items.end())
           {
             iStretchSelectedItem is_save = is;
@@ -327,7 +327,6 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
             ++is;
         }
       }
-            
       
       if (flags & SC_CLIP_MODIFIED) {
             redraw(); // Boring, but the only thing possible to do
@@ -938,13 +937,13 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
             case RangeTool:
                   if (ctl)
                           return true;
-                  switch (button) 
+                  switch (button)
                   {
                         case Qt::LeftButton:
                               if (mode == NORMAL)
                               {
                                     // redraw and reset:
-                                    if (selectionStart != selectionStop) 
+                                    if (selectionStart != selectionStop)
                                     {
                                           selectionStart = selectionStop = 0;
                                           redraw();
@@ -966,20 +965,20 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                   }
 
             break;
-            
+
             case StretchTool:
             case SamplerateTool:
             {
               if(button != Qt::LeftButton)
                 return true;
-              
+
               StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
               //if(!ctl)
               //{
               //  ssl.clear();
               //  update();
               //}
-              
+
               // TODO Look properly through the whole list instead of just current one.
               //if(!curItem)
               //  break;
@@ -992,11 +991,11 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
               const MusECore::Event event = wevent->event();
               if(event.type() != MusECore::Wave)
                 break;
-              
+
               MusECore::SndFileR sf = event.sndFile();
               if(sf.isNull())
                 break;
-              
+
               MusECore::StretchList* sl = sf.stretchList();
               if(!sl)
                 break;
@@ -1008,7 +1007,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                 type = MusECore::StretchListItem::StretchEvent;
               else //if(_tool == SamplerateTool)
                 type = MusECore::StretchListItem::SamplerateEvent;
-              
+
               MusECore::iStretchListItem isli_hit_test = stretchListHitTest(type, pt, wevent);
               if(isli_hit_test == sl->end())
               {
@@ -1055,7 +1054,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
               {
                 if(!ctl)
                   ssl.clear();
-                ssl.insert(std::pair<MusECore::MuseFrame_t, StretchSelectedItem>(isli_hit_test->first, 
+                ssl.insert(std::pair<MusECore::MuseFrame_t, StretchSelectedItem>(isli_hit_test->first,
                                                                                  StretchSelectedItem(type, sf)));
                 _stretchAutomation._startMovePoint = pt;
                 _stretchAutomation._controllerState = stretchStartMove;
@@ -1064,7 +1063,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
               }
             }
             break;
-            
+
       }
 
   return true;
@@ -1163,7 +1162,7 @@ void WaveCanvas::mouseRelease(QMouseEvent* ev)
   }
 
   _stretchAutomation._controllerState = stretchDoNothing;
-      
+
   button = Qt::NoButton;
   if(mode == DRAG)
     mode = NORMAL;
@@ -1181,7 +1180,7 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
       int x = pt.x();
       if (x < 0)
             x = 0;
-      
+
       // Special for wave canvas: Normally in the base class EventCanvas we would rasterize the tick before emitting,
       //  but since these units are in frames we handle displaying the position specially in the WaveEditor.
       // One reason is that we may need the precise frame, such as for the editing 'functions' and the stretching below.
@@ -1203,14 +1202,14 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
               //  setCursor();
               //  return;
               //}
-              
+
               switch(_stretchAutomation._controllerState)
               {
                 case stretchDoNothing:
                 case stretchAddNewController:
                   setStretchAutomationCursor(pt);
                 break;
-                
+
                 case stretchStartMove:
                   _stretchAutomation._controllerState = stretchMovingController;
                 // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
@@ -1240,7 +1239,7 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                     MusECore::StretchList* sl = sf.stretchList();
                     if(!sl)
                       continue;
-                    
+
                     MusECore::iStretchListItem isli_typed = sl->findEvent(ssi._type, iss->first);
                     if(isli_typed == sl->end())
                       continue;
@@ -1248,33 +1247,33 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                     const double wave_sr_ratio = sf.sampleRateRatio();
 
                     thisFrame = double(isli_typed->first);
-                    
+
                     const MusECore::StretchListItem& sli_typed = isli_typed->second;
-                    
+
                     MusECore::iStretchListItem prev_isli_typed = sl->previousEvent(ssi._type, isli_typed);
                     if(prev_isli_typed == sl->end())
                       continue;
-                    
+
                     prevFrame = double(prev_isli_typed->first);
-                    
+
                     const MusECore::StretchListItem& prev_sli_typed = prev_isli_typed->second;
-                    
+
                     MusECore::iStretchListItem next_isli_typed = sl->nextEvent(ssi._type, isli_typed);
                     if(next_isli_typed == sl->end())
                       nextFrame = double(sf.samples());
                     else
                       nextFrame = double(next_isli_typed->first);
-                    
+
                     next_delta_fr = nextFrame - thisFrame;
                     // FIXME: Comparing double with zero.
                     if(next_delta_fr <= 0)
                       continue;
-                    
+
                     delta_fr = thisFrame - prevFrame;
                     // FIXME: Comparing double with zero.
                     if(delta_fr <= 0)
                       continue;
-                    
+
                     const double minStretchRatio = sf.minStretchRatio();
                     const double maxStretchRatio = sf.maxStretchRatio();
                     const double minSamplerateRatio = sf.minSamplerateRatio();
@@ -1288,7 +1287,7 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                         const double left_this_smpx = sl->squish(thisFrame, MusECore::StretchListItem::SamplerateEvent);
                         const double left_dsmpx = left_this_smpx - left_prev_smpx;
                         const double left_effective_sr = left_dsmpx / delta_fr;
-                        
+
                         const double right_this_smpx = sli_typed._samplerateSquishedFrame;
                         const double right_next_smpx = sl->squish(nextFrame, MusECore::StretchListItem::SamplerateEvent);
                         const double right_dsmpx = right_next_smpx - right_this_smpx;
@@ -1398,34 +1397,34 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                         prevNewVal = prev_sli_typed._pitchRatio; // TODO
                       break;
                     }
-                    
+
                     MusEGlobal::song->modifyAtStretchListOperation(sf, ssi._type, prevFrame, prevNewVal, operations);
                     MusEGlobal::song->modifyAtStretchListOperation(sf, ssi._type, thisFrame, thisNewVal, operations);
                   }
                   MusEGlobal::audio->msgExecutePendingOperations(operations, true);
                   _stretchAutomation._startMovePoint = pt;
-                } 
+                }
                 break;
               }
             }
             break;
-            
-            
+
+
             default:
             {
               event->ignore();
-              
-              switch (button) 
+
+              switch (button)
               {
                 case Qt::LeftButton:
-                      if (mode == DRAG) 
+                      if (mode == DRAG)
                       {
                             int mx      = mapx(x);
                             int mstart  = mapx(selectionStart);
                             int mstop   = mapx(selectionStop);
                             //int mdstart = mapx(dragstartx);
                             QRect r(0, 0, 0, height());
-                            
+
                             if (x < dragstartx) {
                                   if(x < selectionStart)
                                   {
@@ -1463,13 +1462,13 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                       break;
                 default:
                       return;
-              }              
-              
+              }
+
           }
           break;
       }
       }
-      
+
 //---------------------------------------------------------
 //   pitch2y
 //---------------------------------------------------------
@@ -2408,6 +2407,20 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
       const QRect ur = mapDev(mr);               // Use our own map instead.
+// REMOVE Tim. stretch. Added. For stretcher priming. TESTING
+//      QRect ur = mapDev(mr);               // Use our own map instead.
+//       const int quantum = 5000;
+//       const int quantum2 = quantum / 2;
+//       int qx = ur.left() / quantum;
+//       const int qx_rem = ur.left() % quantum;
+//       if(qx_rem < quantum2)
+//         qx = ((ur.left() - quantum2) / quantum2) * quantum2;
+//       else
+//         qx *= quantum;
+// // Diagnostics.
+//       fprintf(stderr, "ur.left():%d quantized:%d\n", ur.left(), qx);
+//       ur.setLeft(qx);
+
       const int ux = ur.x();
       const int uw = ur.width();
       const int ux_2 = ux + uw;
@@ -2491,6 +2504,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
       int x1 = mapx(ubrwp.x());
       int x2 = mapx(ubrwp.x() + ubrwp.width());
+      // Remove for stretcher priming.
       if (x1 < 0)
             x1 = 0;
       if (x2 > width())
@@ -2617,6 +2631,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 //           const unsigned peoffset = absEPos - ev_spos;
           const unsigned peoffset = absEPosFrames - ev_spos;
 
+          // Yes, that's samples(), not samplesConverted().
           const sf_count_t smps = f.samples();
           //const sf_count_t smpsConverted = f.samplesConverted();
 
@@ -2625,6 +2640,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
             wave_visible = true;
             wav_sx = -ev_spos;
             wav_ex = smps - ev_spos;
+            // Remove for stretcher priming.
             if(wav_sx < 0)
               wav_sx = 0;
 // REMOVE Tim. wave. Changed.
@@ -2935,11 +2951,11 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
     const MusECore::Event event = item->event();
     if(event.type() != MusECore::Wave)
       return;
-    
+
     const MusECore::SndFileR sf = event.sndFile();
     if(sf.isNull())
       return;
-    
+
     const MusECore::StretchList* sl = sf.stretchList();
     if(!sl)
       return;
@@ -2962,22 +2978,22 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
       // Do not recognize or draw the item at zeroth frame.
       if(is->first == 0)
         continue;
-  
+
       const MusECore::StretchListItem& sli = is->second;
       //if((_tool == StretchTool && (sli._type & MusECore::StretchListItem::StretchEvent)) ||
       //   (_tool == SamplerateTool && (sli._type & MusECore::StretchListItem::SamplerateEvent)))
       {
         xpixel = mapx(sl->squish((double)is->first) / wave_sr_ratio + item->x());
-        
+
         DEBUG_WAVECANVAS(stderr, "drawStretchAutomation: rr.x:%d rr.w:%d xpixel:%d\n", rr.x(), rr.width(), xpixel);
-        
+
         if(sli._type & MusECore::StretchListItem::StretchEvent)
         {
           //if(_tool == StretchTool)
             c = Qt::magenta;
-          //else 
+          //else
           //  c = Qt::darkMagenta;
-          
+
           res = ssl.equal_range(is->first); // FIXME Calls non-constant version? Want constant version.
           for(ciStretchSelectedItem ise = res.first; ise != res.second; ++ise)
           {
@@ -2987,19 +3003,19 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
               break;
             }
           }
-          
+
           //c.setAlpha(200);
           pen.setColor(c);
           pen.setDashPattern(pattern);
           p.setPen(pen);
           p.drawLine(xpixel, rr.top() - 2, xpixel, rr.bottom() - 2);
         }
-        
+
         if(sli._type & MusECore::StretchListItem::SamplerateEvent)
         {
           //if(_tool == SamplerateTool)
             c = Qt::cyan;
-          //else 
+          //else
           //  c = Qt::darkCyan;
 
           res = ssl.equal_range(is->first); // FIXME Calls non-constant version? Want constant version.
@@ -3011,7 +3027,7 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
               break;
             }
           }
-          
+
           //c.setAlpha(200);
           pen.setColor(c);
           pen.setDashPattern(pattern);
@@ -3022,7 +3038,7 @@ void WaveCanvas::drawStretchAutomation(QPainter& p, const QRect& rr, WEvent* ite
           p.drawLine(xpixel, rr.bottom() - 2, xpixel, rr.top() - 2);
         }
       }
-    }    
+    }
 }
 
 MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, WEvent* wevent)
@@ -3030,11 +3046,11 @@ MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, 
   const MusECore::Event event = wevent->event();
   if(event.type() != MusECore::Wave)
     return MusECore::iStretchListItem();
-  
+
   const MusECore::SndFileR sf = event.sndFile();
   if(sf.isNull())
     return MusECore::iStretchListItem();
-  
+
   MusECore::StretchList* stretchList = sf.stretchList();
   if(!stretchList)
     return MusECore::iStretchListItem();
@@ -3051,15 +3067,15 @@ MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, 
     // Do not recognize or draw the item at zeroth frame.
     if(is->first == 0)
       continue;
-  
+
     const MusECore::StretchListItem& se = is->second;
     if(!(se._type & types))
       continue;
-    
+
     const double newSqFrame = se._finSquishedFrame / wave_sr_ratio;
     const int xpixel = mapx(newSqFrame + wevent_x);
     const int pt_pixel = mapx(pt_x);
-    
+
     const int x_diff = (xpixel > pt_pixel) ? (xpixel - pt_pixel) : (pt_pixel - xpixel);
     if(x_diff <= closest_dist)
     {
@@ -3067,7 +3083,7 @@ MusECore::iStretchListItem WaveCanvas::stretchListHitTest(int types, QPoint pt, 
       closest_ev = is;
     }
   }
-  
+
   return closest_ev;
 }
 
@@ -3075,7 +3091,7 @@ void WaveCanvas::setStretchAutomationCursor(QPoint pt)
 {
   if(_tool != StretchTool && _tool != SamplerateTool)
     return;
-  
+
   CItem* item = items.find(pt);
   if(!item)
   {
@@ -4820,65 +4836,6 @@ void WaveCanvas::cmd(int cmd)
 //---------------------------------------------------------
 //   getSelection
 //---------------------------------------------------------
-// REMOVE Tim. wave. Changed. TODO: Work in progress. Editing does not work correctly if there is an offset or the part is partially hidden.
-// MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned stoppos)
-//       {
-//       MusECore::WaveSelectionList selection;
-// 
-//       for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
-//             MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
-//             unsigned part_offset = wp->frame();
-//             
-//             const MusECore::EventList& el = wp->events();
-// 
-//             for (MusECore::ciEvent e = el.begin(); e != el.end(); ++e) {
-//                   MusECore::Event event  = e->second;
-//                   if (event.empty())
-//                         continue;
-//                   MusECore::SndFileR file = event.sndFile();
-//                   if (file.isNull())
-//                         continue;
-// 
-//                   // Respect part end: Don't modify stuff outside of part boundary.
-//                   unsigned elen = event.lenFrame();
-//                   if(event.frame() + event.lenFrame() >= wp->lenFrame())
-//                   {
-//                     // Adjust apparent operation length:
-//                     if(event.frame() > wp->lenFrame())
-//                       elen = 0;
-//                     else
-//                       elen = wp->lenFrame() - event.frame();
-//                   }
-//                   
-//                   unsigned event_offset = event.frame() + part_offset;
-//                   unsigned event_startpos  = event.spos();
-//                   unsigned event_length = elen + event.spos();
-//                   unsigned event_end    = event_offset + event_length;
-//                   //printf("startpos=%d stoppos=%d part_offset=%d event_offset=%d event_startpos=%d event_length=%d event_end=%d\n",
-//                   // startpos, stoppos, part_offset, event_offset, event_startpos, event_length, event_end);
-// 
-//                   if (!(event_end <= startpos || event_offset > stoppos)) {
-//                         int tmp_sx = startpos - event_offset + event_startpos;
-//                         int tmp_ex = stoppos  - event_offset + event_startpos;
-//                         unsigned sx;
-//                         unsigned ex;
-// 
-//                         tmp_sx < (int)event_startpos ? sx = event_startpos : sx = tmp_sx;
-//                         tmp_ex > (int)event_length   ? ex = event_length   : ex = tmp_ex;
-// 
-//                         //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLocal8Bit().constData());
-//                         MusECore::WaveEventSelection s;
-//                         s.event = event;  
-//                         s.startframe = sx;
-//                         s.endframe   = ex+1;
-//                         //printf("sx=%d ex=%d\n",sx,ex);
-//                         selection.push_back(s);
-//                         }
-//                   }
-//             }
-// 
-//             return selection;
-//       }
 
 MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned stoppos)
       {
@@ -4888,9 +4845,10 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
 
       for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
             MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
-            const int part_offset = wp->frame();
+            const int part_pos = wp->frame();
             const int part_len = wp->lenFrame();
-            
+            const int part_end = part_pos + part_len;
+
             const MusECore::EventList& el = wp->events();
 
             for (MusECore::ciEvent e = el.begin(); e != el.end(); ++e) {
@@ -4902,51 +4860,43 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
                         continue;
 
                   // Respect part end: Don't modify stuff outside of part boundary.
-                  int eframe = event.frame();
-                  int elen = event.lenFrame();
-                  // Adjust apparent operation start and length:
-// REMOVE Tim. wave. Added. TODO: Work in progress. Editing does not work correctly if there is an offset or the part is partially hidden.
-//                   if(eframe < 0)
-//                   {
-//                     elen += eframe;
-//                     if(elen < 0)
-//                       continue;
-//                     eframe = 0;
-//                   }
-                  if(eframe >= part_len)
+                  int event_pos = event.frame();
+                  int event_len = event.lenFrame();
+
+                  if(event_pos >= part_len)
                     break;
-                  if(eframe + elen <= 0)
+                  if(event_pos + event_len <= 0)
                     continue;
-                  if(eframe + elen >= part_len)
-                    elen = part_len - eframe;
-                  
-                  const int event_offset = eframe + part_offset;
-                  const int event_startpos  = event.spos();
-// REMOVE Tim. wave. Changed. This seemed wrong and it caused a crash because events that were before the selection area were included.
-//                   const int event_length = elen + event_startpos;
-                  const int event_length = elen - event_startpos;
-                  const int event_end    = event_offset + event_length;
-                  //printf("startpos=%d stoppos=%d part_offset=%d event_offset=%d event_startpos=%d event_length=%d event_end=%d\n",
-                  // startpos, stoppos, part_offset, event_offset, event_startpos, event_length, event_end);
 
-                  if (event_end > (int)startpos && event_offset < (int)stoppos) {
-                        int tmp_sx = (int)startpos - event_offset + event_startpos;
-                        int tmp_ex = (int)stoppos  - event_offset + event_startpos;
-                        int sx;
-                        int ex;
+                  const int event_abs_pos = event_pos + part_pos;
+                  const int event_abs_end = event_abs_pos + event_len;
+                  const int event_wave_offset  = event.spos();
 
-                        tmp_sx < event_startpos ? sx = event_startpos : sx = tmp_sx;
-                        tmp_ex > event_length   ? ex = event_length   : ex = tmp_ex;
+                  // Adjust apparent operation start and length:
+                  int startpos_lim = (int)startpos;
+                  if(startpos_lim < part_pos)
+                    startpos_lim = part_pos;
+                  if(startpos_lim < event_abs_pos)
+                    startpos_lim = event_abs_pos;
 
-                        //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLocal8Bit().constData());
-                        MusECore::WaveEventSelection s;
-                        s.event = event;  
-                        s.startframe = sx;
-                        s.endframe   = ex+1;
-                        //printf("sx=%d ex=%d\n",sx,ex);
-                        selection.push_back(s);
-                        }
+                  int stoppos_lim = (int)stoppos;
+                  if(stoppos_lim >= part_end)
+                    stoppos_lim = part_end;
+                  if(stoppos_lim >= event_abs_end)
+                    stoppos_lim = event_abs_end;
+
+                  int wave_start = startpos_lim - event_abs_pos + event_wave_offset;
+                  int wave_end = stoppos_lim - event_abs_pos + event_wave_offset;
+
+                  if(wave_start < wave_end)
+                  {
+                    MusECore::WaveEventSelection s;
+                    s.event = event;
+                    s.startframe = wave_start;
+                    s.endframe   = wave_end;
+                    selection.push_back(s);
                   }
+              }
             }
 
             return selection;
@@ -4959,7 +4909,7 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
             MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
             const unsigned part_offset = wp->frame();
             const unsigned part_len = wp->lenFrame();
-            
+
             const MusECore::EventList& el = wp->events();
 
             for (MusECore::ciEvent e = el.begin(); e != el.end(); ++e) {
@@ -4981,7 +4931,7 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
                     else
                       elen = part_len - eframe;
                   }
-                  
+
                   const unsigned event_offset = eframe + part_offset;
                   const unsigned event_startpos  = event.spos();
                   const unsigned event_length = elen + event.spos();
@@ -5000,7 +4950,7 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
 
                         //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLocal8Bit().constData());
                         MusECore::WaveEventSelection s;
-                        s.event = event;  
+                        s.event = event;
                         s.startframe = sx;
                         s.endframe   = ex+1;
                         //printf("sx=%d ex=%d\n",sx,ex);
@@ -5012,7 +4962,6 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
             return selection;
 #endif
       }
-
 
 //---------------------------------------------------------
 //   modifySelection

@@ -37,6 +37,8 @@
 #include <QColor>
 #include <QList>
 #include <QVector>
+#include <QPainterPath>
+#include <QMap>
 
 #include "type_defs.h"
 #include "route.h"
@@ -257,20 +259,24 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
         bool testForRelayout(int column, int old_width, int new_width);
 };
 
+typedef QMap<int /* Index into the route list tree */, QPainterPath> PainterPathList;
+
 //---------------------------------------------------------
 //   ConnectionsView
 //---------------------------------------------------------
 
-class ConnectionsView : public QFrame
+class ConnectionsView : public QWidget
 {
         Q_OBJECT
         
   private:
         RouteDialog* _routeDialog;
+        PainterPathList _strokedPathList;
+        bool _cursorIsSet;
         int lastY;
         int itemY(RouteTreeWidgetItem* item, bool is_input, int channel = -1) const;
-        void drawItem(QPainter* pPainter, QTreeWidgetItem* routesItem, const QColor& col);
-        void drawConnectionLine(QPainter* pPainter,
+        void drawItem(QPainter* pPainter, QTreeWidgetItem* routesItem, int routeListIndex, const QColor& col);
+        void drawConnectionLine(QPainter* pPainter, int routeListIndex,
                 int x1, int y1, int x2, int y2, int h1, int h2);
 
   protected:
@@ -285,6 +291,7 @@ class ConnectionsView : public QFrame
         
      
   public:
+        static const int hitDetectRadius;
         ConnectionsView(QWidget* parent = 0, RouteDialog* d = 0);
         virtual ~ConnectionsView();
         void setRouteDialog(RouteDialog* d) { _routeDialog = d; }
@@ -345,6 +352,7 @@ public:
         void getItemsToDelete(QVector<QTreeWidgetItem*>& items_to_remove, bool showAllMidiPorts = false);
         //void scheduleDelayedLayout() { scheduleDelayedItemsLayout(); }  // Just to make it public.
         void selectRoutes(const QList<QTreeWidgetItem*>& routes, bool doNormalSelections);
+        void unselectAll();
 
         QColor categoryColor() const { return _categoryColor; }
         void setCategoryColor(const QColor& c) { _categoryColor = c; }
@@ -418,7 +426,6 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       void selectRoutes(bool doNormalSelections);
 
    private slots:
-      void routeSelectionChanged();
       void disconnectClicked();
       void connectClicked();
       void srcSelectionChanged();
@@ -440,6 +447,9 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       void preferredRouteAliasChanged(int);
       void verticalLayoutClicked(bool);
       
+   public slots:
+      void routeSelectionChanged(bool autoScroll = true);
+
    signals:
       void closed();
 

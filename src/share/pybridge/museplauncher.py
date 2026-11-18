@@ -25,9 +25,11 @@ This file is used by MusE for launching a Pyro name service and connecting a rem
 """
 
 from __future__ import print_function
-import Pyro4.core
-import Pyro4.naming
-from Pyro4.errors import PyroError,NamingError
+
+import Pyro5.api as pyro
+import Pyro5.errors as pyro_errors
+from Pyro5.nameserver import start_ns_loop
+
 import socket
 import select
 import time
@@ -37,21 +39,23 @@ import threading
 # Note: this module, 'muse' is activated from within MusE - thus it is not possible to execute the scripts without a running
 # MusE instance
 #
-import muse 
+import muse
 
 #
-# Class which implements the functionality that is used remotely. 
+# Class which implements the functionality that is used remotely.
 # In short just repeating the global functions in the muse-module
 #
-# TODO: It should be better to skip this class completely by implementing 
+# TODO: It should be better to skip this class completely by implementing
 # functionality as a class in pyapi.cpp instead of global functions
 # that need to be wrapped like this
 #
 # Pyro >= 4.46, requires exposing now
 
 class MusE:
-      def __init__(self, daemon):
-            self.daemon = daemon
+      def __init__(self, daemon):
+
+            self.daemon = daemon
+
 
       # This method is to support a technique of shutting down the server
       #  by calling this 'shutdown' from another thread or process.
@@ -61,140 +65,144 @@ class MusE:
       # So our simpler loopCondition technique is the one used at this time of writing.
       # Still, we keep this around for possible usage since it does work.
       #
-      # oneway in case call returns much later than daemon.shutdown
-      @Pyro4.oneway
-      @Pyro4.expose
-      def shutdown(self):
-            print('Shutting down Pyro daemon...')
-            self.daemon.shutdown()
+      # oneway in case call returns much later than daemon.shutdown
+
+      @pyro.oneway
+      @pyro.expose
+      def shutdown(self):
+
+            print('Shutting down Pyro daemon...', flush=True)
+
+            self.daemon.shutdown()
+
 
       #@staticmethod
       #@classmethod
-      @Pyro4.expose
+      @pyro.expose
       def getCPos(self): # Get current position
             return muse.getCPos()
 
-      @Pyro4.expose
+      @pyro.expose
       def startPlay(self): # Start playback
             return muse.startPlay()
 
-      @Pyro4.expose
+      @pyro.expose
       def stopPlay(self): # Stop playback
             return muse.stopPlay()
 
-      @Pyro4.expose
+      @pyro.expose
       def rewindStart(self): # Rewind current position to start
             return muse.rewindStart()
 
-      @Pyro4.expose
+      @pyro.expose
       def getLPos(self): # Get position of left locator
             return muse.getLPos()
 
-      @Pyro4.expose
+      @pyro.expose
       def getRPos(self): # Get position of right locator
             return muse.getRPos()
 
-      @Pyro4.expose
+      @pyro.expose
       def getTempo(self, tick): #Get tempo at particular tick
             return muse.getTempo(tick)
 
-      @Pyro4.expose
+      @pyro.expose
       def getTrackNames(self): # get track names
             return muse.getTrackNames()
 
-      @Pyro4.expose
+      @pyro.expose
       def getParts(self, trackname): # get parts in a particular track
             return muse.getParts(trackname)
 
-      @Pyro4.expose
+      @pyro.expose
       def createPart(self, trackname, starttick, lenticks, part): # create part in track
             return muse.createPart(trackname, starttick, lenticks, part)
 
-      @Pyro4.expose
+      @pyro.expose
       def modifyPart(self, part): # modify a part (the part to be modified is specified by its id
             return muse.modifyPart((part))
 
-      @Pyro4.expose
+      @pyro.expose
       def deletePart(self, part): # delete a part
             return muse.deletePart((part))
 
-      @Pyro4.expose
+      @pyro.expose
       def getSelectedTrack(self): # get first selected track in arranger window
             return muse.getSelectedTrack()
 
-      @Pyro4.expose
+      @pyro.expose
       def importPart(self, trackname, filename, tick): # import part file to a track at a given position
             return muse.importPart(trackname, filename, tick)
 
-      @Pyro4.expose
+      @pyro.expose
       def setCPos(self, tick): # set current position
             return muse.setPos(0, tick)
 
-      @Pyro4.expose
+      @pyro.expose
       def setLPos(self, tick): # set left locator
             return muse.setPos(1, tick)
 
-      @Pyro4.expose
+      @pyro.expose
       def setRPos(self, tick): # set right locator
             return muse.setPos(2, tick)
-      
-      @Pyro4.expose
+
+      @pyro.expose
       def setSongLen(self, ticks): # set song length
             return muse.setSongLen(ticks)
 
-      @Pyro4.expose
+      @pyro.expose
       def getSongLen(self): # get song length
             return muse.getSongLen()
 
-      @Pyro4.expose
+      @pyro.expose
       def getDivision(self): # get division (ticks per 1/4, or per beat?)
             return muse.getDivision()
 
-      @Pyro4.expose
+      @pyro.expose
       def setMidiTrackParameter(self, trackname, paramname, value): # set midi track parameter (velocity, compression, len, transpose)
             return muse.setMidiTrackParameter(trackname, paramname, value);
 
-      @Pyro4.expose
+      @pyro.expose
       def getLoop(self): # get loop flag
             return muse.getLoop()
 
-      @Pyro4.expose
+      @pyro.expose
       def setLoop(self, loopFlag): # set loop flag
             return muse.setLoop(loopFlag)
-      
-      @Pyro4.expose
+
+      @pyro.expose
       def getMute(self, trackname): # get track mute parameter
             return muse.getMute(trackname)
 
-      @Pyro4.expose
+      @pyro.expose
       def setMute(self, trackname, enabled): # set track mute parameter
             return muse.setMute(trackname, enabled)
 
-      @Pyro4.expose
+      @pyro.expose
       def setVolume(self, trackname, volume): # set mixer volume
             return muse.setVolume(trackname, volume)
 
-      @Pyro4.expose
+      @pyro.expose
       def getMidiControllerValue(self, trackname, ctrlno): # get a particular midi controller value for a track
             return muse.getMidiControllerValue(trackname, ctrlno)
 
-      @Pyro4.expose
+      @pyro.expose
       def setMidiControllerValue(self, trackname, ctrlno, value): # set a particular midi controller value for a track
             return muse.setMidiControllerValue(trackname, ctrlno, value)
 
-      @Pyro4.expose
-      def setAudioTrackVolume(self, trackname, dvol): # set volume for audio track 
+      @pyro.expose
+      def setAudioTrackVolume(self, trackname, dvol): # set volume for audio track
             return muse.setAudioTrackVolume(trackname, dvol)
 
-      @Pyro4.expose
+      @pyro.expose
       def getAudioTrackVolume(self, trackname): # get volume for audio track
             return muse.getAudioTrackVolume(trackname)
 
-      @Pyro4.expose
+      @pyro.expose
       def getTrackEffects(self, trackname): # get effect names for an audio track
             return muse.getTrackEffects(trackname)
 
-      @Pyro4.expose
+      @pyro.expose
       def toggleTrackEffect(self, trackname, effectno, onoff): # toggle specific effect on/off
             return muse.toggleTrackEffect(trackname, effectno, onoff)
 
@@ -206,7 +214,7 @@ class MusE:
 
                   return trackname
 
-      @Pyro4.expose
+      @pyro.expose
       def changeTrackName(self, trackname, newname): #change track name
             return muse.changeTrackName(trackname, newname)
 
@@ -223,7 +231,7 @@ class MusE:
                         break
 
 
-      @Pyro4.expose
+      @pyro.expose
       def addMidiTrack(self, trackname): # add midi track
             oldtracknames = muse.getTrackNames()
             if trackname in oldtracknames:
@@ -231,9 +239,9 @@ class MusE:
 
             muse.addMidiTrack()
             self.nameNewTrack(trackname, oldtracknames)
-            
 
-      @Pyro4.expose
+
+      @pyro.expose
       def addWaveTrack(self, trackname): # add wave track
             oldtracknames = muse.getTrackNames()
             if trackname in oldtracknames:
@@ -242,7 +250,7 @@ class MusE:
             muse.addWaveTrack()
             self.nameNewTrack(trackname, oldtracknames)
 
-      @Pyro4.expose
+      @pyro.expose
       def addInput(self, trackname): # add audio input
             oldtracknames = muse.getTrackNames()
             if trackname in oldtracknames:
@@ -251,7 +259,7 @@ class MusE:
             muse.addInput()
             self.nameNewTrack(trackname, oldtracknames)
 
-      @Pyro4.expose
+      @pyro.expose
       def addOutput(self, trackname): # add audio output
             oldtracknames = muse.getTrackNames()
             if trackname in oldtracknames:
@@ -260,7 +268,7 @@ class MusE:
             muse.addOutput()
             self.nameNewTrack(trackname, oldtracknames)
 
-      @Pyro4.expose
+      @pyro.expose
       def addGroup(self, trackname): # add audio group
             oldtracknames = muse.getTrackNames()
             if trackname in oldtracknames:
@@ -269,7 +277,7 @@ class MusE:
             muse.addGroup()
             self.nameNewTrack(trackname, oldtracknames)
 
-      @Pyro4.expose
+      @pyro.expose
       def deleteTrack(self, trackname): # delete a track
             tracknames = muse.getTrackNames()
             if trackname not in tracknames:
@@ -288,22 +296,22 @@ class NameServiceThread(threading.Thread):
 
       def run(self):
             hostname = socket.gethostname()
-            print ("Starting Pyro nameserver")
+            print ("Starting Pyro nameserver", flush=True)
             try:
                 if self.port is None:
-                    Pyro4.naming.startNSloop(host=self.host)
+                    start_ns_loop(host=self.host)
                 else:
-                    Pyro4.naming.startNSloop(host=self.host, port=self.port)
+                    start_ns_loop(host=self.host, port=self.port)
             except:
-                print ("Unable to start Pyro nameserver at host=" + str(self.host) + " port=" + str(self.port))
+                print ("Unable to start Pyro nameserver at host=" + str(self.host) + " port=" + str(self.port), flush=True)
 
-            print ("Pyro nameserver finished")
+            print ("Pyro nameserver finished", flush=True)
 
 #
 # main server program
 #
 def main():
-      print ("Inside museplauncher.py...")
+      print ("Inside museplauncher.py...", flush=True)
 
       # TESTED: When running example scripts, too low a value caused problems with
       #  'not enough data' errors unless set to higher, around at least 3. But if set too high
@@ -313,11 +321,14 @@ def main():
       # This is done automatically in our c++ code by setting the QThread wait time to a higher
       #  value than our global MusEGlobal::pythonBridgePyroCommTimeout.
       #
-      # We need to set either a socket communication timeout,
-      #   or use the select based server. Otherwise the daemon requestLoop
-      #   will block indefinitely and is never able to evaluate the loopCondition.
+      # We need to set either a socket communication timeout,
+
+      #   or use the select based server. Otherwise the daemon requestLoop
+
+      #   will block indefinitely and is never able to evaluate the loopCondition.
+
       # This is a floating point value.
-      Pyro4.config.COMMTIMEOUT = muse.getConfigPyroCommTimeout()
+      pyro.config.COMMTIMEOUT = muse.getConfigPyroCommTimeout()
 
       config_pyro_ns_hostname = muse.getConfigPyroNSHostname()
       config_pyro_ns_port = muse.getConfigPyroNSPort()
@@ -346,67 +357,67 @@ def main():
       else:
           daemon_port = None
 
-      print("Nameserver hostname:" + str(ns_hostname) + " Port:" + str(ns_port) + " Attempting to locate a Pyro nameserver...")
+      print("Nameserver hostname:" + str(ns_hostname) + " Port:" + str(ns_port) + " Attempting to locate a Pyro nameserver...", flush=True)
 
       try:
-          ns = Pyro4.locateNS(host=ns_hostname, port=ns_port)
-      except Pyro4.errors.NamingError:
+          ns = pyro.locate_ns(host=ns_hostname, port=ns_port)
+      except pyro_errors.NamingError:
           ns_running = False
       else:
           ns_running = True
 
       if ns_running:
-          print("...Found Pyro nameserver")
+          print("...Found Pyro nameserver", flush=True)
       else:
-          print("...Pyro nameserver not found. Starting a new one...")
+          print("...Pyro nameserver not found. Starting a new one...", flush=True)
           # Note: See the Pyro4 eventloop example for a cool custom loop that works,
           #  but it requires the broadcast server to be running. This does not.
           nsthread = NameServiceThread(host=ns_hostname, port=ns_port)
           nsthread.start()
           for i in range(0,5):
               try:
-                  ns = Pyro4.locateNS(host=ns_hostname, port=ns_port)
-              except Pyro4.errors.NamingError:
+                  ns = pyro.locate_ns(host=ns_hostname, port=ns_port)
+              except pyro_errors.NamingError:
                   if i == 4:
-                      print("...Pyro nameserver did not respond")
-                      return 
+                      print("...Pyro nameserver did not respond", flush=True)
+                      return
                   time.sleep(1)
               else:
                 break
 
-      print("Daemon hostname:" + str(daemon_hostname) + " Port:" + str(daemon_port))
+      print("Daemon hostname:" + str(daemon_hostname) + " Port:" + str(daemon_port), flush=True)
       try:
           if daemon_port is None:
-              pyrodaemon = Pyro4.core.Daemon(host=daemon_hostname)
+              pyrodaemon = pyro.Daemon(host=daemon_hostname)
           else:
-              pyrodaemon = Pyro4.core.Daemon(host=daemon_hostname, port=daemon_port)
+              pyrodaemon = pyro.Daemon(host=daemon_hostname, port=daemon_port)
       except:
-          print("Could not start Pyro daemon")
+          print("Could not start Pyro daemon", flush=True)
           return
-        
-      print("Pyro daemon location string=%s" % pyrodaemon.locationStr)
-      print("Pyro daemon sockets=%s" % pyrodaemon.sockets)
+
+      print("Pyro daemon location string=%s" % pyrodaemon.locationStr, flush=True)
+      print("Pyro daemon sockets=%s" % pyrodaemon.sockets, flush=True)
 
       # connect a new object implementation (first unregister previous one)
       try:
           ns.remove('muse')
-      except Pyro4.errors.NamingError:
+      except pyro_errors.NamingError:
           pass
 
       muse_inst = MusE(pyrodaemon)
 
       # register a server object with the daemon
       serveruri = pyrodaemon.register(muse_inst, objectId="muse")
-      print("Object registered with Pyro daemon. uri=%s" % serveruri)
+      print("Object registered with Pyro daemon. uri=%s" % serveruri, flush=True)
 
       # register it with the embedded nameserver directly
       ns.register("muse", serveruri)
-      print("Object registered with the Pyro nameserver")
+      print("Object registered with the Pyro nameserver", flush=True)
 
       # Tested OK.
       pyrodaemon.requestLoop(lambda : muse.serverRunFlag())
 
-      print("Pyro daemon loop finished")
+      print("Pyro daemon loop finished", flush=True)
 
 # We only want execution if running the script. The value is set to __main__.
 # Otherwise if being imported by another module __name__ contains the name of the script.

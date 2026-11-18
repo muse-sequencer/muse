@@ -569,6 +569,10 @@ CommandLineParseResult parseCommandLine(
 
 int main(int argc, char* argv[])
 {
+#if defined(Q_OS_LINUX) && !defined(WAYLAND_SUPPORT)
+      ::setenv("QT_QPA_PLATFORM", "xcb", 0);
+#endif
+
       // Get the separator used for file paths.
       const QChar list_separator = QDir::listSeparator();
 
@@ -625,14 +629,13 @@ int main(int argc, char* argv[])
         timer.start();
 
         // Make working copies of the arguments.
-        const int argument_count = argc;
         int argc_copy = argc;
         char** argv_copy = nullptr;
-        if(argument_count > 0)
+        if(argc_copy > 0)
         {
-          argv_copy = (char**)malloc(argument_count * sizeof(char*));
+          argv_copy = (char**)malloc(argc_copy * sizeof(char*));
           int len = 0;
-          for(int i = 0; i < argument_count; ++i)
+          for(int i = 0; i < argc_copy; ++i)
           {
             argv_copy[i] = nullptr;
             if(argv[i])
@@ -679,6 +682,9 @@ int main(int argc, char* argv[])
         app.setOrganizationDomain(ORGANIZATION_DOMAIN);
         app.setApplicationName(PACKAGE_NAME);
         app.setApplicationDisplayName(APP_DISPLAY_NAME);
+        // This must perfectly match the name of the .desktop file
+        // (excluding the ".desktop" extension).
+        app.setDesktopFileName("io.github.muse_sequencer.Muse");
 
         // NOTE: 'GenericConfigLocation' returned config dir (ie. ~./config).
         //       'ConfigLocation' also returned config dir (ie. ~./config).
@@ -1048,7 +1054,7 @@ int main(int argc, char* argv[])
         AudioDriverSelect audioType = DriverConfigSetting;
         bool force_plugin_rescan = false;
         bool dont_plugin_rescan = false;
-        // A block because we don't want ths hanging around. Use it then lose it.
+        // A block because we don't want this hanging around. Use it then lose it.
         {
           QCommandLineParser parser;
           QString errorMessage;
@@ -1140,11 +1146,6 @@ int main(int argc, char* argv[])
         // Locale diagnostics.
         fprintf(stderr, "New Qt locale: %s\n",QLocale().name().toLocal8Bit().data());
 
-        if (QLocale().name() == "de" || locale_override == "de") {
-          fprintf(stderr, "locale de - setting 'note h is B' override parameter.\n");
-          MusEGlobal::hIsB = false;
-        }
-
         // NOTICE About locales:
         //
         // From std::setlocale() help:
@@ -1175,7 +1176,7 @@ int main(int argc, char* argv[])
         //  and should be letting Qt handle the locale stuff.
         // Usually when someone uses a c function in this app, they are not expecting
         //  (or are even aware of) any locale and usually expect the normal "C" locale.
-        // A check of virually all such calls in this app reveals that they are all used for simple
+        // A check of virtually all such calls in this app reveals that they are all used for simple
         //  things which do not - or even must not - require locale.
         // For project files for example, we NEVER want locale considerations because that would
         //  break portability, sharing files with other machines in other locales.
@@ -1800,9 +1801,12 @@ int main(int argc, char* argv[])
         //optind = 0;
 
         // Free the working copies of the arguments.
+        // Note that argc_copy might not be the same as the original argc,
+        //  since Qt or lash etc. might remove arguments they recognize,
+        //  and decrement the counter.
         if(argv_copy)
         {
-          for(int i = 0; i < argument_count; ++i)
+          for(int i = 0; i < argc_copy; ++i)
           {
             if(argv_copy[i])
               free(argv_copy[i]);

@@ -35,6 +35,7 @@
 #include <QPoint>
 
 #include <map>
+
 #include "muse_time.h"
 #include "time_stretch.h"
 #include "wave.h"
@@ -83,7 +84,6 @@ class WEvent : public EItem {
 //       void initItemTempValues();
       };
 
-      
 struct StretchSelectedItem
 {
   MusECore::StretchListItem::StretchEventType _type;
@@ -117,8 +117,6 @@ struct StretchAutomationObject {
   StretchControllerVals _controllerState;
   bool _moveController;
   QPoint _startMovePoint;
-  
-  
   
 //   QPoint startMovePoint;
 //   QList<MusECore::MuseFrame_t> currentCtrlFrameList;

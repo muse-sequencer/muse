@@ -24,10 +24,10 @@
 #
 # Example client for MusE Pyro bridge (Python Remote Object)
 #
-import Pyro4.core
+import Pyro5.api as pyro
 import time
 
-muse=Pyro4.core.Proxy('PYRONAME:muse')
+muse=pyro.Proxy('PYRONAME:muse')
 print ("Current position is: " + str(muse.getCPos()))
 
 midiDevice=open("/dev/snd/midiC1D0")

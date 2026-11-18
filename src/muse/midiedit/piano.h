@@ -37,7 +37,10 @@ class QWheelEvent;
 class QPainter;
 class QPixmap;
 
+// Normal piano key height.
 #define KH  13
+// No piano (note list) key height.
+#define KH_MT 9
 
 namespace MusEGui {
 
@@ -89,6 +92,7 @@ class Piano : public View
       Piano(QWidget* parent, int ymag, int width, MidiEditor* editor = 0);
       int curSelectedPitch() const { return selectedPitch; }
       void setCurSelectedPitch(int pitch);
+      static int pianoHeight();
       };
 
 } // namespace MusEGui

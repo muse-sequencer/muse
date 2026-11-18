@@ -229,6 +229,11 @@ void StretchList::normalizeListFrames()
   double prevSamplerate;
   double prevPitch;
   
+  prevFrame = prevNewUnFrame = prevNewFrame =
+    prevNewStretchFrame = prevNewUnStretchFrame =
+    prevNewSamplerateFrame = prevNewUnSamplerateFrame =
+    prevStretch = prevSamplerate = prevPitch = 0.0;
+
   // If any intrinsic value has a stretch or samplerate other than 1.0,
   //  the map is stretched, a stretcher or samplerate converter must be engaged.
   _isStretched = (_stretchRatio != 1.0);
@@ -292,7 +297,6 @@ void StretchList::normalizeListFrames()
       prevNewUnStretchFrame = se._stretchSquishedFrame;
 
 
-      
       factor = (_samplerateRatio * prevSamplerate);
       dtime = double(dframe) * factor;
       se._samplerateStretchedFrame = prevNewSamplerateFrame + dtime;

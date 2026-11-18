@@ -23,6 +23,9 @@
 
 //#include <QAction>
 #include <QVBoxLayout>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+#include <QWindow>
+#endif
 
 #include "song.h"
 #include "transport.h"
@@ -94,6 +97,10 @@ Handle::Handle(QWidget* r, QWidget* parent)
    : QWidget(parent)
 {
     rootWin = r;
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
+    dx = 0;
+    dy = 0;
+#endif
     setFixedWidth(20);
     setCursor(Qt::PointingHandCursor);
     this->setStyleSheet("background-color:" + MusEGlobal::config.transportHandleColor.name());
@@ -103,21 +110,43 @@ Handle::Handle(QWidget* r, QWidget* parent)
 //   mouseMoveEvent
 //---------------------------------------------------------
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
 void Handle::mouseMoveEvent(QMouseEvent* ev)
       {
       rootWin->move(ev->globalX()-dx, ev->globalY() - dy);
       }
+#endif
 
 //---------------------------------------------------------
 //   mousePressEvent
 //---------------------------------------------------------
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+void Handle::mousePressEvent(QMouseEvent* ev)
+      {
+      rootWin->raise();
+      if (rootWin)
+      {
+        rootWin->raise();
+        if(rootWin->windowHandle())
+        {
+          // Tell the OS compositor to take over the dragging action natively. Since Qt 5.15
+          rootWin->windowHandle()->startSystemMove();
+        }
+        // Accept the event so it stops propagating
+        ev->accept();
+        return;
+      }
+      QWidget::mousePressEvent(ev);
+      }
+#else
 void Handle::mousePressEvent(QMouseEvent* ev)
       {
       rootWin->raise();
       dx = ev->globalX() - rootWin->x();
       dy = ev->globalY() - rootWin->y();
       }
+#endif
 
 //---------------------------------------------------------
 //   TempoSig

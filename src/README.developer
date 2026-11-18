@@ -6,7 +6,7 @@ Anyway, maybe some things should be a bit more clearly defined so I started this
 document with some pointers for best practices and procedures.
 
 * STYLE *
-whatever floats your boat. Okay, maybe try to keep it atleast somewhat consistent :)
+whatever floats your boat. Okay, maybe try to keep it at least somewhat consistent :)
 
 * TOOLS *
 MusE is highly dependent on Qt, mostly this is a good thing, especially as we want to
@@ -20,37 +20,37 @@ library, do check if Qt can provide the necessary functionality. Many times it c
 When making a release there are some steps that should always be done to make the
 packaging consistent and traceable.
 
-1. make sure that version info is updated.
+1. Make sure that version info is updated.
    CMakeLists.txt:SET(MusE_VERSION       "3.0.0pre1")
    CMakeLists.txt:SET(MusE_VERSION_FULL  "3.0.0pre1")
 
-2. add a release-line to the ChangeLog (search for old ones for some format hints)
+2. Add a release-line to the ChangeLog (search for old ones for some format hints)
 
-3. commit everything to git
+3. Commit everything to git
 
-4. now create the tarball from the build dir (could be a good idea to create a new build dir)
+4. Now create the tarball from the build dir (could be a good idea to create a new build dir)
    $ make clean (otherwise the tarball will way too big)
    $ make package_source
    feel free to ctrl-c out of this as soon as the .tar.gz build is done as it contines to make
    a lot of variants that we do not use.
 
-5. verify that the built package has the right name and can be built
+5. Verify that the built package has the right name and can be built
 
    NOTE: if you are making a point release (e.g. 3.0.1) the file name is based of the path so
    the package will be called muse-3.0.tar.gz while it really should be muse-3.0.1. Easiest 
    way to fix this (for now) is to untar the package, rename the folder (in this case) from 
    muse-3.0 to muse-3.0.1 and tar it back into muse-3.0.1.tar.gz.
 
-6. make a tag in git for this particular checkin when you are satisfied the release is correct
+6. Make a tag in git for this particular checkin when you are satisfied the release is correct
    From 4.0 release we use https://semver.org/ formatted tags.
    For instance 4.0 pre release 2 is 4.0.0-pre2.
    'git tag -l' lists all of the previous tags. 
    Use git tag -a <tag name> to create an annotated tag.
    To push the tag to master: git push --tags
 
-7. create a releasenote
+7. Create a releasenote
 
-8. upload both releasenote and tarball to the sourceforge page (or whatever is in fashion when 
+8. Upload both releasenote and tarball to the sourceforge page (or whatever is in fashion when 
    it's time).
    Update: Currently we upload to both sourceforge (because we always have and it's not a lot of work)
    and to the Releases page on github.
@@ -59,6 +59,6 @@ packaging consistent and traceable.
    The frontpage is html and resides a specific git repo.
    The news page is in the muse github wiki.
 
-10.Update wikipedia to reflect the new release.
+10. Update wikipedia to reflect the new release.
 
-11. send out a release mail
+11. Send out a release mail

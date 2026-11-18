@@ -238,15 +238,15 @@ void AudioConverterSettingsGroup::write(int level, Xml& xml, AudioConverterPlugi
   if(_options._preferredResampler != AudioConverterSettingsGroupOptions::defaultOptions._preferredResampler)
   {
     if(AudioConverterPlugin* plugin = plugList->find(nullptr, _options._preferredResampler))
-      xml.strTag(level, "preferredResampler", plugin->name().toUtf8().constData());
+      xml.strTag(level, "preferredResampler", plugin->name());
   }
-  
+
   if(_options._preferredShifter != AudioConverterSettingsGroupOptions::defaultOptions._preferredShifter)
   {
     if(AudioConverterPlugin* plugin = plugList->find(nullptr, _options._preferredShifter))
-      xml.strTag(level, "preferredShifter", plugin->name().toUtf8().constData());
+      xml.strTag(level, "preferredShifter", plugin->name());
   }
-  
+
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     if(AudioConverterSettingsI* settings = *i)

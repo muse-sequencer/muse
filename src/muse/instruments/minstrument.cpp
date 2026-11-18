@@ -852,7 +852,7 @@ void SysEx::write(int level, Xml& xml)
 
             level++;
             if(!comment.isEmpty())
-              xml.strTag(level, "comment", comment.toUtf8().constData());
+              xml.strTag(level, "comment", comment);
             if(dataLen > 0 && data)
               xml.strTag(level, "data", sysex2string(dataLen, data));
 

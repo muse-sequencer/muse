@@ -409,12 +409,19 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(groupChanAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_CHAN); } );
       connect(groupMaxAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_MAX); } );
 
+      pianoConfigMenu = new PopupMenu(tr("Note Names, Piano Settings"), this, true);
+      pianoConfigMenu->setIcon(*pianoConfigSVGIcon);
+      settingsMenu->addMenu(pianoConfigMenu);
+      connect(pianoConfigMenu, &PopupMenu::aboutToPopup, [this]() { pianoConfigMenuAboutToShow(); } );
+      connect(pianoConfigMenu, &PopupMenu::aboutToHide, [this]() { pianoConfigMenuAboutToHide(); } );
+      connect(pianoConfigMenu, &PopupMenu::triggered, [](QAction* act) { pianoConfigPopupTriggered(act); } );
+
       addControllerMenu = new PopupMenu(tr("Add Controller View"), this, true);
       addControllerMenu->setIcon(*midiControllerNewSVGIcon);
       settingsMenu->addMenu(addControllerMenu);
-      connect(addControllerMenu, &QMenu::aboutToShow, [this]() { ctrlMenuAboutToShow(); } );
-      connect(addControllerMenu, &QMenu::aboutToHide, [this]() { ctrlMenuAboutToHide(); } );
-      connect(addControllerMenu, &QMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
+      connect(addControllerMenu, &PopupMenu::aboutToPopup, [this]() { ctrlMenuAboutToShow(); } );
+      connect(addControllerMenu, &PopupMenu::aboutToHide, [this]() { ctrlMenuAboutToHide(); } );
+      connect(addControllerMenu, &PopupMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
 
       //---------------------------------------------------
       //    Toolbars
@@ -435,6 +442,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       tools = addToolBar(tr("Drum tools"));
       tools->setObjectName("Drum tools");
+
+      pianoConfigButton = new QToolButton();
+      pianoConfigButton->setToolTip(tr("Note names and piano settings"));
+      pianoConfigButton->setIcon(*pianoConfigSVGIcon);
+      pianoConfigButton->setFocusPolicy(Qt::NoFocus);
+      connect(pianoConfigButton, &QToolButton::pressed, [this]() { pianoConfigClicked(); } );
+      tools->addWidget(pianoConfigButton);
 
       addctrl = new QToolButton();
       addctrl->setToolTip(tr("Add controller view"));
@@ -781,6 +795,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
             ctrl_edit->setPerNoteVel(mcvs._perNoteVel);
         }
       }
+
+      // Force LTR layout on the whole thing.
+      // RTL is NOT to be used for flows of time or information or connections.
+      setLayoutDirection(Qt::LeftToRight);
       }
 
 DrumEdit::~DrumEdit()
@@ -1645,6 +1663,40 @@ void DrumEdit::selectionChanged()
       copyAction->setEnabled(flag);
       deleteAction->setEnabled(flag);
       }
+
+void DrumEdit::pianoConfigMenuAboutToShow()
+{
+  // Clear the menu and delete the contents.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+  pianoConfigMenu->clear();
+  populatePianoConfigMenu(pianoConfigMenu, &MusEGlobal::config);
+}
+
+void DrumEdit::pianoConfigMenuAboutToHide()
+{
+  // Clear the menu and delete the contents, since it's going to be cleared
+  //  and refilled anyway next time opened, so we can save memory.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+// FIXME: This crashes, of course...
+//   pianoConfigMenu->clear();
+}
+
+void DrumEdit::pianoConfigClicked()
+{
+  PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent.
+  connect(pup, &QMenu::triggered, [](QAction* act) { pianoConfigPopupTriggered(act); } );
+
+  populatePianoConfigMenu(pup, &MusEGlobal::config);
+
+  QPoint ep = pianoConfigButton->mapToGlobal(QPoint(0,0));
+
+  pup->exec(ep);
+  delete pup;
+
+  pianoConfigButton->setDown(false);
+}
 
 //---------------------------------------------------------
 //   ctrlPopupTriggered

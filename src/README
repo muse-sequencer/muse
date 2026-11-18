@@ -54,7 +54,7 @@ details.
       - CMake >= 3.10.2 
           http:/www.cmake.org/HTML/Download.html
 
-      - Qt: Qt >= 5.9.5 (development files)
+      - Qt: Qt >= 5.10 (development files)
           http://qt-project.org/
           MusE does _not_ compile with older versions
           For ubuntu packages can be installed via:
@@ -114,7 +114,11 @@ details.
         
       - liblrdf >= 0.5.0   Library to manipulate RDF files describing LADSPA plugins
           https://librdf.org/
-          
+
+      - Rubberband library >= 1.8.1   Library for audio stretch, pitch,
+         and samplerate manipulation. (development files)
+          https://breakfastquay.com/rubberband/
+
       - LV2 (LADSPA Version 2) plugin support:
 
         lilv >= 0.24.0 (development files)
@@ -157,9 +161,9 @@ details.
           See https://github.com/muse-sequencer/muse/wiki/python-remote-control.
           The bundled midi scripts ('Scripts', or 'Plugins' in earlier versions) require Python 3.
            
-      - Pyro 4    Python Remote Objects
-          https://pythonhosted.org/Pyro4/
-          The remote control supports Pyro 4. 
+      - Pyro 5    Python Remote Objects
+          https://pythonhosted.org/Pyro5/
+          The remote control supports Pyro 5.
           See https://github.com/muse-sequencer/muse/wiki/python-remote-control.
 
       - PyQt5 is used by some of the bundled midi scripts ('Scripts', or 'Plugins' in earlier versions).
@@ -276,7 +280,7 @@ details.
                 Debug, Release, RelWithDebInfo and MinSizeRel.
                Release is recommended, to get optimizations.
                If no CMAKE_BUILD_TYPE is given at all, cmake uses either the previous 
-                cached value, or else 'empty' (plain or default system optimizations).
+                cached value, or else 'RelWithDebInfo' (release with debug info).
 
             -DCMAKE_INSTALL_PREFIX=<prefix>
                The installation <prefix> where the program is installed.

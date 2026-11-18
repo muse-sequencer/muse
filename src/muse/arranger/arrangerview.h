@@ -50,6 +50,7 @@ class PartColorToolbar;
 class Arranger;
 class Xml;
 class AutomationModeToolBar;
+class PopupMenu;
 
 class ArrangerView : public TopWin
 {
@@ -118,6 +119,8 @@ private:
     MusECore::Scripts scripts;
     QMenu* menuScripts;
 
+    PopupMenu *pianoConfigMenu;
+
 // REMOVE Tim. wave. Removed.
 //     QMetaObject::Connection _configChangedEditToolsMetaConn;
     QMetaObject::Connection _deliveredScriptReceivedMetaConn;
@@ -143,6 +146,8 @@ private slots:
     void automationInterpolateModeChanged(int);
     void automationBoxModeChanged(int);
     void automationOptimizeChanged(bool);
+    void pianoConfigMenuAboutToShow();
+    void pianoConfigMenuAboutToHide();
     // REMOVE Tim. wave. Added.
     void configChanged();
 

@@ -667,9 +667,6 @@ struct LV2PluginWrapper_State {
     QMap<QString, QPair<QString, QVariant> > iStateValues;
     char **tmpValues;
     size_t numStateValues;
-    // Temporary during state restoration. Whether the custom data does actually
-    //  contain state data put there by the plugin, besides any data we put there.
-    bool tmpHasPluginState;
     LockFreeDataRingBuffer *wrkDataBuffer;
     LockFreeDataRingBuffer *wrkRespDataBuffer;
     LV2PluginWrapper_Worker *wrkThread;

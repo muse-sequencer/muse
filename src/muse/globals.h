@@ -89,11 +89,6 @@ extern MusECore::ValueUnits_t valueUnits;
 
 extern bool blinkTimerPhase;
 
-extern bool hIsB;
-
-extern const signed char sharpTab[14][7];
-extern const signed char flatTab[14][7];
-
 extern QString museGlobalLib;
 extern QString museGlobalShare;
 extern QString museUser;
@@ -151,6 +146,7 @@ extern const char* drum_map_file_save_pattern[];
 extern const char* audio_file_pattern[];
 extern const char* colors_config_file_pattern[];
 //extern const char* stylesheet_file_pattern[];
+extern const char* note_names_file_pattern[];
 
 extern Qt::KeyboardModifiers globalKeyState;
 

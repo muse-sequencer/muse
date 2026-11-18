@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf8"?>
+<muse version="4.2">
+  <noteNameList name="Persian 24-TET" startMidiNote="0" startMidiOctave="-1">
+    <noteName noteNum="0"  firstName="دو"/>
+    <noteName noteNum="1"  firstName="دوs"  secondName="دو رk"/>
+    <noteName noteNum="2"  firstName="دو#"  secondName="رb"/>
+    <noteName noteNum="3"  firstName="رk"   secondName="دوs#"/>
+    <noteName noteNum="4"  firstName="ر"/>
+    <noteName noteNum="5"  firstName="رs"   secondName="ر میk"/>
+    <noteName noteNum="6"  firstName="ر#"   secondName="میb"/>
+    <noteName noteNum="7"  firstName="میk"  secondName="رs#"/>
+    <noteName noteNum="8"  firstName="می"/>
+    <noteName noteNum="9"  firstName="فاk"  secondName="میs"/>
+    <noteName noteNum="10" firstName="فا"/>
+    <noteName noteNum="11" firstName="فاs"  secondName="فا سلk"/>
+    <noteName noteNum="12" firstName="فا#"  secondName="سلb"/>
+    <noteName noteNum="13" firstName="سلk"  secondName="فاs#"/>
+    <noteName noteNum="14" firstName="سل"/>
+    <noteName noteNum="15" firstName="سلs"  secondName="سل لاk"/>
+    <noteName noteNum="16" firstName="سل#"  secondName="لاb"/>
+    <noteName noteNum="17" firstName="لاk"   secondName="سلs#"/>
+    <noteName noteNum="18" firstName="لا"/>
+    <noteName noteNum="19" firstName="لاs"   secondName="لا سیk"/>
+    <noteName noteNum="20" firstName="لا#"   secondName="سیb"/>
+    <noteName noteNum="21" firstName="سیk"  secondName="لاs#"/>
+    <noteName noteNum="22" firstName="سی"/>
+    <noteName noteNum="23" firstName="دوk"  secondName="سیs"/>
+  </noteNameList>
+</muse>

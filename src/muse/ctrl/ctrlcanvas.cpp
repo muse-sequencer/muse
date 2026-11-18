@@ -23,13 +23,16 @@
 #include <stdio.h>
 #include <limits.h>
 
+#include <QGuiApplication>
 #include <QApplication>
 #include <QPainter>
 #include <QCursor>
 #include <QMouseEvent>
 #include <QAction>
 #include <QToolTip>
+#include <QLatin1String>
 
+#include "config.h"
 #include "ctrlcanvas.h"
 #include "app.h"
 #include "globals.h"
@@ -278,7 +281,13 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       _dragType = MOVE_MOVE;
       tool   = MusEGui::PointerTool;
       //button = Qt::NoButton;
-      
+      canBorderlessMouse = true;
+#ifndef WAYLAND_SUPPORT
+      // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
+      canBorderlessMouse = QGuiApplication::platformName() != QLatin1String("wayland") &&
+         QGuiApplication::platformName() != QLatin1String("xcb");
+#endif
+
       _dragFirstXPos = 0;
       line1x = line1y = line2x = line2y = 0;
       drawLineMode = false;
@@ -1398,14 +1407,14 @@ void CtrlCanvas::setCursor()
         break;
 
     case DRAG_PAN:
-        if(MusEGlobal::config.borderlessMouse)
+        if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
             showCursor(false); // CAUTION
         else
             View::setCursor(QCursor(Qt::ClosedHandCursor));
         break;
 
     case DRAG_ZOOM:
-        if(MusEGlobal::config.borderlessMouse)
+        if(canBorderlessMouse && MusEGlobal::config.borderlessMouse)
             showCursor(false); // CAUTION
         break;
 

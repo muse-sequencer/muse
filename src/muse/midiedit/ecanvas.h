@@ -33,7 +33,10 @@
 
 #include <map>
 
+// Piano:
 #define KH        13
+// No piano (note name list).
+#define KH_MT      9
 
 
 // Forward declarations:

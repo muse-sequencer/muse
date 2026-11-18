@@ -164,6 +164,7 @@ extern QIcon* metaSVGIcon;
 extern QIcon* ctrlSVGIcon;
 extern QIcon* sysexSVGIcon;
 extern QIcon* tracktypeSVGIcon;
+extern QIcon* pianoConfigSVGIcon;
 
 extern QIcon* pencilIconSVG;
 extern QIcon* glueIconSVG;

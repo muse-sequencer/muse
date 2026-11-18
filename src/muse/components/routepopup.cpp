@@ -2431,6 +2431,11 @@ PopupMenu* RoutePopupMenu::cloneMenu(const QString& title, QWidget* parent, bool
 {
   PopupMenu* m = new RoutePopupMenu(_route, title, parent, _isOutMenu, _broadcastChanges);
   m->setToolTipsVisible(showTooltips);
+
+  // Explicitly mirror the palette or styles to be completely safe across custom engines
+  m->setStyle(this->style());
+  m->setPalette(this->palette());
+
   return m;
 }
 

@@ -316,8 +316,7 @@ void Thread::loop()
                   }
 
             struct pollfd* p = &pfd[0];
-            int i = 0;
-            for (iPoll ip = plist.begin(); ip != plist.end(); ++ip, ++p, ++i) {
+            for (iPoll ip = plist.begin(); ip != plist.end(); ++ip, ++p) {
                   if (ip->action & p->revents) {
                         (ip->handler)(ip->param1, ip->param2);
                         break;

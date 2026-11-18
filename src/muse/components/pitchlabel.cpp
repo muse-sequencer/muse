@@ -64,18 +64,33 @@ void PitchLabel::setPitchMode(bool val)
 
 QSize PitchLabel::sizeHint() const
       {
-      QFontMetrics fm(font());
-      //int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
-      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-      int h  = fm.height() + fw * 2;
+      const QString t = text();
+      const QFontMetrics fm(font());
+
+      // Enough space for a lower limit to fit for example "C#-2" plus extra space for good luck.
+      // Must display 14Bit controller values.
 // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
 #if QT_VERSION >= 0x050b00
-//      int w = 2 + fm.horizontalAdvance(QString("A#8")) +  fw * 4;
-      int w = fm.horizontalAdvance(QString("-9999")) + fw * 2;     // must display 14Bit controller values
+      int minTextWidth = fm.horizontalAdvance("W#-2");
+      // Enough space for an upper limit of say 7 'W' characters.
+      int maxTextWidth = fm.horizontalAdvance("WWWWWWW");
+      int textWidth = fm.horizontalAdvance(t);
 #else
-//      int w = 2 + fm.width(QString("A#8")) +  fw * 4;
-      int w = fm.width(QString("-9999")) + fw * 2;     // must display 14Bit controller values
+      int minTextWidth = fm.width("W#-2");
+      // Enough space for an upper limit of say 7 'W' characters.
+      int maxTextWidth = fm.width("WWWWWWW");
+      int textWidth = fm.width(t);
 #endif
+      if(textWidth < minTextWidth)
+        textWidth = minTextWidth;
+      if(textWidth > maxTextWidth)
+        textWidth = maxTextWidth;
+
+      //int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
+      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+
+      int w = textWidth + fw * 2;
+      int h  = fm.height() + fw * 2;
       return QSize(w, h).expandedTo(QApplication::globalStrut());
       }
 
