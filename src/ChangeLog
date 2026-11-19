@@ -3,6 +3,9 @@
     - For compatibility, the program now automatically sets the QT_QPA_PLATFORM
        environment variable to xcb when starting. It can be overriden before running.
     - For borderless mouse etc. use window centre, not screen centre.
+16.11.2026
+    - Arranger: Shift+Alt while dragging parts with the pointer tool now also moves all
+       automation points inside the parts. The move is horizontal only. (rj)
 15.11.2026
     - Wayland fixes. (Tim)
     - New cmake option: ENABLE_WAYLAND, default off. NOT RECOMMENDED at this time.
