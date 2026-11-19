@@ -146,6 +146,13 @@ void loadThemeColors(const QString&);
 //void updateThemeAndStyle();
 int countSelectedParts();
 
+// Loop helper functions
+void convertLoopToSingle(MusECore::Part* part);
+void convertLoopToMany(MusECore::Part* part);
+// Loop conversion functions that create a new track
+void convertLoopToSingleNewTrack(MusECore::Part* part);
+void convertLoopToManyNewTrack(MusECore::Part* part);
+
 // Tries to return the geometry of the screen under the point, or else the primary screen,
 //  or if no screens, a dummy geometry.
 QSize getScreenGeometryFromPoint(const QPoint&);
@@ -155,4 +162,3 @@ QSize getScreenGeometryFromWidget(const QWidget*);
 }
 
 #endif
-

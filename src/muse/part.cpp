@@ -439,6 +439,7 @@ Part::Part(Track* t)
       _track      = t;
       _selected   = false;
       _mute       = false;
+      _loop       = false;
       _colorIndex = 0;
       _uuid = newUuid();
       _clonemaster_uuid = _uuid;
@@ -470,6 +471,7 @@ WavePart* WavePart::duplicateEmpty() const
 
 	*(PosLen*)part = *(PosLen*)this;
 	part->setMute(mute());
+	part->setLoop(loop());
 	
 	return part;
 }
@@ -492,6 +494,7 @@ MidiPart* MidiPart::duplicateEmpty() const
 
 	*(PosLen*)part = *(PosLen*)this;
 	part->setMute(mute());
+	part->setLoop(loop());
 	
 	return part;
 }
