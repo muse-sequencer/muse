@@ -147,6 +147,11 @@ void loadThemeColors(const QString&);
 int countSelectedParts();
 
 // Loop helper functions
+// Returns the tick where a looping part's loop should end.
+// Finds the next part on the same track; if none, returns 0 (no limit).
+// This is the single authoritative source for loop boundary calculation.
+unsigned getLoopEndTick(const MusECore::Part* part);
+
 void convertLoopToSingle(MusECore::Part* part);
 void convertLoopToMany(MusECore::Part* part);
 // Loop conversion functions that create a new track

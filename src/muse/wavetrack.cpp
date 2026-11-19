@@ -31,6 +31,7 @@
 #include "xml.h"
 #include "song.h"
 #include "globals.h"
+#include "helper.h"
 #include "gconfig.h"
 #include "al/dsp.h"
 #include "audioprefetch.h"
@@ -173,68 +174,103 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
 
               unsigned p_spos = part->frame();
               unsigned p_epos = p_spos + part->lenFrame();
-              if (pos + n < p_spos)
-                break;
-              if (pos >= p_epos)
-                continue;
+              
+              // For looping parts, find the loop end boundary
+              unsigned loopEndFrame = 0; // 0 means no limit
+              if (part->loop()) {
+                    unsigned loopEndTick = MusEGui::getLoopEndTick(part);
+                    if (loopEndTick > 0) {
+                          // Convert tick to frame for audio processing
+                          loopEndFrame = MusEGlobal::tempomap.tick2frame(loopEndTick);
+                    }
+              }
+              
+              bool isLooping = part->loop() && (p_epos > p_spos);
+              
+              if (!isLooping) {
+                    // Non-looping part: original behavior
+                    if (pos + n < p_spos)
+                      break;
+                    if (pos >= p_epos)
+                      continue;
+              }
+              else {
+                    // Looping part: check if we're before the part start
+                    if (pos + n < p_spos)
+                      break;
+                    // If we're past the loop end, skip this part
+                    if (loopEndFrame > 0 && pos >= loopEndFrame)
+                      continue;
+              }
   
               EventList& el = part->nonconst_events();
-              for (iEvent ie = el.begin(); ie != el.end(); ++ie) {
-                    Event& event = ie->second;
-                    unsigned e_spos  = event.frame() + p_spos;
-                    unsigned nn      = event.lenFrame();
-                    unsigned e_epos  = e_spos + nn;
+              
+              // For looping parts, we need to process multiple iterations
+              unsigned loopIterations = 1;
+              if (isLooping && p_epos > p_spos) {
+                    unsigned partLenFrame = p_epos - p_spos;
+                    unsigned effectiveEnd = (loopEndFrame > 0) ? loopEndFrame : (p_spos + partLenFrame * 4);
+                    if (effectiveEnd > p_spos)
+                      loopIterations = (effectiveEnd - p_spos) / partLenFrame;
+                    if (loopIterations < 1) loopIterations = 1;
+              }
+              
+              for (unsigned loopIter = 0; loopIter < loopIterations; ++loopIter) {
+                    unsigned iterOffset = loopIter * (p_epos - p_spos);
+                    
+                    for (iEvent ie = el.begin(); ie != el.end(); ++ie) {
+                          Event& event = ie->second;
+                          unsigned e_spos  = event.frame() + p_spos + iterOffset;
+                          unsigned nn      = event.lenFrame();
+                          unsigned e_epos  = e_spos + nn;
+
+                          // For looping parts, stop if we reach the loop end
+                          if (part->loop() && loopEndFrame > 0 && e_spos >= loopEndFrame)
+                                continue;
 
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
-                    if ((int64_t)(pos + n) < (int64_t)(int)e_spos)
-                      break;
-                    if ((int64_t)pos >= (int64_t)(int)e_epos)
-                      continue;
+                          if ((int64_t)(pos + n) < (int64_t)(int)e_spos)
+                                break;
+                          if ((int64_t)pos >= (int64_t)(int)e_epos)
+                                continue;
 #else
-                    if (pos + n < e_spos)
-                      break;
-                    if (pos >= e_epos)
-                      continue;
+                          if (pos + n < e_spos)
+                                break;
+                          if (pos >= e_epos)
+                                continue;
 #endif
 
-                    int offset = e_spos - pos;
+                          int offset = e_spos - pos;
 
-                    unsigned srcOffset, dstOffset;
-                    if (offset > 0) {
-                          nn = n - offset;
-                          srcOffset = 0;
-                          dstOffset = offset;
+                          unsigned srcOffset, dstOffset;
+                          if (offset > 0) {
+                                nn = n - offset;
+                                srcOffset = 0;
+                                dstOffset = offset;
+                                }
+                          else {
+                                srcOffset = -offset;
+                                dstOffset = 0;
+
+                                nn += offset;
+                                if (nn > n)
+                                      nn = n;
+                                }
+
+                          if(use_latency_corr)
+                          {
+                                if(latency_correction > 0 && (unsigned int)latency_correction > srcOffset)
+                                      continue;
+                                srcOffset -= latency_correction;
                           }
-                    else {
-                          srcOffset = -offset;
-                          dstOffset = 0;
 
-                          nn += offset;
-                          if (nn > n)
-                                nn = n;
+                          float* bpp[channels()];
+                          for (int i = 0; i < channels(); ++i)
+                                bpp[i] = bp[i] + dstOffset;
+
+                          event.readAudio(srcOffset, bpp, channels(), nn, doSeek, do_overwrite);
+                          do_overwrite = false;
                           }
-
-                    if(use_latency_corr)
-                    {
-                      // Don't bother trying to read anything that comes before sample zero,
-                      //  or limiting to zero which would just repeat the same beginning section over.
-                      
-                      // REMOVE Tim. latency. Added. Comment.
-                      // TODO: Change this: Insert blanks and use what we can from the buffer!
-                      
-                      if(latency_correction > 0 && (unsigned int)latency_correction > srcOffset)
-                        continue;
-                      // Move the source FORWARD by an amount necessary for latency correction.
-                      // i_correction will be negative for correction.
-                      srcOffset -= latency_correction;
-                    }
-
-                    float* bpp[channels()];
-                    for (int i = 0; i < channels(); ++i)
-                          bpp[i] = bp[i] + dstOffset;
-
-                    event.readAudio(srcOffset, bpp, channels(), nn, doSeek, do_overwrite);
-                    do_overwrite = false;
                     }
               }
       }
