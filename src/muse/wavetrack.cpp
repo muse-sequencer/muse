@@ -233,6 +233,10 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                           if (part->loop() && loopEndFrame > 0 && e_spos >= loopEndFrame)
                                 continue;
 
+                          // Clamp e_epos to loopEndFrame so the last iteration doesn't read beyond the loop boundary
+                          if (part->loop() && loopEndFrame > 0 && e_epos > loopEndFrame)
+                                e_epos = loopEndFrame;
+
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
                           if ((int64_t)(pos + n) < (int64_t)(int)e_spos)
                                 break;

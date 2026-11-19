@@ -2519,10 +2519,12 @@ void convertLoopToSingle(MusECore::Part* part)
         }
     }
 
-    // Replace the original part with the new one
-    MusEGlobal::song->removePart(part);
-    MusEGlobal::song->addPart(newPart);
-    MusEGlobal::song->update(SC_PART_MODIFIED);
+    // Use undo operations for consistent undo support
+    MusECore::Undo operations;
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, 1, 0));
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeletePart, part));
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
+    MusEGlobal::song->applyOperationGroup(operations);
 }
 
 //---------------------------------------------------------
@@ -2544,8 +2546,9 @@ void convertLoopToMany(MusECore::Part* part)
     // Use centralized helper to find loop end boundary (never returns 0)
     unsigned loopEndTick = getLoopEndTick(part);
 
-    // Disable loop on original
-    part->setLoop(false);
+    // Use undo operations for consistent undo support
+    MusECore::Undo operations;
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, 1, 0));
 
     // Create copies for each loop iteration after the first
     unsigned loopCount = (loopEndTick - partTick) / partLen;
@@ -2554,7 +2557,7 @@ void convertLoopToMany(MusECore::Part* part)
         MusECore::Part* newPart = part->duplicate();
         newPart->setTick(partTick + loop * partLen);
         newPart->setLoop(false);
-        MusEGlobal::song->addPart(newPart);
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
     }
     // Handle remainder - create a partial part for the last ghost
     if (remainder > 0) {
@@ -2570,10 +2573,10 @@ void convertLoopToMany(MusECore::Part* part)
                 newPart->addEvent(ev);
             }
         }
-        MusEGlobal::song->addPart(newPart);
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
     }
 
-    MusEGlobal::song->update(SC_PART_MODIFIED);
+    MusEGlobal::song->applyOperationGroup(operations);
 }
 
 //---------------------------------------------------------

@@ -1276,53 +1276,7 @@ namespace MusEGui {
         case OP_CONVERT_LOOP_TO_SINGLE: {
             MusECore::Part* part = item->part();
             if (part->loop()) {
-                MusECore::Undo operations;
-                
-                unsigned partTick = part->tick();
-                unsigned partLen = part->lenTick();
-                if (partLen == 0) break;
-                
-                // Use centralized helper to find loop end boundary (never returns 0)
-                unsigned loopEndTick = getLoopEndTick(part);
-                
-                // Disable loop on original
-                part->setLoop(false);
-                
-                // First operation: ModifyPartLoop to restore loop flag on undo (also sets the undo menu name)
-                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, 1, 0));
-                
-                // Create new part spanning the entire loop range
-                MusECore::Part* newPart = part->duplicateEmpty();
-                newPart->setTick(partTick);
-                newPart->setLenTick(loopEndTick - partTick);
-                newPart->setLoop(false);
-                newPart->setName(part->name());
-                newPart->setColorIndex(part->colorIndex());
-                
-                unsigned loopCount = (loopEndTick - partTick) / partLen;
-                unsigned remainder = (loopEndTick - partTick) % partLen;
-                for (unsigned loop = 0; loop < loopCount; ++loop) {
-                    unsigned offset = loop * partLen;
-                    for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-                        MusECore::Event ev = ie->second.duplicate();
-                        ev.setPosValue(ev.posValue() + offset);
-                        newPart->addEvent(ev);
-                    }
-                }
-                if (remainder > 0) {
-                    for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-                        if (ie->second.posValue() < remainder) {
-                            MusECore::Event ev = ie->second.duplicate();
-                            ev.setPosValue(ev.posValue() + (loopCount * partLen));
-                            newPart->addEvent(ev);
-                        }
-                    }
-                }
-                
-                // Delete original part and add the new converted part
-                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeletePart, part));
-                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
-                MusEGlobal::song->applyOperationGroup(operations);
+                convertLoopToSingle(part);
                 updateItems();
                 redraw();
             }
@@ -1331,48 +1285,7 @@ namespace MusEGui {
         case OP_CONVERT_LOOP_TO_MANY: {
             MusECore::Part* part = item->part();
             if (part->loop()) {
-                MusECore::Undo operations;
-                
-                unsigned partTick = part->tick();
-                unsigned partLen = part->lenTick();
-                if (partLen == 0) break;
-                
-                // Use centralized helper to find loop end boundary (never returns 0)
-                unsigned loopEndTick = getLoopEndTick(part);
-                
-                // Disable loop on original
-                part->setLoop(false);
-                
-                // First operation: ModifyPartLoop to restore loop flag on undo (also sets the undo menu name)
-                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, 1, 0));
-                
-                unsigned loopCount = (loopEndTick - partTick) / partLen;
-                unsigned remainder = (loopEndTick - partTick) % partLen;
-                for (unsigned loop = 1; loop < loopCount; ++loop) {
-                    MusECore::Part* newPart = part->duplicate();
-                    newPart->setTick(partTick + loop * partLen);
-                    newPart->setLoop(false);
-                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
-                }
-                // Handle remainder - create a partial part for the last ghost
-                if (remainder > 0) {
-                    MusECore::Part* newPart = part->duplicateEmpty();
-                    newPart->setTick(partTick + loopCount * partLen);
-                    newPart->setLenTick(remainder);
-                    newPart->setLoop(false);
-                    newPart->setName(part->name());
-                    newPart->setColorIndex(part->colorIndex());
-                    for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-                        if (ie->second.posValue() < remainder) {
-                            MusECore::Event ev = ie->second.duplicate();
-                            ev.setPosValue(ev.posValue() + (loopCount * partLen));
-                            newPart->addEvent(ev);
-                        }
-                    }
-                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
-                }
-                
-                MusEGlobal::song->applyOperationGroup(operations);
+                convertLoopToMany(part);
                 updateItems();
                 redraw();
             }
