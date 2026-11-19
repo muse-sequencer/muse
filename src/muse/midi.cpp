@@ -1517,7 +1517,20 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                                           }
                                           break;
                                     }
-                                    // SysEx and other types: skip in loop mode
+                                    case Sysex:
+                                          if (md_writable)
+                                                md->putEvent(ev.asMidiPlayEvent(frame, port, channel),
+                                                      MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+                                          break;
+                                    case Meta:
+                                          {
+                                                MusECore::MidiPlayEvent mpev(frame, port, MusECore::ME_META, ev.eventData());
+                                                mpev.setA(ev.dataA());
+                                                if (md_writable)
+                                                      md->putEvent(mpev, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+                                          }
+                                          break;
+                                    // Wave and other types: skip in loop mode
                                     default: break;
                               }
                         }

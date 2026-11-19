@@ -206,9 +206,11 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
               EventList& el = part->nonconst_events();
               
               // For looping parts, we need to process multiple iterations
+              // loopEndFrame is in absolute frame coordinates (same as p_spos/p_epos)
               unsigned loopIterations = 1;
               if (isLooping && p_epos > p_spos) {
                     unsigned partLenFrame = p_epos - p_spos;
+                    // effectiveEnd is absolute frame; loop range is (effectiveEnd - p_spos)
                     unsigned effectiveEnd = (loopEndFrame > 0) ? loopEndFrame : (p_spos + partLenFrame * 4);
                     if (effectiveEnd > p_spos)
                       loopIterations = (effectiveEnd - p_spos) / partLenFrame;
@@ -216,15 +218,18 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
               }
               
               for (unsigned loopIter = 0; loopIter < loopIterations; ++loopIter) {
+                    // iterOffset is relative to p_spos: iteration 0 = 0, iteration 1 = partLenFrame, etc.
                     unsigned iterOffset = loopIter * (p_epos - p_spos);
                     
                     for (iEvent ie = el.begin(); ie != el.end(); ++ie) {
                           Event& event = ie->second;
+                          // e_spos is absolute frame: event.frame() is relative to part start,
+                          // p_spos is absolute part start, iterOffset is absolute offset from part start
                           unsigned e_spos  = event.frame() + p_spos + iterOffset;
                           unsigned nn      = event.lenFrame();
                           unsigned e_epos  = e_spos + nn;
 
-                          // For looping parts, stop if we reach the loop end
+                          // For looping parts, stop if we reach the loop end (both are absolute frames)
                           if (part->loop() && loopEndFrame > 0 && e_spos >= loopEndFrame)
                                 continue;
 
