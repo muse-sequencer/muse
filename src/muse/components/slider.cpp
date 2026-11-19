@@ -80,6 +80,8 @@ Slider::Slider(QWidget *parent, const char *name,
       {
       setPagingButtons(Qt::RightButton);
 
+      _detectThumb = false;
+
       d_thumbLength = 16;
       d_thumbHalf = 8;
       d_thumbWidth = 16;
@@ -681,7 +683,7 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
           p.setY(mp);
           cp = mapToGlobal( QPoint(p.x(), mp) );
         }
-        cursor().setPos(cp.x(), cp.y());
+        QCursor::setPos(cp.x(), cp.y());
         return;
       }
     }
@@ -695,15 +697,9 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
 
       if(d_sliderRect.contains(p))
       {
-        if((currentPos > markerPos - d_thumbHalf)
-            && (currentPos < markerPos + d_thumbHalf))
-        {
-          DEBUG_SLIDER(stderr, "Slider::getScrollMode ScrMouse\n");
-          scrollMode = ScrMouse;
-          direction = 0;
-          return;
-        }
-        else if(pagingButtons().testFlag(button))
+        if((pagingButtons().testFlag(button)) &&
+           ((currentPos <= markerPos - d_thumbHalf) ||
+            (currentPos > markerPos + d_thumbHalf)))
         {
           DEBUG_SLIDER(stderr, "Slider::getScrollMode ScrPage\n");
           scrollMode = ScrPage;
@@ -712,6 +708,15 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
             direction = 1;
           else
             direction = -1;
+          return;
+        }
+        else if(!detectThumb() ||
+           ((currentPos > markerPos - d_thumbHalf)
+           && (currentPos < markerPos + d_thumbHalf)))
+        {
+          DEBUG_SLIDER(stderr, "Slider::getScrollMode ScrMouse\n");
+          scrollMode = ScrMouse;
+          direction = 0;
           return;
         }
       }

@@ -97,7 +97,9 @@ class SliderBase : public QWidget, public DoubleRange
   bool _pressed;
   bool d_trackingTempDisable;
   double d_valueAtPress;
-  
+  // Whether borderless mouse should use the screen centre or the window centre.
+  bool _borderlessMouseUseScreen;
+
   bool valueHasChangedAtRelease() const;
   
   virtual void setMass(double val);

@@ -32,6 +32,8 @@
 #include <QLocale>
 #include <QCollator>
 #include <QMessageBox>
+#include <QGuiApplication>
+#include <QLatin1String>
 
 #include "genset.h"
 #include "app.h"
@@ -44,6 +46,7 @@
 //#include "al/al.h"
 #include "undo.h"
 #include "cobject.h"
+#include "config.h"
 
 #include "song.h"
 #include "operations.h"
@@ -538,7 +541,17 @@ void GlobalSettingsConfig::updateSettings()
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
 //      rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
       smartFocusCheckBox->setChecked(MusEGlobal::config.smartFocus);
+#ifndef WAYLAND_SUPPORT
+      // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
+      if(QGuiApplication::platformName() != QLatin1String("wayland") &&
+         QGuiApplication::platformName() != QLatin1String("xcb"))
+#endif
       borderlessMouseCheckBox->setChecked(MusEGlobal::config.borderlessMouse);
+#ifndef WAYLAND_SUPPORT
+      else
+        borderlessMouseCheckBox->setEnabled(false);
+#endif
+
       velocityPerNoteCheckBox->setChecked(MusEGlobal::config.velocityPerNote);
       
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
@@ -666,6 +679,11 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
 //      MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
       MusEGlobal::config.smartFocus = smartFocusCheckBox->isChecked();
+#ifndef WAYLAND_SUPPORT
+      // No cursor move support under Qt (yet) on Wayland or xcb via xwayland.
+      if(QGuiApplication::platformName() != QLatin1String("wayland") &&
+         QGuiApplication::platformName() != QLatin1String("xcb"))
+#endif
       MusEGlobal::config.borderlessMouse = borderlessMouseCheckBox->isChecked();
       MusEGlobal::config.velocityPerNote = velocityPerNoteCheckBox->isChecked();
       MusEGlobal::config.noPluginScaling = revertPluginNativeGUIScalingCheckBox->isChecked();

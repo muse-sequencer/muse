@@ -562,6 +562,10 @@ CommandLineParseResult parseCommandLine(
 
 int main(int argc, char* argv[])
 {
+#if defined(Q_OS_LINUX) && !defined(WAYLAND_SUPPORT)
+      ::setenv("QT_QPA_PLATFORM", "xcb", 0);
+#endif
+
       // Get the separator used for file paths.
       const QChar list_separator = QDir::listSeparator();
 
@@ -608,14 +612,13 @@ int main(int argc, char* argv[])
         timer.start();
 
         // Make working copies of the arguments.
-        const int argument_count = argc;
         int argc_copy = argc;
         char** argv_copy = nullptr;
-        if(argument_count > 0)
+        if(argc_copy > 0)
         {
-          argv_copy = (char**)malloc(argument_count * sizeof(char*));
+          argv_copy = (char**)malloc(argc_copy * sizeof(char*));
           int len = 0;
-          for(int i = 0; i < argument_count; ++i)
+          for(int i = 0; i < argc_copy; ++i)
           {
             argv_copy[i] = nullptr;
             if(argv[i])
@@ -1749,9 +1752,12 @@ int main(int argc, char* argv[])
         //optind = 0;
 
         // Free the working copies of the arguments.
+        // Note that argc_copy might not be the same as the original argc,
+        //  since Qt or lash etc. might remove arguments they recognize,
+        //  and decrement the counter.
         if(argv_copy)
         {
-          for(int i = 0; i < argument_count; ++i)
+          for(int i = 0; i < argc_copy; ++i)
           {
             if(argv_copy[i])
               free(argv_copy[i]);

@@ -243,6 +243,7 @@ bool MidiFile::skip(qint64 len)
       {
       // "Skips up to maxSize bytes from the device.
       //  Returns the number of bytes actually skipped, or -1 on error."
+      // Qt 5.10
       qint64 rv = fp->iodevice()->skip(len);
       if(rv == len)
         return false;

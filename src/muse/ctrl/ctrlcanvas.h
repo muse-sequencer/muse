@@ -212,6 +212,9 @@ class CtrlCanvas : public MusEGui::View {
         ContextIdEraseInclusive = 0x20
       };
       
+      // Whether borderless mouse can be used.
+      bool canBorderlessMouse;
+
       CItemList items;
       // To avoid working directly with a potentially huge number of items
       //  in the item list, these 'indexing' lists are used instead.

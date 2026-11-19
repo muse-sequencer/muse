@@ -66,6 +66,8 @@ ThinSlider::ThinSlider(QWidget *parent, const char *name,
 	       Qt::Orientation orient, ScalePos scalePos, QColor fillColor)
       : SliderBase(parent,name)
       {
+      _detectThumb = false;
+
       d_thumbLength = 16;
       d_thumbHalf = 8;
       d_thumbWidth = 16;
@@ -582,7 +584,7 @@ void ThinSlider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const 
           p.setY(mp);
           cp = mapToGlobal( QPoint(p.x(), mp) );
         }  
-        cursor().setPos(cp.x(), cp.y());
+        QCursor::setPos(cp.x(), cp.y());
       }
     }
     else
@@ -595,13 +597,9 @@ void ThinSlider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const 
       
       if (d_sliderRect.contains(p))
       {
-        if ((currentPos > markerPos - d_thumbHalf)  
-            && (currentPos < markerPos + d_thumbHalf))
-        {
-          scrollMode = ScrMouse;
-          direction = 0;
-        }
-        else
+        if((pagingButtons().testFlag(button)) &&
+           ((currentPos <= markerPos - d_thumbHalf) ||
+            (currentPos > markerPos + d_thumbHalf)))
         {
           scrollMode = ScrPage;
           if (((currentPos > markerPos) && (d_orient == Qt::Horizontal))
@@ -609,6 +607,13 @@ void ThinSlider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const 
             direction = 1;
           else
             direction = -1;
+        }
+        else if(!detectThumb() ||
+           ((currentPos > markerPos - d_thumbHalf)
+           && (currentPos < markerPos + d_thumbHalf)))
+        {
+          scrollMode = ScrMouse;
+          direction = 0;
         }
       }
       else
