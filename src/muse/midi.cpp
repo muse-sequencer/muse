@@ -1345,14 +1345,33 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
             const EventList& events = part->events();
             unsigned partTick = part->tick();
             unsigned partLen  = part->lenTick();
+            if (partLen == 0)
+                  continue;
             unsigned offset = delay + partTick;
             if (offset > nts)
                   continue;
             unsigned stick = (offset > cts) ? 0 : cts - offset;
             unsigned etick = nts - offset;
-            // Do not play events which are past the end of this part.
-            if(etick > partLen)
+            // Do not play events which are past the end of this part (unless looping).
+            if(etick > partLen && !part->loop())
               continue;
+
+            // For looping parts, find the next part on this track to determine loop end
+            unsigned loopEndTick = 0; // 0 means no limit
+            if (part->loop()) {
+                  iPart next = std::next(p);
+                  if (next != pl->end()) {
+                        loopEndTick = next->second->tick();
+                  }
+            }
+
+            // For looping parts, wrap around the event range
+            unsigned loopStick = stick;
+            unsigned loopEtick = etick;
+            if (part->loop()) {
+                  loopStick = stick % partLen;
+                  loopEtick = partLen; // Always scan the full part for loops
+            }
 
             // The start and end tick are a rough range to make the loop faster instead of having
             //  to iterate the whole list each time, comparing frames.
@@ -1363,10 +1382,10 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
             //  no user changes in-between cycles. We don't have that capability currently anyway -
             //  to break the process up into chunks (like our controllers) depending on tempo frames, 
             //  our tempo map is not frame-accurate, only tick-accurate.
-            ciEvent ie   = events.lower_bound(stick);
-            ciEvent iend = events.upper_bound(etick);
+            ciEvent ie   = events.lower_bound(loopStick);
+            ciEvent iend = events.upper_bound(loopEtick);
 
-            DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: part events stick:%u etick:%u\n", stick, etick);
+            DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: part events stick:%u etick:%u\n", loopStick, loopEtick);
             
             for (; ie != iend; ++ie) {
                   Event ev = ie->second;
@@ -1393,7 +1412,19 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                           continue;
                   }
                   
-                  unsigned tick  = ev.tick() + offset;
+                  unsigned tick;
+                  if (part->loop()) {
+                        // For looping parts, wrap the event tick around the part length
+                        unsigned evTickInPart = ev.tick() % partLen;
+                        // Calculate how many loop iterations have passed since part start
+                        unsigned loopCount = (nts - offset) / partLen;
+                        tick = evTickInPart + offset + (loopCount * partLen);
+                        // Stop looping when we reach the next part on this track
+                        if (loopEndTick > 0 && tick >= loopEndTick)
+                              continue;
+                  }
+                  else
+                        tick = ev.tick() + offset;
 
                   DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: event tick:%u\n", tick);
       

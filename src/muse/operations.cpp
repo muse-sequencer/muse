@@ -169,6 +169,7 @@ unsigned int PendingOperationItem::getIndex() const
     case SetTrackRecMonitor:
     case SetTrackOff:
     case ModifyPartName:
+    case ModifyPartLoop:
     case ModifySongLength:
     case AddMidiCtrlValList:
     case ModifyAudioCtrlValList:
@@ -1200,6 +1201,12 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     case ModifyPartName:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartName part:%p new_val:%s\n", _part, _name->toLocal8Bit().data());
       _part->setName(*_name);
+      flags |= SC_PART_MODIFIED;
+    break;
+
+    case ModifyPartLoop:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartLoop part:%p new_val:%d\n", _part, _boolA);
+      _part->setLoop(_boolA);
       flags |= SC_PART_MODIFIED;
     break;
     

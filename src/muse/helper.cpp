@@ -2422,6 +2422,259 @@ int countSelectedParts()
     return cnt;
 }
 
+//---------------------------------------------------------
+//   convertLoopToSingle
+//    Creates a single part spanning the entire loop range,
+//    with the loop flag disabled.
+//---------------------------------------------------------
+
+void convertLoopToSingle(MusECore::Part* part)
+{
+    if (!part || !part->loop())
+        return;
+
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    if (partLen == 0)
+        return;
+
+    // Find the loop end (next part on the same track)
+    unsigned loopEndTick = partTick + partLen;
+    const MusECore::PartList* pl = part->track()->parts();
+    for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
+        MusECore::Part* other = ip->second;
+        if (other == part)
+            continue;
+        if (other->tick() > partTick) {
+            loopEndTick = other->tick();
+            break;
+        }
+    }
+
+    // Create a new part spanning the entire loop range
+    MusECore::Part* newPart = part->duplicateEmpty();
+    newPart->setTick(partTick);
+    newPart->setLenTick(loopEndTick - partTick);
+    newPart->setLoop(false);
+    newPart->setName(part->name());
+    newPart->setColorIndex(part->colorIndex());
+
+    // Fill the new part with looped events
+    unsigned loopCount = (loopEndTick - partTick) / partLen;
+    unsigned remainder = (loopEndTick - partTick) % partLen;
+
+    for (unsigned loop = 0; loop < loopCount; ++loop) {
+        unsigned offset = loop * partLen;
+        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+            MusECore::Event ev = ie->second.duplicate();
+            ev.setPosValue(ev.posValue() + offset);
+            newPart->addEvent(ev);
+        }
+    }
+    // Handle remainder
+    if (remainder > 0) {
+        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+            if (ie->second.posValue() < remainder) {
+                MusECore::Event ev = ie->second.duplicate();
+                ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                newPart->addEvent(ev);
+            }
+        }
+    }
+
+    // Replace the original part with the new one
+    MusEGlobal::song->removePart(part);
+    MusEGlobal::song->addPart(newPart);
+    MusEGlobal::song->update(SC_PART_MODIFIED);
+}
+
+//---------------------------------------------------------
+//   convertLoopToMany
+//    Creates individual part copies at each loop iteration position,
+//    and disables the loop flag on the original.
+//---------------------------------------------------------
+
+void convertLoopToMany(MusECore::Part* part)
+{
+    if (!part || !part->loop())
+        return;
+
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    if (partLen == 0)
+        return;
+
+    // Find the loop end (next part on the same track)
+    unsigned loopEndTick = partTick + partLen;
+    const MusECore::PartList* pl = part->track()->parts();
+    for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
+        MusECore::Part* other = ip->second;
+        if (other == part)
+            continue;
+        if (other->tick() > partTick) {
+            loopEndTick = other->tick();
+            break;
+        }
+    }
+
+    // Disable loop on original
+    part->setLoop(false);
+
+    // Create copies for each loop iteration after the first
+    unsigned loopCount = (loopEndTick - partTick) / partLen;
+    for (unsigned loop = 1; loop < loopCount; ++loop) {
+        MusECore::Part* newPart = part->duplicate();
+        newPart->setTick(partTick + loop * partLen);
+        newPart->setLoop(false);
+        MusEGlobal::song->addPart(newPart);
+    }
+
+    MusEGlobal::song->update(SC_PART_MODIFIED);
+}
+
+//---------------------------------------------------------
+//   convertLoopToSingleNewTrack
+//    Creates a new track and places a single part spanning the entire loop range.
+//---------------------------------------------------------
+
+void convertLoopToSingleNewTrack(MusECore::Part* part)
+{
+    if (!part || !part->loop())
+        return;
+
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    if (partLen == 0)
+        return;
+
+    // Find the loop end (next part on the same track)
+    unsigned loopEndTick = partTick + partLen;
+    const MusECore::PartList* pl = part->track()->parts();
+    for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
+        MusECore::Part* other = ip->second;
+        if (other == part)
+            continue;
+        if (other->tick() > partTick) {
+            loopEndTick = other->tick();
+            break;
+        }
+    }
+
+    // Create a new track based on the original track
+    MusECore::Track* newTrack = part->track()->clone(MusECore::Track::ASSIGN_NONE);
+    if (!newTrack)
+        return;
+    newTrack->setName(part->track()->name() + " (loop)");
+
+    // Create a new part spanning the entire loop range
+    MusECore::Part* newPart = part->duplicateEmpty();
+    newPart->setTick(partTick);
+    newPart->setLenTick(loopEndTick - partTick);
+    newPart->setLoop(false);
+    newPart->setName(part->name());
+    newPart->setColorIndex(part->colorIndex());
+
+    // Fill the new part with looped events
+    unsigned loopCount = (loopEndTick - partTick) / partLen;
+    unsigned remainder = (loopEndTick - partTick) % partLen;
+
+    for (unsigned loop = 0; loop < loopCount; ++loop) {
+        unsigned offset = loop * partLen;
+        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+            MusECore::Event ev = ie->second.duplicate();
+            ev.setPosValue(ev.posValue() + offset);
+            newPart->addEvent(ev);
+        }
+    }
+    // Handle remainder
+    if (remainder > 0) {
+        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+            if (ie->second.posValue() < remainder) {
+                MusECore::Event ev = ie->second.duplicate();
+                ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                newPart->addEvent(ev);
+            }
+        }
+    }
+
+    // Group all operations into a single undo entry
+    MusECore::Undo operations;
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, -1, newTrack));
+    // Set the part's track to the new track before adding via undo op
+    newPart->setTrack(newTrack);
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
+    MusEGlobal::song->applyOperationGroup(operations);
+}
+
+//---------------------------------------------------------
+//   convertLoopToManyNewTrack
+//    Creates a new track and places individual part copies at each loop iteration.
+//---------------------------------------------------------
+
+void convertLoopToManyNewTrack(MusECore::Part* part)
+{
+    if (!part || !part->loop())
+        return;
+
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    if (partLen == 0)
+        return;
+
+    // Find the loop end (next part on the same track)
+    unsigned loopEndTick = partTick + partLen;
+    const MusECore::PartList* pl = part->track()->parts();
+    for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
+        MusECore::Part* other = ip->second;
+        if (other == part)
+            continue;
+        if (other->tick() > partTick) {
+            loopEndTick = other->tick();
+            break;
+        }
+    }
+
+    // Create a new track based on the original track
+    MusECore::Track* newTrack = part->track()->clone(MusECore::Track::ASSIGN_NONE);
+    if (!newTrack)
+        return;
+    newTrack->setName(part->track()->name() + " (loop)");
+
+    // Group all operations into a single undo entry
+    MusECore::Undo operations;
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, -1, newTrack));
+
+    // Create copies for each loop iteration
+    unsigned loopCount = (loopEndTick - partTick) / partLen;
+    unsigned remainder = (loopEndTick - partTick) % partLen;
+    for (unsigned loop = 0; loop < loopCount; ++loop) {
+        MusECore::Part* newPart = part->duplicate();
+        newPart->setTick(partTick + loop * partLen);
+        newPart->setLoop(false);
+        newPart->setTrack(newTrack);
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
+    }
+    // Handle remainder - create a partial part for the last ghost
+    if (remainder > 0) {
+        MusECore::Part* newPart = part->duplicateEmpty();
+        newPart->setTick(partTick + loopCount * partLen);
+        newPart->setLenTick(remainder);
+        newPart->setLoop(false);
+        newPart->setName(part->name());
+        newPart->setColorIndex(part->colorIndex());
+        newPart->setTrack(newTrack);
+        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+            if (ie->second.posValue() < remainder) {
+                MusECore::Event ev = ie->second.duplicate();
+                ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                newPart->addEvent(ev);
+            }
+        }
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
+    }
+    MusEGlobal::song->applyOperationGroup(operations);
+}
+
 QSize getScreenGeometryFromPoint(const QPoint& globalP)
 {
   QScreen *sc = QGuiApplication::screenAt(globalP);
@@ -2446,4 +2699,3 @@ QSize getScreenGeometryFromWidget(const QWidget* widget)
 }
 
 } // namespace MusEGui
-

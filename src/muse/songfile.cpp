@@ -359,6 +359,8 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
                                npart->setColorIndex(xml.parseInt());
                         else if (tag == "mute")
                               npart->setMute(xml.parseInt());
+                        else if (tag == "loop")
+                              npart->setLoop(xml.parseInt());
                         else if (tag == "event")
                         {
                               // If a new non-clone part was created, accept the events...
@@ -521,6 +523,8 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths, XmlWrite
       xml.intTag(level, "color", _colorIndex);
       if (_mute)
             xml.intTag(level, "mute", _mute);
+      if (_loop)
+            xml.intTag(level, "loop", _loop);
 
       // If this is the first time writing a part with this clonemaster serial number,
       //  write the events, even if this part itself is a clone.
