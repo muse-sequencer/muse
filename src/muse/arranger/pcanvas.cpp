@@ -1253,17 +1253,22 @@ namespace MusEGui {
         }
         case OP_SET_LOOP: {
             MusECore::Part* part = item->part();
-            bool newLoop = !part->loop();
-            part->setLoop(newLoop);
-            MusEGlobal::song->update(SC_PART_MODIFIED);
+            // Use ModifyPartLoop UndoOp for consistent undo support
+            // Constructor: (type, part, old_loop, new_loop)
+            MusECore::Undo operations;
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, (int)part->loop(), (int)(part->loop() ? 0 : 1)));
+            MusEGlobal::song->applyOperationGroup(operations);
             redraw();
             break;
         }
         case OP_REMOVE_LOOP: {
             MusECore::Part* part = item->part();
             if (part->loop()) {
-                part->setLoop(false);
-                MusEGlobal::song->update(SC_PART_MODIFIED);
+                // Use ModifyPartLoop UndoOp for consistent undo support
+                // Constructor: (type, part, old_loop, new_loop)
+                MusECore::Undo operations;
+                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, 1, 0));
+                MusEGlobal::song->applyOperationGroup(operations);
                 redraw();
             }
             break;
@@ -1275,17 +1280,10 @@ namespace MusEGui {
                 
                 unsigned partTick = part->tick();
                 unsigned partLen = part->lenTick();
-                unsigned loopEndTick = partTick + partLen;
-                const MusECore::PartList* pl = part->track()->parts();
-                for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
-                    MusECore::Part* other = ip->second;
-                    if (other == part)
-                        continue;
-                    if (other->tick() > partTick) {
-                        loopEndTick = other->tick();
-                        break;
-                    }
-                }
+                if (partLen == 0) break;
+                
+                // Use centralized helper to find loop end boundary (never returns 0)
+                unsigned loopEndTick = getLoopEndTick(part);
                 
                 // Disable loop on original
                 part->setLoop(false);
@@ -1337,17 +1335,10 @@ namespace MusEGui {
                 
                 unsigned partTick = part->tick();
                 unsigned partLen = part->lenTick();
-                unsigned loopEndTick = partTick + partLen;
-                const MusECore::PartList* pl = part->track()->parts();
-                for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
-                    MusECore::Part* other = ip->second;
-                    if (other == part)
-                        continue;
-                    if (other->tick() > partTick) {
-                        loopEndTick = other->tick();
-                        break;
-                    }
-                }
+                if (partLen == 0) break;
+                
+                // Use centralized helper to find loop end boundary (never returns 0)
+                unsigned loopEndTick = getLoopEndTick(part);
                 
                 // Disable loop on original
                 part->setLoop(false);
@@ -2671,35 +2662,8 @@ namespace MusEGui {
         unsigned partLen = part->lenTick();
         if (partLen == 0) return;
 
-        // Find the next part on the same track to limit the loop range
-        unsigned loopEndTick = partTick + partLen;
-        const MusECore::PartList* pl = part->track()->parts();
-        for (auto ip = pl->begin(); ip != pl->end(); ++ip) {
-            MusECore::Part* other = ip->second;
-            if (other == part) continue;
-            if (other->tick() > partTick) {
-                loopEndTick = other->tick();
-                break;
-            }
-        }
-
-       	// If no next part found, use the actual end of the last part in the song (without round-up)
-       	if (loopEndTick == partTick + partLen) {
-       		unsigned songEndTick = 0;
-       		const MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-       		for (MusECore::ciTrack it = tracks->cbegin(); it != tracks->cend(); ++it) {
-       			MusECore::Track* track = *it;
-       			const MusECore::PartList* pl = track->parts();
-       			for (MusECore::ciPart ip = pl->cbegin(); ip != pl->cend(); ++ip) {
-       				unsigned last = ip->second->tick() + ip->second->lenTick();
-       				if (last > songEndTick)
-       					songEndTick = last;
-       			}
-       		}
-       		loopEndTick = songEndTick;
-       		if (loopEndTick <= partTick + partLen)
-       			loopEndTick = partTick + partLen * 4; // Default: 4 repetitions
-       	}
+        // Use centralized helper to find loop end boundary (never returns 0)
+        unsigned loopEndTick = getLoopEndTick(part);
 
         p.setWorldMatrixEnabled(false);
 

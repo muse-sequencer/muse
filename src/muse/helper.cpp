@@ -2423,6 +2423,53 @@ int countSelectedParts()
 }
 
 //---------------------------------------------------------
+//   getLoopEndTick
+//    Returns the tick where a looping part's loop should end.
+//    Finds the earliest part on the same track that starts after
+//    this part. If none, returns the end of the last part in the song.
+//    Falls back to 4 repetitions if no meaningful end can be determined.
+//    This is the single authoritative source for loop boundaries.
+//---------------------------------------------------------
+
+unsigned getLoopEndTick(const MusECore::Part* part)
+{
+    if (!part)
+        return 0;
+    unsigned partTick = part->tick();
+    const MusECore::PartList* pl = part->track()->parts();
+    unsigned minNextTick = 0; // 0 means no limit
+    for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
+        MusECore::Part* other = ip->second;
+        if (other == part)
+            continue;
+        if (other->tick() > partTick) {
+            if (minNextTick == 0 || other->tick() < minNextTick)
+                minNextTick = other->tick();
+        }
+    }
+    if (minNextTick > 0)
+        return minNextTick;
+
+    // No next part on the same track — use the actual end of the last part in the song
+    unsigned songEndTick = 0;
+    const MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for (MusECore::ciTrack it = tracks->cbegin(); it != tracks->cend(); ++it) {
+        MusECore::Track* track = *it;
+        const MusECore::PartList* otherPl = track->parts();
+        for (MusECore::ciPart ip = otherPl->cbegin(); ip != otherPl->cend(); ++ip) {
+            unsigned last = ip->second->tick() + ip->second->lenTick();
+            if (last > songEndTick)
+                songEndTick = last;
+        }
+    }
+    if (songEndTick > partTick)
+        return songEndTick;
+
+    // Fallback: 4 repetitions if we can't determine a meaningful end
+    return partTick + part->lenTick() * 4;
+}
+
+//---------------------------------------------------------
 //   convertLoopToSingle
 //    Creates a single part spanning the entire loop range,
 //    with the loop flag disabled.
@@ -2438,18 +2485,8 @@ void convertLoopToSingle(MusECore::Part* part)
     if (partLen == 0)
         return;
 
-    // Find the loop end (next part on the same track)
-    unsigned loopEndTick = partTick + partLen;
-    const MusECore::PartList* pl = part->track()->parts();
-    for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
-        MusECore::Part* other = ip->second;
-        if (other == part)
-            continue;
-        if (other->tick() > partTick) {
-            loopEndTick = other->tick();
-            break;
-        }
-    }
+    // Use centralized helper to find loop end boundary (never returns 0)
+    unsigned loopEndTick = getLoopEndTick(part);
 
     // Create a new part spanning the entire loop range
     MusECore::Part* newPart = part->duplicateEmpty();
@@ -2504,28 +2541,35 @@ void convertLoopToMany(MusECore::Part* part)
     if (partLen == 0)
         return;
 
-    // Find the loop end (next part on the same track)
-    unsigned loopEndTick = partTick + partLen;
-    const MusECore::PartList* pl = part->track()->parts();
-    for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
-        MusECore::Part* other = ip->second;
-        if (other == part)
-            continue;
-        if (other->tick() > partTick) {
-            loopEndTick = other->tick();
-            break;
-        }
-    }
+    // Use centralized helper to find loop end boundary (never returns 0)
+    unsigned loopEndTick = getLoopEndTick(part);
 
     // Disable loop on original
     part->setLoop(false);
 
     // Create copies for each loop iteration after the first
     unsigned loopCount = (loopEndTick - partTick) / partLen;
+    unsigned remainder = (loopEndTick - partTick) % partLen;
     for (unsigned loop = 1; loop < loopCount; ++loop) {
         MusECore::Part* newPart = part->duplicate();
         newPart->setTick(partTick + loop * partLen);
         newPart->setLoop(false);
+        MusEGlobal::song->addPart(newPart);
+    }
+    // Handle remainder - create a partial part for the last ghost
+    if (remainder > 0) {
+        MusECore::Part* newPart = part->duplicateEmpty();
+        newPart->setTick(partTick + loopCount * partLen);
+        newPart->setLenTick(remainder);
+        newPart->setLoop(false);
+        newPart->setName(part->name());
+        newPart->setColorIndex(part->colorIndex());
+        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+            if (ie->second.posValue() < remainder) {
+                MusECore::Event ev = ie->second.duplicate();
+                newPart->addEvent(ev);
+            }
+        }
         MusEGlobal::song->addPart(newPart);
     }
 
@@ -2547,18 +2591,8 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
     if (partLen == 0)
         return;
 
-    // Find the loop end (next part on the same track)
-    unsigned loopEndTick = partTick + partLen;
-    const MusECore::PartList* pl = part->track()->parts();
-    for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
-        MusECore::Part* other = ip->second;
-        if (other == part)
-            continue;
-        if (other->tick() > partTick) {
-            loopEndTick = other->tick();
-            break;
-        }
-    }
+    // Use centralized helper to find loop end boundary (never returns 0)
+    unsigned loopEndTick = getLoopEndTick(part);
 
     // Create a new track based on the original track
     MusECore::Track* newTrack = part->track()->clone(MusECore::Track::ASSIGN_NONE);
@@ -2621,18 +2655,8 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
     if (partLen == 0)
         return;
 
-    // Find the loop end (next part on the same track)
-    unsigned loopEndTick = partTick + partLen;
-    const MusECore::PartList* pl = part->track()->parts();
-    for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
-        MusECore::Part* other = ip->second;
-        if (other == part)
-            continue;
-        if (other->tick() > partTick) {
-            loopEndTick = other->tick();
-            break;
-        }
-    }
+    // Use centralized helper to find loop end boundary (never returns 0)
+    unsigned loopEndTick = getLoopEndTick(part);
 
     // Create a new track based on the original track
     MusECore::Track* newTrack = part->track()->clone(MusECore::Track::ASSIGN_NONE);

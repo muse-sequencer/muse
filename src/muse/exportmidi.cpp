@@ -43,6 +43,7 @@
 #include "marker/marker.h"
 #include "drummap.h"
 #include "gconfig.h"
+#include "helper.h"
 #include "libs/file/file.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
@@ -784,7 +785,135 @@ static void addTrackEvents(
           //  at those times so we ignore them and let the events processing handle them.
           addInitialControllerValues(track, l, startOffset, part->tick());
         }
-        MusECore::addEventList(part->events(), l, track, part, port, channel, startOffset);
+
+        // Handle looping parts: export all loop iterations
+        if (part->loop() && part->lenTick() > 0) {
+              unsigned partTick = part->tick();
+              unsigned partLen = part->lenTick();
+              unsigned loopEndTick = MusEGui::getLoopEndTick(part);
+
+              // Export original part first
+              MusECore::addEventList(part->events(), l, track, part, port, channel, startOffset);
+
+              // Calculate number of loop iterations
+              if (loopEndTick > partTick + partLen) {
+                    unsigned loopRange = loopEndTick - partTick;
+                    unsigned numIterations = loopRange / partLen;
+
+                    // Export each loop iteration
+                    for (unsigned iter = 1; iter < numIterations; ++iter) {
+                          unsigned iterOffset = iter * partLen;
+                          // Create events for this iteration with proper tick offset
+                          const MusECore::EventList& evlist = part->events();
+                          for (MusECore::ciEvent i = evlist.cbegin(); i != evlist.cend(); ++i) {
+                                const MusECore::Event& ev = i->second;
+                                int64_t tick = (int64_t)(int)ev.tick() + (int64_t)iterOffset + (int64_t)partTick;
+                                int64_t newtick = tick - (int64_t)startOffset;
+                                if (newtick < 0)
+                                      continue;
+
+                                switch (ev.type()) {
+                                      case MusECore::Note:
+                                            if (ev.velo() == 0)
+                                                  continue;
+                                            {
+                                                  int pitch = ev.pitch();
+                                                  int fin_pitch = pitch;
+                                                  int fin_port = port;
+                                                  int fin_chan = channel;
+
+                                                  if (MusEGlobal::config.exportDrumMapOverrides &&
+                                                      track && track->type() == MusECore::Track::DRUM) {
+                                                        MusECore::DrumMap dm;
+                                                        track->getMapItemAt(tick, pitch, dm, MusECore::WorkingDrumMapEntry::AllOverrides);
+                                                        fin_pitch = dm.anote;
+                                                        if (dm.port != -1 && MusEGlobal::config.smfFormat != 0)
+                                                              fin_port = dm.port;
+                                                        if (dm.channel != -1)
+                                                              fin_chan = dm.channel;
+                                                  }
+
+                                                  if (fin_port != port ||
+                                                      (fin_chan != channel && MusEGlobal::config.exportChannelOverridesToNewTrack && MusEGlobal::config.smfFormat != 0))
+                                                        continue;
+
+                                                  int velo = ev.velo();
+                                                  int veloOff = ev.veloOff();
+                                                  int len = ev.lenTick();
+
+                                                  if (track && ((!track->isDrumTrack() && track->transposition)
+                                                      || track->velocity || track->compression != 100 || track->len != 100)) {
+                                                        if (!track->isDrumTrack())
+                                                              fin_pitch += track->transposition;
+                                                        if (fin_pitch > 127) fin_pitch = 127;
+                                                        if (fin_pitch < 0) fin_pitch = 0;
+                                                        velo += track->velocity;
+                                                        velo = (velo * track->compression) / 100;
+                                                        if (velo > 127) velo = 127;
+                                                        if (velo < 1) velo = 1;
+                                                        len = (len * track->len) / 100;
+                                                  }
+                                                  if (len <= 0) len = 1;
+
+                                                  l->add(MusECore::MidiPlayEvent(newtick, fin_port, fin_chan, MusECore::ME_NOTEON, fin_pitch, velo));
+                                                  if (MusEGlobal::config.expOptimNoteOffs)
+                                                        l->add(MusECore::MidiPlayEvent(newtick + len, fin_port, fin_chan, MusECore::ME_NOTEON, fin_pitch, 0));
+                                                  else
+                                                        l->add(MusECore::MidiPlayEvent(newtick + len, fin_port, fin_chan, MusECore::ME_NOTEOFF, fin_pitch, veloOff));
+                                            }
+                                            break;
+
+                                      case MusECore::Controller:
+                                            {
+                                                  int ctlnum = ev.dataA();
+                                                  int fin_ctlnum = ctlnum;
+                                                  int fin_port = port;
+                                                  int fin_chan = channel;
+
+                                                  if (MusEGlobal::config.exportDrumMapOverrides &&
+                                                      MusEGlobal::midiPorts[port].drumController(ctlnum) &&
+                                                      track && track->type() == MusECore::Track::DRUM) {
+                                                        int v_idx = ctlnum & 0x7f;
+                                                        MusECore::DrumMap dm;
+                                                        track->getMapItemAt(tick, v_idx, dm, MusECore::WorkingDrumMapEntry::AllOverrides);
+                                                        fin_ctlnum = (ctlnum & ~0xff) | dm.anote;
+                                                        if (dm.port != -1 && MusEGlobal::config.smfFormat != 0)
+                                                              fin_port = dm.port;
+                                                        if (dm.channel != -1)
+                                                              fin_chan = dm.channel;
+                                                  }
+
+                                                  if (fin_port != port ||
+                                                      (fin_chan != channel && MusEGlobal::config.exportChannelOverridesToNewTrack && MusEGlobal::config.smfFormat != 0))
+                                                        continue;
+
+                                                  MusECore::addController(l, newtick, fin_port, fin_chan, fin_ctlnum, ev.dataB());
+                                            }
+                                            break;
+
+                                      case MusECore::Sysex:
+                                            l->add(MusECore::MidiPlayEvent(newtick, port, MusECore::ME_SYSEX, ev.eventData()));
+                                            break;
+
+                                      case MusECore::Meta:
+                                            {
+                                                  MusECore::MidiPlayEvent mpev(newtick, port, MusECore::ME_META, ev.eventData());
+                                                  mpev.setA(ev.dataA());
+                                                  l->add(mpev);
+                                            }
+                                            break;
+
+                                      case MusECore::Wave:
+                                            break;
+                                }
+                          }
+                    }
+              }
+        }
+        else {
+              // Non-looping part: original behavior
+              MusECore::addEventList(part->events(), l, track, part, port, channel, startOffset);
+        }
         }
 }
 
