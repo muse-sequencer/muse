@@ -1397,3 +1397,537 @@ class TestCrossSubsystemBoundaryBehavior:
             f"Remainder part should be 50 ticks, got {remainder_part[0]['len']}"
 
         self._cleanup_all_parts(muse, clean_test_track)
+
+
+# ---------------------------------------------------------------------------
+# Test: Next part midway through an iteration
+# ---------------------------------------------------------------------------
+
+class TestNextPartMidwayIteration:
+    """Tests when the boundary part is positioned midway through a loop iteration.
+
+    Concrete test case: a 100-tick part at tick 0, boundary part at tick 150.
+    The loop should cover ticks 0-150:
+    - Full iteration at tick 0 (events at 0-99)
+    - Partial (remainder) iteration at tick 100 (events at 100-149, 50-tick partial)
+    """
+
+    def _setup_midway_parts(self, muse, track_name):
+        """Create 100-tick part at tick 0, boundary at tick 150."""
+        events = [
+            {'data': [60, 100, 0], 'tick': 10, 'type': 'note', 'len': 30},
+            {'data': [62, 100, 0], 'tick': 40, 'type': 'note', 'len': 30},
+            {'data': [64, 100, 0], 'tick': 60, 'type': 'note', 'len': 30},
+            {'data': [65, 100, 0], 'tick': 80, 'type': 'note', 'len': 30},
+            {'data': [67, 100, 0], 'tick': 95, 'type': 'note', 'len': 10},
+        ]
+        part1 = {'events': events, 'tick': 0}
+        muse.createPart(track_name, 0, 100, part1)
+        time.sleep(0.3)
+
+        boundary_event = {'data': [70, 100, 0], 'tick': 0, 'type': 'note', 'len': 480}
+        boundary_part = {'events': [boundary_event], 'tick': 150}
+        muse.createPart(track_name, 150, 480, boundary_part)
+        time.sleep(0.3)
+
+        parts = muse.getParts(track_name)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        loop_part_id = parts[0]['id']
+        boundary_part_id = parts[1]['id']
+        return loop_part_id, boundary_part_id
+
+    def _cleanup_all_parts(self, muse, track_name):
+        parts = muse.getParts(track_name)
+        for p in parts:
+            muse.deletePart(p['id'])
+            time.sleep(0.1)
+        time.sleep(0.2)
+
+    def test_convert_to_single_midway(self, muse, clean_test_track):
+        """Convert to Single with boundary at tick 150 (midway through iteration).
+
+        loopRange = 150, numIterations = 1, remainder = 50.
+        Expected events: 5 (iteration 0) + 2 (remainder, ticks 10, 40) = 7 events.
+        """
+        loop_part_id, boundary_id = self._setup_midway_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToSingle(loop_part_id)
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        assert len(parts) == 2, f"Expected 2 parts, got {len(parts)}"
+
+        converted = parts[0]
+        assert converted['tick'] == 0
+        assert converted['len'] == 150, f"Expected len 150, got {converted['len']}"
+
+        assert len(converted['events']) == 7, \
+            f"Expected 7 events, got {len(converted['events'])}"
+
+        remainder_events = [e for e in converted['events'] if e['tick'] >= 100]
+        assert len(remainder_events) == 2, f"Expected 2 remainder events, got {len(remainder_events)}"
+        for e in remainder_events:
+            assert e['tick'] + e['len'] <= 150, \
+                f"Event at {e['tick']} len {e['len']} exceeds boundary 150"
+
+        self._cleanup_all_parts(muse, clean_test_track)
+
+    def test_convert_to_many_midway(self, muse, clean_test_track):
+        """Convert to Many with boundary at tick 150.
+
+        Expected: 2 parts — 1 full (100 ticks) + 1 partial (50 ticks).
+        """
+        loop_part_id, boundary_id = self._setup_midway_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToMany(loop_part_id)
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        assert len(parts) == 3, f"Expected 3 parts, got {len(parts)}"
+
+        assert parts[0]['tick'] == 0 and parts[0]['len'] == 100
+        assert len(parts[0]['events']) == 5
+        assert parts[1]['tick'] == 100 and parts[1]['len'] == 50
+        assert len(parts[1]['events']) == 2, \
+            f"Remainder part should have 2 events, got {len(parts[1]['events'])}"
+
+        self._cleanup_all_parts(muse, clean_test_track)
+
+    def test_playback_midway_boundary(self, muse, clean_test_track):
+        """MIDI playback with boundary midway through iteration."""
+        loop_part_id, boundary_id = self._setup_midway_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.setCPos(0)
+        time.sleep(0.2)
+        muse.startPlay()
+        time.sleep(3.0)
+        cpos = muse.getCPos()
+        muse.stopPlay()
+        time.sleep(0.3)
+
+        assert cpos > 0, f"Playback should advance, cpos={cpos}"
+        self._cleanup_all_parts(muse, clean_test_track)
+
+
+# ---------------------------------------------------------------------------
+# Test: Event lengths extending beyond the remainder
+# ---------------------------------------------------------------------------
+
+class TestEventLengthsBeyondRemainder:
+    """Tests that events starting before the remainder boundary but extending
+    beyond it are properly clipped in all conversion paths."""
+
+    def _setup_long_event_parts(self, muse, track_name):
+        """Create part with events that extend beyond iteration boundaries."""
+        events = [
+            {'data': [60, 100, 0], 'tick': 10, 'type': 'note', 'len': 30},
+            {'data': [62, 100, 0], 'tick': 40, 'type': 'note', 'len': 30},
+            {'data': [64, 100, 0], 'tick': 85, 'type': 'note', 'len': 20},
+            {'data': [65, 100, 0], 'tick': 95, 'type': 'note', 'len': 10},
+        ]
+        part1 = {'events': events, 'tick': 0}
+        muse.createPart(track_name, 0, 100, part1)
+        time.sleep(0.3)
+
+        boundary_event = {'data': [70, 100, 0], 'tick': 0, 'type': 'note', 'len': 480}
+        boundary_part = {'events': [boundary_event], 'tick': 250}
+        muse.createPart(track_name, 250, 480, boundary_part)
+        time.sleep(0.3)
+
+        parts = muse.getParts(track_name)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        return parts[0]['id'], parts[1]['id']
+
+    def _cleanup_all_parts(self, muse, track_name):
+        parts = muse.getParts(track_name)
+        for p in parts:
+            muse.deletePart(p['id'])
+            time.sleep(0.1)
+        time.sleep(0.2)
+
+    def test_convert_to_single_clips_long_events(self, muse, clean_test_track):
+        """Convert to Single should clip events extending beyond remainder boundary."""
+        loop_part_id, boundary_id = self._setup_long_event_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToSingle(loop_part_id)
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        converted = parts[0]
+        assert converted['len'] == 250
+
+        for e in converted['events']:
+            assert e['tick'] + e['len'] <= 250, \
+                f"Event at tick {e['tick']} with len {e['len']} extends beyond boundary 250"
+
+        self._cleanup_all_parts(muse, clean_test_track)
+
+    def test_convert_to_many_clips_remainder_events(self, muse, clean_test_track):
+        """Convert to Many should clip events in the remainder part."""
+        loop_part_id, boundary_id = self._setup_long_event_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToMany(loop_part_id)
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+
+        remainder_parts = [p for p in parts if p['tick'] == 200]
+        assert len(remainder_parts) == 1, f"Expected 1 remainder part, got {len(remainder_parts)}"
+        remainder = remainder_parts[0]
+
+        for e in remainder['events']:
+            assert e['tick'] + e['len'] <= 250, \
+                f"Remainder event at {e['tick']} len {e['len']} exceeds boundary 250"
+
+        self._cleanup_all_parts(muse, clean_test_track)
+
+
+# ---------------------------------------------------------------------------
+# Test: Wave chunk crossing multiple iterations
+# ---------------------------------------------------------------------------
+
+class TestWaveChunkMultipleIterations:
+    """Tests Wave loop playback where a single buffer chunk spans multiple
+    loop iterations."""
+
+    def _cleanup_all_parts(self, muse, track_name):
+        parts = muse.getParts(track_name)
+        for p in parts:
+            muse.deletePart(p['id'])
+            time.sleep(0.1)
+        time.sleep(0.2)
+
+    def test_wave_loop_short_part_long_buffer(self, muse, clean_wave_test_track):
+        """Wave loop with short part (100 ticks) should handle buffer chunks
+        spanning multiple iterations."""
+        muse.createWavePart(clean_wave_test_track, 0, 100)
+        time.sleep(0.3)
+
+        muse.createWavePart(clean_wave_test_track, 300, 480)
+        time.sleep(0.3)
+
+        parts = muse.getParts(clean_wave_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        loop_part_id = parts[0]['id']
+
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.setCPos(0)
+        time.sleep(0.2)
+        muse.startPlay()
+        time.sleep(3.0)
+        cpos = muse.getCPos()
+        muse.stopPlay()
+        time.sleep(0.3)
+
+        assert cpos > 0, f"Wave playback should advance, cpos={cpos}"
+        self._cleanup_all_parts(muse, clean_wave_test_track)
+
+    def test_wave_loop_iteration_boundary_crossing(self, muse, clean_wave_test_track):
+        """Wave loop where buffer chunk starts in one iteration and ends in another."""
+        muse.createWavePart(clean_wave_test_track, 0, 100)
+        time.sleep(0.3)
+
+        muse.createWavePart(clean_wave_test_track, 250, 480)
+        time.sleep(0.3)
+
+        parts = muse.getParts(clean_wave_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        loop_part_id = parts[0]['id']
+
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.setCPos(0)
+        time.sleep(0.2)
+        muse.startPlay()
+        time.sleep(3.0)
+        cpos = muse.getCPos()
+        muse.stopPlay()
+        time.sleep(0.3)
+
+        assert cpos > 0, f"Playback should advance, cpos={cpos}"
+        self._cleanup_all_parts(muse, clean_wave_test_track)
+
+    def test_wave_loop_end_boundary_clamping(self, muse, clean_wave_test_track):
+        """Wave loop should clamp audio output at loopEndFrame."""
+        muse.createWavePart(clean_wave_test_track, 0, 100)
+        time.sleep(0.3)
+
+        muse.createWavePart(clean_wave_test_track, 250, 480)
+        time.sleep(0.3)
+
+        parts = muse.getParts(clean_wave_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        loop_part_id = parts[0]['id']
+
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.setCPos(0)
+        time.sleep(0.2)
+        muse.startPlay()
+        time.sleep(3.0)
+        cpos = muse.getCPos()
+        muse.stopPlay()
+        time.sleep(0.3)
+
+        assert cpos > 0, f"Playback should advance, cpos={cpos}"
+        self._cleanup_all_parts(muse, clean_wave_test_track)
+
+
+# ---------------------------------------------------------------------------
+# Test: Conversion undo/redo
+# ---------------------------------------------------------------------------
+
+class TestConversionUndoRedo:
+    """Tests that undo/redo correctly reverses conversion operations."""
+
+    def _setup_boundary_parts(self, muse, track_name):
+        events = [
+            {'data': [60, 100, 0], 'tick': 10, 'type': 'note', 'len': 30},
+            {'data': [62, 100, 0], 'tick': 40, 'type': 'note', 'len': 30},
+            {'data': [64, 100, 0], 'tick': 60, 'type': 'note', 'len': 30},
+            {'data': [65, 100, 0], 'tick': 80, 'type': 'note', 'len': 30},
+            {'data': [67, 100, 0], 'tick': 95, 'type': 'note', 'len': 10},
+        ]
+        part1 = {'events': events, 'tick': 0}
+        muse.createPart(track_name, 0, 100, part1)
+        time.sleep(0.3)
+
+        boundary_event = {'data': [70, 100, 0], 'tick': 0, 'type': 'note', 'len': 480}
+        boundary_part = {'events': [boundary_event], 'tick': 250}
+        muse.createPart(track_name, 250, 480, boundary_part)
+        time.sleep(0.3)
+
+        parts = muse.getParts(track_name)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        return parts[0]['id'], parts[1]['id']
+
+    def _cleanup_all_parts(self, muse, track_name):
+        parts = muse.getParts(track_name)
+        for p in parts:
+            muse.deletePart(p['id'])
+            time.sleep(0.1)
+        time.sleep(0.2)
+
+    def test_undo_after_convert_to_single(self, muse, clean_test_track):
+        """Undo after Convert to Single should restore original looping part."""
+        loop_part_id, boundary_id = self._setup_boundary_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToSingle(loop_part_id)
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        assert len(parts) == 2
+        assert parts[0]['len'] == 250
+
+        muse.undo()
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        assert len(parts) == 2, f"Expected 2 parts after undo, got {len(parts)}"
+        assert parts[0]['len'] == 100, f"Original part should be 100 ticks, got {parts[0]['len']}"
+
+        self._cleanup_all_parts(muse, clean_test_track)
+
+    def test_undo_after_convert_to_many(self, muse, clean_test_track):
+        """Undo after Convert to Many should restore original looping part."""
+        loop_part_id, boundary_id = self._setup_boundary_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToMany(loop_part_id)
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        assert len(parts) == 4, f"Expected 4 parts after conversion, got {len(parts)}"
+
+        muse.undo()
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        assert len(parts) == 2, f"Expected 2 parts after undo, got {len(parts)}"
+        assert parts[0]['len'] == 100, f"Original part should be 100 ticks, got {parts[0]['len']}"
+
+        self._cleanup_all_parts(muse, clean_test_track)
+
+    def test_redo_after_convert_to_single(self, muse, clean_test_track):
+        """Redo after undo should re-apply Convert to Single."""
+        loop_part_id, boundary_id = self._setup_boundary_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToSingle(loop_part_id)
+        time.sleep(0.5)
+
+        muse.undo()
+        time.sleep(0.5)
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        assert parts[0]['len'] == 100, "After undo, part should be 100 ticks"
+
+        muse.redo()
+        time.sleep(0.5)
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        assert parts[0]['len'] == 250, f"After redo, part should be 250 ticks, got {parts[0]['len']}"
+
+        self._cleanup_all_parts(muse, clean_test_track)
+
+    def test_undo_loop_flag_toggle(self, muse, clean_test_track):
+        """Undo/Redo of setPartLoop should toggle loop flag correctly."""
+        loop_part_id, boundary_id = self._setup_boundary_parts(muse, clean_test_track)
+
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+        assert muse.getPartLoop(loop_part_id) == 1
+
+        muse.undo()
+        time.sleep(0.3)
+        assert muse.getPartLoop(loop_part_id) == 0, "Undo should disable loop"
+
+        muse.redo()
+        time.sleep(0.3)
+        assert muse.getPartLoop(loop_part_id) == 1, "Redo should re-enable loop"
+
+        self._cleanup_all_parts(muse, clean_test_track)
+
+
+# ---------------------------------------------------------------------------
+# Test: Save/reload loop state
+# ---------------------------------------------------------------------------
+
+class TestSaveReloadLoopState:
+    """Tests that loop state is preserved across save and reload operations."""
+
+    def _setup_parts(self, muse, track_name):
+        events = [
+            {'data': [60, 100, 0], 'tick': 10, 'type': 'note', 'len': 30},
+            {'data': [62, 100, 0], 'tick': 40, 'type': 'note', 'len': 30},
+        ]
+        part1 = {'events': events, 'tick': 0}
+        muse.createPart(track_name, 0, 100, part1)
+        time.sleep(0.3)
+
+        boundary_event = {'data': [70, 100, 0], 'tick': 0, 'type': 'note', 'len': 480}
+        boundary_part = {'events': [boundary_event], 'tick': 250}
+        muse.createPart(track_name, 250, 480, boundary_part)
+        time.sleep(0.3)
+
+        parts = muse.getParts(track_name)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        return parts[0]['id'], parts[1]['id']
+
+    def _cleanup_all_parts(self, muse, track_name):
+        parts = muse.getParts(track_name)
+        for p in parts:
+            muse.deletePart(p['id'])
+            time.sleep(0.1)
+        time.sleep(0.2)
+
+    def test_save_reload_preserves_loop_flag(self, muse, clean_test_track):
+        """Save and reload should preserve the loop flag on parts."""
+        import tempfile
+        import os
+
+        loop_part_id, boundary_id = self._setup_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        assert muse.getPartLoop(loop_part_id) == 1, "Loop should be enabled before save"
+
+        with tempfile.NamedTemporaryFile(suffix='.med', delete=False) as f:
+            temp_path = f.name
+
+        try:
+            muse.save_song(temp_path)
+            time.sleep(0.5)
+
+            assert os.path.exists(temp_path), "Song file should exist after save"
+            assert os.path.getsize(temp_path) > 0, "Song file should not be empty"
+
+            muse.load_song(temp_path)
+            time.sleep(0.5)
+
+            parts = muse.getParts(clean_test_track)
+            parts = sorted(parts, key=lambda p: p['tick'])
+            assert len(parts) >= 1, "Should have at least 1 part after reload"
+
+            reloaded_part_id = parts[0]['id']
+            loop = muse.getPartLoop(reloaded_part_id)
+            assert loop == 1, f"Loop flag should be preserved after reload, got {loop}"
+
+        finally:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+
+        self._cleanup_all_parts(muse, clean_test_track)
+
+    def test_save_reload_preserves_multiple_loop_flags(self, muse, clean_test_track):
+        """Save and reload should preserve loop flags on multiple parts."""
+        import tempfile
+        import os
+
+        events1 = [{'data': [60, 100, 0], 'tick': 10, 'type': 'note', 'len': 30}]
+        part1 = {'events': events1, 'tick': 0}
+        muse.createPart(clean_test_track, 0, 100, part1)
+        time.sleep(0.3)
+
+        events2 = [{'data': [62, 100, 0], 'tick': 10, 'type': 'note', 'len': 30}]
+        part2 = {'events': events2, 'tick': 0}
+        muse.createPart(clean_test_track, 400, 100, part2)
+        time.sleep(0.3)
+
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        part1_id = parts[0]['id']
+        part2_id = parts[1]['id']
+
+        muse.setPartLoop(part1_id, 1)
+        muse.setPartLoop(part2_id, 1)
+        time.sleep(0.2)
+
+        with tempfile.NamedTemporaryFile(suffix='.med', delete=False) as f:
+            temp_path = f.name
+
+        try:
+            muse.save_song(temp_path)
+            time.sleep(0.5)
+
+            muse.load_song(temp_path)
+            time.sleep(0.5)
+
+            parts = muse.getParts(clean_test_track)
+            parts = sorted(parts, key=lambda p: p['tick'])
+            assert len(parts) >= 2, f"Should have 2 parts after reload, got {len(parts)}"
+
+            for p in parts:
+                loop = muse.getPartLoop(p['id'])
+                assert loop == 1, f"Loop flag should be preserved for part at tick {p['tick']}, got {loop}"
+
+        finally:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+
+        self._cleanup_all_parts(muse, clean_test_track)

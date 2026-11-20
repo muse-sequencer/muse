@@ -27,6 +27,7 @@
 
 #include <QApplication>
 #include <QEvent>
+#include <QFile>
 #include <QUuid>
 
 #include "pyapi.h"
@@ -563,6 +564,66 @@ PyObject* setPartLoop(PyObject*, PyObject* args)
       operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, (int)part->loop(), (int)newLoop));
       MusEGlobal::song->applyOperationGroup(operations);
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_MODIFIED);
+      QApplication::postEvent(MusEGlobal::song, pyevent);
+      Py_RETURN_NONE;
+}
+//------------------------------------------------------------
+// undo
+//  Undo the last operation
+//------------------------------------------------------------
+PyObject* undo(PyObject*, PyObject*)
+{
+      MusEGlobal::song->undo();
+      Py_RETURN_NONE;
+}
+//------------------------------------------------------------
+// redo
+//  Redo the last undone operation
+//------------------------------------------------------------
+PyObject* redo(PyObject*, PyObject*)
+{
+      MusEGlobal::song->redo();
+      Py_RETURN_NONE;
+}
+//------------------------------------------------------------
+// save_song
+//  Save the current song to a file
+//------------------------------------------------------------
+PyObject* save_song(PyObject*, PyObject* args)
+{
+      const char* path;
+      if (!PyArg_ParseTuple(args, "s", &path)) {
+            Py_RETURN_NONE;
+            }
+
+      QFile file(path);
+      if (!file.open(QIODevice::WriteOnly)) {
+            Py_RETURN_NONE;
+            }
+      MusECore::Xml xml(&file);
+      MusEGlobal::song->write(0, xml);
+      file.close();
+      Py_RETURN_NONE;
+}
+//------------------------------------------------------------
+// load_song
+//  Load a song from a file
+//------------------------------------------------------------
+PyObject* load_song(PyObject*, PyObject* args)
+{
+      const char* path;
+      if (!PyArg_ParseTuple(args, "s", &path)) {
+            Py_RETURN_NONE;
+            }
+
+      QFile file(path);
+      if (!file.open(QIODevice::ReadOnly)) {
+            Py_RETURN_NONE;
+            }
+      MusECore::Xml xml(&file);
+      MusEGlobal::song->read(xml);
+      file.close();
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0);
       QApplication::postEvent(MusEGlobal::song, pyevent);
       Py_RETURN_NONE;
 }
@@ -1241,6 +1302,10 @@ PyMethodDef g_methodDefinitions[] =
       { "deletePart", deletePart, METH_VARARGS, "Remove part with a particular serial nr" },
       { "setPartLoop", setPartLoop, METH_VARARGS, "Set loop flag on a part by serial nr" },
       { "getPartLoop", getPartLoop, METH_VARARGS, "Get loop flag of a part by serial nr" },
+      { "undo", undo, METH_NOARGS, "Undo the last operation" },
+      { "redo", redo, METH_NOARGS, "Redo the last undone operation" },
+      { "save_song", save_song, METH_VARARGS, "Save the current song to a file" },
+      { "load_song", load_song, METH_VARARGS, "Load a song from a file" },
       { "createWavePart", createWavePart, METH_VARARGS, "Create a wave part on a wave track" },
       { "convertLoopToSingle", convertLoopToSingle, METH_VARARGS, "Convert looping part to single part" },
       { "convertLoopToMany", convertLoopToMany, METH_VARARGS, "Convert looping part to many parts" },

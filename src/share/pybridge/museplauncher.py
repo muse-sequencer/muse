@@ -155,6 +155,22 @@ class MusE:
             return muse.convertLoopToManyNewTrack(partid)
 
       @pyro.expose
+      def undo(self): # undo the last operation
+            return muse.undo()
+
+      @pyro.expose
+      def redo(self): # redo the last undone operation
+            return muse.redo()
+
+      @pyro.expose
+      def save_song(self, path): # save the current song to a file
+            return muse.save_song(path)
+
+      @pyro.expose
+      def load_song(self, path): # load a song from a file
+            return muse.load_song(path)
+
+      @pyro.expose
       def getSelectedTrack(self): # get first selected track in arranger window
             return muse.getSelectedTrack()
 
