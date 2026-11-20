@@ -2506,30 +2506,35 @@ void convertLoopToSingle(MusECore::Part* part)
     bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
 
     if (isWavePart) {
-        // For Wave parts, create one event per loop iteration.
-        // Each event reads from frame 0 of the audio file with the original part's length.
-        // This ensures each iteration plays the full audio file from start.
-        unsigned partLenFrame = MusEGlobal::tempomap.tick2frame(partLen);
+        // For Wave parts, EventList indexes events by event.frame().
+        // If we create multiple events with the same frame(), only the last one survives.
+        // setTick(tickOffset) sets _tick=tickOffset and _frame=tick2frame(tickOffset),
+        // which gives each event a unique frame() value for EventList indexing.
+        // In fetchData(), srcOffset = event.frame() + p_spos - pos, so the event's
+        // frame() must match its timeline position in frames for correct audio reading.
+        // We must NOT call setFrame(origFrame) after setTick() — that would overwrite
+        // the unique frame() with the original audio file offset, causing all events
+        // to have the same key in EventList.
         for (unsigned loop = 0; loop < loopCount; ++loop) {
             unsigned tickOffset = loop * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                // Position the event at the correct tick offset in the new part
-                // Use TICKS type to set position on the timeline, not in the audio file
-                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
-                // Ensure the event has the correct frame length
-                ev.setLenValue(partLenFrame, MusECore::Pos::FRAMES);
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                // Do NOT restore origFrame — let setTick() set _frame = tick2frame(tickOffset)
+                // This gives each event a unique key in EventList and correct srcOffset in fetchData()
+                ev.setLenFrame(origLenFrame);
                 newPart->addEvent(ev);
             }
         }
         // Handle remainder - create a partial event for the last iteration
         if (remainder > 0) {
-            unsigned remainderFrame = MusEGlobal::tempomap.tick2frame(remainder);
             unsigned tickOffset = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
-                ev.setLenValue(remainderFrame, MusECore::Pos::FRAMES);
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                ev.setLenFrame(origLenFrame);
                 newPart->addEvent(ev);
             }
         }
@@ -2620,12 +2625,14 @@ void convertLoopToMany(MusECore::Part* part)
         // For Wave parts, remainder events must preserve frame offsets, not tick positions.
         bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
         if (isWavePart) {
-            unsigned remainderFrame = MusEGlobal::tempomap.tick2frame(remainder);
             unsigned tickOffset = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
-                ev.setLenValue(remainderFrame, MusECore::Pos::FRAMES);
+                unsigned origFrame = ev.frame();
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                ev.setFrame(origFrame);
+                ev.setLenFrame(origLenFrame);
                 newPart->addEvent(ev);
             }
         } else {
@@ -2698,26 +2705,27 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
     bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
 
     if (isWavePart) {
-        // For Wave parts, create one event per loop iteration.
-        // Each event reads from frame 0 of the audio file with the original part's length.
-        unsigned partLenFrame = MusEGlobal::tempomap.tick2frame(partLen);
+        // For Wave parts, EventList indexes events by event.frame().
+        // setTick(tickOffset) sets _frame = tick2frame(tickOffset), giving each event
+        // a unique key in EventList. Do NOT call setFrame(origFrame) after setTick().
         for (unsigned loop = 0; loop < loopCount; ++loop) {
             unsigned tickOffset = loop * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
-                ev.setLenValue(partLenFrame, MusECore::Pos::FRAMES);
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                ev.setLenFrame(origLenFrame);
                 newPart->addEvent(ev);
             }
         }
         // Handle remainder: create a partial event for the last incomplete iteration.
         if (remainder > 0) {
-            unsigned remainderFrame = MusEGlobal::tempomap.tick2frame(remainder);
             unsigned tickOffset = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
-                ev.setLenValue(remainderFrame, MusECore::Pos::FRAMES);
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                ev.setLenFrame(origLenFrame);
                 newPart->addEvent(ev);
             }
         }
@@ -2816,12 +2824,14 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
         // For Wave parts, remainder events must preserve frame offsets, not tick positions.
         bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
         if (isWavePart) {
-            unsigned remainderFrame = MusEGlobal::tempomap.tick2frame(remainder);
             unsigned tickOffset = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
-                ev.setLenValue(remainderFrame, MusECore::Pos::FRAMES);
+                unsigned origFrame = ev.frame();
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                ev.setFrame(origFrame);
+                ev.setLenFrame(origLenFrame);
                 newPart->addEvent(ev);
             }
         } else {
