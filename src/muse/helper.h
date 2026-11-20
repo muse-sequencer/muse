@@ -152,6 +152,19 @@ int countSelectedParts();
 // This is the single authoritative source for loop boundary calculation.
 unsigned getLoopEndTick(const MusECore::Part* part);
 
+// Calculates loop iteration parameters from a looping part.
+// Returns loopRange (total ticks from part start to loop end),
+// numIterations (full iterations excluding iteration 0),
+// and remainder (partial final iteration length, 0 if exact multiple).
+// This is the single authoritative source for loop arithmetic,
+// used consistently by MIDI export, conversion helpers, and playback.
+struct LoopCalc {
+      unsigned loopRange;
+      unsigned numIterations;
+      unsigned remainder;
+};
+LoopCalc calcLoopIterations(const MusECore::Part* part);
+
 void convertLoopToSingle(MusECore::Part* part);
 void convertLoopToMany(MusECore::Part* part);
 // Loop conversion functions that create a new track

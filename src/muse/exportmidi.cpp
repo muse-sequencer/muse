@@ -790,16 +790,18 @@ static void addTrackEvents(
         if (part->loop() && part->lenTick() > 0) {
               unsigned partTick = part->tick();
               unsigned partLen = part->lenTick();
-              unsigned loopEndTick = MusEGui::getLoopEndTick(part);
 
-              // Export original part first (iteration 0)
-              MusECore::addEventList(part->events(), l, track, part, port, channel, startOffset);
+              // Use centralized loop arithmetic helper for consistent boundary/clipping rules
+              MusEGui::LoopCalc loopCalc = MusEGui::calcLoopIterations(part);
+              if (loopCalc.loopRange == 0) {
+                    // No loop iterations to export, fall through to normal export
+              } else {
+                    unsigned loopEndTick = partTick + loopCalc.loopRange;
+                    unsigned numIterations = loopCalc.numIterations;
+                    unsigned remainder = loopCalc.remainder;
 
-              // Calculate number of loop iterations
-              if (loopEndTick > partTick + partLen) {
-                    unsigned loopRange = loopEndTick - partTick;
-                    unsigned numIterations = loopRange / partLen;
-                    unsigned remainder = loopRange % partLen;
+                    // Export original part first (iteration 0)
+                    MusECore::addEventList(part->events(), l, track, part, port, channel, startOffset);
 
                     // Export each full loop iteration by creating a temporary part at the iteration offset.
                     // The last full iteration may extend beyond loopEndTick, so clip its events.

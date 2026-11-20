@@ -2470,6 +2470,29 @@ unsigned getLoopEndTick(const MusECore::Part* part)
 }
 
 //---------------------------------------------------------
+//   calcLoopIterations
+//    Calculates loop iteration parameters from a looping part.
+//    This is the single authoritative source for loop arithmetic,
+//    used consistently by MIDI export, conversion helpers, and playback.
+//---------------------------------------------------------
+
+LoopCalc calcLoopIterations(const MusECore::Part* part)
+{
+    LoopCalc result = {0, 0, 0};
+    if (!part || !part->loop() || part->lenTick() == 0)
+        return result;
+
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    unsigned loopEndTick = getLoopEndTick(part);
+
+    result.loopRange = loopEndTick - partTick;
+    result.numIterations = result.loopRange / partLen;
+    result.remainder = result.loopRange % partLen;
+    return result;
+}
+
+//---------------------------------------------------------
 //   convertLoopToSingle
 //    Creates a single part spanning the entire loop range,
 //    with the loop flag disabled.
@@ -2485,21 +2508,23 @@ void convertLoopToSingle(MusECore::Part* part)
     if (partLen == 0)
         return;
 
-    // Use centralized helper to find loop end boundary (never returns 0)
-    unsigned loopEndTick = getLoopEndTick(part);
+    // Use centralized loop arithmetic helper (includes getLoopEndTick internally)
+    LoopCalc loopCalc = calcLoopIterations(part);
+    if (loopCalc.loopRange == 0)
+        return;
 
 
     // Create a new part spanning the entire loop range
     MusECore::Part* newPart = part->duplicateEmpty();
     newPart->setTick(partTick);
-    newPart->setLenTick(loopEndTick - partTick);
+    newPart->setLenTick(loopCalc.loopRange);
     newPart->setLoop(false);
     newPart->setName(part->name());
     newPart->setColorIndex(part->colorIndex());
 
     // Fill the new part with looped events
-    unsigned loopCount = (loopEndTick - partTick) / partLen;
-    unsigned remainder = (loopEndTick - partTick) % partLen;
+    unsigned loopCount = loopCalc.numIterations;
+    unsigned remainder = loopCalc.remainder;
 
     // For Wave parts, events store frame offsets into the audio file, not tick positions.
     // We must not modify event positions for Wave parts — just duplicate them as-is.
@@ -2596,16 +2621,18 @@ void convertLoopToMany(MusECore::Part* part)
     if (partLen == 0)
         return;
 
-    // Use centralized helper to find loop end boundary (never returns 0)
-    unsigned loopEndTick = getLoopEndTick(part);
+    // Use centralized loop arithmetic helper
+    LoopCalc loopCalc = calcLoopIterations(part);
+    if (loopCalc.loopRange == 0)
+        return;
 
     // Use undo operations for consistent undo support
     MusECore::Undo operations;
     operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, 1, 0));
 
     // Create copies for each loop iteration after the first
-    unsigned loopCount = (loopEndTick - partTick) / partLen;
-    unsigned remainder = (loopEndTick - partTick) % partLen;
+    unsigned loopCount = loopCalc.numIterations;
+    unsigned remainder = loopCalc.remainder;
     for (unsigned loop = 1; loop < loopCount; ++loop) {
         MusECore::Part* newPart = part->duplicate();
         newPart->setTick(partTick + loop * partLen);
@@ -2673,8 +2700,10 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
     if (partLen == 0)
         return;
 
-    // Use centralized helper to find loop end boundary (never returns 0)
-    unsigned loopEndTick = getLoopEndTick(part);
+    // Use centralized loop arithmetic helper
+    LoopCalc loopCalc = calcLoopIterations(part);
+    if (loopCalc.loopRange == 0)
+        return;
 
     // NOTE: This function does NOT disable the loop flag on the original part.
     // The conversion operates on a single part, not the entire track. The user may
@@ -2698,14 +2727,14 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
     // Create a new part spanning the entire loop range
     MusECore::Part* newPart = part->duplicateEmpty();
     newPart->setTick(partTick);
-    newPart->setLenTick(loopEndTick - partTick);
+    newPart->setLenTick(loopCalc.loopRange);
     newPart->setLoop(false);
     newPart->setName(part->name());
     newPart->setColorIndex(part->colorIndex());
 
     // Fill the new part with looped events
-    unsigned loopCount = (loopEndTick - partTick) / partLen;
-    unsigned remainder = (loopEndTick - partTick) % partLen;
+    unsigned loopCount = loopCalc.numIterations;
+    unsigned remainder = loopCalc.remainder;
 
     // For Wave parts, events store frame offsets into the audio file, not tick positions.
     // We must not modify event positions for Wave parts — just duplicate them as-is.
@@ -2789,8 +2818,10 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
     if (partLen == 0)
         return;
 
-    // Use centralized helper to find loop end boundary (never returns 0)
-    unsigned loopEndTick = getLoopEndTick(part);
+    // Use centralized loop arithmetic helper
+    LoopCalc loopCalc = calcLoopIterations(part);
+    if (loopCalc.loopRange == 0)
+        return;
 
     // NOTE: This function does NOT disable the loop flag on the original part.
     // The conversion operates on a single part, not the entire track. The user may
@@ -2816,8 +2847,8 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
     operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, -1, newTrack));
 
     // Create copies for each loop iteration
-    unsigned loopCount = (loopEndTick - partTick) / partLen;
-    unsigned remainder = (loopEndTick - partTick) % partLen;
+    unsigned loopCount = loopCalc.numIterations;
+    unsigned remainder = loopCalc.remainder;
     for (unsigned loop = 0; loop < loopCount; ++loop) {
         MusECore::Part* newPart = part->duplicate();
         newPart->setTick(partTick + loop * partLen);
