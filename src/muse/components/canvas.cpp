@@ -849,12 +849,10 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       {
       keyState = event->modifiers();
       button = event->button();
-      //printf("viewMousePressEvent buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
       
       // special events if right button is clicked while operations
       // like moving or drawing lasso is performed.
       if (event->buttons() & Qt::RightButton & ~(button)) {
-          //printf("viewMousePressEvent special buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
           switch (drag) {
               case DRAG_LASSO:
                 drag = DRAG_OFF;
@@ -2415,4 +2413,3 @@ bool Canvas::cancelMouseOps()
 }
 
 } // namespace MusEGui
-

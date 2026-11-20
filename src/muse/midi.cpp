@@ -30,6 +30,7 @@
 #include "drummap.h"
 #include "event.h"
 #include "globals.h"
+#include "helper.h"
 #include "midictrl.h"
 #include "marker/marker.h"
 #include "midiport.h"
@@ -1345,14 +1346,31 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
             const EventList& events = part->events();
             unsigned partTick = part->tick();
             unsigned partLen  = part->lenTick();
+            if (partLen == 0)
+                  continue;
             unsigned offset = delay + partTick;
             if (offset > nts)
                   continue;
             unsigned stick = (offset > cts) ? 0 : cts - offset;
             unsigned etick = nts - offset;
-            // Do not play events which are past the end of this part.
-            if(etick > partLen)
+            // Do not play events which are past the end of this part (unless looping).
+            if(etick > partLen && !part->loop())
               continue;
+
+            // For looping parts, find the next part on this track to determine loop end
+            unsigned loopEndTick = 0; // 0 means no limit
+            if (part->loop()) {
+                  loopEndTick = MusEGui::getLoopEndTick(part);
+            }
+
+            // For looping parts, scan the full part events and schedule them for each iteration
+            // that falls within [cts, nts]. For non-looping parts, only scan [stick, etick].
+            unsigned loopStick = stick;
+            unsigned loopEtick = etick;
+            if (part->loop()) {
+                  loopStick = 0;      // Scan from the beginning of the part
+                  loopEtick = partLen; // Scan the entire part
+            }
 
             // The start and end tick are a rough range to make the loop faster instead of having
             //  to iterate the whole list each time, comparing frames.
@@ -1363,19 +1381,14 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
             //  no user changes in-between cycles. We don't have that capability currently anyway -
             //  to break the process up into chunks (like our controllers) depending on tempo frames, 
             //  our tempo map is not frame-accurate, only tick-accurate.
-            ciEvent ie   = events.lower_bound(stick);
-            ciEvent iend = events.upper_bound(etick);
+            ciEvent ie   = events.lower_bound(loopStick);
+            ciEvent iend = events.upper_bound(loopEtick);
 
-            DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: part events stick:%u etick:%u\n", stick, etick);
+            DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: part events stick:%u etick:%u\n", loopStick, loopEtick);
             
             for (; ie != iend; ++ie) {
                   Event ev = ie->second;
                   port = defaultPort; //Reset each loop
-                  //
-                  //  don't play any meta events
-                  //
-                  if (ev.type() == Meta)
-                        continue;
                   if (track->isDrumTrack()) {
                         int instr = ev.pitch();
                         // ignore muted drums
@@ -1393,7 +1406,167 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                           continue;
                   }
                   
-                  unsigned tick  = ev.tick() + offset;
+                  unsigned tick;
+                  if (part->loop()) {
+                        // For looping parts: the event's position within the part
+                        unsigned evTickInPart = ev.tick();
+                        // Calculate which loop iteration(s) this event falls into.
+                        // The absolute tick for iteration N is: evTickInPart + offset + N*partLen
+                        // We need the smallest N such that evTickInPart + offset + N*partLen >= cts
+                        // => N >= (cts - offset - evTickInPart) / partLen
+                        // And the largest N such that evTickInPart + offset + N*partLen < nts
+                        // => N <= (nts - offset - evTickInPart - 1) / partLen
+                        // Use signed arithmetic to correctly handle collection windows that start
+                        // before the first iteration (cts < offset) or extend beyond the last.
+                        // Unsigned arithmetic would wrap around or clamp incorrectly.
+                        {
+                              // Signed differences: can be negative when cts/nts < offset
+                              long long ctsSigned = (long long)cts - (long long)offset - (long long)evTickInPart;
+                              long long ntsSigned = (long long)nts - (long long)offset - (long long)evTickInPart - 1;
+                              long long partLenLL = (long long)partLen;
+
+                              // firstIteration: smallest N where tick >= cts
+                              long long firstIterationLL = 0;
+                              if (ctsSigned > 0)
+                                    firstIterationLL = (ctsSigned + partLenLL - 1) / partLenLL; // ceiling division
+
+                              // lastIteration: largest N where tick < nts (i.e., tick <= nts-1)
+                              long long lastIterationLL = 0;
+                              if (ntsSigned >= 0)
+                                    lastIterationLL = ntsSigned / partLenLL; // floor division
+
+                              // Clamp to non-negative range
+                              if (firstIterationLL < 0) firstIterationLL = 0;
+                              if (lastIterationLL < 0) lastIterationLL = 0;
+
+                              for (long long iterLL = firstIterationLL; iterLL <= lastIterationLL; ++iterLL) {
+                                    unsigned iter = (unsigned)iterLL;
+                                    tick = evTickInPart + offset + (iter * partLen);
+                                    // Stop looping when we reach the next part on this track
+                                    if (loopEndTick > 0 && tick >= loopEndTick)
+                                          continue;
+                                    // Only schedule if the event tick is within the collection window
+                                    if (tick < cts || tick >= nts)
+                                          continue;
+
+                                    DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: loop event tick:%u iter:%u\n", tick, iter);
+
+                                    // Determine the playback scheduling frame from the event's tick
+                                    unsigned frame;
+                                    if(extsync)
+                                          frame = extClockHistoryTick2Frame(tick - cts) + MusEGlobal::segmentSize;
+                                    else {
+                                          const unsigned int fr = MusEGlobal::tempomap.tick2frame(tick);
+                                          if(fr < pos_fr || fr >= next_pos_fr)
+                                                continue;
+                                          frame = fr - pos_fr;
+                                          frame += syncFrame;
+                                    }
+
+                                    DEBUG_MIDI(stderr, "Audio::collectEvents: event: tick:%u final frame:%u\n", tick, frame);
+
+                                    // Schedule the event using the same logic as below but with loop-adjusted tick/frame
+                                    switch (ev.type()) {
+                                          case Note: {
+                                                int len   = ev.lenTick();
+                                                int pitch = ev.pitch();
+                                                int velo  = ev.velo();
+                                                int veloOff = ev.veloOff();
+                                                if (track->isDrumTrack())  {
+                                                      int instr = ev.pitch();
+                                                      pitch     = track->drummap()[instr].anote;
+                                                      port      = track->drummap()[instr].port;
+                                                      if(port == -1) port = track->outPort();
+                                                      channel   = track->drummap()[instr].channel;
+                                                      if(channel == -1) channel = track->outChannel();
+                                                      velo      = int(double(velo) * (double(track->drummap()[instr].vol) / 100.0));
+                                                      veloOff   = int(double(veloOff) * (double(track->drummap()[instr].vol) / 100.0));
+                                                }
+                                                else if (track->type() == Track::MIDI) {
+                                                      pitch += (track->transposition + MusEGlobal::song->globalPitchShift());
+                                                }
+                                                if (pitch > 127) pitch = 127;
+                                                if (pitch < 0) pitch = 0;
+                                                velo += track->velocity;
+                                                velo = (velo * track->compression) / 100;
+                                                if (velo > 127) velo = 127;
+                                                if (velo < 1) continue;
+                                                veloOff += track->velocity;
+                                                veloOff = (veloOff * track->compression) / 100;
+                                                if (veloOff > 127) veloOff = 127;
+                                                if (veloOff < 1) veloOff = 0;
+                                                len = (len * track->len) / 100;
+                                                if (len <= 0) len = 1;
+                                                // Clamp note-off to loop boundary so it doesn't overlap the next part
+                                                unsigned noteOffTick = tick + len;
+                                                if (loopEndTick > 0 && noteOffTick > loopEndTick)
+                                                      noteOffTick = loopEndTick;
+                                                MidiDevice* fin_md = (port == defaultPort) ? md : MusEGlobal::midiPorts[port].device();
+                                                if (midiDeviceWritable(fin_md)) {
+                                                      fin_md->putEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo),
+                                                        MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+                                                      MusECore::MidiPlayEvent fin_ev(noteOffTick, port, channel, MusECore::ME_NOTEOFF, pitch, veloOff);
+                                                      fin_ev.setLatency(latency_offset);
+                                                      track->addStuckNote(fin_ev);
+                                                }
+                                                if (velo > track->activity())
+                                                      track->setActivity(velo);
+                                                break;
+                                          }
+                                          case Controller: {
+                                                if (track->isDrumTrack()) {
+                                                      int ctl = ev.dataA();
+                                                      MusECore::MidiController *mc = MusEGlobal::midiPorts[defaultPort].drumController(ctl);
+                                                      if (mc) {
+                                                            int instr = ctl & 0x7f;
+                                                            ctl &= ~0xff;
+                                                            int pitch = track->drummap()[instr].anote & 0x7f;
+                                                            port = track->drummap()[instr].port;
+                                                            if (port == -1) port = track->outPort();
+                                                            channel = track->drummap()[instr].channel;
+                                                            if (channel == -1) channel = track->outChannel();
+                                                            MusECore::MidiPlayEvent mpeAlt(frame, port, channel, MusECore::ME_CONTROLLER, ctl | pitch, ev.dataB());
+                                                            MidiPort* mpAlt = &MusEGlobal::midiPorts[port];
+                                                            mpAlt->setHwCtrlState(mpeAlt);
+                                                            MidiDevice* mdAlt = mpAlt->device();
+                                                            if (midiDeviceWritable(mdAlt))
+                                                                  mdAlt->putEvent(mpeAlt, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+                                                            continue;
+                                                      }
+                                                }
+                                                if (md_writable) {
+                                                      MusECore::MidiPlayEvent mpe(frame, port, channel, MusECore::ME_CONTROLLER, ev.dataA(), ev.dataB());
+                                                      mp->setHwCtrlState(mpe);
+                                                      md->putEvent(mpe, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+                                                }
+                                                break;
+                                          }
+                                          case Sysex:
+                                                if (md_writable)
+                                                      md->putEvent(ev.asMidiPlayEvent(frame, port, channel),
+                                                            MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+                                                break;
+                                          case Meta:
+                                                {
+                                                      MusECore::MidiPlayEvent mpev(frame, port, MusECore::ME_META, ev.eventData());
+                                                      mpev.setA(ev.dataA());
+                                                      if (md_writable)
+                                                            md->putEvent(mpev, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
+                                                }
+                                                break;
+                                          // Wave and other types: skip in loop mode
+                                          default: break;
+                                    }
+                              }
+                        }
+                        continue; // Skip the normal scheduling below for loop events
+                  }
+                  else {
+                        // Non-looping part: skip Meta events
+                        if (ev.type() == Meta)
+                              continue;
+                        tick = ev.tick() + offset;
+                  }
 
                   DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: event tick:%u\n", tick);
       

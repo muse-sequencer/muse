@@ -1060,6 +1060,32 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       QAction *act_superglue = partPopup->addAction(tr("Super Glue (Merge Selection)"));
       act_superglue->setData(OP_GLUESELECTION);
 
+        partPopup->addSeparator();
+
+
+        // Show loop management options when part is looping
+        if (npart->part()->loop()) {
+            QAction* act_removeLoop = partPopup->addAction(tr("Remove Loop"));
+            act_removeLoop->setData(OP_REMOVE_LOOP);
+
+            QAction* act_convertSingle = partPopup->addAction(tr("Convert to Single Part"));
+            act_convertSingle->setData(OP_CONVERT_LOOP_TO_SINGLE);
+
+            QAction* act_convertMany = partPopup->addAction(tr("Convert to Many Parts"));
+            act_convertMany->setData(OP_CONVERT_LOOP_TO_MANY);
+
+            QAction* act_convertSingleNewTrack = partPopup->addAction(tr("Convert to Single Part (New Track)"));
+            act_convertSingleNewTrack->setData(OP_CONVERT_LOOP_TO_SINGLE_NEW_TRACK);
+
+            QAction* act_convertManyNewTrack = partPopup->addAction(tr("Convert to Many Parts (New Track)"));
+            act_convertManyNewTrack->setData(OP_CONVERT_LOOP_TO_MANY_NEW_TRACK);
+        } else {
+            QAction* act_loop = partPopup->addAction(*loopSVGIcon, tr("Play in Loop"));
+            act_loop->setData(OP_SET_LOOP);
+            act_loop->setCheckable(true);
+            act_loop->setChecked(npart->part()->loop());
+        }
+
       partPopup->addSeparator();
       switch(trackType) {
             case MusECore::Track::MIDI: {
@@ -1392,10 +1418,8 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       MusEGlobal::song->normalizeWaveParts(item->part());
       break;
    }
-   case OP_PARTCOLORBASE ... OP_ONE_PAST_END_ENUM:
+   case OP_PARTCOLORBASE ... OP_PARTCOLOR_END:
    {
-      if(n == OP_ONE_PAST_END_ENUM)
-        break;
 
       curColorIndex = n - OP_PARTCOLORBASE;
 
@@ -1412,6 +1436,64 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       emit curPartColorIndexChanged(curColorIndex);
       MusEGlobal::song->update(SC_PART_MODIFIED);
       redraw();
+      break;
+   }
+   case OP_SET_LOOP: {
+      MusECore::Part* part = item->part();
+      // Use ModifyPartLoop UndoOp for consistent undo support
+      // Constructor: (type, part, old_loop, new_loop)
+      MusECore::Undo operations;
+      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, (int)part->loop(), (int)(part->loop() ? 0 : 1)));
+      MusEGlobal::song->applyOperationGroup(operations);
+      redraw();
+      break;
+   }
+   case OP_REMOVE_LOOP: {
+      MusECore::Part* part = item->part();
+      if (part->loop()) {
+          // Use ModifyPartLoop UndoOp for consistent undo support
+          // Constructor: (type, part, old_loop, new_loop)
+          MusECore::Undo operations;
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, 1, 0));
+          MusEGlobal::song->applyOperationGroup(operations);
+          redraw();
+      }
+      break;
+   }
+   case OP_CONVERT_LOOP_TO_SINGLE: {
+      MusECore::Part* part = item->part();
+      if (part->loop()) {
+          convertLoopToSingle(part);
+          updateItems();
+          redraw();
+      }
+      break;
+   }
+   case OP_CONVERT_LOOP_TO_MANY: {
+      MusECore::Part* part = item->part();
+      if (part->loop()) {
+          convertLoopToMany(part);
+          updateItems();
+          redraw();
+      }
+      break;
+   }
+   case OP_CONVERT_LOOP_TO_SINGLE_NEW_TRACK: {
+      MusECore::Part* part = item->part();
+      if (part->loop()) {
+          convertLoopToSingleNewTrack(part);
+          updateItems();
+          redraw();
+      }
+      break;
+   }
+   case OP_CONVERT_LOOP_TO_MANY_NEW_TRACK: {
+      MusECore::Part* part = item->part();
+      if (part->loop()) {
+          convertLoopToManyNewTrack(part);
+          updateItems();
+          redraw();
+      }
       break;
    }
    default:
@@ -2894,6 +2976,24 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
             p.drawText(tr.translated(1, 1), Qt::AlignBottom|Qt::AlignLeft, part->name());
             p.setPen(Qt::white);
             p.drawText(tr, Qt::AlignBottom|Qt::AlignLeft, part->name());
+
+        // Draw loop infinity symbol with high contrast
+        if (part->loop()) {
+            QFont loopFont = MusEGlobal::config.fonts[2];
+            loopFont.setPointSizeF(loopFont.pointSizeF() * 1.5);
+            loopFont.setBold(true);
+            p.setFont(loopFont);
+            QRect loopRect = tr;
+            loopRect.setX(tr.right() - 20);
+            loopRect.setWidth(20);
+            // Black outline for visibility on any background
+            p.setPen(Qt::black);
+            p.drawText(loopRect.translated(1, 1), Qt::AlignCenter, "∞");
+            // Bright yellow-green fill
+            p.setPen(QColor(0, 255, 127));
+            p.drawText(loopRect, Qt::AlignCenter, "∞");
+            p.setFont(MusEGlobal::config.fonts[2]);
+        }
         }
 
       p.setWorldMatrixEnabled(true);
@@ -4683,7 +4783,30 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& mr, const QRegion&)
        startx = 0;
     int width = mapx(MusEGlobal::song->cpos()) - startx;
 
-
+    // Draw loop ghost parts on top of everything
+    {
+        MusECore::TrackList* tl2 = MusEGlobal::song->tracks();
+        int yy2 = yoff;
+        for (MusECore::ciTrack it = tl2->begin(); it != tl2->end(); ++it) {
+            MusECore::Track* track = *it;
+            int th2 = track->height();
+            if (!th2) continue;
+            const MusECore::PartList* pl = track->parts();
+            for (auto ip = pl->begin(); ip != pl->end(); ++ip) {
+                MusECore::Part* part = ip->second;
+                if (part && part->loop()) {
+                    // Calculate the part's bounding box for ghost drawing
+                    int partX = mapx(part->tick());
+                    int partW = mapx(part->tick() + part->lenTick()) - partX;
+                    int partY = yy2;
+                    int partH = th2;
+                    QRect partBbr(partX, partY, partW, partH);
+                    drawLoopGhostParts(p, part, partBbr);
+                }
+            }
+            yy2 += th2;
+        }
+    }
 
     if (MusEGlobal::song->cpos() < startPos) {
         p.restore();
@@ -7140,6 +7263,77 @@ void PartCanvas::setAutomationPointRadius(int r)
   _automationPointExtraRadius = 1; // Fixed for now...
   _automationTopMargin = _automationPointRadius + 1;
   _automationBottomMargin = _automationPointRadius + 1;
+}
+
+
+//---------------------------------------------------------
+//   drawLoopGhostParts
+//    draws ghost copies of a looping part
+//---------------------------------------------------------
+
+void PartCanvas::drawLoopGhostParts(QPainter& p, MusECore::Part* part, const QRect& mbbr) {
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    if (partLen == 0) return;
+
+    // Use centralized helper to find loop end boundary (never returns 0)
+    unsigned loopEndTick = getLoopEndTick(part);
+
+    p.setWorldMatrixEnabled(false);
+
+    // Draw ghost copies
+    for (unsigned ghostTick = partTick + partLen; ghostTick < loopEndTick; ghostTick += partLen) {
+        int ghostX = mbbr.x() + rmapx(ghostTick - partTick);
+        
+        // Calculate ghost width - shorten the last ghost if it doesn't fit entirely
+        unsigned ghostLen = partLen;
+        bool lastGhost = (ghostTick + partLen > loopEndTick);
+        if (lastGhost) {
+            ghostLen = loopEndTick - ghostTick;
+            if (ghostLen == 0) continue;
+        }
+        
+        QRect ghostBbr = mbbr.translated(ghostX - mbbr.x(), 0);
+        if (lastGhost) {
+            // Shorten the last ghost to fit within loopEndTick
+            int ghostWidth = mbbr.width() * ghostLen / partLen;
+            ghostBbr.setWidth(ghostWidth);
+        }
+
+        // Subtle ghost rendering - lower alpha for a ghost-like appearance
+        QColor ghostColor = part->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts ? part->track()->color() : MusEGlobal::config.partColors[part->colorIndex()];
+        ghostColor.setAlpha(60);
+
+        QBrush brush(ghostColor);
+        p.setBrush(brush);
+        p.setPen(Qt::NoPen);
+        p.fillRect(ghostBbr, brush);
+
+        // Draw ghost border
+        QColor borderColor = ghostColor.lighter(150);
+        borderColor.setAlpha(100);
+        p.setPen(QPen(borderColor, 1));
+        p.drawRect(ghostBbr);
+
+        // Draw infinity symbol on ghost with high contrast
+        if (MusEGlobal::config.canvasShowPartType & 1) {
+            QFont loopFont = MusEGlobal::config.fonts[2];
+            loopFont.setPointSizeF(loopFont.pointSizeF() * 1.5);
+            loopFont.setBold(true);
+            p.setFont(loopFont);
+            QRect tr = ghostBbr;
+            tr.setX(tr.x() + 3);
+            // Black outline
+            p.setPen(Qt::black);
+            p.drawText(tr.translated(1, 1), Qt::AlignBottom | Qt::AlignLeft, "∞");
+            // Bright yellow-green fill
+            p.setPen(QColor(0, 255, 127));
+            p.drawText(tr, Qt::AlignBottom | Qt::AlignLeft, "∞");
+            p.setFont(MusEGlobal::config.fonts[2]);
+        }
+    }
+
+    p.setWorldMatrixEnabled(true);
 }
 
 } // namespace MusEGui

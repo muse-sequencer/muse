@@ -353,7 +353,7 @@ const char* UndoOp::typeName()
             "ModifyTrackName", "ModifyTrackChannel",
             "SetTrackRecord", "SetTrackMute", "SetTrackSolo", "SetTrackRecMonitor", "SetTrackOff",
             "MoveTrack",
-            "ModifyClip", "AddMarker", "DeleteMarker", "ModifyMarker", "SetMarkerPos",
+            "ModifyClip", "ModifyPartLoop", "AddMarker", "DeleteMarker", "ModifyMarker", "SetMarkerPos",
             "ChangeRackEffectPlugin", "SwapRackEffectPlugins", "MoveRackEffectPlugin",
 
             "ModifySongLen", "SetInstrument", "DoNothing",
@@ -702,7 +702,7 @@ void Song::setUndoRedoText()
         int sz = undoList->back().size();
         //if(sz >= 2)
         //  s += QString(" (%1)").arg(sz);
-        s += QString(" ") + undoList->back().front().typeName();
+        s += QString(" ") + tr(undoList->back().front().typeName());
         if(sz >= 2)
           s += ", ..";  // Hm, the tooltip will not show three dots "..."
       }
@@ -720,7 +720,7 @@ void Song::setUndoRedoText()
         int sz = redoList->back().size();
         //if(sz >= 2)
         //  s += QString(" (%1)").arg(sz);
-        s += QString(" ") + redoList->back().front().typeName();
+        s += QString(" ") + tr(redoList->back().front().typeName());
         if(sz >= 2)
           s += ", ..";
       }
@@ -812,6 +812,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     break;
     case UndoOp::ModifyPartName:
       fprintf(stderr, "Undo::insert: ModifyPartName\n");
+    break;
+    case UndoOp::ModifyPartLoop:
+      fprintf(stderr, "Undo::insert: ModifyPartLoop\n");
     break;
     case UndoOp::ModifyPartStart:
       fprintf(stderr, "Undo::insert: ModifyPartStart\n");
@@ -1125,6 +1128,15 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             delete uo._newName;
             // Simply replace the existing new name with the newer name.
             uo._newName = n_op._newName;
+            return;
+          }
+        break;
+
+        case UndoOp::ModifyPartLoop:
+          if(uo.type == UndoOp::ModifyPartLoop && uo.part == n_op.part)  
+          {
+            // Simply replace the new loop value with the newer value.
+            uo.a = n_op.a;
             return;
           }
         break;
@@ -2685,6 +2697,17 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_nam
     _newName = new QString(new_name);
 }
 
+UndoOp::UndoOp(UndoType type_, const Part* part_, int old_loop, int new_loop, bool noUndo)
+{
+    assert(type_==ModifyPartLoop);
+    assert(part_);
+    type=type_;
+    part=part_;
+    _noUndo = noUndo;
+    a = new_loop;
+    b = old_loop;
+}
+
 UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_name, const QString& new_name, bool noUndo)
 {
   assert(type_==ModifyTrackName);
@@ -3219,6 +3242,11 @@ void Song::revertOperationGroup1(Undo& operations)
                         
                   case UndoOp::ModifyPartName:
                         pendingOperations.add(PendingOperationItem(editable_part, i->_oldName, PendingOperationItem::ModifyPartName));
+                        updateFlags |= SC_PART_MODIFIED;
+                        break;
+                        
+                  case UndoOp::ModifyPartLoop:
+                        pendingOperations.add(PendingOperationItem(editable_part, (void*)(i->b ? (void*)1 : (void*)0), PendingOperationItem::ModifyPartLoop));
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                         
@@ -4573,6 +4601,11 @@ void Song::executeOperationGroup1(Undo& operations)
                         
                   case UndoOp::ModifyPartName:
                         pendingOperations.add(PendingOperationItem(editable_part, i->_newName, PendingOperationItem::ModifyPartName));
+                        updateFlags |= SC_PART_MODIFIED;
+                        break;
+
+                  case UndoOp::ModifyPartLoop:
+                        pendingOperations.add(PendingOperationItem(editable_part, (void*)(i->a ? (void*)1 : (void*)0), PendingOperationItem::ModifyPartLoop));
                         updateFlags |= SC_PART_MODIFIED;
                         break;
 

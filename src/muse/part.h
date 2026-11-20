@@ -135,6 +135,7 @@ class Part : public PosLen {
       QString _name;
       bool _selected;
       bool _mute;
+      bool _loop;
       int _colorIndex;
                    
    protected:
@@ -173,6 +174,8 @@ class Part : public PosLen {
       bool selectEvents(bool select, unsigned long t0 = 0, unsigned long t1 = 0);
       bool mute() const                { return _mute; }
       void setMute(bool b)             { _mute = b; }
+      bool loop() const                { return _loop; }
+      void setLoop(bool b)             { _loop = b; }
       Track* track() const             { return _track; }
       void setTrack(Track*t)           { _track = t; }
       const EventList& events() const  { return _events; }

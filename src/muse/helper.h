@@ -146,6 +146,31 @@ void loadThemeColors(const QString&);
 //void updateThemeAndStyle();
 int countSelectedParts();
 
+// Loop helper functions
+// Returns the tick where a looping part's loop should end.
+// Finds the next part on the same track; if none, returns 0 (no limit).
+// This is the single authoritative source for loop boundary calculation.
+unsigned getLoopEndTick(const MusECore::Part* part);
+
+// Calculates loop iteration parameters from a looping part.
+// Returns loopRange (total ticks from part start to loop end),
+// numIterations (full iterations excluding iteration 0),
+// and remainder (partial final iteration length, 0 if exact multiple).
+// This is the single authoritative source for loop arithmetic,
+// used consistently by MIDI export, conversion helpers, and playback.
+struct LoopCalc {
+      unsigned loopRange;
+      unsigned numIterations;
+      unsigned remainder;
+};
+LoopCalc calcLoopIterations(const MusECore::Part* part);
+
+void convertLoopToSingle(MusECore::Part* part);
+void convertLoopToMany(MusECore::Part* part);
+// Loop conversion functions that create a new track
+void convertLoopToSingleNewTrack(MusECore::Part* part);
+void convertLoopToManyNewTrack(MusECore::Part* part);
+
 // Tries to return the geometry of the screen under the point, or else the primary screen,
 //  or if no screens, a dummy geometry.
 QSize getScreenGeometryFromPoint(const QPoint&);
@@ -155,4 +180,3 @@ QSize getScreenGeometryFromWidget(const QWidget*);
 }
 
 #endif
-
