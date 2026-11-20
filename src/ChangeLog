@@ -1,3 +1,5 @@
+20.11.2026
+    - FIX 1366: CMake policy CMP0177 only available on cmake >= 3.31 (Tim).
 17.11.2026
     - More Wayland fixes. (Tim)
     - For compatibility, the program now automatically sets the QT_QPA_PLATFORM

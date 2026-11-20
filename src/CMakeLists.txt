@@ -26,9 +26,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12.0)
 if (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
     cmake_policy (SET CMP0007 NEW)
-    # New behaviour is to normalize install() DESTINATION paths,
-    #  which might affect us. Don't allow for now. FIXME Fix the problem?
-    cmake_policy (SET CMP0177 OLD)
+    # As of cmake 3.31
+    if(POLICY CMP0177)
+      # New behaviour is to normalize install() DESTINATION paths,
+      #  which might affect us. Don't allow for now. FIXME Fix the problem?
+      cmake_policy (SET CMP0177 OLD)
+    endif()
 endif(COMMAND cmake_policy)
 
 project(muse)
