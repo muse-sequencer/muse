@@ -190,17 +190,17 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
               if (!isLooping) {
                     // Non-looping part: original behavior
                     if (pos + n < p_spos)
-                      break;
+                          continue;
                     if (pos >= p_epos)
-                      continue;
+                          continue;
               }
               else {
                     // Looping part: check if we're before the part start
                     if (pos + n < p_spos)
-                      break;
+                          continue;
                     // If we're past the loop end, skip this part
                     if (loopEndFrame > 0 && pos >= loopEndFrame)
-                      continue;
+                          continue;
               }
   
               EventList& el = part->nonconst_events();
@@ -217,12 +217,12 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                     if (!isLooping) {
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
                           if ((int64_t)(pos + n) < (int64_t)(int)e_spos)
-                                break;
+                                continue;
                           if ((int64_t)pos >= (int64_t)(int)e_epos)
                                 continue;
 #else
                           if (pos + n < e_spos)
-                                break;
+                                continue;
                           if (pos >= e_epos)
                                 continue;
 #endif
@@ -231,10 +231,10 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                           // For looping parts, only skip if we're before the part start
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
                           if ((int64_t)(pos + n) < (int64_t)(int)e_spos)
-                                break;
+                                continue;
 #else
                           if (pos + n < e_spos)
-                                break;
+                                continue;
 #endif
                     }
 
@@ -344,6 +344,11 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                     for (int i = 0; i < channels(); ++i)
                           bpp[i] = bp[i] + dstOffset;
 
+                    // Always seek before reading. The looping part's seekAudio() moves the
+                    // shared file pointer, so non-looping parts must also seek to their
+                    // correct position. Without this, when a looping part is processed first,
+                    // the non-looping part reads from the wrong file position.
+                    event.seekAudio(srcOffset);
                     event.readAudio(srcOffset, bpp, channels(), nn, doSeek, do_overwrite);
                     do_overwrite = false;
                     }
@@ -871,12 +876,16 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   // Looping parts cannot use prefetch FIFO because the prefetch thread
   // doesn't know to repeat the audio data cyclically. Use direct fetchData instead.
   //
-  // KNOWN LIMITATION: This bypasses prefetch for the entire track whenever any part
-  // on the track loops, not just for the loop region. A more granular approach would
-  // require per-part prefetch routing in the prefetch thread, which is a larger refactor.
-  // The performance impact is acceptable for typical use cases where loop-enabled tracks
-  // have few parts. Non-looping parts on the same track are still processed correctly
-  // by fetchData because it only applies loop logic to parts with the loop flag set.
+  // NOTE: We cannot mix prefetch and direct fetch on the same track even when the
+  // current buffer doesn't overlap a loop region. The reason: when the playhead
+  // enters a loop region, we switch to direct fetch (bypassing prefetch FIFO).
+  // When it leaves, we switch back to prefetch — but the prefetch FIFO position
+  // is now stale because the prefetch thread didn't fill data for the loop region.
+  // This causes silence or glitches on subsequent passes (e.g., transport loop).
+  // A proper fix would require making the prefetch thread loop-aware, which is
+  // a larger refactor. For now, direct fetch for the entire track is the safe
+  // approach. The performance impact is acceptable since fetchData() reads directly
+  // from file and only applies loop logic to parts with the loop flag set.
   bool hasLoopPart = false;
   {
     const PartList* pl = cparts();
@@ -890,12 +899,16 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
 
   bool have_pf_data = false;
   if (hasLoopPart) {
-    // For tracks with looping parts, read directly from file using fetchData (loop-aware).
+    // Track has looping parts — use direct fetchData (loop-aware) for the entire track.
+    // Use doSeek=true so that non-looping parts on the same track correctly seek
+    // their audio files before reading. Without this, after transport loop restarts
+    // from position 0, the audio file pointers are still at the end and read silence.
     const int i_correction = use_latency_corr ? getLatencyInfo(false)._sourceCorrectionValue : 0;
-    fetchData(framePos, nframe, bp, false, do_overwrite, i_correction);
+    fetchData(framePos, nframe, bp, true, do_overwrite, i_correction);
     have_pf_data = true;
   }
   else {
+    // No looping parts — use prefetch for performance.
     have_pf_data = getPrefetchData(framePos, dstChannels, nframe, bp, do_overwrite);
   }
   return have_data || have_pf_data;
