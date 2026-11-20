@@ -522,7 +522,15 @@ PyObject* setPartLoop(PyObject*, PyObject* args)
             Py_RETURN_NONE;
             }
 
-      part->setLoop(loop != 0);
+      // Use undo operation system instead of directly calling setLoop().
+      // This ensures the change is undoable and consistent with context-menu changes.
+      bool newLoop = (loop != 0);
+      if (part->loop() == newLoop) {
+            Py_RETURN_NONE;
+            }
+      MusECore::Undo operations;
+      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, (int)part->loop(), (int)newLoop));
+      MusEGlobal::song->applyOperationGroup(operations);
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_MODIFIED);
       QApplication::postEvent(MusEGlobal::song, pyevent);
       Py_RETURN_NONE;

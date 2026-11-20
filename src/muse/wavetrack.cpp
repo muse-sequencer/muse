@@ -869,8 +869,14 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
 
   // Check if any part on this track has loop enabled.
   // Looping parts cannot use prefetch FIFO because the prefetch thread
-  // doesn't know to repeat the audio data. Use direct fetchData instead.
-  // However, we should only bypass prefetch for the loop region, not the entire track.
+  // doesn't know to repeat the audio data cyclically. Use direct fetchData instead.
+  //
+  // KNOWN LIMITATION: This bypasses prefetch for the entire track whenever any part
+  // on the track loops, not just for the loop region. A more granular approach would
+  // require per-part prefetch routing in the prefetch thread, which is a larger refactor.
+  // The performance impact is acceptable for typical use cases where loop-enabled tracks
+  // have few parts. Non-looping parts on the same track are still processed correctly
+  // by fetchData because it only applies loop logic to parts with the loop flag set.
   bool hasLoopPart = false;
   {
     const PartList* pl = cparts();
@@ -885,9 +891,6 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   bool have_pf_data = false;
   if (hasLoopPart) {
     // For tracks with looping parts, read directly from file using fetchData (loop-aware).
-    // This bypasses prefetch for the entire track, but ensures loop playback works correctly.
-    // Non-looping parts on the same track will still be processed correctly by fetchData
-    // because it only applies loop logic to parts with the loop flag set.
     const int i_correction = use_latency_corr ? getLatencyInfo(false)._sourceCorrectionValue : 0;
     fetchData(framePos, nframe, bp, false, do_overwrite, i_correction);
     have_pf_data = true;

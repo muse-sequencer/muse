@@ -2542,12 +2542,18 @@ void convertLoopToSingle(MusECore::Part* part)
                 newPart->addEvent(ev);
             }
         }
-        // Handle remainder
+        // Handle remainder: only include events whose timeline position falls within the partial iteration.
+        // The remainder iteration starts at (loopCount * partLen) and extends for 'remainder' ticks.
+        // An event at ev.posValue() should be included only if it starts before the end of the remainder.
         if (remainder > 0) {
+            unsigned remainderStart = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-                if (ie->second.posValue() < remainder) {
+                unsigned evPos = ie->second.posValue();
+                // Include the event if its position within the part is less than the remainder length.
+                // This means the event starts before the remainder boundary.
+                if (evPos < remainder) {
                     MusECore::Event ev = ie->second.duplicate();
-                    ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                    ev.setPosValue(evPos + remainderStart);
                     newPart->addEvent(ev);
                 }
             }
@@ -2594,7 +2600,8 @@ void convertLoopToMany(MusECore::Part* part)
         newPart->setLoop(false);
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
     }
-    // Handle remainder - create a partial part for the last ghost
+    // Handle remainder: create a partial part for the last incomplete iteration.
+    // Only include events that start before the remainder boundary.
     if (remainder > 0) {
         MusECore::Part* newPart = part->duplicateEmpty();
         newPart->setTick(partTick + loopCount * partLen);
@@ -2603,7 +2610,9 @@ void convertLoopToMany(MusECore::Part* part)
         newPart->setName(part->name());
         newPart->setColorIndex(part->colorIndex());
         for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-            if (ie->second.posValue() < remainder) {
+            unsigned evPos = ie->second.posValue();
+            // Include events that start within the remainder range.
+            if (evPos < remainder) {
                 MusECore::Event ev = ie->second.duplicate();
                 newPart->addEvent(ev);
             }

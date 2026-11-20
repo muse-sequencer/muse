@@ -799,8 +799,9 @@ static void addTrackEvents(
               if (loopEndTick > partTick + partLen) {
                     unsigned loopRange = loopEndTick - partTick;
                     unsigned numIterations = loopRange / partLen;
+                    unsigned remainder = loopRange % partLen;
 
-                    // Export each loop iteration by creating a temporary part at the iteration offset
+                    // Export each full loop iteration by creating a temporary part at the iteration offset
                     for (unsigned iter = 1; iter < numIterations; ++iter) {
                           unsigned iterOffset = iter * partLen;
                           // Create a temporary part at the loop iteration position so addEventList
@@ -812,6 +813,24 @@ static void addTrackEvents(
                           for (MusECore::ciEvent i = evlist.cbegin(); i != evlist.cend(); ++i) {
                                 MusECore::Event ev = i->second;
                                 iterPart->addEvent(ev);
+                          }
+                          MusECore::addEventList(iterPart->events(), l, track, iterPart, port, channel, startOffset);
+                          delete iterPart;
+                    }
+                    // Export partial final iteration (remainder) if the loop boundary falls mid-iteration.
+                    // Only include events that start before the remainder boundary.
+                    if (remainder > 0) {
+                          unsigned iterOffset = numIterations * partLen;
+                          MusECore::MidiPart* iterPart = new MusECore::MidiPart((MusECore::MidiTrack*)track);
+                          iterPart->setTick(partTick + iterOffset);
+                          iterPart->setLenTick(remainder);
+                          const MusECore::EventList& evlist = part->events();
+                          for (MusECore::ciEvent i = evlist.cbegin(); i != evlist.cend(); ++i) {
+                                // Only include events that start within the remainder range
+                                if (i->second.posValue() < remainder) {
+                                      MusECore::Event ev = i->second;
+                                      iterPart->addEvent(ev);
+                                }
                           }
                           MusECore::addEventList(iterPart->events(), l, track, iterPart, port, channel, startOffset);
                           delete iterPart;
