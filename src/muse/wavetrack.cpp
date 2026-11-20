@@ -204,39 +204,17 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
               }
   
               EventList& el = part->nonconst_events();
+              unsigned partLenFrame = p_epos - p_spos;
               
-              // For looping parts, we need to process multiple iterations
-              // loopEndFrame is in absolute frame coordinates (same as p_spos/p_epos)
-              unsigned loopIterations = 1;
-              if (isLooping && p_epos > p_spos) {
-                    unsigned partLenFrame = p_epos - p_spos;
-                    // effectiveEnd is absolute frame; loop range is (effectiveEnd - p_spos)
-                    unsigned effectiveEnd = (loopEndFrame > 0) ? loopEndFrame : (p_spos + partLenFrame * 4);
-                    if (effectiveEnd > p_spos)
-                      loopIterations = (effectiveEnd - p_spos) / partLenFrame;
-                    if (loopIterations < 1) loopIterations = 1;
-              }
-              
-              for (unsigned loopIter = 0; loopIter < loopIterations; ++loopIter) {
-                    // iterOffset is relative to p_spos: iteration 0 = 0, iteration 1 = partLenFrame, etc.
-                    unsigned iterOffset = loopIter * (p_epos - p_spos);
-                    
-                    for (iEvent ie = el.begin(); ie != el.end(); ++ie) {
-                          Event& event = ie->second;
-                          // e_spos is absolute frame: event.frame() is relative to part start,
-                          // p_spos is absolute part start, iterOffset is absolute offset from part start
-                          unsigned e_spos  = event.frame() + p_spos + iterOffset;
-                          unsigned nn      = event.lenFrame();
-                          unsigned e_epos  = e_spos + nn;
+              for (iEvent ie = el.begin(); ie != el.end(); ++ie) {
+                    Event& event = ie->second;
+                    unsigned e_spos  = event.frame() + p_spos;
+                    unsigned nn      = event.lenFrame();
+                    unsigned e_epos  = e_spos + nn;
 
-                          // For looping parts, stop if we reach the loop end (both are absolute frames)
-                          if (part->loop() && loopEndFrame > 0 && e_spos >= loopEndFrame)
-                                continue;
-
-                          // Clamp e_epos to loopEndFrame so the last iteration doesn't read beyond the loop boundary
-                          if (part->loop() && loopEndFrame > 0 && e_epos > loopEndFrame)
-                                e_epos = loopEndFrame;
-
+                    // For looping parts, the event is considered to extend to the loop end,
+                    // so we don't skip based on e_epos. The cyclic srcOffset handles the rest.
+                    if (!isLooping) {
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
                           if ((int64_t)(pos + n) < (int64_t)(int)e_spos)
                                 break;
@@ -248,10 +226,83 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                           if (pos >= e_epos)
                                 continue;
 #endif
+                    }
+                    else {
+                          // For looping parts, only skip if we're before the part start
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+                          if ((int64_t)(pos + n) < (int64_t)(int)e_spos)
+                                break;
+#else
+                          if (pos + n < e_spos)
+                                break;
+#endif
+                    }
 
+                    // For looping parts, we need to compute srcOffset cyclically.
+                    // The playback position (pos) may be far beyond e_spos, so offset can be very negative.
+                    unsigned srcOffset, dstOffset;
+                    if (isLooping && partLenFrame > 0) {
+                          // For looping parts, the read position in the audio file is simply
+                          // (pos - p_spos) % partLenFrame, cycling through the part's audio data.
+                          // p_spos is the absolute frame of the part start.
+                          // pos is the current playback position (absolute frame).
+                          // However, a single buffer chunk (n samples) may span multiple loop iterations,
+                          // so we need to read in a loop, filling the buffer chunk sample by sample
+                          // (or in sub-chunks) from the cyclic audio data.
+                          unsigned remaining = n;
+                          unsigned bufPos = 0;
+                          unsigned filePos = (pos - p_spos) % partLenFrame;
+                          while (remaining > 0) {
+                                // How many samples can we read from this position in the file
+                                unsigned readLen = partLenFrame - filePos;
+                                if (readLen > remaining)
+                                      readLen = remaining;
+                                if (readLen == 0)
+                                      break;
+
+                                // Apply latency correction
+                                if (use_latency_corr && latency_correction > 0) {
+                                      unsigned adjustedFilePos = filePos;
+                                      if ((unsigned)latency_correction > adjustedFilePos) {
+                                            // Skip this chunk — latency correction pushes us past the start
+                                            unsigned skipSamples = (unsigned)latency_correction - adjustedFilePos;
+                                            if (skipSamples >= readLen) {
+                                                  filePos = 0;
+                                                  remaining -= readLen;
+                                                  bufPos += readLen;
+                                                  continue;
+                                            }
+                                            readLen -= skipSamples;
+                                            filePos = 0;
+                                            bufPos += skipSamples;
+                                            remaining -= skipSamples;
+                                      }
+                                      else {
+                                            adjustedFilePos -= latency_correction;
+                                            filePos = adjustedFilePos;
+                                      }
+                                }
+
+                                // Seek to the correct position in the audio file before reading.
+                                // This is essential because readAudio() reads from the current file position,
+                                // not from the passed frame parameter (when no audio converter is active).
+                                event.seekAudio(filePos);
+
+                                // Read this sub-chunk
+                                float* bpp[channels()];
+                                for (int i = 0; i < channels(); ++i)
+                                      bpp[i] = bp[i] + bufPos;
+                                event.readAudio(filePos, bpp, channels(), readLen, doSeek, false);
+                                doSeek = false;
+
+                                bufPos += readLen;
+                                remaining -= readLen;
+                                filePos = 0; // Next iteration reads from start of part
+                          }
+                          continue; // Done with this event for loop mode
+                    }
+                    else {
                           int offset = e_spos - pos;
-
-                          unsigned srcOffset, dstOffset;
                           if (offset > 0) {
                                 nn = n - offset;
                                 srcOffset = 0;
@@ -265,21 +316,21 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                                 if (nn > n)
                                       nn = n;
                                 }
+                    }
 
-                          if(use_latency_corr)
-                          {
-                                if(latency_correction > 0 && (unsigned int)latency_correction > srcOffset)
-                                      continue;
-                                srcOffset -= latency_correction;
-                          }
+                    if(use_latency_corr)
+                    {
+                          if(latency_correction > 0 && (unsigned int)latency_correction > srcOffset)
+                                continue;
+                          srcOffset -= latency_correction;
+                    }
 
-                          float* bpp[channels()];
-                          for (int i = 0; i < channels(); ++i)
-                                bpp[i] = bp[i] + dstOffset;
+                    float* bpp[channels()];
+                    for (int i = 0; i < channels(); ++i)
+                          bpp[i] = bp[i] + dstOffset;
 
-                          event.readAudio(srcOffset, bpp, channels(), nn, doSeek, do_overwrite);
-                          do_overwrite = false;
-                          }
+                    event.readAudio(srcOffset, bpp, channels(), nn, doSeek, do_overwrite);
+                    do_overwrite = false;
                     }
               }
       }
@@ -801,7 +852,30 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   // We only "have data" if we want to monitor it.
   have_data = track_rec_monitor && have_data;
 
-  const bool have_pf_data = getPrefetchData(framePos, dstChannels, nframe, bp, do_overwrite);
+  // Check if any part on this track has loop enabled.
+  // Looping parts cannot use prefetch FIFO because the prefetch thread
+  // doesn't know to repeat the audio data. Use direct fetchData instead.
+  bool hasLoopPart = false;
+  {
+    const PartList* pl = cparts();
+    for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
+      if (ip->second->loop()) {
+        hasLoopPart = true;
+        break;
+      }
+    }
+  }
+
+  bool have_pf_data = false;
+  if (hasLoopPart) {
+    // For looping parts, read directly from file using fetchData (loop-aware).
+    const int i_correction = use_latency_corr ? getLatencyInfo(false)._sourceCorrectionValue : 0;
+    fetchData(framePos, nframe, bp, false, do_overwrite, i_correction);
+    have_pf_data = true;
+  }
+  else {
+    have_pf_data = getPrefetchData(framePos, dstChannels, nframe, bp, do_overwrite);
+  }
   return have_data || have_pf_data;
 }
 

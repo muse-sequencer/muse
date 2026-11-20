@@ -127,6 +127,14 @@ class MusE:
             return muse.deletePart((part))
 
       @pyro.expose
+      def setPartLoop(self, partid, loop): # set loop flag on a part
+            return muse.setPartLoop(partid, loop)
+
+      @pyro.expose
+      def getPartLoop(self, partid): # get loop flag of a part
+            return muse.getPartLoop(partid)
+
+      @pyro.expose
       def getSelectedTrack(self): # get first selected track in arranger window
             return muse.getSelectedTrack()
 

@@ -2488,6 +2488,7 @@ void convertLoopToSingle(MusECore::Part* part)
     // Use centralized helper to find loop end boundary (never returns 0)
     unsigned loopEndTick = getLoopEndTick(part);
 
+
     // Create a new part spanning the entire loop range
     MusECore::Part* newPart = part->duplicateEmpty();
     newPart->setTick(partTick);
@@ -2500,21 +2501,55 @@ void convertLoopToSingle(MusECore::Part* part)
     unsigned loopCount = (loopEndTick - partTick) / partLen;
     unsigned remainder = (loopEndTick - partTick) % partLen;
 
-    for (unsigned loop = 0; loop < loopCount; ++loop) {
-        unsigned offset = loop * partLen;
-        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-            MusECore::Event ev = ie->second.duplicate();
-            ev.setPosValue(ev.posValue() + offset);
-            newPart->addEvent(ev);
-        }
-    }
-    // Handle remainder
-    if (remainder > 0) {
-        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-            if (ie->second.posValue() < remainder) {
+    // For Wave parts, events store frame offsets into the audio file, not tick positions.
+    // We must not modify event positions for Wave parts — just duplicate them as-is.
+    bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
+
+    if (isWavePart) {
+        // For Wave parts, create one event per loop iteration.
+        // Each event reads from frame 0 of the audio file with the original part's length.
+        // This ensures each iteration plays the full audio file from start.
+        unsigned partLenFrame = MusEGlobal::tempomap.tick2frame(partLen);
+        for (unsigned loop = 0; loop < loopCount; ++loop) {
+            unsigned tickOffset = loop * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                // Position the event at the correct tick offset in the new part
+                // Use TICKS type to set position on the timeline, not in the audio file
+                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
+                // Ensure the event has the correct frame length
+                ev.setLenValue(partLenFrame, MusECore::Pos::FRAMES);
                 newPart->addEvent(ev);
+            }
+        }
+        // Handle remainder - create a partial event for the last iteration
+        if (remainder > 0) {
+            unsigned remainderFrame = MusEGlobal::tempomap.tick2frame(remainder);
+            unsigned tickOffset = loopCount * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                MusECore::Event ev = ie->second.duplicate();
+                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
+                ev.setLenValue(remainderFrame, MusECore::Pos::FRAMES);
+                newPart->addEvent(ev);
+            }
+        }
+    } else {
+        for (unsigned loop = 0; loop < loopCount; ++loop) {
+            unsigned offset = loop * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                MusECore::Event ev = ie->second.duplicate();
+                ev.setPosValue(ev.posValue() + offset);
+                newPart->addEvent(ev);
+            }
+        }
+        // Handle remainder
+        if (remainder > 0) {
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                if (ie->second.posValue() < remainder) {
+                    MusECore::Event ev = ie->second.duplicate();
+                    ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                    newPart->addEvent(ev);
+                }
             }
         }
     }
@@ -2597,8 +2632,14 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
     // Use centralized helper to find loop end boundary (never returns 0)
     unsigned loopEndTick = getLoopEndTick(part);
 
-    // Create a new track based on the original track
-    MusECore::Track* newTrack = part->track()->clone(MusECore::Track::ASSIGN_NONE);
+    // Create a new track based on the original track, copying all attributes
+    MusECore::Track* newTrack = part->track()->clone(
+        MusECore::Track::ASSIGN_PROPERTIES |
+        MusECore::Track::ASSIGN_ROUTES |
+        MusECore::Track::ASSIGN_DEFAULT_ROUTES |
+        MusECore::Track::ASSIGN_PLUGINS |
+        MusECore::Track::ASSIGN_STD_CTRLS |
+        MusECore::Track::ASSIGN_PLUGIN_CTRLS);
     if (!newTrack)
         return;
     newTrack->setName(part->track()->name() + " (loop)");
@@ -2615,21 +2656,51 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
     unsigned loopCount = (loopEndTick - partTick) / partLen;
     unsigned remainder = (loopEndTick - partTick) % partLen;
 
-    for (unsigned loop = 0; loop < loopCount; ++loop) {
-        unsigned offset = loop * partLen;
-        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-            MusECore::Event ev = ie->second.duplicate();
-            ev.setPosValue(ev.posValue() + offset);
-            newPart->addEvent(ev);
-        }
-    }
-    // Handle remainder
-    if (remainder > 0) {
-        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-            if (ie->second.posValue() < remainder) {
+    // For Wave parts, events store frame offsets into the audio file, not tick positions.
+    // We must not modify event positions for Wave parts — just duplicate them as-is.
+    bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
+
+    if (isWavePart) {
+        // For Wave parts, create one event per loop iteration.
+        // Each event reads from frame 0 of the audio file with the original part's length.
+        unsigned partLenFrame = MusEGlobal::tempomap.tick2frame(partLen);
+        for (unsigned loop = 0; loop < loopCount; ++loop) {
+            unsigned tickOffset = loop * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
+                ev.setLenValue(partLenFrame, MusECore::Pos::FRAMES);
                 newPart->addEvent(ev);
+            }
+        }
+        // Handle remainder
+        if (remainder > 0) {
+            unsigned remainderFrame = MusEGlobal::tempomap.tick2frame(remainder);
+            unsigned tickOffset = loopCount * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                MusECore::Event ev = ie->second.duplicate();
+                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
+                ev.setLenValue(remainderFrame, MusECore::Pos::FRAMES);
+                newPart->addEvent(ev);
+            }
+        }
+    } else {
+        for (unsigned loop = 0; loop < loopCount; ++loop) {
+            unsigned offset = loop * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                MusECore::Event ev = ie->second.duplicate();
+                ev.setPosValue(ev.posValue() + offset);
+                newPart->addEvent(ev);
+            }
+        }
+        // Handle remainder
+        if (remainder > 0) {
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                if (ie->second.posValue() < remainder) {
+                    MusECore::Event ev = ie->second.duplicate();
+                    ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                    newPart->addEvent(ev);
+                }
             }
         }
     }
@@ -2661,8 +2732,14 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
     // Use centralized helper to find loop end boundary (never returns 0)
     unsigned loopEndTick = getLoopEndTick(part);
 
-    // Create a new track based on the original track
-    MusECore::Track* newTrack = part->track()->clone(MusECore::Track::ASSIGN_NONE);
+    // Create a new track based on the original track, copying all attributes
+    MusECore::Track* newTrack = part->track()->clone(
+        MusECore::Track::ASSIGN_PROPERTIES |
+        MusECore::Track::ASSIGN_ROUTES |
+        MusECore::Track::ASSIGN_DEFAULT_ROUTES |
+        MusECore::Track::ASSIGN_PLUGINS |
+        MusECore::Track::ASSIGN_STD_CTRLS |
+        MusECore::Track::ASSIGN_PLUGIN_CTRLS);
     if (!newTrack)
         return;
     newTrack->setName(part->track()->name() + " (loop)");

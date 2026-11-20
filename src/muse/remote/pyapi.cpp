@@ -504,6 +504,48 @@ PyObject* deletePart(PyObject*, PyObject* args)
       QApplication::postEvent(MusEGlobal::song, pyevent);
       Py_RETURN_NONE;
 }
+//------------------------------------------------------------
+// setPartLoop
+//  Set loop flag on a part by serial nr
+//------------------------------------------------------------
+PyObject* setPartLoop(PyObject*, PyObject* args)
+{
+      const char* bytes;
+      int loop;
+      if (!PyArg_ParseTuple(args, "si", &bytes, &loop)) {
+            Py_RETURN_NONE;
+            }
+
+      const QUuid id(bytes);
+      Part* part = findPartBySerial(id);
+      if (part == nullptr) {
+            Py_RETURN_NONE;
+            }
+
+      part->setLoop(loop != 0);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_MODIFIED);
+      QApplication::postEvent(MusEGlobal::song, pyevent);
+      Py_RETURN_NONE;
+}
+//------------------------------------------------------------
+// getPartLoop
+//  Get loop flag of a part by serial nr
+//------------------------------------------------------------
+PyObject* getPartLoop(PyObject*, PyObject* args)
+{
+      const char* bytes;
+      if (!PyArg_ParseTuple(args, "s", &bytes)) {
+            Py_RETURN_NONE;
+            }
+
+      const QUuid id(bytes);
+      Part* part = findPartBySerial(id);
+      if (part == nullptr) {
+            Py_RETURN_NONE;
+            }
+
+      return Py_BuildValue("b", part->loop());
+}
 
 //------------------------------------------------------------
 // setPos
@@ -1070,6 +1112,8 @@ PyMethodDef g_methodDefinitions[] =
       { "createPart", createPart, METH_VARARGS, "Create a part" },
       { "modifyPart", modifyPart, METH_O, "Modify a particular part" },
       { "deletePart", deletePart, METH_VARARGS, "Remove part with a particular serial nr" },
+      { "setPartLoop", setPartLoop, METH_VARARGS, "Set loop flag on a part by serial nr" },
+      { "getPartLoop", getPartLoop, METH_VARARGS, "Get loop flag of a part by serial nr" },
       { "getSelectedTrack", getSelectedTrack, METH_NOARGS, "Get first selected track" },
       { "importPart", importPart, METH_VARARGS, "Import part file to a track at a particular position" },
       { "changeTrackName", changeTrackName, METH_VARARGS, "Change track name" },
