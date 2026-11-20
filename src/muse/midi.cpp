@@ -1416,17 +1416,31 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                         // => N >= (cts - offset - evTickInPart) / partLen
                         // And the largest N such that evTickInPart + offset + N*partLen < nts
                         // => N <= (nts - offset - evTickInPart - 1) / partLen
-                        // Use clamped subtraction to avoid unsigned underflow.
+                        // Use signed arithmetic to correctly handle collection windows that start
+                        // before the first iteration (cts < offset) or extend beyond the last.
+                        // Unsigned arithmetic would wrap around or clamp incorrectly.
                         {
-                              unsigned ctsRel = (cts > offset) ? cts - offset : 0;
-                              unsigned ntsRel = (nts > offset) ? nts - offset : 0;
-                              unsigned firstIteration = 0;
-                              if (ctsRel > evTickInPart)
-                                    firstIteration = (ctsRel - evTickInPart) / partLen;
-                              unsigned lastIteration = (ntsRel > evTickInPart)
-                                    ? (ntsRel - 1 - evTickInPart) / partLen
-                                    : 0;
-                              for (unsigned iter = firstIteration; iter <= lastIteration; ++iter) {
+                              // Signed differences: can be negative when cts/nts < offset
+                              long long ctsSigned = (long long)cts - (long long)offset - (long long)evTickInPart;
+                              long long ntsSigned = (long long)nts - (long long)offset - (long long)evTickInPart - 1;
+                              long long partLenLL = (long long)partLen;
+
+                              // firstIteration: smallest N where tick >= cts
+                              long long firstIterationLL = 0;
+                              if (ctsSigned > 0)
+                                    firstIterationLL = (ctsSigned + partLenLL - 1) / partLenLL; // ceiling division
+
+                              // lastIteration: largest N where tick < nts (i.e., tick <= nts-1)
+                              long long lastIterationLL = 0;
+                              if (ntsSigned >= 0)
+                                    lastIterationLL = ntsSigned / partLenLL; // floor division
+
+                              // Clamp to non-negative range
+                              if (firstIterationLL < 0) firstIterationLL = 0;
+                              if (lastIterationLL < 0) lastIterationLL = 0;
+
+                              for (long long iterLL = firstIterationLL; iterLL <= lastIterationLL; ++iterLL) {
+                                    unsigned iter = (unsigned)iterLL;
                                     tick = evTickInPart + offset + (iter * partLen);
                                     // Stop looping when we reach the next part on this track
                                     if (loopEndTick > 0 && tick >= loopEndTick)
