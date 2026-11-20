@@ -801,9 +801,12 @@ static void addTrackEvents(
                     unsigned numIterations = loopRange / partLen;
                     unsigned remainder = loopRange % partLen;
 
-                    // Export each full loop iteration by creating a temporary part at the iteration offset
+                    // Export each full loop iteration by creating a temporary part at the iteration offset.
+                    // The last full iteration may extend beyond loopEndTick, so clip its events.
                     for (unsigned iter = 1; iter < numIterations; ++iter) {
                           unsigned iterOffset = iter * partLen;
+                          unsigned iterEndTick = partTick + iterOffset + partLen;
+                          bool isLastFullIter = (iterEndTick > loopEndTick);
                           // Create a temporary part at the loop iteration position so addEventList
                           // handles all drum maps, transposition, velocity, compression, etc.
                           MusECore::MidiPart* iterPart = new MusECore::MidiPart((MusECore::MidiTrack*)track);
@@ -812,6 +815,17 @@ static void addTrackEvents(
                           const MusECore::EventList& evlist = part->events();
                           for (MusECore::ciEvent i = evlist.cbegin(); i != evlist.cend(); ++i) {
                                 MusECore::Event ev = i->second;
+                                // For the last full iteration, clip event length so note-offs don't
+                                // extend beyond loopEndTick and overlap the next part.
+                                if (isLastFullIter) {
+                                      unsigned evPos = ev.posValue();
+                                      unsigned evLen = ev.lenTick();
+                                      unsigned evEnd = evPos + evLen;
+                                      unsigned clipLen = loopEndTick - (partTick + iterOffset);
+                                      if (evEnd > clipLen) {
+                                            ev.setLenValue(clipLen - evPos > 0 ? clipLen - evPos : 1);
+                                      }
+                                }
                                 iterPart->addEvent(ev);
                           }
                           MusECore::addEventList(iterPart->events(), l, track, iterPart, port, channel, startOffset);
