@@ -242,59 +242,74 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                     // The playback position (pos) may be far beyond e_spos, so offset can be very negative.
                     unsigned srcOffset, dstOffset;
                     if (isLooping && partLenFrame > 0) {
-                          // For looping parts, the read position in the audio file is simply
-                          // (pos - p_spos) % partLenFrame, cycling through the part's audio data.
-                          // p_spos is the absolute frame of the part start.
-                          // pos is the current playback position (absolute frame).
-                          // However, a single buffer chunk (n samples) may span multiple loop iterations,
-                          // so we need to read in a loop, filling the buffer chunk sample by sample
-                          // (or in sub-chunks) from the cyclic audio data.
-                          unsigned remaining = n;
-                          unsigned bufPos = 0;
+                          // For looping parts, the source position cycles through the part's audio data.
+                          // pos is the current absolute playback frame; p_spos is the part start frame.
+                          // The cyclic position within the part is (pos - p_spos) % partLenFrame.
+                          // A single buffer chunk (n samples) may span multiple loop iterations,
+                          // so we read in sub-chunks, cycling through the audio data.
+                          
+                          // Calculate where in the output buffer to start writing.
+                          // If the part starts after the current buffer position, skip the leading samples.
+                          int offset = p_spos - pos;
+                          if (offset > 0) {
+                                dstOffset = offset;
+                          }
+                          else {
+                                dstOffset = 0;
+                          }
+                          
+                          // Clamp write length to buffer size and loop boundary
+                          unsigned writeLen = n - dstOffset;
+                          if (loopEndFrame > 0) {
+                                unsigned loopRemaining = loopEndFrame - pos;
+                                if (writeLen > loopRemaining)
+                                      writeLen = loopRemaining;
+                          }
+                          if (writeLen == 0)
+                                continue;
+                          
+                          // The cyclic source position within the part's audio data
                           unsigned filePos = (pos - p_spos) % partLenFrame;
+                          unsigned remaining = writeLen;
+                          unsigned bufPos = dstOffset;
+                          
+                          // Apply latency correction once, before the loop
+                          if (use_latency_corr && latency_correction > 0) {
+                                if ((unsigned)latency_correction > filePos) {
+                                      // Latency correction pushes us backward past the current position.
+                                      // Skip the leading samples and adjust.
+                                      unsigned skip = (unsigned)latency_correction - filePos;
+                                      if (skip >= remaining) {
+                                            continue;
+                                      }
+                                      remaining -= skip;
+                                      bufPos += skip;
+                                      filePos = 0;
+                                }
+                                else {
+                                      filePos -= latency_correction;
+                                }
+                          }
+                          
+                          // Read in a loop, filling the output buffer from cyclic audio data
                           while (remaining > 0) {
-                                // How many samples can we read from this position in the file
                                 unsigned readLen = partLenFrame - filePos;
                                 if (readLen > remaining)
                                       readLen = remaining;
                                 if (readLen == 0)
                                       break;
-
-                                // Apply latency correction
-                                if (use_latency_corr && latency_correction > 0) {
-                                      unsigned adjustedFilePos = filePos;
-                                      if ((unsigned)latency_correction > adjustedFilePos) {
-                                            // Skip this chunk — latency correction pushes us past the start
-                                            unsigned skipSamples = (unsigned)latency_correction - adjustedFilePos;
-                                            if (skipSamples >= readLen) {
-                                                  filePos = 0;
-                                                  remaining -= readLen;
-                                                  bufPos += readLen;
-                                                  continue;
-                                            }
-                                            readLen -= skipSamples;
-                                            filePos = 0;
-                                            bufPos += skipSamples;
-                                            remaining -= skipSamples;
-                                      }
-                                      else {
-                                            adjustedFilePos -= latency_correction;
-                                            filePos = adjustedFilePos;
-                                      }
-                                }
-
-                                // Seek to the correct position in the audio file before reading.
-                                // This is essential because readAudio() reads from the current file position,
-                                // not from the passed frame parameter (when no audio converter is active).
+                                
+                                // Always seek before reading in loop mode.
+                                // SndFile::read() reads from the current file position, ignoring the
+                                // frame parameter when no audio converter is active.
+                                // We must seek before EVERY read, not just the first one.
                                 event.seekAudio(filePos);
-
-                                // Read this sub-chunk
+                                
                                 float* bpp[channels()];
                                 for (int i = 0; i < channels(); ++i)
                                       bpp[i] = bp[i] + bufPos;
-                                event.readAudio(filePos, bpp, channels(), readLen, doSeek, false);
-                                doSeek = false;
-
+                                event.readAudio(filePos, bpp, channels(), readLen, true, false);
+                                
                                 bufPos += readLen;
                                 remaining -= readLen;
                                 filePos = 0; // Next iteration reads from start of part
@@ -855,6 +870,7 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
   // Check if any part on this track has loop enabled.
   // Looping parts cannot use prefetch FIFO because the prefetch thread
   // doesn't know to repeat the audio data. Use direct fetchData instead.
+  // However, we should only bypass prefetch for the loop region, not the entire track.
   bool hasLoopPart = false;
   {
     const PartList* pl = cparts();
@@ -868,7 +884,10 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
 
   bool have_pf_data = false;
   if (hasLoopPart) {
-    // For looping parts, read directly from file using fetchData (loop-aware).
+    // For tracks with looping parts, read directly from file using fetchData (loop-aware).
+    // This bypasses prefetch for the entire track, but ensures loop playback works correctly.
+    // Non-looping parts on the same track will still be processed correctly by fetchData
+    // because it only applies loop logic to parts with the loop flag set.
     const int i_correction = use_latency_corr ? getLatencyInfo(false)._sourceCorrectionValue : 0;
     fetchData(framePos, nframe, bp, false, do_overwrite, i_correction);
     have_pf_data = true;

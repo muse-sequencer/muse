@@ -1389,11 +1389,6 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
             for (; ie != iend; ++ie) {
                   Event ev = ie->second;
                   port = defaultPort; //Reset each loop
-                  //
-                  //  don't play any meta events
-                  //
-                  if (ev.type() == Meta)
-                        continue;
                   if (track->isDrumTrack()) {
                         int instr = ev.pitch();
                         // ignore muted drums
@@ -1477,11 +1472,15 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                                           if (veloOff < 1) veloOff = 0;
                                           len = (len * track->len) / 100;
                                           if (len <= 0) len = 1;
+                                          // Clamp note-off to loop boundary so it doesn't overlap the next part
+                                          unsigned noteOffTick = tick + len;
+                                          if (loopEndTick > 0 && noteOffTick > loopEndTick)
+                                                noteOffTick = loopEndTick;
                                           MidiDevice* fin_md = (port == defaultPort) ? md : MusEGlobal::midiPorts[port].device();
                                           if (midiDeviceWritable(fin_md)) {
                                                 fin_md->putEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo),
                                                   MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
-                                                MusECore::MidiPlayEvent fin_ev(tick + len, port, channel, MusECore::ME_NOTEOFF, pitch, veloOff);
+                                                MusECore::MidiPlayEvent fin_ev(noteOffTick, port, channel, MusECore::ME_NOTEOFF, pitch, veloOff);
                                                 fin_ev.setLatency(latency_offset);
                                                 track->addStuckNote(fin_ev);
                                           }
@@ -1536,8 +1535,12 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                         }
                         continue; // Skip the normal scheduling below for loop events
                   }
-                  else
+                  else {
+                        // Non-looping part: skip Meta events
+                        if (ev.type() == Meta)
+                              continue;
                         tick = ev.tick() + offset;
+                  }
 
                   DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: event tick:%u\n", tick);
       
