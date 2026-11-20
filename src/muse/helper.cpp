@@ -2465,8 +2465,10 @@ unsigned getLoopEndTick(const MusECore::Part* part)
     if (songEndTick > partTick)
         return songEndTick;
 
-    // Fallback: 4 repetitions if we can't determine a meaningful end
-    return partTick + part->lenTick() * 4;
+    // Fallback: 4 repetitions if we can't determine a meaningful end.
+    // Use long long to avoid unsigned overflow when partTick + partLen * 4 exceeds UINT_MAX.
+    long long fallback = (long long)partTick + (long long)part->lenTick() * 4;
+    return (unsigned)(fallback > 0 ? fallback : 0);
 }
 
 //---------------------------------------------------------
@@ -2485,6 +2487,11 @@ LoopCalc calcLoopIterations(const MusECore::Part* part)
     unsigned partTick = part->tick();
     unsigned partLen = part->lenTick();
     unsigned loopEndTick = getLoopEndTick(part);
+
+    // Guard against underflow: if loopEndTick < partTick, the loop range is invalid.
+    // This can happen if the part is the last in the song and getLoopEndTick() returns 0.
+    if (loopEndTick <= partTick)
+        return result;
 
     result.loopRange = loopEndTick - partTick;
     result.numIterations = result.loopRange / partLen;

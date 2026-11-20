@@ -593,17 +593,19 @@ PyObject* save_song(PyObject*, PyObject* args)
 {
       const char* path;
       if (!PyArg_ParseTuple(args, "s", &path)) {
-            Py_RETURN_NONE;
+            PyErr_SetString(PyExc_ValueError, "Invalid path argument");
+            return nullptr;
             }
 
       QFile file(path);
       if (!file.open(QIODevice::WriteOnly)) {
-            Py_RETURN_NONE;
+            PyErr_Format(PyExc_IOError, "Cannot open file for writing: %s", path);
+            return nullptr;
             }
       MusECore::Xml xml(&file);
       MusEGlobal::song->write(0, xml);
       file.close();
-      Py_RETURN_NONE;
+      Py_RETURN_TRUE;
 }
 //------------------------------------------------------------
 // load_song
@@ -613,19 +615,21 @@ PyObject* load_song(PyObject*, PyObject* args)
 {
       const char* path;
       if (!PyArg_ParseTuple(args, "s", &path)) {
-            Py_RETURN_NONE;
+            PyErr_SetString(PyExc_ValueError, "Invalid path argument");
+            return nullptr;
             }
 
       QFile file(path);
       if (!file.open(QIODevice::ReadOnly)) {
-            Py_RETURN_NONE;
+            PyErr_Format(PyExc_IOError, "Cannot open file for reading: %s", path);
+            return nullptr;
             }
       MusECore::Xml xml(&file);
       MusEGlobal::song->read(xml);
       file.close();
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0);
       QApplication::postEvent(MusEGlobal::song, pyevent);
-      Py_RETURN_NONE;
+      Py_RETURN_TRUE;
 }
 //------------------------------------------------------------
 // getPartLoop

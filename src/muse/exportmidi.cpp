@@ -819,7 +819,10 @@ static void addTrackEvents(
                                 MusECore::Event ev = i->second;
                                 // For the last full iteration, clip event length so note-offs don't
                                 // extend beyond loopEndTick and overlap the next part.
-                                if (isLastFullIter) {
+                                // Only clip events that have a meaningful length (Notes).
+                                // Controller, Sysex, and Meta events have lenTick() == 0 and
+                                // should not be modified — their length field may carry other data.
+                                if (isLastFullIter && ev.lenTick() > 0) {
                                       unsigned evPos = ev.posValue();
                                       unsigned evLen = ev.lenTick();
                                       unsigned evEnd = evPos + evLen;
@@ -848,10 +851,15 @@ static void addTrackEvents(
                                 if (evPos < remainder) {
                                       MusECore::Event ev = i->second;
                                       // Clip event length so it doesn't extend beyond the remainder boundary.
-                                      unsigned evLen = ev.lenTick();
-                                      unsigned evEnd = evPos + evLen;
-                                      if (evEnd > remainder) {
-                                            ev.setLenValue(remainder - evPos);
+                                      // Only clip events that have a meaningful length (Notes).
+                                      // Controller, Sysex, and Meta events have lenTick() == 0 and
+                                      // should not be modified — their length field may carry other data.
+                                      if (ev.lenTick() > 0) {
+                                            unsigned evLen = ev.lenTick();
+                                            unsigned evEnd = evPos + evLen;
+                                            if (evEnd > remainder) {
+                                                  ev.setLenValue(remainder - evPos);
+                                            }
                                       }
                                       iterPart->addEvent(ev);
                                 }
