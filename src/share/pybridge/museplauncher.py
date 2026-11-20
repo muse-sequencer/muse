@@ -119,6 +119,10 @@ class MusE:
             return muse.createPart(trackname, starttick, lenticks, part)
 
       @pyro.expose
+      def createWavePart(self, trackname, starttick, lenticks): # create wave part in track
+            return muse.createWavePart(trackname, starttick, lenticks)
+
+      @pyro.expose
       def modifyPart(self, part): # modify a part (the part to be modified is specified by its id
             return muse.modifyPart((part))
 

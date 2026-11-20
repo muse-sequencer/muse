@@ -44,6 +44,7 @@
 #include "globals.h"
 #include "undo.h"
 #include "helper.h"
+#include "part.h"
 
 // Steals ref: PyList_SetItem, PyTuple_SetItem
 using namespace std;
@@ -421,6 +422,35 @@ PyObject* createPart(PyObject*, PyObject* args)
       npart->setTick(tick);
       npart->setLenTick(tickLen);
       addPyPartEventsToMusePart(npart, part);
+
+      MusEGlobal::song->addPart(npart);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED);
+      QApplication::postEvent(MusEGlobal::song, pyevent);
+
+      Py_RETURN_NONE;
+}
+//------------------------------------------------------------
+// Create a new Wave part at a particular tick and track
+// Wave parts don't need audio files for loop flag testing —
+// they just need to exist on the track with a length.
+//------------------------------------------------------------
+PyObject* createWavePart(PyObject*, PyObject* args)
+{
+      const char* trackname;
+      unsigned tick, tickLen;
+
+      if (!PyArg_ParseTuple(args, "sii", &trackname, &tick, &tickLen)) {
+            Py_RETURN_NONE;
+            }
+
+      Track* t = MusEGlobal::song->findTrack(trackname);
+      if (t == nullptr || t->type() != Track::WAVE) {
+            Py_RETURN_NONE;
+            }
+
+      WavePart* npart = new WavePart((WaveTrack*)t);
+      npart->setTick(tick);
+      npart->setLenTick(tickLen);
 
       MusEGlobal::song->addPart(npart);
       QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED);
@@ -1211,6 +1241,7 @@ PyMethodDef g_methodDefinitions[] =
       { "deletePart", deletePart, METH_VARARGS, "Remove part with a particular serial nr" },
       { "setPartLoop", setPartLoop, METH_VARARGS, "Set loop flag on a part by serial nr" },
       { "getPartLoop", getPartLoop, METH_VARARGS, "Get loop flag of a part by serial nr" },
+      { "createWavePart", createWavePart, METH_VARARGS, "Create a wave part on a wave track" },
       { "convertLoopToSingle", convertLoopToSingle, METH_VARARGS, "Convert looping part to single part" },
       { "convertLoopToMany", convertLoopToMany, METH_VARARGS, "Convert looping part to many parts" },
       { "convertLoopToSingleNewTrack", convertLoopToSingleNewTrack, METH_VARARGS, "Convert looping part to single part on new track" },
