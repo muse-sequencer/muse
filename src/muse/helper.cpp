@@ -2609,12 +2609,27 @@ void convertLoopToMany(MusECore::Part* part)
         newPart->setLoop(false);
         newPart->setName(part->name());
         newPart->setColorIndex(part->colorIndex());
-        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-            unsigned evPos = ie->second.posValue();
-            // Include events that start within the remainder range.
-            if (evPos < remainder) {
+        
+        // For Wave parts, remainder events must preserve frame offsets, not tick positions.
+        bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
+        if (isWavePart) {
+            unsigned remainderFrame = MusEGlobal::tempomap.tick2frame(remainder);
+            unsigned tickOffset = loopCount * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
+                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
+                ev.setLenValue(remainderFrame, MusECore::Pos::FRAMES);
                 newPart->addEvent(ev);
+            }
+        } else {
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include events that start within the remainder range.
+                if (evPos < remainder) {
+                    MusECore::Event ev = ie->second.duplicate();
+                    ev.setPosValue(evPos + loopCount * partLen);
+                    newPart->addEvent(ev);
+                }
             }
         }
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
@@ -2682,7 +2697,7 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
                 newPart->addEvent(ev);
             }
         }
-        // Handle remainder
+        // Handle remainder: create a partial event for the last incomplete iteration.
         if (remainder > 0) {
             unsigned remainderFrame = MusEGlobal::tempomap.tick2frame(remainder);
             unsigned tickOffset = loopCount * partLen;
@@ -2702,7 +2717,7 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
                 newPart->addEvent(ev);
             }
         }
-        // Handle remainder
+        // Handle remainder: only include events that start before the remainder boundary.
         if (remainder > 0) {
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 if (ie->second.posValue() < remainder) {
@@ -2767,7 +2782,7 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
         newPart->setTrack(newTrack);
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
     }
-    // Handle remainder - create a partial part for the last ghost
+    // Handle remainder: create a partial part for the last incomplete iteration.
     if (remainder > 0) {
         MusECore::Part* newPart = part->duplicateEmpty();
         newPart->setTick(partTick + loopCount * partLen);
@@ -2776,11 +2791,25 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
         newPart->setName(part->name());
         newPart->setColorIndex(part->colorIndex());
         newPart->setTrack(newTrack);
-        for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-            if (ie->second.posValue() < remainder) {
+        
+        // For Wave parts, remainder events must preserve frame offsets, not tick positions.
+        bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
+        if (isWavePart) {
+            unsigned remainderFrame = MusEGlobal::tempomap.tick2frame(remainder);
+            unsigned tickOffset = loopCount * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                ev.setPosValue(tickOffset, MusECore::Pos::TICKS);
+                ev.setLenValue(remainderFrame, MusECore::Pos::FRAMES);
                 newPart->addEvent(ev);
+            }
+        } else {
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                if (ie->second.posValue() < remainder) {
+                    MusECore::Event ev = ie->second.duplicate();
+                    ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                    newPart->addEvent(ev);
+                }
             }
         }
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
