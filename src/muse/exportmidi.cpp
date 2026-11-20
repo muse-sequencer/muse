@@ -819,6 +819,7 @@ static void addTrackEvents(
                     }
                     // Export partial final iteration (remainder) if the loop boundary falls mid-iteration.
                     // Only include events that start before the remainder boundary.
+                    // Events extending beyond the remainder are clipped.
                     if (remainder > 0) {
                           unsigned iterOffset = numIterations * partLen;
                           MusECore::MidiPart* iterPart = new MusECore::MidiPart((MusECore::MidiTrack*)track);
@@ -826,9 +827,16 @@ static void addTrackEvents(
                           iterPart->setLenTick(remainder);
                           const MusECore::EventList& evlist = part->events();
                           for (MusECore::ciEvent i = evlist.cbegin(); i != evlist.cend(); ++i) {
+                                unsigned evPos = i->second.posValue();
                                 // Only include events that start within the remainder range
-                                if (i->second.posValue() < remainder) {
+                                if (evPos < remainder) {
                                       MusECore::Event ev = i->second;
+                                      // Clip event length so it doesn't extend beyond the remainder boundary.
+                                      unsigned evLen = ev.lenTick();
+                                      unsigned evEnd = evPos + evLen;
+                                      if (evEnd > remainder) {
+                                            ev.setLenValue(remainder - evPos);
+                                      }
                                       iterPart->addEvent(ev);
                                 }
                           }

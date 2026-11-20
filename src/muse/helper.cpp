@@ -2545,6 +2545,7 @@ void convertLoopToSingle(MusECore::Part* part)
         // Handle remainder: only include events whose timeline position falls within the partial iteration.
         // The remainder iteration starts at (loopCount * partLen) and extends for 'remainder' ticks.
         // An event at ev.posValue() should be included only if it starts before the end of the remainder.
+        // Events that extend beyond the remainder boundary are clipped to the boundary.
         if (remainder > 0) {
             unsigned remainderStart = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
@@ -2554,6 +2555,12 @@ void convertLoopToSingle(MusECore::Part* part)
                 if (evPos < remainder) {
                     MusECore::Event ev = ie->second.duplicate();
                     ev.setPosValue(evPos + remainderStart);
+                    // Clip event length so it doesn't extend beyond the remainder boundary.
+                    unsigned evLen = ev.lenTick();
+                    unsigned evEnd = evPos + evLen;
+                    if (evEnd > remainder) {
+                        ev.setLenValue(remainder - evPos);
+                    }
                     newPart->addEvent(ev);
                 }
             }
@@ -2628,6 +2635,12 @@ void convertLoopToMany(MusECore::Part* part)
                 if (evPos < remainder) {
                     MusECore::Event ev = ie->second.duplicate();
                     ev.setPosValue(evPos + loopCount * partLen);
+                    // Clip event length so it doesn't extend beyond the remainder boundary.
+                    unsigned evLen = ev.lenTick();
+                    unsigned evEnd = evPos + evLen;
+                    if (evEnd > remainder) {
+                        ev.setLenValue(remainder - evPos);
+                    }
                     newPart->addEvent(ev);
                 }
             }
@@ -2718,11 +2731,19 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
             }
         }
         // Handle remainder: only include events that start before the remainder boundary.
+        // Events extending beyond the remainder are clipped.
         if (remainder > 0) {
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-                if (ie->second.posValue() < remainder) {
+                unsigned evPos = ie->second.posValue();
+                if (evPos < remainder) {
                     MusECore::Event ev = ie->second.duplicate();
-                    ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                    ev.setPosValue(evPos + (loopCount * partLen));
+                    // Clip event length so it doesn't extend beyond the remainder boundary.
+                    unsigned evLen = ev.lenTick();
+                    unsigned evEnd = evPos + evLen;
+                    if (evEnd > remainder) {
+                        ev.setLenValue(remainder - evPos);
+                    }
                     newPart->addEvent(ev);
                 }
             }
@@ -2805,9 +2826,16 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
             }
         } else {
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
-                if (ie->second.posValue() < remainder) {
+                unsigned evPos = ie->second.posValue();
+                if (evPos < remainder) {
                     MusECore::Event ev = ie->second.duplicate();
-                    ev.setPosValue(ev.posValue() + (loopCount * partLen));
+                    ev.setPosValue(evPos + (loopCount * partLen));
+                    // Clip event length so it doesn't extend beyond the remainder boundary.
+                    unsigned evLen = ev.lenTick();
+                    unsigned evEnd = evPos + evLen;
+                    if (evEnd > remainder) {
+                        ev.setLenValue(remainder - evPos);
+                    }
                     newPart->addEvent(ev);
                 }
             }
