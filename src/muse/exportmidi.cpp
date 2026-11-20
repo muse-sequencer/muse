@@ -809,13 +809,18 @@ static void addTrackEvents(
                           unsigned iterOffset = iter * partLen;
                           unsigned iterEndTick = partTick + iterOffset + partLen;
                           bool isLastFullIter = (iterEndTick > loopEndTick);
+                          unsigned clipLen = isLastFullIter ? (loopEndTick - (partTick + iterOffset)) : partLen;
                           // Create a temporary part at the loop iteration position so addEventList
                           // handles all drum maps, transposition, velocity, compression, etc.
                           MusECore::MidiPart* iterPart = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                           iterPart->setTick(partTick + iterOffset);
-                          iterPart->setLenTick(partLen);
+                          iterPart->setLenTick(isLastFullIter ? clipLen : partLen);
                           const MusECore::EventList& evlist = part->events();
                           for (MusECore::ciEvent i = evlist.cbegin(); i != evlist.cend(); ++i) {
+                                unsigned evPos = i->second.posValue();
+                                // Skip events that start beyond the clip boundary in the last iteration.
+                                if (isLastFullIter && evPos >= clipLen)
+                                      continue;
                                 MusECore::Event ev = i->second;
                                 // For the last full iteration, clip event length so note-offs don't
                                 // extend beyond loopEndTick and overlap the next part.
@@ -823,10 +828,8 @@ static void addTrackEvents(
                                 // Controller, Sysex, and Meta events have lenTick() == 0 and
                                 // should not be modified — their length field may carry other data.
                                 if (isLastFullIter && ev.lenTick() > 0) {
-                                      unsigned evPos = ev.posValue();
                                       unsigned evLen = ev.lenTick();
                                       unsigned evEnd = evPos + evLen;
-                                      unsigned clipLen = loopEndTick - (partTick + iterOffset);
                                       if (evEnd > clipLen) {
                                             ev.setLenValue(clipLen - evPos > 0 ? clipLen - evPos : 1);
                                       }

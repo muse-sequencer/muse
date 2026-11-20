@@ -2559,10 +2559,14 @@ void convertLoopToSingle(MusECore::Part* part)
                 newPart->addEvent(ev);
             }
         }
-        // Handle remainder - create a partial event for the last iteration
+        // Handle remainder: only include events that start within the remainder range.
         if (remainder > 0) {
             unsigned tickOffset = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include only events that start within the remainder range.
+                if (evPos >= remainder)
+                    continue;
                 MusECore::Event ev = ie->second.duplicate();
                 unsigned origLenFrame = ev.lenFrame();
                 ev.setTick(tickOffset);
@@ -2660,10 +2664,15 @@ void convertLoopToMany(MusECore::Part* part)
         // However, EventList indexes Wave events by event.frame(). setTick(tickOffset) sets
         // _frame = tick2frame(tickOffset), giving each event a unique key. Do NOT call
         // setFrame(origFrame) after setTick() — that would overwrite the unique key.
+        // Only include events that start within the remainder range.
         bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
         if (isWavePart) {
             unsigned tickOffset = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include only events that start within the remainder range.
+                if (evPos >= remainder)
+                    continue;
                 MusECore::Event ev = ie->second.duplicate();
                 unsigned origLenFrame = ev.lenFrame();
                 ev.setTick(tickOffset);
@@ -2764,10 +2773,14 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
                 newPart->addEvent(ev);
             }
         }
-        // Handle remainder: create a partial event for the last incomplete iteration.
+        // Handle remainder: only include events that start within the remainder range.
         if (remainder > 0) {
             unsigned tickOffset = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include only events that start within the remainder range.
+                if (evPos >= remainder)
+                    continue;
                 MusECore::Event ev = ie->second.duplicate();
                 unsigned origLenFrame = ev.lenFrame();
                 ev.setTick(tickOffset);
@@ -2880,10 +2893,15 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
         // However, EventList indexes Wave events by event.frame(). setTick(tickOffset) sets
         // _frame = tick2frame(tickOffset), giving each event a unique key. Do NOT call
         // setFrame(origFrame) after setTick() — that would overwrite the unique key.
+        // Only include events that start within the remainder range.
         bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
         if (isWavePart) {
             unsigned tickOffset = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include only events that start within the remainder range.
+                if (evPos >= remainder)
+                    continue;
                 MusECore::Event ev = ie->second.duplicate();
                 unsigned origLenFrame = ev.lenFrame();
                 ev.setTick(tickOffset);
