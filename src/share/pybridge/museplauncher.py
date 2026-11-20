@@ -135,6 +135,22 @@ class MusE:
             return muse.getPartLoop(partid)
 
       @pyro.expose
+      def convertLoopToSingle(self, partid): # convert looping part to single part
+            return muse.convertLoopToSingle(partid)
+
+      @pyro.expose
+      def convertLoopToMany(self, partid): # convert looping part to many parts
+            return muse.convertLoopToMany(partid)
+
+      @pyro.expose
+      def convertLoopToSingleNewTrack(self, partid): # convert looping part to single part on new track
+            return muse.convertLoopToSingleNewTrack(partid)
+
+      @pyro.expose
+      def convertLoopToManyNewTrack(self, partid): # convert looping part to many parts on new track
+            return muse.convertLoopToManyNewTrack(partid)
+
+      @pyro.expose
       def getSelectedTrack(self): # get first selected track in arranger window
             return muse.getSelectedTrack()
 

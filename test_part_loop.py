@@ -406,3 +406,314 @@ class TestEdgeCases:
         # After 10 toggles (0,1,0,1,0,1,0,1,0,1), final state should be 1
         actual = muse.getPartLoop(part_id)
         assert actual == 1, f"After 10 toggles, loop should be 1, got {actual}"
+
+
+# ---------------------------------------------------------------------------
+# Test: Remainder event handling across conversion and export paths
+# ---------------------------------------------------------------------------
+
+class TestRemainderEventHandling:
+    """Test that remainder events are clipped and positioned exactly once
+    across all conversion paths.
+
+    Test setup: 100-tick part at tick 0, followed by a part at tick 250.
+    Loop range = 250 - 0 = 250 ticks.
+    Part length = 100 ticks.
+    Full iterations = 250 / 100 = 2 (iterations at tick 0 and 100).
+    Remainder = 250 % 100 = 50 ticks (partial iteration at tick 200).
+
+    Events in the original part:
+      - Event A at tick 10, length 30 (ends at 40) — fits in remainder
+      - Event B at tick 40, length 30 (ends at 70) — fits in remainder
+      - Event C at tick 60, length 30 (ends at 90) — fits in remainder
+      - Event D at tick 80, length 30 (ends at 110) — starts in remainder (80 < 100)
+        but extends beyond remainder boundary (110 > 100), should be clipped to len=20
+      - Event E at tick 95, length 10 (ends at 105) — starts in remainder (95 < 100)
+        but extends beyond remainder boundary (105 > 100), should be clipped to len=5
+    """
+
+    def _create_remainder_test_parts(self, muse, track_name):
+        """Create a 100-tick looping part and a boundary part at tick 250."""
+        # Events at known positions within the 100-tick part
+        events = [
+            {'data': [60, 100, 0], 'tick': 10, 'type': 'note', 'len': 30},   # A: 10-40
+            {'data': [61, 100, 0], 'tick': 40, 'type': 'note', 'len': 30},   # B: 40-70
+            {'data': [62, 100, 0], 'tick': 60, 'type': 'note', 'len': 30},   # C: 60-90
+            {'data': [63, 100, 0], 'tick': 80, 'type': 'note', 'len': 30},   # D: 80-110 (crosses boundary)
+            {'data': [64, 100, 0], 'tick': 95, 'type': 'note', 'len': 10},   # E: 95-105 (crosses boundary)
+        ]
+        part1 = {'events': events, 'tick': 0}
+        muse.createPart(track_name, 0, 100, part1)
+        time.sleep(0.3)
+
+        # Boundary part at tick 250 (limits loop range to 250)
+        boundary_event = {'data': [70, 100, 0], 'tick': 0, 'type': 'note', 'len': 480}
+        boundary_part = {'events': [boundary_event], 'tick': 250}
+        muse.createPart(track_name, 250, 480, boundary_part)
+        time.sleep(0.3)
+
+        parts = muse.getParts(track_name)
+        assert len(parts) == 2, f"Expected 2 parts, got {len(parts)}"
+        # Sort by tick to ensure correct order
+        parts = sorted(parts, key=lambda p: p['tick'])
+        return parts[0]['id'], parts[1]['id']
+
+    def _cleanup_parts(self, muse, track_name, part_ids):
+        """Delete all parts on the track."""
+        for pid in part_ids:
+            try:
+                muse.deletePart(pid)
+            except Exception:
+                pass
+        time.sleep(0.2)
+
+    def test_convert_loop_to_single_remainder(self, muse, clean_test_track):
+        """Convert to single part: remainder events should be clipped and positioned once."""
+        loop_part_id, boundary_id = self._create_remainder_test_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToSingle(loop_part_id)
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        # Should have 2 parts: converted single + boundary
+        assert len(parts) == 2, f"Expected 2 parts after conversion, got {len(parts)}"
+
+        # Find the converted part (should be at tick 0, length 250)
+        converted = None
+        for p in parts:
+            if p['tick'] == 0 and p['len'] == 250:
+                converted = p
+                break
+        assert converted is not None, "Converted part not found at tick 0 with len 250"
+
+        # Verify event count: 2 full iterations * 5 events + remainder events
+        # Remainder (50 ticks): events at tick 10, 40, 60 are included (pos < 50)
+        # Events at tick 80, 95 are NOT in remainder (80 >= 50, 95 >= 50)
+        # Total: 2 * 5 + 3 = 13 events
+        events = converted.get('events', [])
+        # Count events in remainder region (ticks 200-250)
+        remainder_events = [e for e in events if 200 <= e['tick'] < 250]
+        # Events at tick 10, 40 are in remainder (pos < 50)
+        # Event at tick 60 is NOT (60 >= 50)
+        # Events at tick 80, 95 are NOT (80 >= 50, 95 >= 50)
+        assert len(remainder_events) == 2, \
+            f"Expected 2 remainder events, got {len(remainder_events)}: {[(e['tick'], e['data'][0]) for e in remainder_events]}"
+
+        # Verify remainder events are at correct positions
+        remainder_ticks = sorted([e['tick'] for e in remainder_events])
+        assert remainder_ticks == [210, 240], \
+            f"Remainder events at wrong ticks: {remainder_ticks}, expected [210, 240]"
+
+        # Verify event D (tick 80, len 30) is NOT in remainder (80 >= 50)
+        # Verify event E (tick 95, len 10) is NOT in remainder (95 >= 50)
+
+        # Verify no duplicate events: each event position should be unique
+        all_ticks = [e['tick'] for e in events]
+        # Events at tick 10 appear in iterations 0, 1, and remainder (210)
+        # That's 3 occurrences of note 60 at ticks 10, 110, 210
+        note_60_ticks = [e['tick'] for e in events if e['data'][0] == 60]
+        assert len(note_60_ticks) == 3, \
+            f"Note 60 should appear 3 times (iter 0, 1, remainder), got {len(note_60_ticks)}: {note_60_ticks}"
+
+        self._cleanup_parts(muse, clean_test_track, [p['id'] for p in parts])
+
+    def test_convert_loop_to_many_remainder(self, muse, clean_test_track):
+        """Convert to many parts: remainder should create a partial part with clipped events."""
+        loop_part_id, boundary_id = self._create_remainder_test_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToMany(loop_part_id)
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        # Should have: original (no loop) + 1 full copy (iter 1) + 1 remainder part + boundary = 4
+        assert len(parts) == 4, f"Expected 4 parts after convert to many, got {len(parts)}"
+
+        # Find the remainder part (should be at tick 200, length 50)
+        remainder_part = None
+        for p in parts:
+            if p['tick'] == 200 and p['len'] == 50:
+                remainder_part = p
+                break
+        assert remainder_part is not None, "Remainder part not found at tick 200 with len 50"
+
+        # Verify remainder part events
+        events = remainder_part.get('events', [])
+        # Events at tick 10, 40 are in remainder (pos < 50)
+        # Event at tick 60 is NOT (60 >= 50)
+        # Events at tick 80, 95 are NOT (80 >= 50, 95 >= 50)
+        assert len(events) == 2, \
+            f"Expected 2 events in remainder part, got {len(events)}: {[(e['tick'], e['data'][0]) for e in events]}"
+
+        # Verify event positions: getParts() returns absolute ticks, so events at
+        # tick 10 and 40 within the remainder part (starting at tick 200) appear
+        # as absolute ticks 210 and 240.
+        event_ticks = sorted([e['tick'] for e in events])
+        assert event_ticks == [210, 240], \
+            f"Remainder events at wrong ticks: {event_ticks}, expected [210, 240]"
+
+        self._cleanup_parts(muse, clean_test_track, [p['id'] for p in parts])
+
+    def test_convert_loop_to_single_new_track_remainder(self, muse, clean_test_track):
+        """Convert to single part on new track: remainder events should be clipped."""
+        loop_part_id, boundary_id = self._create_remainder_test_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToSingleNewTrack(loop_part_id)
+        time.sleep(0.5)
+
+        # Should have new track with converted part
+        track_names = muse.getTrackNames()
+        new_track = None
+        for tn in track_names:
+            if '(loop)' in tn:
+                new_track = tn
+                break
+        assert new_track is not None, f"New track not found. Tracks: {track_names}"
+
+        parts = muse.getParts(new_track)
+        assert len(parts) == 1, f"Expected 1 part on new track, got {len(parts)}"
+        converted = parts[0]
+        assert converted['len'] == 250, f"Expected len 250, got {converted['len']}"
+
+        # Verify remainder events
+        events = converted.get('events', [])
+        remainder_events = [e for e in events if 200 <= e['tick'] < 250]
+        assert len(remainder_events) == 2, \
+            f"Expected 2 remainder events on new track, got {len(remainder_events)}"
+
+        # Cleanup
+        self._cleanup_parts(muse, new_track, [p['id'] for p in parts])
+        muse.deleteTrack(new_track)
+        time.sleep(0.2)
+        self._cleanup_parts(muse, clean_test_track, [loop_part_id, boundary_id])
+
+    def test_convert_loop_to_many_new_track_remainder(self, muse, clean_test_track):
+        """Convert to many parts on new track: remainder should create partial part."""
+        loop_part_id, boundary_id = self._create_remainder_test_parts(muse, clean_test_track)
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToManyNewTrack(loop_part_id)
+        time.sleep(0.5)
+
+        # Should have new track with 2 full copies + 1 remainder part
+        track_names = muse.getTrackNames()
+        new_track = None
+        for tn in track_names:
+            if '(loop)' in tn:
+                new_track = tn
+                break
+        assert new_track is not None, f"New track not found. Tracks: {track_names}"
+
+        parts = muse.getParts(new_track)
+        assert len(parts) == 3, f"Expected 3 parts on new track, got {len(parts)}"
+
+        # Find the remainder part
+        remainder_part = None
+        for p in parts:
+            if p['tick'] == 200 and p['len'] == 50:
+                remainder_part = p
+                break
+        assert remainder_part is not None, "Remainder part not found at tick 200 with len 50"
+
+        events = remainder_part.get('events', [])
+        assert len(events) == 2, \
+            f"Expected 2 events in remainder part on new track, got {len(events)}"
+
+        # Cleanup
+        self._cleanup_parts(muse, new_track, [p['id'] for p in parts])
+        muse.deleteTrack(new_track)
+        time.sleep(0.2)
+        self._cleanup_parts(muse, clean_test_track, [loop_part_id, boundary_id])
+
+    def test_remainder_event_clipping(self, muse, clean_test_track):
+        """Verify that events crossing the remainder boundary are clipped in length."""
+        # Create a part with an event that crosses the remainder boundary
+        events = [
+            {'data': [60, 100, 0], 'tick': 45, 'type': 'note', 'len': 15},  # 45-60, crosses remainder (50)
+        ]
+        part1 = {'events': events, 'tick': 0}
+        muse.createPart(clean_test_track, 0, 100, part1)
+        time.sleep(0.3)
+
+        # Boundary part at tick 250
+        boundary_event = {'data': [70, 100, 0], 'tick': 0, 'type': 'note', 'len': 480}
+        boundary_part = {'events': [boundary_event], 'tick': 250}
+        muse.createPart(clean_test_track, 250, 480, boundary_part)
+        time.sleep(0.3)
+
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        loop_part_id = parts[0]['id']
+        boundary_id = parts[1]['id']
+
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToSingle(loop_part_id)
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        converted = None
+        for p in parts:
+            if p['tick'] == 0 and p['len'] == 250:
+                converted = p
+                break
+        assert converted is not None, "Converted part not found"
+
+        events = converted.get('events', [])
+        # Find the remainder event (should be at tick 245 = 200 + 45)
+        remainder_events = [e for e in events if 200 <= e['tick'] < 250]
+        assert len(remainder_events) == 1, \
+            f"Expected 1 remainder event, got {len(remainder_events)}"
+
+        rem_ev = remainder_events[0]
+        # Event at tick 45, len 15 crosses remainder boundary (50)
+        # Should be clipped: new_len = 50 - 45 = 5
+        assert rem_ev['tick'] == 245, f"Remainder event at wrong tick: {rem_ev['tick']}"
+        assert rem_ev['len'] == 5, \
+            f"Remainder event should be clipped to len 5, got {rem_ev['len']}"
+
+        self._cleanup_parts(muse, clean_test_track, [p['id'] for p in parts])
+
+    def test_exact_multiple_no_remainder(self, muse, clean_test_track):
+        """When loop range is an exact multiple of part length, no remainder part should be created."""
+        # 100-tick part, boundary at tick 300 (exact multiple: 300/100 = 3, remainder = 0)
+        events = [
+            {'data': [60, 100, 0], 'tick': 10, 'type': 'note', 'len': 30},
+        ]
+        part1 = {'events': events, 'tick': 0}
+        muse.createPart(clean_test_track, 0, 100, part1)
+        time.sleep(0.3)
+
+        boundary_event = {'data': [70, 100, 0], 'tick': 0, 'type': 'note', 'len': 480}
+        boundary_part = {'events': [boundary_event], 'tick': 300}
+        muse.createPart(clean_test_track, 300, 480, boundary_part)
+        time.sleep(0.3)
+
+        parts = muse.getParts(clean_test_track)
+        parts = sorted(parts, key=lambda p: p['tick'])
+        loop_part_id = parts[0]['id']
+        boundary_id = parts[1]['id']
+
+        muse.setPartLoop(loop_part_id, 1)
+        time.sleep(0.2)
+
+        muse.convertLoopToMany(loop_part_id)
+        time.sleep(0.5)
+
+        parts = muse.getParts(clean_test_track)
+        # Should have: original + 2 full copies + boundary = 4 (no remainder part)
+        assert len(parts) == 4, f"Expected 4 parts (no remainder), got {len(parts)}"
+
+        # Verify no part at tick 300 (that's where boundary is)
+        for p in parts:
+            assert p['tick'] != 300 or p['id'] == boundary_id, \
+                f"Unexpected part at tick 300: {p}"
+
+        self._cleanup_parts(muse, clean_test_track, [p['id'] for p in parts])

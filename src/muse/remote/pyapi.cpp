@@ -43,6 +43,7 @@
 #include "app.h"
 #include "globals.h"
 #include "undo.h"
+#include "helper.h"
 
 // Steals ref: PyList_SetItem, PyTuple_SetItem
 using namespace std;
@@ -553,6 +554,94 @@ PyObject* getPartLoop(PyObject*, PyObject* args)
             }
 
       return Py_BuildValue("b", part->loop());
+}
+//------------------------------------------------------------
+// convertLoopToSingle
+//  Convert a looping part to a single part spanning the entire loop range
+//------------------------------------------------------------
+PyObject* convertLoopToSingle(PyObject*, PyObject* args)
+{
+      const char* bytes;
+      if (!PyArg_ParseTuple(args, "s", &bytes)) {
+            Py_RETURN_NONE;
+            }
+
+      const QUuid id(bytes);
+      Part* part = findPartBySerial(id);
+      if (part == nullptr || !part->loop()) {
+            Py_RETURN_NONE;
+            }
+
+      ::MusEGui::convertLoopToSingle(part);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_MODIFIED);
+      QApplication::postEvent(MusEGlobal::song, pyevent);
+      Py_RETURN_NONE;
+}
+//------------------------------------------------------------
+// convertLoopToMany
+//  Convert a looping part to many individual parts
+//------------------------------------------------------------
+PyObject* convertLoopToMany(PyObject*, PyObject* args)
+{
+      const char* bytes;
+      if (!PyArg_ParseTuple(args, "s", &bytes)) {
+            Py_RETURN_NONE;
+            }
+
+      const QUuid id(bytes);
+      Part* part = findPartBySerial(id);
+      if (part == nullptr || !part->loop()) {
+            Py_RETURN_NONE;
+            }
+
+      ::MusEGui::convertLoopToMany(part);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_MODIFIED);
+      QApplication::postEvent(MusEGlobal::song, pyevent);
+      Py_RETURN_NONE;
+}
+//------------------------------------------------------------
+// convertLoopToSingleNewTrack
+//  Convert a looping part to a single part on a new track
+//------------------------------------------------------------
+PyObject* convertLoopToSingleNewTrack(PyObject*, PyObject* args)
+{
+      const char* bytes;
+      if (!PyArg_ParseTuple(args, "s", &bytes)) {
+            Py_RETURN_NONE;
+            }
+
+      const QUuid id(bytes);
+      Part* part = findPartBySerial(id);
+      if (part == nullptr || !part->loop()) {
+            Py_RETURN_NONE;
+            }
+
+      ::MusEGui::convertLoopToSingleNewTrack(part);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_MODIFIED);
+      QApplication::postEvent(MusEGlobal::song, pyevent);
+      Py_RETURN_NONE;
+}
+//------------------------------------------------------------
+// convertLoopToManyNewTrack
+//  Convert a looping part to many parts on a new track
+//------------------------------------------------------------
+PyObject* convertLoopToManyNewTrack(PyObject*, PyObject* args)
+{
+      const char* bytes;
+      if (!PyArg_ParseTuple(args, "s", &bytes)) {
+            Py_RETURN_NONE;
+            }
+
+      const QUuid id(bytes);
+      Part* part = findPartBySerial(id);
+      if (part == nullptr || !part->loop()) {
+            Py_RETURN_NONE;
+            }
+
+      ::MusEGui::convertLoopToManyNewTrack(part);
+      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_MODIFIED);
+      QApplication::postEvent(MusEGlobal::song, pyevent);
+      Py_RETURN_NONE;
 }
 
 //------------------------------------------------------------
@@ -1122,6 +1211,10 @@ PyMethodDef g_methodDefinitions[] =
       { "deletePart", deletePart, METH_VARARGS, "Remove part with a particular serial nr" },
       { "setPartLoop", setPartLoop, METH_VARARGS, "Set loop flag on a part by serial nr" },
       { "getPartLoop", getPartLoop, METH_VARARGS, "Get loop flag of a part by serial nr" },
+      { "convertLoopToSingle", convertLoopToSingle, METH_VARARGS, "Convert looping part to single part" },
+      { "convertLoopToMany", convertLoopToMany, METH_VARARGS, "Convert looping part to many parts" },
+      { "convertLoopToSingleNewTrack", convertLoopToSingleNewTrack, METH_VARARGS, "Convert looping part to single part on new track" },
+      { "convertLoopToManyNewTrack", convertLoopToManyNewTrack, METH_VARARGS, "Convert looping part to many parts on new track" },
       { "getSelectedTrack", getSelectedTrack, METH_NOARGS, "Get first selected track" },
       { "importPart", importPart, METH_VARARGS, "Import part file to a track at a particular position" },
       { "changeTrackName", changeTrackName, METH_VARARGS, "Change track name" },
