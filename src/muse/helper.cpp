@@ -2650,15 +2650,18 @@ void convertLoopToMany(MusECore::Part* part)
         newPart->setColorIndex(part->colorIndex());
         
         // For Wave parts, remainder events must preserve frame offsets, not tick positions.
+        // However, EventList indexes Wave events by event.frame(). setTick(tickOffset) sets
+        // _frame = tick2frame(tickOffset), giving each event a unique key. Do NOT call
+        // setFrame(origFrame) after setTick() — that would overwrite the unique key.
         bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
         if (isWavePart) {
             unsigned tickOffset = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                unsigned origFrame = ev.frame();
                 unsigned origLenFrame = ev.lenFrame();
                 ev.setTick(tickOffset);
-                ev.setFrame(origFrame);
+                // Do NOT restore origFrame — let setTick() set _frame = tick2frame(tickOffset)
+                // This gives each event a unique key in EventList and correct srcOffset in fetchData()
                 ev.setLenFrame(origLenFrame);
                 newPart->addEvent(ev);
             }
@@ -2867,15 +2870,18 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
         newPart->setTrack(newTrack);
         
         // For Wave parts, remainder events must preserve frame offsets, not tick positions.
+        // However, EventList indexes Wave events by event.frame(). setTick(tickOffset) sets
+        // _frame = tick2frame(tickOffset), giving each event a unique key. Do NOT call
+        // setFrame(origFrame) after setTick() — that would overwrite the unique key.
         bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
         if (isWavePart) {
             unsigned tickOffset = loopCount * partLen;
             for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
                 MusECore::Event ev = ie->second.duplicate();
-                unsigned origFrame = ev.frame();
                 unsigned origLenFrame = ev.lenFrame();
                 ev.setTick(tickOffset);
-                ev.setFrame(origFrame);
+                // Do NOT restore origFrame — let setTick() set _frame = tick2frame(tickOffset)
+                // This gives each event a unique key in EventList and correct srcOffset in fetchData()
                 ev.setLenFrame(origLenFrame);
                 newPart->addEvent(ev);
             }
