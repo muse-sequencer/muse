@@ -2676,6 +2676,13 @@ void convertLoopToSingleNewTrack(MusECore::Part* part)
     // Use centralized helper to find loop end boundary (never returns 0)
     unsigned loopEndTick = getLoopEndTick(part);
 
+    // NOTE: This function does NOT disable the loop flag on the original part.
+    // The conversion operates on a single part, not the entire track. The user may
+    // want to keep the loop on the original part while also having a converted
+    // non-looping version on a new track. This is intentional behavior — if the user
+    // wants to remove the loop from the original, they can use "Remove Loop" from
+    // the context menu separately.
+
     // Create a new track based on the original track, copying all attributes
     MusECore::Track* newTrack = part->track()->clone(
         MusECore::Track::ASSIGN_PROPERTIES |
@@ -2784,6 +2791,13 @@ void convertLoopToManyNewTrack(MusECore::Part* part)
 
     // Use centralized helper to find loop end boundary (never returns 0)
     unsigned loopEndTick = getLoopEndTick(part);
+
+    // NOTE: This function does NOT disable the loop flag on the original part.
+    // The conversion operates on a single part, not the entire track. The user may
+    // want to keep the loop on the original part while also having converted
+    // individual parts on a new track. This is intentional behavior — if the user
+    // wants to remove the loop from the original, they can use "Remove Loop" from
+    // the context menu separately.
 
     // Create a new track based on the original track, copying all attributes
     MusECore::Track* newTrack = part->track()->clone(
