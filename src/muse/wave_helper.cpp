@@ -26,6 +26,7 @@
 #include <QString>
 #include <QDateTime>
 #include <QMessageBox>
+#include <QApplication>
 
 #include "wave_helper.h"
 #include "globals.h"
@@ -267,29 +268,39 @@ SndFileR sndFileGetWave(const QString& inName, bool readOnlyFlag, bool openFlag,
               QFileInfo wavinfo(name);
               QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
               QFileInfo wcainfo(cacheName);
-              if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
-                    QFile(cacheName).remove();
-                    f->readCache(cacheName,true);
-                    }
 
-        }
-        if (error) {
-              fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
+              if (error) {
+                fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
+                //
                 name.toLocal8Bit().constData(),
                 readOnlyFlag ? "writing" : "reading",
                 f->strerror().toLocal8Bit().constData());
+                // Note: under memory/memlock exhaustion the error itself is often
+                // an allocation failure (libsndfile "Internal malloc() failed").
+                // Building a QMessageBox then needs more memory and can crash Qt
+                // (QTextDocument alloc -> SIGSEGV). Guard the popup so the error
+                // path degrades to a log message instead of taking MusE down.
+                // Use activeWindow() as parent: avoids needing the full MusEGui::MusE type here.
                 if(showErrorBox)
-                  QMessageBox::critical(nullptr, QObject::tr("MusE import error."),
+                {
+                  try {
+                    QMessageBox::critical(QApplication::activeWindow(), QObject::tr("MusE import error."),
                                   QObject::tr("MusE failed to import the file.\n"
                                   "Possibly this wasn't a sound file?\n"
                                   "If it was check the permissions, MusE\n"
                                   "sometimes requires write access to the file."),
                                   QMessageBox::Ok, QMessageBox::Ok);
+                  } catch(...) {
+                    fprintf(stderr, "sndFileGetWave: could not show error dialog (out of memory?)\n");
+                  }
+                }
 
-              delete f;
-              f = nullptr;
-              }
-        }
+                delete f;
+                f = nullptr;
+              }// end if error
+              
+        }// end else
+      }// if(openflag)
       return f;
       }
 

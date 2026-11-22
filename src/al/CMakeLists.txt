@@ -28,7 +28,7 @@ file (GLOB al_source_files
       al.cpp
       dsp.cpp
       sig.cpp
-      xml.cpp
+      xml_al.cpp  # renamed, possible name conflict with libs/xml/xml.cpp 
       )
 if (USE_SSE)
       file (GLOB al_source_files

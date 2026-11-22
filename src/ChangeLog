@@ -1,8 +1,24 @@
+21.11.2026
+    - Cherry-pick PR 1329:2289e805233cf1b48710fea98e6063ccecd14706
+      Low jitter timer monotonic and various bug fixes. (Tim)
+    - Cherry-pick PR 1329:5db99f9de28377af0a35b2a0a5294b61f22c2072
+      Fix linker error: always link plugin_cache_reader
+    - Cherry-pick PR 1329:e6ae45868e7aa3accbcb89d40e63f33fab99fe10
+      Fix CtrlList:: read (hex_float reading)  - locale issue
+    - Cherry-pick PR 1329:80c7dbe7d26a8b24aad4ef9b6d7dbfa29364d20e
+      fix(hex_float): fix museStringToDouble/Float failing
+    - Cherry-pick PR 1329:3a4ace4e8c3d69cd95ef4bcf53c96f1c905a2563
+      Fix: modernize cmake. With modifications.
+20.11.2026
+    - FIX 1366: CMake policy CMP0177 only available on cmake >= 3.31 (Tim).
 17.11.2026
     - More Wayland fixes. (Tim)
     - For compatibility, the program now automatically sets the QT_QPA_PLATFORM
        environment variable to xcb when starting. It can be overriden before running.
     - For borderless mouse etc. use window centre, not screen centre.
+16.11.2026
+    - Arranger: Shift+Alt while dragging parts with the pointer tool now also moves all
+       automation points inside the parts. The move is horizontal only. (rj)
 15.11.2026
     - Wayland fixes. (Tim)
     - New cmake option: ENABLE_WAYLAND, default off. NOT RECOMMENDED at this time.

@@ -67,6 +67,7 @@ signed int RtcTimer::initTimer(unsigned long desiredFrequency)
     MusEGlobal::doSetuid();
 
 #ifdef _WIN32
+    // NOTE: THIS PATH NEVER GETS CALLED, FILE NOT INCLUDED ON WIN32 SYSTEM (REMOVE !?)
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(showGPS()));
 	timer->start(15000); //time specified in ms
@@ -76,21 +77,14 @@ signed int RtcTimer::initTimer(unsigned long desiredFrequency)
 #else
     timerFd = ::open("/dev/rtc", O_RDONLY);
     if (timerFd == -1) {
-          fprintf(stderr, "fatal error: open /dev/rtc failed: %s\n", strerror(errno));
-          MusEGlobal::undoSetuid();
-          return timerFd;
-          }
-    if (!setTimerFreq(desiredFrequency)) {
-          // unable to set timer frequency
-          return -1;
-          }
-    // check if timer really works, start and stop it once.
-    if (!startTimer()) {
-          return -1;
-          }
-    if (!stopTimer()) {
-          return -1;
-          }
+        fprintf(stderr, "RtcTimer: open /dev/rtc failed: %s\n", strerror(errno));
+        MusEGlobal::undoSetuid();
+        return -1;
+    }
+    if (!setTimerFreq(desiredFrequency))
+        return -1;
+    if (!startTimer()) return -1;
+    if (!stopTimer())  return -1;
     return timerFd;
 #endif
     }

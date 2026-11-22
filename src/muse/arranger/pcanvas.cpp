@@ -4011,6 +4011,15 @@ bool PartCanvas::mousePress(QMouseEvent* event)
             case PencilTool:
                   if (!ctrlkey && item && button == Qt::LeftButton)
                       emit trackChanged(item->part()->track());
+                  // Automation points may still be selected from when the automation tool was used.
+                  // Clear them, since they can't be seen or handled in this tool mode.
+                  if (_tool == PointerTool && !ctrlkey && button == Qt::LeftButton &&
+                      (!item || !item->isSelected()))
+                      unselectAllAutomation(operations);
+                  // Shift+Alt on a part starts a move that also carries along the automation
+                  //  inside the moving parts. Canvas ignores this combination, so start it here.
+                  if (_tool == PointerTool && item && button == Qt::LeftButton && shiftkey && altkey && !ctrlkey)
+                      drag = DRAG_MOVE_START;
                   break;
             case CutTool:
                   if (!ctrlkey && item && button == Qt::LeftButton) splitItem(item, ev_pos );
@@ -4042,7 +4051,11 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                         {
                           // Ctrl key not pressed? Unselect all other vertices.
                           if(!ctrlkey)
+                          {
                             unselectAllAutomation(operations);
+                            // Deselect all parts. We want the base version, not the PartCanvas version.
+                            Canvas::deselectAll(&operations);
+                          }
                           // FIXME: There is a conflict here. Holding the shift key for no-snap
                           //         also activates the constricted horizontal/vertical movement.
                           if(newAutomationVertex( ev_pos, operations, !shiftkey))
@@ -4064,6 +4077,11 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                           MusECore::iCtrl ic = automation.currentCtrlList->find(automation.currentWorkingFrame);
                           if(ic != automation.currentCtrlList->end())
                           {
+                            const MusECore::CtrlVal &ctl = ic->second;
+                            if(!ctrlkey && !ctl.selected())
+                              // Deselect all parts. We want the base version, not the PartCanvas version.
+                              Canvas::deselectAll(&operations);
+
                             // Alt alone is usually reserved for moving a window in X11. Ignore shift + alt.
                             if (ctrlkey && !altkey)
                                   drag = DRAG_COPY_START;
@@ -4076,6 +4094,10 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                         // Not hovering over a vertex.
                         else
                         {
+                          if(!ctrlkey)
+                            // Deselect all parts. We want the base version, not the PartCanvas version.
+                            Canvas::deselectAll(&operations);
+
                           // Start the lasso...
                           drag = DRAG_LASSO_START;
                         }
@@ -9808,6 +9830,51 @@ bool PartCanvas::getMovementRange(
   return true;
 }
 
+//---------------------------------------------------------
+//   selectAutomationInSelectedParts
+//    Select all automation points that lie inside the selected parts,
+//    so that they are moved along with the parts.
+//---------------------------------------------------------
+
+void PartCanvas::selectAutomationInSelectedParts(MusECore::Undo* undo) const
+{
+  const bool localundo = !undo;
+  MusECore::Undo operations;
+  if(localundo)
+    undo = &operations;
+
+  for(ciCItem ici = items.cbegin(); ici != items.cend(); ++ici)
+  {
+    if(!ici->second->isSelected())
+      continue;
+    const MusECore::Part* part = static_cast<const NPart*>(ici->second)->part();
+    MusECore::Track* track = part->track();
+    if(!track || track->isMidiTrack())
+      continue;
+    MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(track);
+    const unsigned int sFrame = MusEGlobal::tempomap.tick2frame(part->tick());
+    const unsigned int eFrame = MusEGlobal::tempomap.tick2frame(part->endTick());
+    const MusECore::CtrlListList* cll = at->controller();
+    for(MusECore::ciCtrlList icll = cll->cbegin(); icll != cll->cend(); ++icll)
+    {
+      MusECore::CtrlList* cl = icll->second;
+      // Same filter as updateAudioAutomation(), which builds the list of moving points.
+      if(cl->dontShow() || !cl->isVisible())
+        continue;
+      for(MusECore::iCtrl ic = cl->lower_bound(sFrame); ic != cl->end() && ic->first < eFrame; ++ic)
+      {
+        if(ic->second.selected())
+          continue;
+        undo->push_back(UndoOp(UndoOp::SelectAudioCtrlVal, cl, ic->first, false, true,
+                                    !MusEGlobal::config.selectionsUndoable));
+      }
+    }
+  }
+
+  if(localundo && !undo->empty())
+    MusEGlobal::song->applyOperationGroup(*undo);
+}
+
 void PartCanvas::unselectAllAutomation(MusECore::Undo& undo) const
 {
   for (MusECore::ciTrack it = tracks->cbegin(); it != tracks->cend(); ++it) {
@@ -10248,6 +10315,11 @@ double PartCanvas::deltaNormalizedValueToRange(double in, double inDeltaNormaliz
 
 void PartCanvas::startMoving(const QPoint& pos, int dir, DragType dt, bool rasterize)
       {
+       // Shift+Alt: all automation inside the moving parts follows the parts.
+       // Note: dt is not reliable here, Canvas passes MOVE_CLONE for axis-locked moves (DRAGX_MOVE).
+       if(_tool == PointerTool && drag == DRAGX_MOVE &&
+          (keyState & Qt::ShiftModifier) && (keyState & Qt::AltModifier) && !(keyState & Qt::ControlModifier))
+         selectAutomationInSelectedParts();
         Canvas::startMoving(pos, dir, dt, rasterize);
       moveItems(pos, dir, rasterize);
       }

@@ -32,7 +32,7 @@
 
 #include <vector>
 #include <string>
-#include "al/xml.h"
+#include "al/xml_al.h"   // file renamed from xml.h to xml_al.h , because possible name conflict with libs/xml/xml.h
 #include "midictrl_consts.h"
 
 #define NBROP 4 //do not change
