@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#ifndef _WIN32
+#ifdef HAVE_MONOTONIC_TIMER
 
 #include "timerdev.h"
 
@@ -61,6 +61,6 @@ class MonoTimer : public Timer {
 
 } // namespace MusECore
 
-#endif // _WIN32
+#endif // HAVE_MONOTONIC_TIMER
 
 #endif // __TIMER_MONO_H__

@@ -42,6 +42,7 @@ include(CheckIncludeFiles)
 include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
 include(CheckCXXSymbolExists)
+include(CheckSymbolExists)
 
 
 # ==================================================================
@@ -450,6 +451,23 @@ check_cxx_symbol_exists(exp10l cmath HAVE_EXP10L)
 ##
 ## POSIX Timers
 ##
+
+# Monotonic timer (using timerfd_create etc.)
+# Gotta be careful here. Some might not have the full suite.
+#
+# timerfd_create, timerfd_settime, timerfd_gettime etc.
+check_symbol_exists(timerfd_create
+    "sys/timerfd.h" HAVE_TIMERFD_CREATE)
+# read, close etc.
+check_symbol_exists(read
+    "unistd.h" HAVE_READ)
+if(HAVE_TIMERFD_CREATE AND HAVE_READ)
+    set(HAVE_MONOTONIC_TIMER 1)
+    message("Monotonic timer supported")
+else()
+    set(HAVE_MONOTONIC_TIMER 0)
+    message("Monotonic timer unsupported")
+endif()
 
 ## Tested OK. TODO Detection. TODO Resolution queries.
 # set(POSIX_TIMER_SUPPORT ON)

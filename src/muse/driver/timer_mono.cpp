@@ -41,7 +41,7 @@
 
 #include "timer_mono.h"
 
-#ifndef _WIN32
+#ifdef HAVE_MONOTONIC_TIMER
 
 #include <cstdint>
 #include <cstdio>
@@ -381,4 +381,4 @@ unsigned long MonoTimer::getTimerTicks(bool printTicks)
 
 } // namespace MusECore
 
-#endif // _WIN32
+#endif // HAVE_MONOTONIC_TIMER
