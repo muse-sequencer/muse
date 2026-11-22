@@ -21,6 +21,14 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
+if (COMMAND cmake_policy)
+    # As of cmake 3.31
+    if(POLICY CMP0177)
+      # New behaviour is to normalize install() DESTINATION paths.
+      cmake_policy(SET CMP0177 NEW)
+    endif()
+endif()
+
 ##
 ## List of source files to compile
 ##
