@@ -228,32 +228,30 @@ signed int MidiSeq::selectTimer()
         return qt_tmrFd;
     }
     delete timer;
-#else
+#endif // _WIN32
 
-  // first Linux timer 
-  //#ifndef _WIN32   // we are already in else branch 
-      fprintf(stderr, "Trying Monotonic timer...\n");
-      timer = new MonoTimer();
-      int mono_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
-      if (mono_tmrFd != -1) {
-          fprintf(stderr, "got timer = %d\n", mono_tmrFd);
-          return mono_tmrFd;
-      }
-      delete timer;
-  //#endif
-  
-  #ifdef ALSA_SUPPORT
-    fprintf(stderr, "Trying RTC timer...\n");
-    timer = new RtcTimer();
-    int rtc_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
-    if (rtc_tmrFd != -1) { // ok!
-        fprintf(stderr, "got timer = %d\n", rtc_tmrFd);
-        return rtc_tmrFd;
+#ifdef HAVE_MONOTONIC_TIMER
+    fprintf(stderr, "Trying Monotonic timer...\n");
+    timer = new MonoTimer();
+    int mono_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+    if (mono_tmrFd != -1) {
+        fprintf(stderr, "got timer = %d\n", mono_tmrFd);
+        return mono_tmrFd;
     }
     delete timer;
-  #endif
-#endif
-  
+#endif // HAVE_MONOTONIC_TIMER
+
+#ifdef ALSA_SUPPORT
+  fprintf(stderr, "Trying RTC timer...\n");
+  timer = new RtcTimer();
+  int rtc_tmrFd = timer->initTimer(MusEGlobal::config.rtcTicks);
+  if (rtc_tmrFd != -1) { // ok!
+      fprintf(stderr, "got timer = %d\n", rtc_tmrFd);
+      return rtc_tmrFd;
+  }
+  delete timer;
+#endif // ALSA_SUPPORT
+
 #ifdef POSIX_TIMER_SUPPORT
     fprintf(stderr, "Trying POSIX timer...\n");
     timer = new PosixTimer();
@@ -263,7 +261,7 @@ signed int MidiSeq::selectTimer()
         return posix_tmrFd;
     }
     delete timer;
-#endif
+#endif // POSIX_TIMER_SUPPORT
 
 #ifdef ALSA_SUPPORT
     fprintf(stderr, "Trying ALSA timer...\n");
@@ -274,7 +272,7 @@ signed int MidiSeq::selectTimer()
         return alsa_tmrFd;
     }
     delete timer;
-#endif
+#endif // ALSA_SUPPORT
 
     timer=nullptr;
     QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer!")),

@@ -51,6 +51,7 @@
 #cmakedefine HAVE_ISTRINGSTREAM_HEXFLOAT
 // #cmakedefine HAVE_M_PI
 #cmakedefine WAYLAND_SUPPORT
+#cmakedefine HAVE_MONOTONIC_TIMER
 
 #define VERSION             "${MusE_VERSION_FULL}"
 #define GITSTRING           "${MusE_GITSTRING}"
