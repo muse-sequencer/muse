@@ -1548,8 +1548,11 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   if (_tool != AutomationTool)
                   {
                     int dir = 0;
+                    // Shift+Alt (no Ctrl): move horizontally only, with snapping. Used by the arranger
+                    //  to move automation along with parts, which cannot change track.
+                    const bool shiftAlt = shift && alt && !ctrl;
                     if (keyState & Qt::ShiftModifier) {
-                          if (ax > ay) {
+                          if (shiftAlt || ax > ay) {
                                 if (drag == DRAG_MOVE_START)
                                       drag = DRAGX_MOVE;
                                 else if (drag == DRAG_COPY_START)
@@ -1592,7 +1595,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                     else
                           dt = MOVE_CLONE;
 
-                    startMoving(ev_pos, dir, dt, !(keyState & Qt::ShiftModifier));
+                    startMoving(ev_pos, dir, dt, shiftAlt || !(keyState & Qt::ShiftModifier));
                   }
                   break;
             }
@@ -1608,7 +1611,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             case DRAGX_COPY:
             case DRAGX_CLONE:
                   if(!scrollTimer)
-                    moveItems(ev_pos, 1, !shift);
+                    moveItems(ev_pos, 1, !shift || (shift && alt && !ctrl));
                   break;
 
             case DRAGY_MOVE:
@@ -1787,7 +1790,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                               deselectAll();
                         if(curItem)
                         {
-                          if (!shift) { //Select or deselect only the clicked item
+                          if (!shift || (alt && !ctrl)) { //Select or deselect only the clicked item
                               selectItem(curItem, !(ctrl && curItem->isSelected()));
                               }
                           else { //Select or deselect all on the same pitch (e.g. same y-value)
@@ -1818,7 +1821,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                       endMoveItems(pos, MOVE_MOVE, 0, !shift);
                       break;
                 case DRAGX_MOVE:
-                      endMoveItems(pos, MOVE_MOVE, 1, !shift);
+                      endMoveItems(pos, MOVE_MOVE, 1, !shift || (shift && alt && !ctrl));
                       break;
                 case DRAGY_MOVE:
                       endMoveItems(pos, MOVE_MOVE, 2, !shift);
