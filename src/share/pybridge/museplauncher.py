@@ -29,6 +29,7 @@ from __future__ import print_function
 import Pyro5.api as pyro
 import Pyro5.errors as pyro_errors
 from Pyro5.nameserver import start_ns_loop
+from musepyroconfig import normalize_bind_host
 
 import socket
 import select
@@ -171,6 +172,22 @@ class MusE:
             return muse.load_song(path)
 
       @pyro.expose
+      def saveProjectFile(self, path, overwrite=False): # save the current project to a MusE project file
+            return muse.saveProjectFile(path, overwrite)
+
+      @pyro.expose
+      def closeProjectFile(self, savePath="", overwrite=False): # save and close the current project
+            return muse.closeProjectFile(savePath, overwrite)
+
+      @pyro.expose
+      def createProjectFile(self, path, saveCurrent=True, savePath="", overwrite=False): # create and open a blank project
+            return muse.createProjectFile(path, saveCurrent, savePath, overwrite)
+
+      @pyro.expose
+      def openProjectFile(self, path, saveCurrent=True, savePath="", overwrite=False): # save the current project and open another
+            return muse.openProjectFile(path, saveCurrent, savePath, overwrite)
+
+      @pyro.expose
       def getSelectedTrack(self): # get first selected track in arranger window
             return muse.getSelectedTrack()
 
@@ -249,6 +266,54 @@ class MusE:
       @pyro.expose
       def toggleTrackEffect(self, trackname, effectno, onoff): # toggle specific effect on/off
             return muse.toggleTrackEffect(trackname, effectno, onoff)
+
+      @pyro.expose
+      def getMidiOutputs(self):
+            return muse.getMidiOutputs()
+
+      @pyro.expose
+      def getMidiTrackOutput(self, trackname):
+            return muse.getMidiTrackOutput(trackname)
+
+      @pyro.expose
+      def setMidiTrackOutput(self, trackname, port, channel):
+            return muse.setMidiTrackOutput(trackname, port, channel)
+
+      @pyro.expose
+      def getMidiTrackPrograms(self, trackname):
+            return muse.getMidiTrackPrograms(trackname)
+
+      @pyro.expose
+      def setMidiTrackProgram(self, trackname, patchCode):
+            return muse.setMidiTrackProgram(trackname, patchCode)
+
+      @pyro.expose
+      def getAvailableInstruments(self):
+            return muse.getAvailableInstruments()
+
+      @pyro.expose
+      def addSynthTrack(self, pluginType, file, uri, label, trackname):
+            return muse.addSynthTrack(pluginType, file, uri, label, trackname)
+
+      @pyro.expose
+      def getAvailableTrackEffects(self):
+            return muse.getAvailableTrackEffects()
+
+      @pyro.expose
+      def getTrackEffectDetails(self, trackname):
+            return muse.getTrackEffectDetails(trackname)
+
+      @pyro.expose
+      def getTrackEffectParameters(self, trackname, effectno):
+            return muse.getTrackEffectParameters(trackname, effectno)
+
+      @pyro.expose
+      def setTrackEffectParameter(self, trackname, effectno, parameter, value):
+            return muse.setTrackEffectParameter(trackname, effectno, parameter, value)
+
+      @pyro.expose
+      def addTrackEffect(self, trackname, uri, file, label, effectno):
+            return muse.addTrackEffect(trackname, uri, file, label, effectno)
 
       def findNewTrack(self, oldtracknames): #internal function
             tracknames = muse.getTrackNames()
@@ -379,22 +444,17 @@ def main():
       config_pyro_daemon_hostname = muse.getConfigPyroDaemonHostname()
       config_pyro_daemon_port = muse.getConfigPyroDaemonPort()
 
-      if config_pyro_ns_hostname:
-          ns_hostname = config_pyro_ns_hostname
-      else:
-          #ns_hostname = socket.gethostname()
-          ns_hostname = None
+      try:
+          ns_hostname = normalize_bind_host(config_pyro_ns_hostname)
+          daemon_hostname = normalize_bind_host(config_pyro_daemon_hostname)
+      except ValueError as exc:
+          print("Invalid Pyro bridge host: " + str(exc), flush=True)
+          return
 
       if config_pyro_ns_port:
           ns_port = int(config_pyro_ns_port)
       else:
           ns_port = None
-
-      if config_pyro_daemon_hostname:
-          daemon_hostname = config_pyro_daemon_hostname
-      else:
-          #daemon_hostname = socket.gethostname()
-          daemon_hostname = None
 
       if config_pyro_daemon_port:
           daemon_port = int(config_pyro_daemon_port)

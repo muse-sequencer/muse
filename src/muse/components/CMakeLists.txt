@@ -264,6 +264,7 @@ file (GLOB components_source_files
       midisyncimpl.cpp 
       midi_warn_init_pending_impl.cpp
       missing_plugins.cpp
+      musemcpdialog.cpp
       mixdowndialog.cpp 
 #       mlabel.cpp 
 #       mmath.cpp
@@ -344,6 +345,19 @@ add_library ( components ${MODULES_BUILD}
       ${components_mocs}
       ${components_source_files}
       )
+
+if (BUILD_TESTING)
+      find_package(Qt6 COMPONENTS Test QUIET)
+      if (Qt6Test_FOUND)
+            add_executable(test_musemcpdialog
+                  test_musemcpdialog.cpp
+                  musemcpdialog.cpp
+                  )
+            target_link_libraries(test_musemcpdialog ${QT_LIBRARIES} Qt6::Test)
+            add_test(NAME muse_mcp_dialog COMMAND test_musemcpdialog)
+            set_tests_properties(muse_mcp_dialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+      endif (Qt6Test_FOUND)
+endif (BUILD_TESTING)
 
 ##
 ## Append to the list of translations

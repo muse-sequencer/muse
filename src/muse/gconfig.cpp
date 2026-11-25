@@ -433,7 +433,9 @@ GlobalConfigValues config = {
       true,                         // audioAutomationDrawDiscrete
       true,                         // audioAutomationShowBoxes
       true,                         // audioAutomationOptimize
-      2                             // audioAutomationPointRadius
+      2,                            // audioAutomationPointRadius
+      false,                        // pythonBridgeEnabled
+      QString("127.0.0.1")          // pythonBridgeBindAddress
 };
 
 } // namespace MusEGlobal

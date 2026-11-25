@@ -32,6 +32,7 @@ if (COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 project(muse)
+include(CTest)
 
 include(FindPkgConfig)
 include(CheckIncludeFile)
@@ -328,23 +329,25 @@ find_package(Threads REQUIRED)
 ##  look for Qt6
 ##
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets UiTools LinguistTools Svg Xml)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets Network UiTools LinguistTools Svg Xml)
 
 qt_standard_project_setup()
 
 include_directories (${Qt6Widgets_INCLUDE_DIRS})
+include_directories (${Qt6Network_INCLUDE_DIRS})
 include_directories (${Qt6Core_INCLUDE_DIRS})
 include_directories (${Qt6UiTools_INCLUDE_DIRS})
 include_directories (${Qt6Xml_INCLUDE_DIRS})
 include_directories (${Qt6Svg_INCLUDE_DIRS})
 
 LINK_DIRECTORIES(${Qt6Widgets_LIBRARY_DIRS})
+LINK_DIRECTORIES(${Qt6Network_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt6Core_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt6UiTools_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt6Xml_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt6Svg_LIBRARY_DIRS})
 
-SET(QT_LIBRARIES ${Qt6Widgets_LIBRARIES} ${Qt6UiTools_LIBRARIES} ${Qt6Xml_LIBRARIES} ${Qt6Svg_LIBRARIES} ${Qt6Core_LIBRARIES})
+SET(QT_LIBRARIES ${Qt6Widgets_LIBRARIES} ${Qt6Network_LIBRARIES} ${Qt6UiTools_LIBRARIES} ${Qt6Xml_LIBRARIES} ${Qt6Svg_LIBRARIES} ${Qt6Core_LIBRARIES})
 
 
 #~ set(CMAKE_AUTOUIC ON)
