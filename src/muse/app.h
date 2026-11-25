@@ -555,6 +555,12 @@ public:
 //    QWidget* bigtimeWindow();
     bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track = nullptr);
     void importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track);
+    bool saveProjectFileForMcp(const QString& name, bool overwrite);
+    bool closeProjectFileForMcp(const QString& savePath, bool overwrite, QString* savedPath = nullptr);
+    bool createProjectFileForMcp(const QString& name, bool saveCurrent, const QString& savePath,
+                                bool overwrite);
+    bool openProjectFileForMcp(const QString& name, bool saveCurrent, const QString& savePath, bool overwrite);
+    bool waitForProjectOperationForMcp();
     void showTransport(bool flag);
     bool restoreState(const QByteArray &state, int version = 0);
 
