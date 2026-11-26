@@ -23,10 +23,14 @@ namespace MusEGui {
 class MuseMcpDialog : public QDialog
 {
 public:
+  static constexpr int RequirementsCheckTimeoutMs = 10000;
+  static constexpr int ConnectionCheckTimeoutMs = 30000;
+
   MuseMcpDialog(const QString& serverScript, const QString& documentation,
                 bool pythonBridgeSupported, bool startAtLaunch,
                 const QString& bindAddress, const QString& nameserverPort,
                 QWidget* parent = nullptr);
+  ~MuseMcpDialog() override;
 
   bool startAtLaunch() const;
   QString bindAddress() const;

@@ -18,14 +18,15 @@ path to `share/muse/pybridge/requirements-mcp.txt` in the installation prefix.
 
 ## Start and connect
 
-From MusE, open **Help → Connect AI Agent (MCP)** to check the requirements and
+From MusE, open **Settings → Connect AI Agent (MCP)** to check the requirements and
 read-only connection, copy a client configuration, and choose the bridge startup
 and permission profile. The dialog preselects `project_edit` for the generated client
 configuration; choose a more restrictive profile if the agent should not modify the
 project. It automatically prefers `~/.venvs/muse-mcp/bin/python` when available; otherwise
 it falls back to `python3`, which may not have the MCP dependencies. Use **Check requirements**
-to verify the selected interpreter. The saved startup setting takes effect the next time MusE
-starts. Alternatively, start MusE with its Python bridge enabled:
+to verify the selected interpreter. The dependency check has a 10-second limit; the read-only
+connection check has a separate 30-second limit. The saved startup setting takes effect the
+next time MusE starts. Alternatively, start MusE with its Python bridge enabled:
 
 ```sh
 muse -y
@@ -53,7 +54,10 @@ a client configuration can contain:
 The bridge starts a local Pyro nameserver when one is not already available. If MusE
 was configured with a non-default nameserver, pass the same endpoint to the MCP
 process with `MUSE_PYRO_NS_HOST` and `MUSE_PYRO_NS_PORT`. `MUSE_PYRO_TIMEOUT` optionally
-sets the RPC timeout in seconds (default: `5`).
+sets the timeout for regular RPCs in seconds (default: `5`). Project save, close, create,
+and open calls intentionally have no RPC timeout: they wait for MusE's GUI-thread project
+operation to finish so a timeout cannot report failure while the project is still changing.
+If MusE becomes unresponsive during one of these operations, the MCP call can remain blocked.
 
 ## Permission profiles
 
@@ -63,7 +67,9 @@ configuration. Set the profile to `transport` to additionally allow playback, st
 and position changes. The `project_edit` profile also allows track mute, MIDI part creation
 and editing, MIDI file imports, MIDI output routing, track parameter changes, instrument
 track creation, audio effect management, and project file operations; these operations can
-change or replace the currently open project. Unknown profiles are denied. The MCP server
+change or replace the currently open project. It can also read user-supplied MIDI and `.med`
+files and save `.med` files at arbitrary paths the MusE user account can access; paths are
+not restricted to the active project directory. Unknown profiles are denied. The MCP server
 enforces these limits even if a client tries to call a restricted tool directly.
 
 ## Available tools
@@ -88,10 +94,10 @@ enforces these limits even if a client tries to call a restricted tool directly.
 - `muse_set_track_mute` sets the mute state of an existing track.
 - `muse_list_available_instruments` lists software instrument plugins MusE can load.
   `muse_add_instrument_track` creates the selected instrument track and assigns it to
-  the first free MIDI output port; it fails if no port is available or the plugin cannot
-  be instantiated. `muse_list_midi_outputs` and `muse_set_midi_track_output` allow MIDI
-  tracks to be routed to an instrument and channel; `muse_get_midi_track_output` reads
-  back the exact assigned port, channel, and output name when a device is attached.
+  the first free MIDI output port and returns that port index; it fails if no port is
+  available or the plugin cannot be instantiated. Use `muse_list_midi_outputs` to inspect
+  ports, `muse_set_midi_track_output` to route MIDI tracks to an instrument and channel, and
+  `muse_get_midi_track_output` to read back the assigned port, channel, and output name.
 - `muse_add_midi_track` adds a uniquely named MIDI track.
 - `muse_list_midi_track_programs` lists named patches for the instrument routed to a MIDI
   track. `muse_set_midi_track_program` selects one of those patches immediately on the
@@ -124,7 +130,10 @@ enforces these limits even if a client tries to call a restricted tool directly.
 effects, and MIDI edits modify the currently open MusE project; use them only when those
 changes are intended. MIDI file paths are resolved and read by the MCP server process.
 Project paths are resolved on the MCP server host; existing `.med` files can be opened and
-new projects can be created at a `.med` path. Project save, close, create, and open operations
+new projects can be created at a `.med` path. The `project_edit` profile is not a filesystem
+sandbox: it can read the specified MIDI/`.med` files and write `.med` files anywhere the MusE
+user account has access, including outside the project directory. Review each path and grant
+this profile only to a trusted MCP client. Project save, close, create, and open operations
 require the `project_edit` profile.
 
 ## Security

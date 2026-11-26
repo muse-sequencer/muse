@@ -24,7 +24,9 @@ MAX_TICK = 2_147_483_647
 MAX_MIDI_FILE_BYTES = 50 * 1024 * 1024
 MAX_IMPORTED_NOTES = 4096
 MAX_IMPORTED_EVENTS = 8192
-PROJECT_OPERATION_TIMEOUT = 180.0
+PROJECT_OPERATION_METHODS = frozenset({
+    "saveProjectFile", "closeProjectFile", "createProjectFile", "openProjectFile"
+})
 _PROFILE_LEVELS = {"read_only": 0, "transport": 1, "project_edit": 2}
 _MIDI_PARAMETER_RANGES = {
     "transposition": (-127, 127),
@@ -204,11 +206,18 @@ def _read_midi_file(
                 if len(notes) > MAX_IMPORTED_NOTES:
                     raise ValueError(f"MIDI import is limited to {MAX_IMPORTED_NOTES} notes per part")
             elif message.type == "control_change":
+                controller = message.control
+                value = message.value
+                channel = message.channel
+                if any(type(field) is not int for field in (controller, value, channel)):
+                    raise ValueError("MIDI controller number, value, and channel must be integers")
+                if not 0 <= controller <= 127 or not 0 <= value <= 127 or not 0 <= channel <= 15:
+                    raise ValueError("MIDI controller number, value, or channel is out of range")
                 controller_tick = (
                     absolute_tick * song_division + source_ticks_per_beat // 2
                 ) // source_ticks_per_beat
                 controller_events.append({
-                    "data": [int(message.control), int(message.value), int(message.channel)],
+                    "data": [controller, value, channel],
                     "tick": controller_tick,
                     "type": "ctrl",
                 })
@@ -260,9 +269,9 @@ def _muse_call(method: str, *args: Any) -> Any:
         nameserver = pyro.locate_ns(host=host, port=port)
         uri = nameserver.lookup("muse")
         proxy = pyro.Proxy(uri)
-        proxy._pyroTimeout = max(timeout, PROJECT_OPERATION_TIMEOUT) if method in {
-            "saveProjectFile", "closeProjectFile", "createProjectFile", "openProjectFile"
-        } else timeout
+        # A project transition cannot be safely interrupted after MusE begins
+        # clearing/loading the song; wait for its GUI-thread operation to finish.
+        proxy._pyroTimeout = None if method in PROJECT_OPERATION_METHODS else timeout
         return getattr(proxy, method)(*args)
     except (PyroError, OSError) as exc:
         raise RuntimeError(
@@ -579,7 +588,7 @@ def muse_add_instrument_track(
     plugin_id: Annotated[str, Field(min_length=1, max_length=4096)],
     track_name: TrackName,
 ) -> dict[str, Any]:
-    """Add an installed software instrument and assign it to the first free MIDI output."""
+    """Add an installed instrument and return the MIDI output port assigned by MusE."""
     _require_profile("project_edit")
     if not track_name.strip():
         raise ValueError("track_name cannot be empty or whitespace")
@@ -592,21 +601,26 @@ def muse_add_instrument_track(
     )
     if instrument is None:
         raise ValueError("Unknown instrument plugin_id; list available instruments and use its plugin_id")
-    _require_muse_success(
+    midi_output_port = _muse_call(
         "addSynthTrack",
         int(instrument["type"]),
         str(instrument.get("file", "")),
         str(instrument.get("uri", "")),
         str(instrument.get("label", "")),
         track_name,
-        failure_message="MusE rejected the instrument; check that a MIDI output port is free",
     )
+    if type(midi_output_port) is not int or midi_output_port < 0:
+        raise RuntimeError(
+            "MusE did not confirm instrument creation and MIDI output allocation "
+            f"(bridge returned {midi_output_port!r})"
+        )
     if not _wait_for_track(track_name):
         raise RuntimeError(f"MusE did not create instrument track {track_name!r} before the timeout")
     return {
         "track_name": track_name,
         "instrument": str(instrument.get("name", "")),
         "plugin_id": plugin_id,
+        "midi_output_port": midi_output_port,
         "status": "created",
     }
 

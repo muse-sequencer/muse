@@ -100,7 +100,7 @@ class MuseMcpTests(unittest.TestCase):
         proxy._pyroRelease.assert_called_once_with()
         nameserver._pyroRelease.assert_called_once_with()
 
-    def test_project_file_calls_use_extended_timeout(self):
+    def test_project_file_calls_wait_without_rpc_timeout(self):
         nameserver = Mock()
         nameserver.lookup.return_value = "PYRO:object@127.0.0.1:50000"
         proxy = Mock()
@@ -111,9 +111,9 @@ class MuseMcpTests(unittest.TestCase):
                 with patch.object(self.server.pyro, "Proxy", return_value=proxy):
                     self.assertTrue(self.server._muse_call("saveProjectFile", "/tmp/Bach.med", False))
 
-        self.assertEqual(proxy._pyroTimeout, self.server.PROJECT_OPERATION_TIMEOUT)
+        self.assertIsNone(proxy._pyroTimeout)
 
-    def test_project_creation_uses_extended_timeout(self):
+    def test_project_creation_waits_without_rpc_timeout(self):
         nameserver = Mock()
         nameserver.lookup.return_value = "PYRO:object@127.0.0.1:50000"
         proxy = Mock()
@@ -126,7 +126,20 @@ class MuseMcpTests(unittest.TestCase):
                         self.server._muse_call("createProjectFile", "/tmp/NewProject.med", True, "", False)
                     )
 
-        self.assertEqual(proxy._pyroTimeout, self.server.PROJECT_OPERATION_TIMEOUT)
+        self.assertIsNone(proxy._pyroTimeout)
+
+    def test_non_project_calls_keep_the_configured_rpc_timeout(self):
+        nameserver = Mock()
+        nameserver.lookup.return_value = "PYRO:object@127.0.0.1:50000"
+        proxy = Mock()
+        proxy.getCPos.return_value = 120
+
+        with patch.dict(self.server.os.environ, {"MUSE_PYRO_TIMEOUT": "7"}):
+            with patch.object(self.server.pyro, "locate_ns", return_value=nameserver):
+                with patch.object(self.server.pyro, "Proxy", return_value=proxy):
+                    self.assertEqual(self.server._muse_call("getCPos"), 120)
+
+        self.assertEqual(proxy._pyroTimeout, 7.0)
 
     def test_connection_error_explains_how_to_enable_bridge(self):
         with patch.object(self.server.pyro, "locate_ns", side_effect=self.server.PyroError("offline")):
@@ -246,6 +259,25 @@ class MuseMcpTests(unittest.TestCase):
             ],
         })
 
+    def test_import_midi_file_rejects_out_of_range_controller_fields(self):
+        invalid_controllers = (
+            {"control": -1, "value": 64, "channel": 0},
+            {"control": 128, "value": 64, "channel": 0},
+            {"control": 1, "value": -1, "channel": 0},
+            {"control": 1, "value": 128, "channel": 0},
+            {"control": 1, "value": 64, "channel": -1},
+            {"control": 1, "value": 64, "channel": 16},
+        )
+        for controller in invalid_controllers:
+            with self.subTest(controller=controller):
+                midi_file = types.SimpleNamespace(
+                    ticks_per_beat=480,
+                    tracks=[[types.SimpleNamespace(type="control_change", time=0, **controller)]],
+                )
+                with patch.dict(sys.modules, {"mido": types.SimpleNamespace(MidiFile=lambda path: midi_file)}):
+                    with self.assertRaisesRegex(ValueError, "controller.*out of range"):
+                        self.server._read_midi_file(Path("unused.mid"), None, 384)
+
     def test_import_midi_file_rejects_empty_file_before_bridge_call(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             missing_path = str(Path(temp_dir) / "missing.mid")
@@ -294,12 +326,13 @@ class MuseMcpTests(unittest.TestCase):
             "uri": "http://yoshimi.sourceforge.net/lv2_plugin", "label": "Yoshimi",
         }
         with patch.dict(self.server.os.environ, {"MUSE_MCP_PROFILE": "project_edit"}):
-            with patch.object(self.server, "_muse_call", side_effect=[[], [instrument], True, ["Yoshimi"]]) as call:
+            with patch.object(self.server, "_muse_call", side_effect=[[], [instrument], 2, ["Yoshimi"]]) as call:
                 result = self.server.muse_add_instrument_track(
                     "http://yoshimi.sourceforge.net/lv2_plugin", "Yoshimi"
                 )
 
         self.assertEqual(result["status"], "created")
+        self.assertEqual(result["midi_output_port"], 2)
         call.assert_has_calls([
             unittest.mock.call("getTrackNames"),
             unittest.mock.call("getAvailableInstruments"),
@@ -315,6 +348,13 @@ class MuseMcpTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "Unknown instrument plugin_id"):
                     self.server.muse_add_instrument_track("missing", "Organ")
         self.assertNotIn(unittest.mock.call("addSynthTrack"), call.call_args_list)
+
+    def test_add_instrument_track_rejects_unconfirmed_port_allocation(self):
+        instrument = {"type": 32, "name": "Yoshimi", "uri": "urn:yoshimi"}
+        with patch.dict(self.server.os.environ, {"MUSE_MCP_PROFILE": "project_edit"}):
+            with patch.object(self.server, "_muse_call", side_effect=[[], [instrument], True]):
+                with self.assertRaisesRegex(RuntimeError, "did not confirm instrument creation"):
+                    self.server.muse_add_instrument_track("urn:yoshimi", "Yoshimi")
 
     def test_set_midi_track_output_rejects_unavailable_output(self):
         with patch.dict(self.server.os.environ, {"MUSE_MCP_PROFILE": "project_edit"}):
@@ -464,6 +504,14 @@ class MuseMcpTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "must end in .med"):
                     self.server.muse_save_project("Bach.txt")
         call.assert_not_called()
+
+    def test_project_save_path_can_be_outside_the_active_project_directory(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            requested_path = Path(temporary_directory) / "external" / "Bach.med"
+            self.assertEqual(
+                self.server._validate_project_save_path(str(requested_path)),
+                requested_path.resolve(),
+            )
 
     def test_close_project_requests_save_before_close(self):
         with patch.dict(self.server.os.environ, {"MUSE_MCP_PROFILE": "project_edit"}):

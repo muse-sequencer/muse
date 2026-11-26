@@ -2,11 +2,16 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QTimer>
 #include <QtTest/QtTest>
 
 class MuseMcpDialogTests : public QObject
@@ -15,11 +20,13 @@ class MuseMcpDialogTests : public QObject
 
 private slots:
   void clientConfigurationUsesProjectEditProfileByDefault();
+  void projectEditProfileWarnsAboutHostFileAccess();
   void defaultInterpreterPrefersMcpVirtualEnvironment();
   void clientConfigurationReflectsSelectedProfileAndAddress();
   void startupSettingCanBeChanged();
   void startupSettingIsDisabledWithoutPythonBridgeSupport();
   void bindAddressPolicyAllowsOnlyLoopbackOrPrivateIpv4();
+  void processChecksUsePurposeSpecificTimeouts();
 };
 
 void MuseMcpDialogTests::clientConfigurationUsesProjectEditProfileByDefault()
@@ -36,6 +43,16 @@ void MuseMcpDialogTests::clientConfigurationUsesProjectEditProfileByDefault()
   QCOMPARE(arguments.at(0).toString(), QFileInfo("/opt/muse/musemcp.py").absoluteFilePath());
   QCOMPARE(environment.value("MUSE_PYRO_NS_HOST").toString(), QString("127.0.0.1"));
   QCOMPARE(environment.value("MUSE_MCP_PROFILE").toString(), QString("project_edit"));
+}
+
+void MuseMcpDialogTests::projectEditProfileWarnsAboutHostFileAccess()
+{
+  MusEGui::MuseMcpDialog dialog("/opt/muse/musemcp.py", "/opt/muse/README.mcp.md",
+                                true, false, "127.0.0.1", "");
+  auto* description = dialog.findChild<QLabel*>("mcpProfileDescription");
+  QVERIFY(description);
+  QVERIFY(description->text().contains("anywhere"));
+  QVERIFY(description->text().contains("project folder"));
 }
 
 void MuseMcpDialogTests::defaultInterpreterPrefersMcpVirtualEnvironment()
@@ -103,6 +120,39 @@ void MuseMcpDialogTests::bindAddressPolicyAllowsOnlyLoopbackOrPrivateIpv4()
   QVERIFY(!MusEGui::MuseMcpDialog::isSafeBindAddress("0.0.0.0"));
   QVERIFY(!MusEGui::MuseMcpDialog::isSafeBindAddress("8.8.8.8"));
   QVERIFY(!MusEGui::MuseMcpDialog::isSafeBindAddress("localhost"));
+}
+
+void MuseMcpDialogTests::processChecksUsePurposeSpecificTimeouts()
+{
+  const QString existingScript = QCoreApplication::applicationFilePath();
+  {
+    MusEGui::MuseMcpDialog dialog(existingScript, "/opt/muse/README.mcp.md",
+                                  true, false, "127.0.0.1", "");
+    auto* python = dialog.findChild<QLineEdit*>("mcpPythonExecutable");
+    auto* check = dialog.findChild<QPushButton*>("mcpCheckRequirements");
+    auto* timeout = dialog.findChild<QTimer*>("mcpProcessTimeout");
+    QVERIFY(python);
+    QVERIFY(check);
+    QVERIFY(timeout);
+    python->setText("/nonexistent/mcp-test-python");
+    check->click();
+    QCOMPARE(timeout->interval(), MusEGui::MuseMcpDialog::RequirementsCheckTimeoutMs);
+    QTRY_VERIFY(!timeout->isActive());
+  }
+  {
+    MusEGui::MuseMcpDialog dialog(existingScript, "/opt/muse/README.mcp.md",
+                                  true, false, "127.0.0.1", "");
+    auto* python = dialog.findChild<QLineEdit*>("mcpPythonExecutable");
+    auto* check = dialog.findChild<QPushButton*>("mcpTestConnection");
+    auto* timeout = dialog.findChild<QTimer*>("mcpProcessTimeout");
+    QVERIFY(python);
+    QVERIFY(check);
+    QVERIFY(timeout);
+    python->setText("/nonexistent/mcp-test-python");
+    check->click();
+    QCOMPARE(timeout->interval(), MusEGui::MuseMcpDialog::ConnectionCheckTimeoutMs);
+    QTRY_VERIFY(!timeout->isActive());
+  }
 }
 
 QTEST_MAIN(MuseMcpDialogTests)
