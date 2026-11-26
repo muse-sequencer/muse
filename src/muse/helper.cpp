@@ -2422,6 +2422,515 @@ int countSelectedParts()
     return cnt;
 }
 
+//---------------------------------------------------------
+//   getLoopEndTick
+//    Returns the tick where a looping part's loop should end.
+//    Finds the earliest part on the same track that starts after
+//    this part. If none, returns the end of the last part in the song.
+//    Falls back to 4 repetitions if no meaningful end can be determined.
+//    This is the single authoritative source for loop boundaries.
+//---------------------------------------------------------
+
+unsigned getLoopEndTick(const MusECore::Part* part)
+{
+    if (!part)
+        return 0;
+    unsigned partTick = part->tick();
+    const MusECore::PartList* pl = part->track()->parts();
+    unsigned minNextTick = 0; // 0 means no limit
+    for (MusECore::ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
+        MusECore::Part* other = ip->second;
+        if (other == part)
+            continue;
+        if (other->tick() > partTick) {
+            if (minNextTick == 0 || other->tick() < minNextTick)
+                minNextTick = other->tick();
+        }
+    }
+    if (minNextTick > 0)
+        return minNextTick;
+
+    // No next part on the same track — use the actual end of the last part in the song
+    unsigned songEndTick = 0;
+    const MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for (MusECore::ciTrack it = tracks->cbegin(); it != tracks->cend(); ++it) {
+        MusECore::Track* track = *it;
+        const MusECore::PartList* otherPl = track->parts();
+        for (MusECore::ciPart ip = otherPl->cbegin(); ip != otherPl->cend(); ++ip) {
+            unsigned last = ip->second->tick() + ip->second->lenTick();
+            if (last > songEndTick)
+                songEndTick = last;
+        }
+    }
+    if (songEndTick > partTick)
+        return songEndTick;
+
+    // Fallback: 4 repetitions if we can't determine a meaningful end.
+    // Use long long to avoid unsigned overflow when partTick + partLen * 4 exceeds UINT_MAX.
+    long long fallback = (long long)partTick + (long long)part->lenTick() * 4;
+    return (unsigned)(fallback > 0 ? fallback : 0);
+}
+
+//---------------------------------------------------------
+//   calcLoopIterations
+//    Calculates loop iteration parameters from a looping part.
+//    This is the single authoritative source for loop arithmetic,
+//    used consistently by MIDI export, conversion helpers, and playback.
+//---------------------------------------------------------
+
+LoopCalc calcLoopIterations(const MusECore::Part* part)
+{
+    LoopCalc result = {0, 0, 0};
+    if (!part || !part->loop() || part->lenTick() == 0)
+        return result;
+
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    unsigned loopEndTick = getLoopEndTick(part);
+
+    // Guard against underflow: if loopEndTick < partTick, the loop range is invalid.
+    // This can happen if the part is the last in the song and getLoopEndTick() returns 0.
+    if (loopEndTick <= partTick)
+        return result;
+
+    result.loopRange = loopEndTick - partTick;
+    result.numIterations = result.loopRange / partLen;
+    result.remainder = result.loopRange % partLen;
+    return result;
+}
+
+//---------------------------------------------------------
+//   convertLoopToSingle
+//    Creates a single part spanning the entire loop range,
+//    with the loop flag disabled.
+//---------------------------------------------------------
+
+void convertLoopToSingle(MusECore::Part* part)
+{
+    if (!part || !part->loop())
+        return;
+
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    if (partLen == 0)
+        return;
+
+    // Use centralized loop arithmetic helper (includes getLoopEndTick internally)
+    LoopCalc loopCalc = calcLoopIterations(part);
+    if (loopCalc.loopRange == 0)
+        return;
+
+
+    // Create a new part spanning the entire loop range
+    MusECore::Part* newPart = part->duplicateEmpty();
+    newPart->setTick(partTick);
+    newPart->setLenTick(loopCalc.loopRange);
+    newPart->setLoop(false);
+    newPart->setName(part->name());
+    newPart->setColorIndex(part->colorIndex());
+
+    // Fill the new part with looped events
+    unsigned loopCount = loopCalc.numIterations;
+    unsigned remainder = loopCalc.remainder;
+
+    // For Wave parts, events store frame offsets into the audio file, not tick positions.
+    // We must not modify event positions for Wave parts — just duplicate them as-is.
+    bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
+
+    if (isWavePart) {
+        // For Wave parts, EventList indexes events by event.frame().
+        // If we create multiple events with the same frame(), only the last one survives.
+        // setTick(tickOffset) sets _tick=tickOffset and _frame=tick2frame(tickOffset),
+        // which gives each event a unique frame() value for EventList indexing.
+        // In fetchData(), srcOffset = event.frame() + p_spos - pos, so the event's
+        // frame() must match its timeline position in frames for correct audio reading.
+        // We must NOT call setFrame(origFrame) after setTick() — that would overwrite
+        // the unique frame() with the original audio file offset, causing all events
+        // to have the same key in EventList.
+        for (unsigned loop = 0; loop < loopCount; ++loop) {
+            unsigned tickOffset = loop * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                MusECore::Event ev = ie->second.duplicate();
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                // Do NOT restore origFrame — let setTick() set _frame = tick2frame(tickOffset)
+                // This gives each event a unique key in EventList and correct srcOffset in fetchData()
+                ev.setLenFrame(origLenFrame);
+                newPart->addEvent(ev);
+            }
+        }
+        // Handle remainder: only include events that start within the remainder range.
+        if (remainder > 0) {
+            unsigned tickOffset = loopCount * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include only events that start within the remainder range.
+                if (evPos >= remainder)
+                    continue;
+                MusECore::Event ev = ie->second.duplicate();
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                ev.setLenFrame(origLenFrame);
+                newPart->addEvent(ev);
+            }
+        }
+    } else {
+        for (unsigned loop = 0; loop < loopCount; ++loop) {
+            unsigned offset = loop * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                MusECore::Event ev = ie->second.duplicate();
+                ev.setPosValue(ev.posValue() + offset);
+                newPart->addEvent(ev);
+            }
+        }
+        // Handle remainder: only include events whose timeline position falls within the partial iteration.
+        // The remainder iteration starts at (loopCount * partLen) and extends for 'remainder' ticks.
+        // An event at ev.posValue() should be included only if it starts before the end of the remainder.
+        // Events that extend beyond the remainder boundary are clipped to the boundary.
+        if (remainder > 0) {
+            unsigned remainderStart = loopCount * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include the event if its position within the part is less than the remainder length.
+                // This means the event starts before the remainder boundary.
+                if (evPos < remainder) {
+                    MusECore::Event ev = ie->second.duplicate();
+                    ev.setPosValue(evPos + remainderStart);
+                    // Clip event length so it doesn't extend beyond the remainder boundary.
+                    unsigned evLen = ev.lenTick();
+                    unsigned evEnd = evPos + evLen;
+                    if (evEnd > remainder) {
+                        ev.setLenValue(remainder - evPos);
+                    }
+                    newPart->addEvent(ev);
+                }
+            }
+        }
+    }
+
+    // Use undo operations for consistent undo support
+    MusECore::Undo operations;
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, 1, 0));
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeletePart, part));
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
+    MusEGlobal::song->applyOperationGroup(operations);
+}
+
+//---------------------------------------------------------
+//   convertLoopToMany
+//    Creates individual part copies at each loop iteration position,
+//    and disables the loop flag on the original.
+//---------------------------------------------------------
+
+void convertLoopToMany(MusECore::Part* part)
+{
+    if (!part || !part->loop())
+        return;
+
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    if (partLen == 0)
+        return;
+
+    // Use centralized loop arithmetic helper
+    LoopCalc loopCalc = calcLoopIterations(part);
+    if (loopCalc.loopRange == 0)
+        return;
+
+    // Use undo operations for consistent undo support
+    MusECore::Undo operations;
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartLoop, part, 1, 0));
+
+    // Create copies for each loop iteration after the first
+    unsigned loopCount = loopCalc.numIterations;
+    unsigned remainder = loopCalc.remainder;
+    for (unsigned loop = 1; loop < loopCount; ++loop) {
+        MusECore::Part* newPart = part->duplicate();
+        newPart->setTick(partTick + loop * partLen);
+        newPart->setLoop(false);
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
+    }
+    // Handle remainder: create a partial part for the last incomplete iteration.
+    // Only include events that start before the remainder boundary.
+    if (remainder > 0) {
+        MusECore::Part* newPart = part->duplicateEmpty();
+        newPart->setTick(partTick + loopCount * partLen);
+        newPart->setLenTick(remainder);
+        newPart->setLoop(false);
+        newPart->setName(part->name());
+        newPart->setColorIndex(part->colorIndex());
+        
+        // For Wave parts, remainder events must preserve frame offsets, not tick positions.
+        // However, EventList indexes Wave events by event.frame(). setTick(tickOffset) sets
+        // _frame = tick2frame(tickOffset), giving each event a unique key. Do NOT call
+        // setFrame(origFrame) after setTick() — that would overwrite the unique key.
+        // Only include events that start within the remainder range.
+        bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
+        if (isWavePart) {
+            unsigned tickOffset = loopCount * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include only events that start within the remainder range.
+                if (evPos >= remainder)
+                    continue;
+                MusECore::Event ev = ie->second.duplicate();
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                // Do NOT restore origFrame — let setTick() set _frame = tick2frame(tickOffset)
+                // This gives each event a unique key in EventList and correct srcOffset in fetchData()
+                ev.setLenFrame(origLenFrame);
+                newPart->addEvent(ev);
+            }
+        } else {
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include events that start within the remainder range.
+                if (evPos < remainder) {
+                    MusECore::Event ev = ie->second.duplicate();
+                    ev.setPosValue(evPos + loopCount * partLen);
+                    // Clip event length so it doesn't extend beyond the remainder boundary.
+                    unsigned evLen = ev.lenTick();
+                    unsigned evEnd = evPos + evLen;
+                    if (evEnd > remainder) {
+                        ev.setLenValue(remainder - evPos);
+                    }
+                    newPart->addEvent(ev);
+                }
+            }
+        }
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
+    }
+
+    MusEGlobal::song->applyOperationGroup(operations);
+}
+
+//---------------------------------------------------------
+//   convertLoopToSingleNewTrack
+//    Creates a new track and places a single part spanning the entire loop range.
+//---------------------------------------------------------
+
+void convertLoopToSingleNewTrack(MusECore::Part* part)
+{
+    if (!part || !part->loop())
+        return;
+
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    if (partLen == 0)
+        return;
+
+    // Use centralized loop arithmetic helper
+    LoopCalc loopCalc = calcLoopIterations(part);
+    if (loopCalc.loopRange == 0)
+        return;
+
+    // NOTE: This function does NOT disable the loop flag on the original part.
+    // The conversion operates on a single part, not the entire track. The user may
+    // want to keep the loop on the original part while also having a converted
+    // non-looping version on a new track. This is intentional behavior — if the user
+    // wants to remove the loop from the original, they can use "Remove Loop" from
+    // the context menu separately.
+
+    // Create a new track based on the original track, copying all attributes
+    MusECore::Track* newTrack = part->track()->clone(
+        MusECore::Track::ASSIGN_PROPERTIES |
+        MusECore::Track::ASSIGN_ROUTES |
+        MusECore::Track::ASSIGN_DEFAULT_ROUTES |
+        MusECore::Track::ASSIGN_PLUGINS |
+        MusECore::Track::ASSIGN_STD_CTRLS |
+        MusECore::Track::ASSIGN_PLUGIN_CTRLS);
+    if (!newTrack)
+        return;
+    newTrack->setName(part->track()->name() + " (loop)");
+
+    // Create a new part spanning the entire loop range
+    MusECore::Part* newPart = part->duplicateEmpty();
+    newPart->setTick(partTick);
+    newPart->setLenTick(loopCalc.loopRange);
+    newPart->setLoop(false);
+    newPart->setName(part->name());
+    newPart->setColorIndex(part->colorIndex());
+
+    // Fill the new part with looped events
+    unsigned loopCount = loopCalc.numIterations;
+    unsigned remainder = loopCalc.remainder;
+
+    // For Wave parts, events store frame offsets into the audio file, not tick positions.
+    // We must not modify event positions for Wave parts — just duplicate them as-is.
+    bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
+
+    if (isWavePart) {
+        // For Wave parts, EventList indexes events by event.frame().
+        // setTick(tickOffset) sets _frame = tick2frame(tickOffset), giving each event
+        // a unique key in EventList. Do NOT call setFrame(origFrame) after setTick().
+        for (unsigned loop = 0; loop < loopCount; ++loop) {
+            unsigned tickOffset = loop * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                MusECore::Event ev = ie->second.duplicate();
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                ev.setLenFrame(origLenFrame);
+                newPart->addEvent(ev);
+            }
+        }
+        // Handle remainder: only include events that start within the remainder range.
+        if (remainder > 0) {
+            unsigned tickOffset = loopCount * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include only events that start within the remainder range.
+                if (evPos >= remainder)
+                    continue;
+                MusECore::Event ev = ie->second.duplicate();
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                ev.setLenFrame(origLenFrame);
+                newPart->addEvent(ev);
+            }
+        }
+    } else {
+        for (unsigned loop = 0; loop < loopCount; ++loop) {
+            unsigned offset = loop * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                MusECore::Event ev = ie->second.duplicate();
+                ev.setPosValue(ev.posValue() + offset);
+                newPart->addEvent(ev);
+            }
+        }
+        // Handle remainder: only include events that start before the remainder boundary.
+        // Events extending beyond the remainder are clipped.
+        if (remainder > 0) {
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                if (evPos < remainder) {
+                    MusECore::Event ev = ie->second.duplicate();
+                    ev.setPosValue(evPos + (loopCount * partLen));
+                    // Clip event length so it doesn't extend beyond the remainder boundary.
+                    unsigned evLen = ev.lenTick();
+                    unsigned evEnd = evPos + evLen;
+                    if (evEnd > remainder) {
+                        ev.setLenValue(remainder - evPos);
+                    }
+                    newPart->addEvent(ev);
+                }
+            }
+        }
+    }
+
+    // Group all operations into a single undo entry
+    MusECore::Undo operations;
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, -1, newTrack));
+    // Set the part's track to the new track before adding via undo op
+    newPart->setTrack(newTrack);
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
+    MusEGlobal::song->applyOperationGroup(operations);
+}
+
+//---------------------------------------------------------
+//   convertLoopToManyNewTrack
+//    Creates a new track and places individual part copies at each loop iteration.
+//---------------------------------------------------------
+
+void convertLoopToManyNewTrack(MusECore::Part* part)
+{
+    if (!part || !part->loop())
+        return;
+
+    unsigned partTick = part->tick();
+    unsigned partLen = part->lenTick();
+    if (partLen == 0)
+        return;
+
+    // Use centralized loop arithmetic helper
+    LoopCalc loopCalc = calcLoopIterations(part);
+    if (loopCalc.loopRange == 0)
+        return;
+
+    // NOTE: This function does NOT disable the loop flag on the original part.
+    // The conversion operates on a single part, not the entire track. The user may
+    // want to keep the loop on the original part while also having converted
+    // individual parts on a new track. This is intentional behavior — if the user
+    // wants to remove the loop from the original, they can use "Remove Loop" from
+    // the context menu separately.
+
+    // Create a new track based on the original track, copying all attributes
+    MusECore::Track* newTrack = part->track()->clone(
+        MusECore::Track::ASSIGN_PROPERTIES |
+        MusECore::Track::ASSIGN_ROUTES |
+        MusECore::Track::ASSIGN_DEFAULT_ROUTES |
+        MusECore::Track::ASSIGN_PLUGINS |
+        MusECore::Track::ASSIGN_STD_CTRLS |
+        MusECore::Track::ASSIGN_PLUGIN_CTRLS);
+    if (!newTrack)
+        return;
+    newTrack->setName(part->track()->name() + " (loop)");
+
+    // Group all operations into a single undo entry
+    MusECore::Undo operations;
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, -1, newTrack));
+
+    // Create copies for each loop iteration
+    unsigned loopCount = loopCalc.numIterations;
+    unsigned remainder = loopCalc.remainder;
+    for (unsigned loop = 0; loop < loopCount; ++loop) {
+        MusECore::Part* newPart = part->duplicate();
+        newPart->setTick(partTick + loop * partLen);
+        newPart->setLoop(false);
+        newPart->setTrack(newTrack);
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
+    }
+    // Handle remainder: create a partial part for the last incomplete iteration.
+    if (remainder > 0) {
+        MusECore::Part* newPart = part->duplicateEmpty();
+        newPart->setTick(partTick + loopCount * partLen);
+        newPart->setLenTick(remainder);
+        newPart->setLoop(false);
+        newPart->setName(part->name());
+        newPart->setColorIndex(part->colorIndex());
+        newPart->setTrack(newTrack);
+        
+        // For Wave parts, remainder events must preserve frame offsets, not tick positions.
+        // However, EventList indexes Wave events by event.frame(). setTick(tickOffset) sets
+        // _frame = tick2frame(tickOffset), giving each event a unique key. Do NOT call
+        // setFrame(origFrame) after setTick() — that would overwrite the unique key.
+        // Only include events that start within the remainder range.
+        bool isWavePart = (part->track()->type() == MusECore::Track::WAVE);
+        if (isWavePart) {
+            unsigned tickOffset = loopCount * partLen;
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                // Include only events that start within the remainder range.
+                if (evPos >= remainder)
+                    continue;
+                MusECore::Event ev = ie->second.duplicate();
+                unsigned origLenFrame = ev.lenFrame();
+                ev.setTick(tickOffset);
+                // Do NOT restore origFrame — let setTick() set _frame = tick2frame(tickOffset)
+                // This gives each event a unique key in EventList and correct srcOffset in fetchData()
+                ev.setLenFrame(origLenFrame);
+                newPart->addEvent(ev);
+            }
+        } else {
+            for (MusECore::ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie) {
+                unsigned evPos = ie->second.posValue();
+                if (evPos < remainder) {
+                    MusECore::Event ev = ie->second.duplicate();
+                    ev.setPosValue(evPos + (loopCount * partLen));
+                    // Clip event length so it doesn't extend beyond the remainder boundary.
+                    unsigned evLen = ev.lenTick();
+                    unsigned evEnd = evPos + evLen;
+                    if (evEnd > remainder) {
+                        ev.setLenValue(remainder - evPos);
+                    }
+                    newPart->addEvent(ev);
+                }
+            }
+        }
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, newPart));
+    }
+    MusEGlobal::song->applyOperationGroup(operations);
+}
+
 QSize getScreenGeometryFromPoint(const QPoint& globalP)
 {
   QScreen *sc = QGuiApplication::screenAt(globalP);
@@ -2446,4 +2955,3 @@ QSize getScreenGeometryFromWidget(const QWidget* widget)
 }
 
 } // namespace MusEGui
-

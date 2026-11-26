@@ -132,7 +132,17 @@ enum PartOperations {
   OP_SELECT_CLONES,
   OP_NORMALIZE,
   OP_PARTCOLORBASE,
-  OP_ONE_PAST_END_ENUM = OP_PARTCOLORBASE + NUM_PARTCOLORS
+  OP_PARTCOLOR_END = OP_PARTCOLORBASE + NUM_PARTCOLORS,
+
+  // Loop operations
+  OP_SET_LOOP,
+  OP_REMOVE_LOOP,
+  OP_CONVERT_LOOP_TO_SINGLE,
+  OP_CONVERT_LOOP_TO_MANY,
+  OP_CONVERT_LOOP_TO_SINGLE_NEW_TRACK,
+  OP_CONVERT_LOOP_TO_MANY_NEW_TRACK,
+
+  OP_ONE_PAST_END_ENUM
 };
 
 enum AudioAutomationOperations {
@@ -234,6 +244,7 @@ class PartCanvas : public Canvas {
                         const QRect& r, int pTick, int from, int to, bool selected);
 	    void drawMidiPart(QPainter&, const QRect& rect, MusECore::MidiPart* midipart,
                         const QRect& r, int from, int to, bool selected);
+      void drawLoopGhostParts(QPainter& p, MusECore::Part* part, const QRect& mbbr);
       MusECore::Track* y2Track(int) const;
       void drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& vrg, const ViewRect& vbbox, MusECore::AudioTrack* track);
       void drawAutomationFills(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
@@ -272,6 +283,7 @@ class PartCanvas : public Canvas {
         const MusECore::CtrlList*, unsigned int frame, double* value, unsigned int* minPrevFrame,
         unsigned int* maxNextFrame, bool* maxNextFrameValid) const;
       void unselectAllAutomation(MusECore::Undo& undo) const;
+      void selectAutomationInSelectedParts(MusECore::Undo* undo = nullptr) const;
       void deleteSelectedAutomation(MusECore::Undo& undo) const;
       void alignSelectedAutomation(MusECore::Undo& undo) const;
       void setSelectedAutomationMode(MusECore::Undo& undo, MusECore::CtrlList::Mode) const;

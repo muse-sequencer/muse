@@ -43,6 +43,7 @@
 #include "marker/marker.h"
 #include "drummap.h"
 #include "gconfig.h"
+#include "helper.h"
 #include "libs/file/file.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
@@ -784,8 +785,98 @@ static void addTrackEvents(
           //  at those times so we ignore them and let the events processing handle them.
           addInitialControllerValues(track, l, startOffset, part->tick());
         }
-        MusECore::addEventList(part->events(), l, track, part, port, channel, startOffset);
+
+        // Handle looping parts: export all loop iterations as separate parts
+        if (part->loop() && part->lenTick() > 0) {
+              unsigned partTick = part->tick();
+              unsigned partLen = part->lenTick();
+
+              // Use centralized loop arithmetic helper for consistent boundary/clipping rules
+              MusEGui::LoopCalc loopCalc = MusEGui::calcLoopIterations(part);
+              if (loopCalc.loopRange == 0) {
+                    // No loop iterations to export, fall through to normal export
+              } else {
+                    unsigned loopEndTick = partTick + loopCalc.loopRange;
+                    unsigned numIterations = loopCalc.numIterations;
+                    unsigned remainder = loopCalc.remainder;
+
+                    // Export original part first (iteration 0)
+                    MusECore::addEventList(part->events(), l, track, part, port, channel, startOffset);
+
+                    // Export each full loop iteration by creating a temporary part at the iteration offset.
+                    // The last full iteration may extend beyond loopEndTick, so clip its events.
+                    for (unsigned iter = 1; iter < numIterations; ++iter) {
+                          unsigned iterOffset = iter * partLen;
+                          unsigned iterEndTick = partTick + iterOffset + partLen;
+                          bool isLastFullIter = (iterEndTick > loopEndTick);
+                          unsigned clipLen = isLastFullIter ? (loopEndTick - (partTick + iterOffset)) : partLen;
+                          // Create a temporary part at the loop iteration position so addEventList
+                          // handles all drum maps, transposition, velocity, compression, etc.
+                          MusECore::MidiPart* iterPart = new MusECore::MidiPart((MusECore::MidiTrack*)track);
+                          iterPart->setTick(partTick + iterOffset);
+                          iterPart->setLenTick(isLastFullIter ? clipLen : partLen);
+                          const MusECore::EventList& evlist = part->events();
+                          for (MusECore::ciEvent i = evlist.cbegin(); i != evlist.cend(); ++i) {
+                                unsigned evPos = i->second.posValue();
+                                // Skip events that start beyond the clip boundary in the last iteration.
+                                if (isLastFullIter && evPos >= clipLen)
+                                      continue;
+                                MusECore::Event ev = i->second;
+                                // For the last full iteration, clip event length so note-offs don't
+                                // extend beyond loopEndTick and overlap the next part.
+                                // Only clip events that have a meaningful length (Notes).
+                                // Controller, Sysex, and Meta events have lenTick() == 0 and
+                                // should not be modified — their length field may carry other data.
+                                if (isLastFullIter && ev.lenTick() > 0) {
+                                      unsigned evLen = ev.lenTick();
+                                      unsigned evEnd = evPos + evLen;
+                                      if (evEnd > clipLen) {
+                                            ev.setLenValue(clipLen - evPos > 0 ? clipLen - evPos : 1);
+                                      }
+                                }
+                                iterPart->addEvent(ev);
+                          }
+                          MusECore::addEventList(iterPart->events(), l, track, iterPart, port, channel, startOffset);
+                          delete iterPart;
+                    }
+                    // Export partial final iteration (remainder) if the loop boundary falls mid-iteration.
+                    // Only include events that start before the remainder boundary.
+                    // Events extending beyond the remainder are clipped.
+                    if (remainder > 0) {
+                          unsigned iterOffset = numIterations * partLen;
+                          MusECore::MidiPart* iterPart = new MusECore::MidiPart((MusECore::MidiTrack*)track);
+                          iterPart->setTick(partTick + iterOffset);
+                          iterPart->setLenTick(remainder);
+                          const MusECore::EventList& evlist = part->events();
+                          for (MusECore::ciEvent i = evlist.cbegin(); i != evlist.cend(); ++i) {
+                                unsigned evPos = i->second.posValue();
+                                // Only include events that start within the remainder range
+                                if (evPos < remainder) {
+                                      MusECore::Event ev = i->second;
+                                      // Clip event length so it doesn't extend beyond the remainder boundary.
+                                      // Only clip events that have a meaningful length (Notes).
+                                      // Controller, Sysex, and Meta events have lenTick() == 0 and
+                                      // should not be modified — their length field may carry other data.
+                                      if (ev.lenTick() > 0) {
+                                            unsigned evLen = ev.lenTick();
+                                            unsigned evEnd = evPos + evLen;
+                                            if (evEnd > remainder) {
+                                                  ev.setLenValue(remainder - evPos);
+                                            }
+                                      }
+                                      iterPart->addEvent(ev);
+                                }
+                          }
+                          MusECore::addEventList(iterPart->events(), l, track, iterPart, port, channel, startOffset);
+                          delete iterPart;
+                    }
+              }
         }
+        else {
+              // Non-looping part: original behavior
+              MusECore::addEventList(part->events(), l, track, part, port, channel, startOffset);
+        }
+  }
 }
 
 static void writeDeviceOrPortMeta(int port, MPEventList* mpel)

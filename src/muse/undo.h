@@ -68,7 +68,7 @@ struct UndoOp {
             ModifyTrackName, ModifyTrackChannel,
             SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
             MoveTrack,
-            ModifyClip,
+            ModifyClip, ModifyPartLoop,
             AddMarker, DeleteMarker, ModifyMarker,
             // This one is provided separately for optimizing repeated adjustments. It is 'combo breaker' -aware.
             SetMarkerPos,
@@ -242,6 +242,7 @@ struct UndoOp {
       UndoOp(UndoType type, int n, const Track* track, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, const QString& old_name, const QString& new_name, bool noUndo = false);
+      UndoOp(UndoType type, const Part* part, int old_loop, int new_loop, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, bool selected, bool selected_old, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, unsigned int old_len_or_pos, unsigned int new_len_or_pos, Pos::TType new_time_type = Pos::TICKS,
              const Track* oTrack = 0, const Track* nTrack = 0, bool noUndo = false);

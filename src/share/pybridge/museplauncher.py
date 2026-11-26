@@ -119,12 +119,56 @@ class MusE:
             return muse.createPart(trackname, starttick, lenticks, part)
 
       @pyro.expose
+      def createWavePart(self, trackname, starttick, lenticks): # create wave part in track
+            return muse.createWavePart(trackname, starttick, lenticks)
+
+      @pyro.expose
       def modifyPart(self, part): # modify a part (the part to be modified is specified by its id
             return muse.modifyPart((part))
 
       @pyro.expose
       def deletePart(self, part): # delete a part
             return muse.deletePart((part))
+
+      @pyro.expose
+      def setPartLoop(self, partid, loop): # set loop flag on a part
+            return muse.setPartLoop(partid, loop)
+
+      @pyro.expose
+      def getPartLoop(self, partid): # get loop flag of a part
+            return muse.getPartLoop(partid)
+
+      @pyro.expose
+      def convertLoopToSingle(self, partid): # convert looping part to single part
+            return muse.convertLoopToSingle(partid)
+
+      @pyro.expose
+      def convertLoopToMany(self, partid): # convert looping part to many parts
+            return muse.convertLoopToMany(partid)
+
+      @pyro.expose
+      def convertLoopToSingleNewTrack(self, partid): # convert looping part to single part on new track
+            return muse.convertLoopToSingleNewTrack(partid)
+
+      @pyro.expose
+      def convertLoopToManyNewTrack(self, partid): # convert looping part to many parts on new track
+            return muse.convertLoopToManyNewTrack(partid)
+
+      @pyro.expose
+      def undo(self): # undo the last operation
+            return muse.undo()
+
+      @pyro.expose
+      def redo(self): # redo the last undone operation
+            return muse.redo()
+
+      @pyro.expose
+      def save_song(self, path): # save the current song to a file
+            return muse.save_song(path)
+
+      @pyro.expose
+      def load_song(self, path): # load a song from a file
+            return muse.load_song(path)
 
       @pyro.expose
       def getSelectedTrack(self): # get first selected track in arranger window

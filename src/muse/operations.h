@@ -163,7 +163,7 @@ struct PendingOperationItem
     AddTrack,          DeleteTrack,  MoveTrack,                   ModifyTrackName,
     SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
     ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
-    AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartStart, ModifyPartLength,  ModifyPartName,
+    AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartStart, ModifyPartLength,  ModifyPartName, ModifyPartLoop,
     AddEvent,          DeleteEvent,  SelectEvent,  ModifyEventList,
     
     AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
