@@ -24,6 +24,8 @@
 file (GLOB pybridge_files *.py)
 
 install( FILES ${pybridge_files}
+      ${CMAKE_SOURCE_DIR}/../README.mcp.md
+      requirements-mcp.txt
       DESTINATION ${MusE_SHARE_DIR}/pybridge
       )
 

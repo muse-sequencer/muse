@@ -753,6 +753,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.pluginLinuxVstPathList = xml.parse1().split(":", Qt::SkipEmptyParts);
                         else if (tag == "pluginLv2PathList")
                               MusEGlobal::config.pluginLv2PathList = xml.parse1().split(":", Qt::SkipEmptyParts);
+                        else if (tag == "pythonBridgeEnabled")
+                              MusEGlobal::config.pythonBridgeEnabled = xml.parseInt();
+                        else if (tag == "pythonBridgeBindAddress")
+                              MusEGlobal::config.pythonBridgeBindAddress = xml.parse1();
                         else if (tag == "pluginCacheTriggerRescan")
                               MusEGlobal::config.pluginCacheTriggerRescan = xml.parseInt();
                         
@@ -2006,6 +2010,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.strTag(level, "pluginVstsPathList", MusEGlobal::config.pluginVstPathList.join(":"));
       xml.strTag(level, "pluginLinuxVstsPathList", MusEGlobal::config.pluginLinuxVstPathList.join(":"));
       xml.strTag(level, "pluginLv2PathList", MusEGlobal::config.pluginLv2PathList.join(":"));
+      xml.intTag(level, "pythonBridgeEnabled", MusEGlobal::config.pythonBridgeEnabled);
+      xml.strTag(level, "pythonBridgeBindAddress", MusEGlobal::config.pythonBridgeBindAddress);
       
       if(MusEGlobal::defaultAudioConverterSettings)
         MusEGlobal::defaultAudioConverterSettings->write(level, xml, &MusEGlobal::audioConverterPluginList);

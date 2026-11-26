@@ -456,6 +456,8 @@ struct GlobalConfigValues {
       bool audioAutomationShowBoxes;
       bool audioAutomationOptimize;
       int audioAutomationPointRadius;
+      bool pythonBridgeEnabled;
+      QString pythonBridgeBindAddress;
       };
 
 

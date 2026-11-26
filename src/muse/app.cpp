@@ -30,6 +30,7 @@
 #include <QMdiArea>
 #include <QMdiSubWindow>
 #include <QSocketNotifier>
+#include <QEventLoop>
 //#include <QStyleFactory>
 #include <QTextStream>
 #include <QInputDialog>
@@ -37,10 +38,12 @@
 #include <QPushButton>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QIODevice>
 #include <QProcess>
 #include <QStatusBar>
 #include <QScreen>
+#include <QTimer>
 
 #include <samplerate.h>
 
@@ -72,6 +75,7 @@
 #include "mitplugin.h"
 #include "mittranspose.h"
 #include "components/mixdowndialog.h"
+#include "components/musemcpdialog.h"
 #include "mrconfig.h"
 #include "pianoroll.h"
 #ifdef PYTHON_SUPPORT
@@ -562,6 +566,12 @@ MusE::MusE() : QMainWindow()
       //---------------------------------------------------
       //    Python bridge
       //---------------------------------------------------
+      if (MusEGlobal::config.pythonBridgeEnabled)
+            MusEGlobal::usePythonBridge = true;
+      if (MusEGlobal::pythonBridgePyroNSHostname.isEmpty())
+            MusEGlobal::pythonBridgePyroNSHostname = MusEGlobal::config.pythonBridgeBindAddress;
+      if (MusEGlobal::pythonBridgePyroDaemonHostname.isEmpty())
+            MusEGlobal::pythonBridgePyroDaemonHostname = MusEGlobal::config.pythonBridgeBindAddress;
       // Uncomment in order to enable MusE Python bridge:
       if (MusEGlobal::usePythonBridge) {
             fprintf(stderr, "Initializing python bridge!\n");
@@ -1234,6 +1244,36 @@ MusE::MusE() : QMainWindow()
       trailingMenus.push_back(menuHelp);
 
       menuHelp->addAction(helpManualAction);
+      QAction* aiAgentAction = new QAction(tr("Connect AI Agent (MCP)..."), this);
+      menuSettings->addAction(aiAgentAction);
+      connect(aiAgentAction, &QAction::triggered, this, [this]() {
+            const QString pybridgeDir = QDir(MusEGlobal::museGlobalShare).filePath("pybridge");
+            const QString serverScript = QDir(pybridgeDir).filePath("musemcp.py");
+            const QString documentation = QDir(pybridgeDir).filePath("README.mcp.md");
+#ifdef PYTHON_SUPPORT
+            const bool pythonBridgeSupported = true;
+#else
+            const bool pythonBridgeSupported = false;
+#endif
+            const QString bindAddress = MusEGlobal::pythonBridgePyroNSHostname.isEmpty()
+                  ? MusEGlobal::config.pythonBridgeBindAddress
+                  : MusEGlobal::pythonBridgePyroNSHostname;
+            MusEGui::MuseMcpDialog dialog(serverScript, documentation, pythonBridgeSupported,
+                  MusEGlobal::config.pythonBridgeEnabled, bindAddress,
+                  MusEGlobal::pythonBridgePyroNSPort, this);
+            if (dialog.exec() != QDialog::Accepted)
+                  return;
+
+            const bool settingsChanged =
+                  MusEGlobal::config.pythonBridgeEnabled != dialog.startAtLaunch() ||
+                  MusEGlobal::config.pythonBridgeBindAddress != dialog.bindAddress();
+            MusEGlobal::config.pythonBridgeEnabled = dialog.startAtLaunch();
+            MusEGlobal::config.pythonBridgeBindAddress = dialog.bindAddress();
+            writeGlobalConfiguration();
+            if (settingsChanged)
+                  QMessageBox::information(this, tr("MCP bridge settings saved"),
+                        tr("The Python bridge startup and network settings are saved. Restart MusE to apply them."));
+      });
       menuHelp->addAction(whatsthis);
       menuHelp->addAction(helpHomepageAction);
       menuHelp->addAction(helpDidYouKnow);
@@ -3042,6 +3082,158 @@ void MusE::saveNewRevision()
 
     project.setFile(newFilePath);
   }
+      }
+bool MusE::waitForProjectOperationForMcp()
+{
+    if (!_busyWithLoading)
+        return true;
+
+    QEventLoop waitLoop;
+    QTimer pollTimer;
+    pollTimer.setInterval(10);
+    connect(&pollTimer, &QTimer::timeout, &waitLoop, [this, &waitLoop]() {
+        if (!_busyWithLoading)
+            waitLoop.quit();
+    });
+    pollTimer.start();
+    // Once a project transition has started, returning on timeout would leave
+    // the caller with a failed result while the active song may still change.
+    waitLoop.exec();
+    pollTimer.stop();
+    return !_busyWithLoading;
+}
+
+bool MusE::saveProjectFileForMcp(const QString& name, bool overwrite)
+{
+    if (_busyWithLoading || name.trimmed().isEmpty())
+        return false;
+    QFileInfo target(name);
+    if (target.suffix().isEmpty())
+        target.setFile(name + QString(".med"));
+    else if (target.suffix().compare(QString("med"), Qt::CaseInsensitive) != 0)
+        return false;
+    const QString filePath = target.absoluteFilePath();
+    const QString currentFilePath = QFileInfo(project.absoluteFilePath()).absoluteFilePath();
+    const bool savingCurrentFile = QDir::cleanPath(filePath) == QDir::cleanPath(currentFilePath);
+    if (QFileInfo::exists(filePath) && !overwrite && !savingCurrentFile)
+        return false;
+    const QString projectDirectory = QFileInfo(filePath).absolutePath();
+    if (!QDir().mkpath(projectDirectory))
+        return false;
+    const QString previousProjectDirectory = MusEGlobal::museProject;
+    const QString previousProjectFile = project.absoluteFilePath();
+    MusEGlobal::museProject = projectDirectory;
+    if (!save(filePath, false, writeTopwinState)) {
+        MusEGlobal::museProject = previousProjectDirectory;
+        return false;
+    }
+    project.setFile(filePath);
+    _lastProjectFilePath = filePath;
+    _lastProjectWasTemplate = false;
+    _lastProjectLoadedConfig = true;
+    setWindowTitle(projectTitle(project.absoluteFilePath()));
+    if (projectRecentList.contains(previousProjectFile))
+        projectRecentList.removeAt(projectRecentList.indexOf(previousProjectFile));
+    addProjectToRecentList(filePath);
+    QDir::setCurrent(projectDirectory);
+    return true;
+}
+bool MusE::closeProjectFileForMcp(const QString& savePath, bool overwrite, QString* savedPath)
+{
+    if (_busyWithLoading)
+        return false;
+    QString path = savePath.trimmed();
+    if (path.isEmpty()) {
+        if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath)
+            return false;
+        path = project.absoluteFilePath();
+    }
+    if (!saveProjectFileForMcp(path, overwrite))
+        return false;
+    const QString savedFilePath = project.absoluteFilePath();
+    QProgressDialog closeProgress(tr("Closing project..."), QString(), 0, 0, this);
+    closeProgress.setWindowModality(Qt::ApplicationModal);
+    closeProgress.setCancelButton(nullptr);
+    closeProgress.setMinimumDuration(0);
+    closeProgress.show();
+    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+    fileClose();
+    const bool operationFinished = waitForProjectOperationForMcp();
+    closeProgress.close();
+    if (!operationFinished || MusEGlobal::museProject != MusEGlobal::museProjectInitPath)
+        return false;
+    if (savedPath)
+        *savedPath = QFileInfo(savedFilePath).absoluteFilePath();
+    return true;
+}
+bool MusE::createProjectFileForMcp(const QString& name, bool saveCurrent, const QString& savePath,
+                                   bool overwrite)
+{
+    if (_busyWithLoading || name.trimmed().isEmpty())
+        return false;
+    QFileInfo target(name);
+    if (target.suffix().isEmpty())
+        target.setFile(name + QString(".med"));
+    else if (target.suffix().compare(QString("med"), Qt::CaseInsensitive) != 0)
+        return false;
+    const QString filePath = target.absoluteFilePath();
+    const QString currentFilePath = QFileInfo(project.absoluteFilePath()).absoluteFilePath();
+    if (QDir::cleanPath(filePath) == QDir::cleanPath(currentFilePath) ||
+        (QFileInfo::exists(filePath) && !overwrite))
+        return false;
+
+    const QFileInfo defaultTemplate(MusEGlobal::museGlobalShare + QString("/templates/default.med"));
+    if (!defaultTemplate.isFile() || !defaultTemplate.isReadable())
+        return false;
+    if (!QDir().mkpath(QFileInfo(filePath).absolutePath()))
+        return false;
+
+    if (MusEGlobal::song->dirty) {
+        if (!saveCurrent)
+            return false;
+        QString currentSavePath = savePath.trimmed();
+        if (currentSavePath.isEmpty()) {
+            if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath)
+                return false;
+            currentSavePath = project.absoluteFilePath();
+        }
+        QFileInfo currentSaveTarget(currentSavePath);
+        if (currentSaveTarget.suffix().isEmpty())
+            currentSaveTarget.setFile(currentSavePath + QString(".med"));
+        if (QDir::cleanPath(currentSaveTarget.absoluteFilePath()) == QDir::cleanPath(filePath) ||
+            !saveProjectFileForMcp(currentSavePath, overwrite))
+            return false;
+    }
+
+    if (!loadProjectFile(defaultTemplate.absoluteFilePath(), true, false) ||
+        !waitForProjectOperationForMcp())
+        return false;
+    return saveProjectFileForMcp(filePath, overwrite);
+}
+bool MusE::openProjectFileForMcp(const QString& name, bool saveCurrent, const QString& savePath,
+                                bool overwrite)
+{
+    if (_busyWithLoading)
+        return false;
+    const QFileInfo projectFile(name);
+    if (!projectFile.isFile() || !projectFile.isReadable() ||
+        projectFile.suffix().compare(QString("med"), Qt::CaseInsensitive) != 0)
+        return false;
+    if (MusEGlobal::song->dirty) {
+        if (!saveCurrent)
+            return false;
+        QString path = savePath.trimmed();
+        if (path.isEmpty()) {
+            if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath)
+                return false;
+            path = project.absoluteFilePath();
+        }
+        if (!saveProjectFileForMcp(path, overwrite))
+            return false;
+    }
+    if (!loadProjectFile(projectFile.absoluteFilePath(), false, false))
+        return false;
+    return waitForProjectOperationForMcp();
 }
 //---------------------------------------------------------
 //   saveAs
