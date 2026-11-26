@@ -155,6 +155,8 @@ public:
       void setS2(QString in) { s2 = in; }
       void setS3(QString in) { s3 = in; }
       void setS4(QString in) { s4 = in; }
+      int getResult() const { return result; }
+      void setResult(int value) { result = value; }
       const QString& getS1() { return s1; }
       const QString& getS2() { return s2; }
       const QString& getS3() { return s3; }
@@ -166,6 +168,7 @@ public:
 private:
       EventType type;
       int p1, p2;
+      int result;
       double d1;
       QString s1;
       QString s2;
@@ -181,15 +184,16 @@ QPybridgeEvent::QPybridgeEvent(QPybridgeEvent::EventType _type, int _p1, int _p2
       type(_type),
       p1(_p1),
       p2(_p2),
+      result(-1),
       sc1(_sc1)
 {
 }
 
 bool sendPythonBridgeEvent(QPybridgeEvent& event)
 {
-      if (MusEGlobal::song == nullptr)
-            return false;
       return invokeOnMusEGuiThread([&]() {
+            if (MusEGlobal::song == nullptr)
+                  return false;
             return QApplication::sendEvent(MusEGlobal::song, &event);
             });
 }
@@ -296,12 +300,22 @@ PyObject* getMidiTrackOutput(PyObject*, PyObject* args)
       const char* trackname;
       if (!PyArg_ParseTuple(args, "s", &trackname))
             Py_RETURN_NONE;
-      Track* t = MusEGlobal::song->findTrack(QString(trackname));
-      if (t == nullptr || !t->isMidiTrack())
+      int port = -1;
+      int channel = -1;
+      const bool found = invokeOnMusEGuiThread([&]() {
+            if (MusEGlobal::song == nullptr)
+                  return false;
+            Track* t = MusEGlobal::song->findTrack(QString(trackname));
+            if (t == nullptr || !t->isMidiTrack())
+                  return false;
+            MidiTrack* track = static_cast<MidiTrack*>(t);
+            port = track->outPort();
+            channel = track->outChannel();
+            return true;
+            });
+      if (!found)
             Py_RETURN_NONE;
-
-      MidiTrack* track = static_cast<MidiTrack*>(t);
-      return Py_BuildValue("{s:i,s:i}", "port", track->outPort(), "channel", track->outChannel());
+      return Py_BuildValue("{s:i,s:i}", "port", port, "channel", channel);
 }
 //------------------------------------------------------------
 // Get available software instrument plugins
@@ -334,23 +348,7 @@ PyObject* addSynthTrack(PyObject*, PyObject* args)
       const char* trackname;
       if (!PyArg_ParseTuple(args, "issss", &pluginType, &file, &uri, &label, &trackname))
             return nullptr;
-      if (trackname[0] == '\0' || MusEGlobal::song->findTrack(QString(trackname)) != nullptr ||
-          MusEGlobal::audio == nullptr)
-            Py_RETURN_FALSE;
-
-      Synth* synth = MusEGlobal::synthis.find(
-            MusEPlugin::PluginTypesAll, QString(file), QString(uri), QString(label));
-      if (synth == nullptr || synth->pluginType() != MusEPlugin::PluginType(pluginType))
-            Py_RETURN_FALSE;
-
-      bool hasFreeMidiPort = false;
-      for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
-            if (MusEGlobal::midiPorts[i].device() == nullptr) {
-                  hasFreeMidiPort = true;
-                  break;
-                  }
-            }
-      if (!hasFreeMidiPort)
+      if (trackname[0] == '\0')
             Py_RETURN_FALSE;
 
       QPybridgeEvent event(QPybridgeEvent::SONG_ADD_SYNTH, pluginType);
@@ -358,7 +356,9 @@ PyObject* addSynthTrack(PyObject*, PyObject* args)
       event.setS2(file);
       event.setS3(uri);
       event.setS4(label);
-      return PyBool_FromLong(sendPythonBridgeEvent(event));
+      if (!sendPythonBridgeEvent(event) || event.getResult() < 0)
+            Py_RETURN_FALSE;
+      return PyLong_FromLong(event.getResult());
 }
 //------------------------------------------------------------
 // Set the MIDI output port and channel of a track
@@ -371,12 +371,6 @@ PyObject* setMidiTrackOutput(PyObject*, PyObject* args)
       if (!PyArg_ParseTuple(args, "sii", &trackname, &port, &channel))
             Py_RETURN_FALSE;
       if (port < 0 || port >= MusECore::MIDI_PORTS || channel < 0 || channel >= MusECore::MUSE_MIDI_CHANNELS)
-            Py_RETURN_FALSE;
-      if (!MusEGlobal::midiPorts[port].device())
-            Py_RETURN_FALSE;
-
-      Track* track = MusEGlobal::song->findTrack(QString(trackname));
-      if (track == nullptr || !track->isMidiTrack())
             Py_RETURN_FALSE;
 
       QPybridgeEvent event(QPybridgeEvent::SONG_SET_MIDI_OUTPUT, port, channel);
@@ -426,30 +420,6 @@ PyObject* setMidiTrackProgram(PyObject*, PyObject* args)
       const char* trackname;
       int patchCode;
       if (!PyArg_ParseTuple(args, "si", &trackname, &patchCode) || patchCode < 0 || patchCode > 0xffffff)
-            Py_RETURN_FALSE;
-      Track* t = MusEGlobal::song->findTrack(QString(trackname));
-      if (t == nullptr || !t->isMidiTrack())
-            Py_RETURN_FALSE;
-      MidiTrack* track = static_cast<MidiTrack*>(t);
-      const int portIndex = track->outPort();
-      if (portIndex < 0 || portIndex >= MusECore::MIDI_PORTS || !MusEGlobal::midiPorts[portIndex].device())
-            Py_RETURN_FALSE;
-      MidiInstrument* instrument = MusEGlobal::midiPorts[portIndex].instrument();
-      if (instrument == nullptr)
-            Py_RETURN_FALSE;
-      const bool drum = track->isDrumTrack();
-      const QList<dumb_patchlist_entry_t> patches = instrument->getPatches(track->outChannel(), drum);
-      bool foundPatch = false;
-      for (const dumb_patchlist_entry_t& patch : patches) {
-            const int lbank = patch.lbank < 0 ? 0xff : patch.lbank;
-            const int hbank = patch.hbank < 0 ? 0xff : patch.hbank;
-            const int code = (patch.prog & 0xff) | ((lbank & 0xff) << 8) | ((hbank & 0xff) << 16);
-            if (code == patchCode) {
-                  foundPatch = true;
-                  break;
-                  }
-            }
-      if (!foundPatch)
             Py_RETURN_FALSE;
 
       QPybridgeEvent event(QPybridgeEvent::SONG_SET_MIDI_PROGRAM, patchCode);
@@ -831,95 +801,81 @@ PyObject* modifyPart(PyObject*, PyObject* part)
       if (PyErr_Occurred())
             return nullptr;
 
-      Part* opart = nullptr;
-      // Verify a part with that id actually exists, then get it
-      TrackList* tracks = MusEGlobal::song->tracks();
-      for (ciTrack t = tracks->begin(); t != tracks->end(); ++t) {
-            Track* track = *t;
-            for (ciPart p = track->parts()->begin(); p != track->parts()->end(); p++) {
-                  if (p->second->uuid() == id) {
-                        opart = p->second;
-                        break;
-                        }
-                  }
-            }
-
-      if (opart == nullptr || !opart->track()->isMidiTrack()) {
-            fprintf(stderr, "Part doesn't exist!\n");
-            Py_RETURN_NONE;
-            }
-
-      // Remove all note and controller events from current part eventlist
-      std::list< std::pair<const unsigned, Event> > elist;
-      MidiPart* npart = new MidiPart((MidiTrack*)opart->track());
-      unsigned partTick = opart->tick();
-      unsigned partLen = opart->lenTick();
+      bool hasPartTick = false;
+      bool hasPartLen = false;
+      unsigned partTick = 0;
+      unsigned partLen = 0;
       PyObject* pyTick = PyDict_GetItemString(part, "tick");
       PyObject* pyLen = PyDict_GetItemString(part, "len");
       if (pyTick) {
             if (!PyLong_Check(pyTick)) {
                   PyErr_SetString(PyExc_TypeError, "Part tick must be an integer");
-                  delete npart;
                   return nullptr;
                   }
             const unsigned long value = PyLong_AsUnsignedLong(pyTick);
-            if (PyErr_Occurred()) {
-                  delete npart;
+            if (PyErr_Occurred())
                   return nullptr;
-                  }
             if (value > std::numeric_limits<int>::max()) {
                   PyErr_SetString(PyExc_ValueError, "Part tick is out of range");
-                  delete npart;
                   return nullptr;
                   }
             partTick = static_cast<unsigned>(value);
+            hasPartTick = true;
             }
       if (pyLen) {
             if (!PyLong_Check(pyLen)) {
                   PyErr_SetString(PyExc_TypeError, "Part length must be an integer");
-                  delete npart;
                   return nullptr;
                   }
             const unsigned long value = PyLong_AsUnsignedLong(pyLen);
-            if (PyErr_Occurred()) {
-                  delete npart;
+            if (PyErr_Occurred())
                   return nullptr;
-                  }
             if (value == 0 || value > std::numeric_limits<int>::max()) {
                   PyErr_SetString(PyExc_ValueError, "Part length is out of range");
-                  delete npart;
                   return nullptr;
                   }
             partLen = static_cast<unsigned>(value);
+            hasPartLen = true;
             }
-      npart->setTick(partTick);
-      npart->setLenTick(partLen);
-      npart->setUuid(opart->uuid());
-
-      for (ciEvent e = opart->events().begin(); e != opart->events().end(); e++) {
-            Event& event = (Event &)(e->second);
-            if (event.type() == Note || event.type() == Controller)
-                  continue;
-
-            npart->addEvent(event);
-            }
-
-      if (!addPyPartEventsToMusePart(npart, part)) {
-            delete npart;
+      MidiPart* replacement = new MidiPart(nullptr);
+      if (!addPyPartEventsToMusePart(replacement, part)) {
+            delete replacement;
             if (PyErr_Occurred())
                   return nullptr;
             Py_RETURN_NONE;
             }
 
-      //MusEGlobal::song->startUndo();
-      MusEGlobal::song->changePart(opart, npart);
-      //MusEGlobal::song->endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED); // Crash! Probably since the call ends up in Qt GUI thread from this thread
+      const bool changed = invokeOnMusEGuiThread([&]() {
+            if (MusEGlobal::song == nullptr)
+                  return false;
+            Part* opart = findPartBySerial(id);
+            if (opart == nullptr || !opart->track()->isMidiTrack())
+                  return false;
 
-      QPybridgeEvent* pyevent = new QPybridgeEvent(QPybridgeEvent::SONG_UPDATE, 0, 0, SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
-      QApplication::postEvent(MusEGlobal::song, pyevent);
+            MidiPart* originalPart = static_cast<MidiPart*>(opart);
+            MidiPart* updatedPart = new MidiPart(originalPart->track());
+            updatedPart->setTick(hasPartTick ? partTick : opart->tick());
+            updatedPart->setLenTick(hasPartLen ? partLen : opart->lenTick());
+            updatedPart->setUuid(opart->uuid());
 
+            for (ciEvent e = opart->events().begin(); e != opart->events().end(); ++e) {
+                  const Event& event = e->second;
+                  if (event.type() != Note && event.type() != Controller) {
+                        Event copiedEvent = event;
+                        updatedPart->addEvent(copiedEvent);
+                        }
+                  }
+            for (ciEvent e = replacement->events().begin(); e != replacement->events().end(); ++e) {
+                  Event copiedEvent = e->second;
+                  updatedPart->addEvent(copiedEvent);
+                  }
 
-      Py_RETURN_TRUE;
+            MusEGlobal::song->changePart(opart, updatedPart);
+            MusEGlobal::song->update(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
+            return true;
+            });
+      delete replacement;
+      return PyBool_FromLong(changed);
 }
 //------------------------------------------------------------
 // deletePart
@@ -1562,21 +1518,6 @@ PyObject* setTrackEffectParameter(PyObject*, PyObject* args)
           fxid < 0 || fxid >= MusECore::PipelineDepth)
             Py_RETURN_FALSE;
 
-      Track* t = MusEGlobal::song->findTrack(QString(trackname));
-      AudioTrack* track = dynamic_cast<AudioTrack*>(t);
-      if (track == nullptr || track->efxPipe()->empty(fxid))
-            Py_RETURN_FALSE;
-      PluginI* plugin = track->efxPipe()->at(fxid);
-      if (static_cast<unsigned long>(parameter) >= plugin->parameters())
-            Py_RETURN_FALSE;
-
-      float minimum = 0.0f;
-      float maximum = 0.0f;
-      plugin->range(static_cast<unsigned long>(parameter), &minimum, &maximum);
-      if (!std::isfinite(minimum) || !std::isfinite(maximum) || minimum > maximum ||
-          value < minimum || value > maximum)
-            Py_RETURN_FALSE;
-
       QPybridgeEvent event(QPybridgeEvent::SONG_SET_TRACK_EFFECT_PARAMETER, fxid, parameter);
       event.setS1(trackname);
       event.setD1(value);
@@ -1617,16 +1558,6 @@ PyObject* addTrackEffect(PyObject*, PyObject* args)
       if (fxid < 0 || fxid >= MusECore::PipelineDepth)
             Py_RETURN_FALSE;
 
-      Track* t = MusEGlobal::song->findTrack(QString(trackname));
-      AudioTrack* track = dynamic_cast<AudioTrack*>(t);
-      if (track == nullptr || !track->efxPipe()->empty(fxid))
-            Py_RETURN_FALSE;
-
-      Plugin* plugin = MusEGlobal::plugins.find(
-            MusEPlugin::PluginTypesAll, QString(file), QString(uri), QString(label));
-      if (plugin == nullptr || plugin->pluginClass() != MusEPlugin::PluginClassEffect)
-            Py_RETURN_FALSE;
-
       QPybridgeEvent event(QPybridgeEvent::SONG_ADD_TRACK_EFFECT, fxid);
       event.setS1(trackname);
       event.setS2(uri);
@@ -1645,14 +1576,6 @@ PyObject* toggleTrackEffect(PyObject*, PyObject* args)
 
       if (!PyArg_ParseTuple(args, "sib", &trackname, &fxid, &onoff))
             return nullptr;
-
-      Track* t = MusEGlobal::song->findTrack(QString(trackname));
-      if (t == nullptr)
-            Py_RETURN_FALSE;
-
-      AudioTrack* track = dynamic_cast<AudioTrack*>(t);
-      if (track == nullptr || fxid < 0 || fxid >= MusECore::PipelineDepth || track->efxPipe()->empty(fxid))
-            Py_RETURN_FALSE;
 
       QPybridgeEvent event(QPybridgeEvent::SONG_TOGGLE_EFFECT, fxid, onoff);
       event.setS1(trackname);
@@ -2179,7 +2102,9 @@ bool Song::event(QEvent* _e)
                   Track* t = this->findTrack(e->getS1());
                   const int port = e->getP1();
                   if (t == nullptr || !t->isMidiTrack() || MusEGlobal::audio == nullptr ||
-                      port < 0 || port >= MusECore::MIDI_PORTS || !MusEGlobal::midiPorts[port].device())
+                      port < 0 || port >= MusECore::MIDI_PORTS ||
+                      e->getP2() < 0 || e->getP2() >= MusECore::MUSE_MIDI_CHANNELS ||
+                      !MusEGlobal::midiPorts[port].device())
                         return false;
 
                   MidiTrack* track = static_cast<MidiTrack*>(t);
@@ -2200,6 +2125,24 @@ bool Song::event(QEvent* _e)
                   if (port < 0 || port >= MusECore::MIDI_PORTS || !MusEGlobal::midiPorts[port].device())
                         return false;
                   const int patchCode = e->getP1();
+                  if (patchCode < 0 || patchCode > 0xffffff)
+                        return false;
+                  MidiInstrument* instrument = MusEGlobal::midiPorts[port].instrument();
+                  if (instrument == nullptr)
+                        return false;
+                  bool foundPatch = false;
+                  const bool drum = track->isDrumTrack();
+                  for (const dumb_patchlist_entry_t& patch : instrument->getPatches(track->outChannel(), drum)) {
+                        const int lbank = patch.lbank < 0 ? 0xff : patch.lbank;
+                        const int hbank = patch.hbank < 0 ? 0xff : patch.hbank;
+                        const int code = (patch.prog & 0xff) | ((lbank & 0xff) << 8) | ((hbank & 0xff) << 16);
+                        if (code == patchCode) {
+                              foundPatch = true;
+                              break;
+                              }
+                        }
+                  if (!foundPatch)
+                        return false;
                   const int hbank = (patchCode >> 16) & 0xff;
                   const int lbank = (patchCode >> 8) & 0xff;
                   const int channel = track->outChannel();
@@ -2246,7 +2189,14 @@ bool Song::event(QEvent* _e)
                   PluginI* plugin = track->efxPipe()->at(fxid);
                   if (parameter < 0 || static_cast<unsigned long>(parameter) >= plugin->parameters())
                         return false;
-                  plugin->setParam(static_cast<unsigned long>(parameter), e->getD1());
+                  const double value = e->getD1();
+                  float minimum = 0.0f;
+                  float maximum = 0.0f;
+                  plugin->range(static_cast<unsigned long>(parameter), &minimum, &maximum);
+                  if (!std::isfinite(value) || std::abs(value) > 1.0e9 || !std::isfinite(minimum) ||
+                      !std::isfinite(maximum) || minimum > maximum || value < minimum || value > maximum)
+                        return false;
+                  plugin->setParam(static_cast<unsigned long>(parameter), value);
                   plugin->enableController(static_cast<unsigned long>(parameter), false);
                   break;
                   }
@@ -2263,28 +2213,33 @@ bool Song::event(QEvent* _e)
             case QPybridgeEvent::SONG_ADD_SYNTH: {
                   if (this->findTrack(e->getS1()) != nullptr || MusEGlobal::audio == nullptr)
                         return false;
-                  bool hasFreeMidiPort = false;
+                  Synth* synthInfo = MusEGlobal::synthis.find(
+                        MusEPlugin::PluginTypesAll, e->getS2(), e->getS3(), e->getS4());
+                  if (synthInfo == nullptr || synthInfo->pluginType() != MusEPlugin::PluginType(e->getP1()))
+                        return false;
+                  int freeMidiPort = -1;
                   for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
                         if (MusEGlobal::midiPorts[i].device() == nullptr) {
-                              hasFreeMidiPort = true;
+                              freeMidiPort = i;
                               break;
                               }
                         }
-                  if (!hasFreeMidiPort)
+                  if (freeMidiPort < 0)
                         return false;
                   SynthI* synth = this->createSynthI(MusEPlugin::PluginType(e->getP1()),
                         e->getS2(), e->getS3(), e->getS4());
                   if (synth == nullptr)
                         return false;
                   synth->setName(e->getS1());
-                  for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
-                        MidiPort* port = &MusEGlobal::midiPorts[i];
-                        if (port->device() == nullptr) {
-                              MusEGlobal::audio->msgSetMidiDevice(port, synth, synth);
-                              this->update();
-                              break;
-                              }
+                  MidiPort* port = &MusEGlobal::midiPorts[freeMidiPort];
+                  if (port->device() != nullptr) {
+                        MusEGlobal::song->applyOperation(
+                              UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(synth), synth));
+                        return false;
                         }
+                  MusEGlobal::audio->msgSetMidiDevice(port, synth, synth);
+                  this->update();
+                  e->setResult(freeMidiPort);
                   break;
                   }
             case QPybridgeEvent::SONG_CHANGE_TRACKNAME: {

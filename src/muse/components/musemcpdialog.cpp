@@ -126,6 +126,7 @@ MuseMcpDialog::MuseMcpDialog(const QString& serverScript, const QString& documen
   m_profile->setCurrentIndex(m_profile->findData(QStringLiteral("project_edit")));
   form->addRow(tr("Permission profile"), m_profile);
 
+  m_profileDescription->setObjectName(QStringLiteral("mcpProfileDescription"));
   m_profileDescription->setWordWrap(true);
   form->addRow(m_profileDescription);
   layout->addLayout(form);
@@ -163,6 +164,9 @@ MuseMcpDialog::MuseMcpDialog(const QString& serverScript, const QString& documen
   m_startAtLaunch->setChecked(startAtLaunch);
   m_startAtLaunch->setEnabled(m_pythonBridgeSupported);
   m_processTimeout->setSingleShot(true);
+  m_processTimeout->setObjectName(QStringLiteral("mcpProcessTimeout"));
+  m_checkRequirementsButton->setObjectName(QStringLiteral("mcpCheckRequirements"));
+  m_testConnectionButton->setObjectName(QStringLiteral("mcpTestConnection"));
   connect(m_processTimeout, &QTimer::timeout, this, [this]() {
     if (m_process->state() != QProcess::NotRunning) {
       m_processTimedOut = true;
@@ -199,6 +203,16 @@ MuseMcpDialog::MuseMcpDialog(const QString& serverScript, const QString& documen
     m_requirementsStatus->setText(tr("Using the dedicated MCP Python environment. Check requirements to verify its packages."));
   else
     m_requirementsStatus->setText(tr("No dedicated MCP Python environment was found. The selected Python may not include MCP packages; check requirements or open the instructions to set one up."));
+}
+
+MuseMcpDialog::~MuseMcpDialog()
+{
+  m_processTimeout->stop();
+  QObject::disconnect(m_process, nullptr, this, nullptr);
+  if (m_process->state() != QProcess::NotRunning) {
+    m_process->kill();
+    m_process->waitForFinished();
+  }
 }
 
 bool MuseMcpDialog::startAtLaunch() const
@@ -299,7 +313,7 @@ void MuseMcpDialog::startProcess(ProcessPurpose purpose)
       environment.remove(QStringLiteral("MUSE_PYRO_NS_PORT"));
     else
       environment.insert(QStringLiteral("MUSE_PYRO_NS_PORT"), m_nameserverPort);
-    environment.insert(QStringLiteral("MUSE_PYRO_TIMEOUT"), QStringLiteral("5"));
+    environment.insert(QStringLiteral("MUSE_PYRO_TIMEOUT"), QStringLiteral("10"));
     m_process->setArguments({m_serverScript, QStringLiteral("--check-connection")});
     m_connectionStatus->setText(tr("Testing a read-only connection to the open MusE song..."));
   } else {
@@ -309,7 +323,8 @@ void MuseMcpDialog::startProcess(ProcessPurpose purpose)
     m_requirementsStatus->setText(tr("Checking Python dependencies..."));
   }
   m_process->setProcessEnvironment(environment);
-  m_processTimeout->start(10000);
+  m_processTimeout->start(purpose == ProcessPurpose::Connection
+    ? ConnectionCheckTimeoutMs : RequirementsCheckTimeoutMs);
   m_process->start();
 }
 
@@ -367,7 +382,7 @@ void MuseMcpDialog::updateProfileDescription()
   if (profile == QLatin1String("transport"))
     m_profileDescription->setText(tr("Allows song reads and transport controls; it cannot edit tracks or MIDI parts."));
   else if (profile == QLatin1String("project_edit"))
-    m_profileDescription->setText(tr("Allows transport controls and project edits, including track mute and MIDI creation."));
+    m_profileDescription->setText(tr("Allows transport controls and project edits. It can read user-supplied MIDI and .med files and save .med files anywhere the MusE user account has access, not only in the project folder."));
   else
     m_profileDescription->setText(tr("Allows only reading song state and track names. This is the recommended default."));
 }

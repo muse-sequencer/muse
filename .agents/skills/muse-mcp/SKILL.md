@@ -10,7 +10,7 @@ Use this skill when operating MusE through the `muse` MCP server. The server com
 ## Working rules
 
 - Begin by calling `muse_get_song_state` and `muse_list_tracks`. Use their results as the source of truth for the active song, tempo, position, and track names. Do not assume a prior session's project is still open.
-- If a requested action is denied, check the configured MCP permission profile rather than trying alternate paths to bypass it. `read_only` permits song and track reads, `transport` adds transport control, and `project_edit` allows project changes.
+- If a requested action is denied, check the configured MCP permission profile rather than trying alternate paths to bypass it. `read_only` permits song and track reads, `transport` adds transport control, and `project_edit` allows project changes. `project_edit` is not a filesystem sandbox: it can read user-supplied MIDI/`.med` files and save `.med` files anywhere the MusE account can access, not only inside the active project folder. Use only paths the user requested or approved.
 - Make only changes needed for the user's request. Use names and IDs returned by MCP tools; inspect existing tracks, parts, ports, programs, or effects before changing them.
 - Use `muse_create_project` when asked to create a blank project: it loads MusE's default template, saves a `.med` file at the requested path, and leaves it open. It preserves dirty current work by saving first; an untitled project needs `save_current_path`.
 - Positions, lengths, note offsets, and durations for MIDI parts/events are measured in MusE ticks. Use the active song's reported timing context; do not treat ticks as seconds or assume a fixed ticks-per-quarter value.

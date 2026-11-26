@@ -1244,9 +1244,9 @@ MusE::MusE() : QMainWindow()
       trailingMenus.push_back(menuHelp);
 
       menuHelp->addAction(helpManualAction);
-      QAction* helpAiAgentAction = new QAction(tr("Connect AI Agent (MCP)..."), this);
-      menuHelp->addAction(helpAiAgentAction);
-      connect(helpAiAgentAction, &QAction::triggered, this, [this]() {
+      QAction* aiAgentAction = new QAction(tr("Connect AI Agent (MCP)..."), this);
+      menuSettings->addAction(aiAgentAction);
+      connect(aiAgentAction, &QAction::triggered, this, [this]() {
             const QString pybridgeDir = QDir(MusEGlobal::museGlobalShare).filePath("pybridge");
             const QString serverScript = QDir(pybridgeDir).filePath("musemcp.py");
             const QString documentation = QDir(pybridgeDir).filePath("README.mcp.md");
@@ -3095,8 +3095,9 @@ bool MusE::waitForProjectOperationForMcp()
         if (!_busyWithLoading)
             waitLoop.quit();
     });
-    QTimer::singleShot(120000, &waitLoop, &QEventLoop::quit);
     pollTimer.start();
+    // Once a project transition has started, returning on timeout would leave
+    // the caller with a failed result while the active song may still change.
     waitLoop.exec();
     pollTimer.stop();
     return !_busyWithLoading;
@@ -3150,8 +3151,16 @@ bool MusE::closeProjectFileForMcp(const QString& savePath, bool overwrite, QStri
     if (!saveProjectFileForMcp(path, overwrite))
         return false;
     const QString savedFilePath = project.absoluteFilePath();
+    QProgressDialog closeProgress(tr("Closing project..."), QString(), 0, 0, this);
+    closeProgress.setWindowModality(Qt::ApplicationModal);
+    closeProgress.setCancelButton(nullptr);
+    closeProgress.setMinimumDuration(0);
+    closeProgress.show();
+    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
     fileClose();
-    if (!waitForProjectOperationForMcp())
+    const bool operationFinished = waitForProjectOperationForMcp();
+    closeProgress.close();
+    if (!operationFinished || MusEGlobal::museProject != MusEGlobal::museProjectInitPath)
         return false;
     if (savedPath)
         *savedPath = QFileInfo(savedFilePath).absoluteFilePath();
