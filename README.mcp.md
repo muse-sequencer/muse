@@ -24,9 +24,11 @@ and permission profile. The dialog preselects `project_edit` for the generated c
 configuration; choose a more restrictive profile if the agent should not modify the
 project. It automatically prefers `~/.venvs/muse-mcp/bin/python` when available; otherwise
 it falls back to `python3`, which may not have the MCP dependencies. Use **Check requirements**
-to verify the selected interpreter. The dependency check has a 10-second limit; the read-only
-connection check has a separate 30-second limit. The saved startup setting takes effect the
-next time MusE starts. Alternatively, start MusE with its Python bridge enabled:
+to verify the selected interpreter, or **Install dependencies** to install the packages from
+`requirements-mcp.txt` into the selected Python environment. The dependency check has a 10-second
+limit, installation has a 5-minute limit, and the read-only connection check has a separate
+30-second limit. The saved startup setting takes effect the next time MusE starts. Alternatively,
+start MusE with its Python bridge enabled:
 
 ```sh
 muse -y

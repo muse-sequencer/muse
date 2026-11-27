@@ -25,6 +25,7 @@ class MuseMcpDialog : public QDialog
 public:
   static constexpr int RequirementsCheckTimeoutMs = 10000;
   static constexpr int ConnectionCheckTimeoutMs = 30000;
+  static constexpr int InstallationTimeoutMs = 300000;
 
   MuseMcpDialog(const QString& serverScript, const QString& documentation,
                 bool pythonBridgeSupported, bool startAtLaunch,
@@ -41,10 +42,11 @@ public:
   static bool isSafeBindAddress(const QString& address);
 
 private:
-  enum class ProcessPurpose { None, Requirements, Connection };
+  enum class ProcessPurpose { None, Requirements, Connection, Installation };
 
   void checkRequirements();
   void testConnection();
+  void installRequirements();
   void startProcess(ProcessPurpose purpose);
   void updatePreview();
   void updateProfileDescription();
@@ -68,6 +70,7 @@ private:
   QPlainTextEdit* m_configurationPreview;
   QPushButton* m_checkRequirementsButton;
   QPushButton* m_testConnectionButton;
+  QPushButton* m_installRequirementsButton;
   QProcess* m_process;
   QTimer* m_processTimeout;
 };

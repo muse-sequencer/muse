@@ -51,6 +51,7 @@ MuseMcpDialog::MuseMcpDialog(const QString& serverScript, const QString& documen
     m_configurationPreview(new QPlainTextEdit(this)),
     m_checkRequirementsButton(new QPushButton(tr("Check requirements"), this)),
     m_testConnectionButton(new QPushButton(tr("Test read-only connection"), this)),
+    m_installRequirementsButton(new QPushButton(tr("Install dependencies"), this)),
     m_process(new QProcess(this)),
     m_processTimeout(new QTimer(this))
 {
@@ -134,6 +135,7 @@ MuseMcpDialog::MuseMcpDialog(const QString& serverScript, const QString& documen
   auto* statusLayout = new QHBoxLayout;
   statusLayout->addWidget(m_checkRequirementsButton);
   statusLayout->addWidget(m_testConnectionButton);
+  statusLayout->addWidget(m_installRequirementsButton);
   layout->addLayout(statusLayout);
 
   m_requirementsStatus->setObjectName("mcpRequirementsStatus");
@@ -167,6 +169,7 @@ MuseMcpDialog::MuseMcpDialog(const QString& serverScript, const QString& documen
   m_processTimeout->setObjectName(QStringLiteral("mcpProcessTimeout"));
   m_checkRequirementsButton->setObjectName(QStringLiteral("mcpCheckRequirements"));
   m_testConnectionButton->setObjectName(QStringLiteral("mcpTestConnection"));
+  m_installRequirementsButton->setObjectName(QStringLiteral("mcpInstallRequirements"));
   connect(m_processTimeout, &QTimer::timeout, this, [this]() {
     if (m_process->state() != QProcess::NotRunning) {
       m_processTimedOut = true;
@@ -182,6 +185,7 @@ MuseMcpDialog::MuseMcpDialog(const QString& serverScript, const QString& documen
 
   connect(m_checkRequirementsButton, &QPushButton::clicked, this, &MuseMcpDialog::checkRequirements);
   connect(m_testConnectionButton, &QPushButton::clicked, this, &MuseMcpDialog::testConnection);
+  connect(m_installRequirementsButton, &QPushButton::clicked, this, &MuseMcpDialog::installRequirements);
   connect(m_profile, qOverload<int>(&QComboBox::currentIndexChanged), this,
           [this](int) { updateProfileDescription(); updatePreview(); });
   connect(m_bindAddress, qOverload<int>(&QComboBox::currentIndexChanged), this,
@@ -281,6 +285,11 @@ void MuseMcpDialog::testConnection()
   startProcess(ProcessPurpose::Connection);
 }
 
+void MuseMcpDialog::installRequirements()
+{
+  startProcess(ProcessPurpose::Installation);
+}
+
 void MuseMcpDialog::startProcess(ProcessPurpose purpose)
 {
   if (m_process->state() != QProcess::NotRunning)
@@ -297,11 +306,17 @@ void MuseMcpDialog::startProcess(ProcessPurpose purpose)
     m_requirementsStatus->setText(tr("Select a Python interpreter first."));
     return;
   }
+  const QString requirementsFile = QFileInfo(m_serverScript).dir().filePath(QStringLiteral("requirements-mcp.txt"));
+  if (purpose == ProcessPurpose::Installation && !QFileInfo::exists(requirementsFile)) {
+    m_requirementsStatus->setText(tr("MCP requirements file was not found: %1").arg(requirementsFile));
+    return;
+  }
 
   m_processPurpose = purpose;
   m_processTimedOut = false;
   m_checkRequirementsButton->setEnabled(false);
   m_testConnectionButton->setEnabled(false);
+  m_installRequirementsButton->setEnabled(false);
   m_process->setProgram(pythonExecutable());
   m_process->setWorkingDirectory(QFileInfo(m_serverScript).absolutePath());
   m_process->setProcessChannelMode(QProcess::MergedChannels);
@@ -316,15 +331,20 @@ void MuseMcpDialog::startProcess(ProcessPurpose purpose)
     environment.insert(QStringLiteral("MUSE_PYRO_TIMEOUT"), QStringLiteral("10"));
     m_process->setArguments({m_serverScript, QStringLiteral("--check-connection")});
     m_connectionStatus->setText(tr("Testing a read-only connection to the open MusE song..."));
-  } else {
+  } else if (purpose == ProcessPurpose::Requirements) {
     m_process->setArguments({QStringLiteral("-c"),
       QStringLiteral("import Pyro5, mcp.server.fastmcp, pydantic, musepyroconfig; "
                      "print('MCP dependencies are available')")});
     m_requirementsStatus->setText(tr("Checking Python dependencies..."));
+  } else {
+    m_process->setArguments({QStringLiteral("-m"), QStringLiteral("pip"),
+      QStringLiteral("install"), QStringLiteral("-r"), requirementsFile});
+    m_requirementsStatus->setText(tr("Installing MCP dependencies into the selected Python environment..."));
   }
   m_process->setProcessEnvironment(environment);
-  m_processTimeout->start(purpose == ProcessPurpose::Connection
-    ? ConnectionCheckTimeoutMs : RequirementsCheckTimeoutMs);
+  const int timeout = purpose == ProcessPurpose::Connection ? ConnectionCheckTimeoutMs
+    : purpose == ProcessPurpose::Installation ? InstallationTimeoutMs : RequirementsCheckTimeoutMs;
+  m_processTimeout->start(timeout);
   m_process->start();
 }
 
@@ -338,13 +358,24 @@ void MuseMcpDialog::finishProcess(int exitCode)
   m_processPurpose = ProcessPurpose::None;
   m_checkRequirementsButton->setEnabled(true);
   m_testConnectionButton->setEnabled(true);
+  m_installRequirementsButton->setEnabled(true);
 
   const QString output = QString::fromLocal8Bit(m_process->readAll()).trimmed();
   if (m_processTimedOut) {
     if (purpose == ProcessPurpose::Requirements)
       m_requirementsStatus->setText(tr("The dependency check timed out."));
+    else if (purpose == ProcessPurpose::Installation)
+      m_requirementsStatus->setText(tr("Dependency installation timed out. Check your network connection and try again."));
     else
       m_connectionStatus->setText(tr("The check timed out. Verify that MusE is running and the bridge is enabled."));
+    return;
+  }
+
+  if (purpose == ProcessPurpose::Installation) {
+    if (exitCode == 0)
+      m_requirementsStatus->setText(tr("MCP dependencies installed successfully. Check requirements to verify them."));
+    else
+      m_requirementsStatus->setText(tr("Could not install MCP dependencies: %1").arg(output.left(500)));
     return;
   }
 

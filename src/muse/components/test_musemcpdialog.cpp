@@ -4,13 +4,16 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
 #include <QLineEdit>
+#include <QProcess>
 #include <QPushButton>
+#include <QTemporaryDir>
 #include <QTimer>
 #include <QtTest/QtTest>
 
@@ -27,6 +30,7 @@ private slots:
   void startupSettingIsDisabledWithoutPythonBridgeSupport();
   void bindAddressPolicyAllowsOnlyLoopbackOrPrivateIpv4();
   void processChecksUsePurposeSpecificTimeouts();
+  void dependencyInstallationUsesSelectedPythonAndRequirementsFile();
 };
 
 void MuseMcpDialogTests::clientConfigurationUsesProjectEditProfileByDefault()
@@ -153,6 +157,39 @@ void MuseMcpDialogTests::processChecksUsePurposeSpecificTimeouts()
     QCOMPARE(timeout->interval(), MusEGui::MuseMcpDialog::ConnectionCheckTimeoutMs);
     QTRY_VERIFY(!timeout->isActive());
   }
+}
+
+void MuseMcpDialogTests::dependencyInstallationUsesSelectedPythonAndRequirementsFile()
+{
+  QTemporaryDir temporaryDir;
+  QVERIFY(temporaryDir.isValid());
+  const QString serverScript = temporaryDir.filePath(QStringLiteral("musemcp.py"));
+  const QString requirementsFile = temporaryDir.filePath(QStringLiteral("requirements-mcp.txt"));
+  QFile server(serverScript);
+  QVERIFY(server.open(QIODevice::WriteOnly));
+  server.close();
+  QFile requirements(requirementsFile);
+  QVERIFY(requirements.open(QIODevice::WriteOnly));
+  requirements.close();
+
+  MusEGui::MuseMcpDialog dialog(serverScript, "/opt/muse/README.mcp.md",
+                                true, false, "127.0.0.1", "");
+  auto* python = dialog.findChild<QLineEdit*>("mcpPythonExecutable");
+  auto* install = dialog.findChild<QPushButton*>("mcpInstallRequirements");
+  auto* process = dialog.findChild<QProcess*>();
+  auto* timeout = dialog.findChild<QTimer*>("mcpProcessTimeout");
+  QVERIFY(python);
+  QVERIFY(install);
+  QVERIFY(process);
+  QVERIFY(timeout);
+
+  python->setText("/nonexistent/mcp-test-python");
+  install->click();
+
+  QCOMPARE(process->program(), QString("/nonexistent/mcp-test-python"));
+  QCOMPARE(process->arguments(), QStringList({"-m", "pip", "install", "-r", requirementsFile}));
+  QCOMPARE(timeout->interval(), MusEGui::MuseMcpDialog::InstallationTimeoutMs);
+  QTRY_VERIFY(!timeout->isActive());
 }
 
 QTEST_MAIN(MuseMcpDialogTests)
